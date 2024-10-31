@@ -1,6 +1,7 @@
 ﻿using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using RoSharp.API;
+using RoSharp.Enums;
 using RoSharp.Utility;
 using System;
 using System.Collections.Generic;
@@ -180,6 +181,35 @@ namespace RoSharp.API
                 }
                 return privateInventory;
             }
+        }
+
+        public async Task<ReadOnlyCollection<User>> GetFriendsAsync()
+        {
+            string rawData = await GetStringAsync($"/v1/users/{Id}/friends");
+            dynamic data = JObject.Parse(rawData);
+            List<User> friends = new List<User>();
+            foreach (dynamic friendData in data.data)
+            {
+                friends.Add(new User(friendData.id).AttachSessionAndReturn(session));
+            }
+
+            return friends.AsReadOnly();
+        }
+
+        // Thumbnails
+        public async Task<string> GetThumbnailAsync(ThumbnailType type = ThumbnailType.Full, ThumbnailSize size = ThumbnailSize.S420x420)
+        {
+            string url = "/v1/users/avatar" + type switch
+            {
+                ThumbnailType.Bust => "-bust",
+                ThumbnailType.Headshot => "-headshot",
+                _ => string.Empty,
+            } + $"?userIds={Id}&size={size.ToString().Substring(1)}&format=Png&isCircular=false";
+            string rawData = await GetStringAsync(url, "https://thumbnails.roblox.com", verifySession: false);
+            dynamic data = JObject.Parse(rawData);
+            if (data.data.Count == 0)
+                throw new InvalidOperationException("Invalid user to get thumbnail for.");
+            return data.data[0].imageUrl;
         }
 
         public User AttachSessionAndReturn(Session? session)

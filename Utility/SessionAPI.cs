@@ -70,7 +70,18 @@ namespace RoSharp.API
             }
         }
 
-        [UsesSession]
-        public IEnumerable<User> Friends => new FriendsAPI(session).GetFriends(UserInfo.Id);
+        public async Task SendFriendRequestAsync(ulong targetId)
+        {
+            await PostAsync($"/v1/contacts/{targetId}/request-friendship", new { });
+        }
+
+        public async Task SendFriendRequestAsync(User user) => await SendFriendRequestAsync(user.Id);
+
+        public async Task UnfriendAsync(ulong targetId)
+        {
+            await PostAsync($"/v1/users/{targetId}/unfriend", new { });
+        }
+
+        public async Task UnfriendAsync(User user) => await UnfriendAsync(user.Id);
     }
 }

@@ -1,4 +1,5 @@
 ﻿using Newtonsoft.Json.Linq;
+using RoSharp.Enums;
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
@@ -81,6 +82,16 @@ namespace RoSharp.API
                 }
                 return shout;
             }
+        }
+
+        public async Task<string> GetIconAsync(ThumbnailSize size = ThumbnailSize.S420x420)
+        {
+            string url = $"/v1/groups/icons?groupIds={Id}&size={size.ToString().Substring(1)}&format=Png&isCircular=false";
+            string rawData = await GetStringAsync(url, "https://thumbnails.roblox.com", verifySession: false);
+            dynamic data = JObject.Parse(rawData);
+            if (data.data.Count == 0)
+                throw new InvalidOperationException("Invalid group to get icon for.");
+            return data.data[0].imageUrl;
         }
 
         [UsesSession]

@@ -44,6 +44,12 @@ namespace RoSharp.API
             return client;
         }
 
+        internal async Task<HttpResponseMessage> GetAsync(string url, string? baseOverride = null, bool verifySession = true)
+        {
+            HttpClient client = MakeHttpClient(baseOverride, verifySession);
+            return await client.GetAsync(url);
+        }
+
         internal HttpResponseMessage Get(string url, string? baseOverride = null, bool verifySession = true)
         {
             HttpClient client = MakeHttpClient(baseOverride, verifySession);
@@ -55,6 +61,13 @@ namespace RoSharp.API
             HttpClient client = MakeHttpClient(baseOverride, verifySession);
             HttpResponseMessage response = client.GetAsync(url).Result;
             return response.Content.ReadAsStringAsync().Result;
+        }
+
+        internal async Task<string> GetStringAsync(string url, string? baseOverride = null, bool verifySession = true)
+        {
+            HttpClient client = MakeHttpClient(baseOverride, verifySession);
+            HttpResponseMessage response = await client.GetAsync(url);
+            return await response.Content.ReadAsStringAsync();
         }
 
         internal async Task<HttpResponseMessage> PostAsync(string url, object data, string? baseOverride = null)

@@ -20,9 +20,9 @@ namespace RoSharp.API
 
         public ulong Members => group.members;
 
-        public ReadOnlyCollection<User> GetPendingRequests()
+        public async Task<ReadOnlyCollection<User>> GetPendingRequestsAsync()
         {
-            HttpResponseMessage response = group.Get($"/v1/groups/{group.Id}/join-requests?limit=100&sortOrder=Desc");
+            HttpResponseMessage response = await group.GetAsync($"/v1/groups/{group.Id}/join-requests?limit=100&sortOrder=Desc");
             if (!response.IsSuccessStatusCode)
             {
                 throw new InvalidOperationException($"Cannot view pending requests for group (HTTP {response.StatusCode}). Do you have permission to see pending requests?");

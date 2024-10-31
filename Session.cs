@@ -16,9 +16,12 @@ namespace RoSharp
         internal string username = "";
         internal string displayname = "";
         internal ulong userid = 0;
+        internal DateTime loggedAt;
 
         public bool LoggedIn => loggedIn;
         public string RobloSecurity => roblosecurity;
+        public DateTime LoggedInAt => loggedAt;
+        public TimeSpan Elapsed => DateTime.Now - loggedAt;
         public SessionAPI? User
         {
             get
@@ -57,10 +60,25 @@ namespace RoSharp
                     userid = result.id;
                     displayname = result.displayName;
                     loggedIn = true;
+                    loggedAt = DateTime.Now;
 
                     sessionAPI = new SessionAPI(this);
                 }
             }
+        }
+
+        public CustomRequest MakeCustomRequest()
+        {
+            CustomRequest custom;
+            if (LoggedIn)
+            {
+                custom = new CustomRequest(this);
+            }
+            else
+            {
+                custom = new CustomRequest(null);
+            }
+            return custom;
         }
     }
 }
