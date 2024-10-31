@@ -44,41 +44,53 @@ namespace RoSharp.API
             return client;
         }
 
-        public HttpResponseMessage Get(string url, string? baseOverride = null, bool verifySession = true)
+        internal HttpResponseMessage Get(string url, string? baseOverride = null, bool verifySession = true)
         {
             HttpClient client = MakeHttpClient(baseOverride, verifySession);
             return client.GetAsync(url).Result;
         }
 
-        public string GetString(string url, string? baseOverride = null, bool verifySession = true)
+        internal string GetString(string url, string? baseOverride = null, bool verifySession = true)
         {
             HttpClient client = MakeHttpClient(baseOverride, verifySession);
             HttpResponseMessage response = client.GetAsync(url).Result;
             return response.Content.ReadAsStringAsync().Result;
         }
 
-        public async Task<HttpResponseMessage> PostAsync(string url, object data, string? baseOverride = null)
+        internal async Task<HttpResponseMessage> PostAsync(string url, object data, string? baseOverride = null)
         {
             HttpClient client = MakeHttpClient(baseOverride);
             JsonContent content = JsonContent.Create(data);
 
             HttpResponseMessage initialResponse = await client.PostAsync(url, null);
 
-            if (initialResponse.Headers.GetValues("x-csrf-token").Any())
-                client.DefaultRequestHeaders.Add("x-csrf-token", initialResponse.Headers.GetValues("x-csrf-token").First());
+            if (initialResponse.Headers.TryGetValues("x-csrf-token", out IEnumerable<string>? headers))
+                client.DefaultRequestHeaders.Add("x-csrf-token", headers.First());
 
             return await client.PostAsync(url, content);
         }
-        public async Task<HttpResponseMessage> PatchAsync(string url, object data, string? baseOverride = null)
+        internal async Task<HttpResponseMessage> PatchAsync(string url, object data, string? baseOverride = null)
         {
             HttpClient client = MakeHttpClient(baseOverride);
             JsonContent content = JsonContent.Create(data);
 
             HttpResponseMessage initialResponse = await client.PatchAsync(url, null);
 
-            if (initialResponse.Headers.GetValues("x-csrf-token").Any())
-                client.DefaultRequestHeaders.Add("x-csrf-token", initialResponse.Headers.GetValues("x-csrf-token").First());
+            if (initialResponse.Headers.TryGetValues("x-csrf-token", out IEnumerable<string>? headers))
+                client.DefaultRequestHeaders.Add("x-csrf-token", headers.First());
+
             return await client.PatchAsync(url, content);
+        }
+        internal async Task<HttpResponseMessage> DeleteAsync(string url, string? baseOverride = null)
+        {
+            HttpClient client = MakeHttpClient(baseOverride);
+
+            HttpResponseMessage initialResponse = await client.PostAsync(url, null);
+
+            if (initialResponse.Headers.TryGetValues("x-csrf-token", out IEnumerable<string>? headers))
+                client.DefaultRequestHeaders.Add("x-csrf-token", headers.First());
+
+            return await client.DeleteAsync(url);
         }
 
         protected Session? session;

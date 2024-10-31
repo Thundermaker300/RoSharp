@@ -17,6 +17,7 @@ namespace RoSharp.API
 
         public ulong Id { get; }
         public string Name { get; }
+        public string Username => Name;
         public string DisplayName { get; }
         public string Bio { get; }
         public bool Verified { get; }
@@ -136,7 +137,7 @@ namespace RoSharp.API
                 if (renameHistory == null)
                 {
                     List<string> history = new();
-                    string rawData = GetString($"/v1/users/{Id}/username-history", verifySession: false);
+                    string rawData = GetString($"/v1/users/{Id}/username-history?limit=100&sortOrder=Desc", verifySession: false);
                     dynamic data = JObject.Parse(rawData);
                     foreach (dynamic historyData in data.data)
                     {
@@ -145,6 +146,24 @@ namespace RoSharp.API
                     renameHistory = history.AsReadOnly();
                 }
                 return renameHistory;
+            }
+        }
+
+        private Group? primaryGroup;
+        public Group? PrimaryGroup
+        {
+            get
+            {
+                if (primaryGroup == null)
+                {
+                    string rawData = GetString($"/v1/users/{Id}/groups/primary/role", "https://groups.roblox.com", verifySession: false);
+                    if (rawData == "null")
+                        return null;
+
+                    dynamic data = JObject.Parse(rawData);
+                    primaryGroup = new Group(Convert.ToUInt64(data.group.id));
+                }
+                return primaryGroup;
             }
         }
 
