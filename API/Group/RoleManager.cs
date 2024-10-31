@@ -49,24 +49,6 @@ namespace RoSharp.API
         public Role? GetRole(string roleName)
             => Roles.FirstOrDefault(role => role.Name == roleName);
 
-        public Role? GetRoleInGroup(ulong userId)
-        {
-            string rawData = group.GetString($"/v1/users/{userId}/groups/roles?includeLocked=true");
-            dynamic data = JObject.Parse(rawData);
-            foreach (dynamic group in data.data)
-            {
-                if (Convert.ToUInt64(group.group.id) == this.group.Id)
-                {
-                    return Roles.FirstOrDefault(r => r.Id == Convert.ToUInt64(group.role.id));
-                }
-            }
-            return null;
-        }
-
-        public Role? GetRoleInGroup(string username) => GetRoleInGroup(new User(username));
-        public Role? GetRoleInGroup(User user) => GetRoleInGroup(user.Id);
-
-
         internal async Task RequestDeleteRole(ulong roleId)
         {
             HttpResponseMessage response = await group.DeleteAsync($"/v1/groups/{group.Id}/rolesets/{roleId}");
@@ -103,7 +85,7 @@ namespace RoSharp.API
 
     public class Role
     {
-        private RoleManager roleManager;
+        internal RoleManager roleManager;
 
         public ulong Id { get; init; }
         public string Name { get; init; }

@@ -28,6 +28,9 @@ namespace RoSharp.API
         private RoleManager roleManager;
         public RoleManager RoleManager => roleManager ?? new RoleManager(this);
 
+        private MemberManager memberManager;
+        public MemberManager MemberManager => memberManager ?? new MemberManager(this);
+
         public Group(ulong groupId)
         {
             HttpResponseMessage response = Get($"/v1/groups/{groupId}", verifySession: false);

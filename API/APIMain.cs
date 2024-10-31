@@ -85,7 +85,7 @@ namespace RoSharp.API
         {
             HttpClient client = MakeHttpClient(baseOverride);
 
-            HttpResponseMessage initialResponse = await client.PostAsync(url, null);
+            HttpResponseMessage initialResponse = await client.DeleteAsync(url);
 
             if (initialResponse.Headers.TryGetValues("x-csrf-token", out IEnumerable<string>? headers))
                 client.DefaultRequestHeaders.Add("x-csrf-token", headers.First());
