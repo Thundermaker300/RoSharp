@@ -167,6 +167,21 @@ namespace RoSharp.API
             }
         }
 
+        private bool privateInventory;
+        public bool PrivateInventory
+        {
+            get
+            {
+                HttpResponseMessage response = Get($"/v1/users/{Id}/can-view-inventory", "https://inventory.roblox.com", false);
+                if (response.IsSuccessStatusCode)
+                {
+                    dynamic data = JObject.Parse(response.Content.ReadAsStringAsync().Result);
+                    privateInventory = !Convert.ToBoolean(data.canView);
+                }
+                return privateInventory;
+            }
+        }
+
         public User AttachSessionAndReturn(Session? session)
         {
             if (session is null || !session.LoggedIn)
