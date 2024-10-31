@@ -175,5 +175,10 @@ namespace RoSharp.API
                 AttachSession(session);
             return this;
         }
+
+        public override string ToString()
+        {
+            return $"{DisplayName} (@{Name}) [{Id}] {(Verified ? "[V]" : string.Empty)}";
+        }
     }
 }

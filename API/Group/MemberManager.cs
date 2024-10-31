@@ -18,6 +18,8 @@ namespace RoSharp.API
 
         internal MemberManager(Group group) { this.group = group; }
 
+        public ulong Members => group.members;
+
         public ReadOnlyCollection<User> GetPendingRequests()
         {
             HttpResponseMessage response = group.Get($"/v1/groups/{group.Id}/join-requests?limit=100&sortOrder=Desc");
@@ -144,5 +146,10 @@ namespace RoSharp.API
 
         [UsesSession]
         public async Task KickMemberAsync(User user) => await KickMemberAsync(user.Id);
+
+        public override string ToString()
+        {
+            return $"MemberManager [#{Members}]";
+        }
     }
 }

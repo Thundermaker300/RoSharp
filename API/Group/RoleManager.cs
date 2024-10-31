@@ -21,7 +21,7 @@ namespace RoSharp.API
                 if (roles == null)
                 {
                     List<Role> list = [];
-                    string rawData = group.GetString($"/v1/groups/{group.Id}/roles");
+                    string rawData = group.GetString($"/v1/groups/{group.Id}/roles", verifySession: false);
                     dynamic data = JObject.Parse(rawData);
                     foreach (dynamic rank in data.roles)
                     {
@@ -80,6 +80,11 @@ namespace RoSharp.API
                 Console.WriteLine(Newtonsoft.Json.JsonConvert.SerializeObject(response.Content.ReadAsStringAsync().Result));
                 throw new InvalidOperationException($"Roleset modification failed (HTTP {response.StatusCode}). Do you have permission to modify this group's rolesets?");
             }
+        }
+
+        public override string ToString()
+        {
+            return $"RoleManager [#{Roles.Count}]";
         }
     }
 

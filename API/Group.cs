@@ -19,7 +19,6 @@ namespace RoSharp.API
         public string Description { get; }
         public User? Owner { get; }
         public bool HasOwner => Owner != null;
-        public ulong Members { get; }
         public bool IsPublic { get; }
         public bool Verified { get; }
         public bool GroupFundsVisible { get; }
@@ -30,6 +29,8 @@ namespace RoSharp.API
 
         private MemberManager memberManager;
         public MemberManager MemberManager => memberManager ?? new MemberManager(this);
+
+        internal ulong members;
 
         public Group(ulong groupId)
         {
@@ -47,10 +48,11 @@ namespace RoSharp.API
                 {
                     Owner = new(Convert.ToUInt64(data.owner.userId));
                 }
-
-                Members = data.memberCount;
+                
                 IsPublic = data.publicEntryAllowed;
                 Verified = data.hasVerifiedBadge;
+
+                members = data.memberCount;
             }
             else
             {
@@ -132,6 +134,11 @@ namespace RoSharp.API
             else
                 AttachSession(session);
             return this;
+        }
+
+        public override string ToString()
+        {
+            return $"{Name} [{Id}] {(Verified ? "[V]" : string.Empty)}";
         }
     }
 
