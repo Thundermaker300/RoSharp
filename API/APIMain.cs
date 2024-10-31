@@ -70,9 +70,9 @@ namespace RoSharp.API
             return await response.Content.ReadAsStringAsync();
         }
 
-        internal async Task<HttpResponseMessage> PostAsync(string url, object data, string? baseOverride = null)
+        internal async Task<HttpResponseMessage> PostAsync(string url, object data, string? baseOverride = null, bool verifySession = true)
         {
-            HttpClient client = MakeHttpClient(baseOverride);
+            HttpClient client = MakeHttpClient(baseOverride, verifySession);
             JsonContent content = JsonContent.Create(data);
 
             HttpResponseMessage initialResponse = await client.PostAsync(url, null);
