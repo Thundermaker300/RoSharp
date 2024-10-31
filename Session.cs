@@ -5,6 +5,9 @@ using System.Net.Http.Json;
 
 namespace RoSharp
 {
+    /// <summary>
+    /// A session is an object that contains a token used for logging into Roblox for use with authentication endpoints.
+    /// </summary>
     public sealed class Session
     {
         private bool loggedIn = false;
