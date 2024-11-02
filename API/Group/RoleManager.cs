@@ -65,7 +65,6 @@ namespace RoSharp.API
             HttpResponseMessage response = await group.PatchAsync($"/v1/groups/{group.Id}/rolesets/{roleId.Id}", body);
             if (!response.IsSuccessStatusCode)
             {
-                Console.WriteLine(Newtonsoft.Json.JsonConvert.SerializeObject(response.Content.ReadAsStringAsync().Result));
                 throw new InvalidOperationException($"Roleset modification failed (HTTP {response.StatusCode}). Do you have permission to modify this group's rolesets?");
             }
         }
@@ -77,7 +76,6 @@ namespace RoSharp.API
             HttpResponseMessage response = await group.PatchAsync($"/v1/groups/{group.Id}/rolesets/{roleId.Id}", body);
             if (!response.IsSuccessStatusCode)
             {
-                Console.WriteLine(Newtonsoft.Json.JsonConvert.SerializeObject(response.Content.ReadAsStringAsync().Result));
                 throw new InvalidOperationException($"Roleset modification failed (HTTP {response.StatusCode}). Do you have permission to modify this group's rolesets?");
             }
         }
