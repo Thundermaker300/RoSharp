@@ -23,7 +23,7 @@ namespace RoSharp.API
 
         public APIMain() { }
 
-        public HttpClient MakeHttpClient(string? baseOverride = null, bool verifySession = true)
+        internal HttpClient MakeHttpClient(string? baseOverride = null, bool verifySession = true)
         {
             bool isSessionGood = false;
             if (verifySession)

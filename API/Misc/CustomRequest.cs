@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Net;
+using System.Net.Http.Json;
 using System.Text;
 using System.Threading.Tasks;
 
@@ -14,12 +15,12 @@ namespace RoSharp.API
 
         internal CustomRequest(Session? session) { this.session = session; }
 
-        public void SetUri(string baseUrl)
+        public void SetBaseUri(string baseUrl)
         {
-            SetUri(new Uri(baseUrl));
+            SetBaseUri(new Uri(baseUrl));
         }
 
-        public void SetUri(Uri baseUri)
+        public void SetBaseUri(Uri baseUri)
         {
             this.uri = baseUri;
         }
@@ -27,6 +28,24 @@ namespace RoSharp.API
         public async Task<HttpResponseMessage> GetAsync(string url)
         {
             return await MakeClient().GetAsync(url);
+        }
+
+        public async Task<HttpResponseMessage> PostAsync(string url, object? body)
+        {
+            JsonContent content = JsonContent.Create(body);
+            return await MakeClient().PostAsync(url, content);
+        }
+
+        public async Task<HttpResponseMessage> PatchAsync(string url, object? body)
+        {
+            JsonContent content = JsonContent.Create(body);
+            return await MakeClient().PatchAsync(url, content);
+        }
+
+        public async Task<HttpResponseMessage> PutAsync(string url, object? body)
+        {
+            JsonContent content = JsonContent.Create(body);
+            return await MakeClient().PutAsync(url, content);
         }
 
         private HttpClient MakeClient()
