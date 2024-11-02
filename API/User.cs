@@ -24,6 +24,7 @@ namespace RoSharp.API
         public string Bio { get; }
         public bool Verified { get; }
         public DateTime JoinDate { get; }
+        public TimeSpan AccountAge => DateTime.UtcNow - JoinDate;
         public bool ProfileHidden { get; }
 
         public User(ulong userId)

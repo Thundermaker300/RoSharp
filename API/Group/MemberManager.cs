@@ -67,7 +67,6 @@ namespace RoSharp.API
             };
             if (!response.IsSuccessStatusCode)
             {
-                //TODO remove Console.WriteLine(response.Content.ReadAsStringAsync().Result);
                 throw new InvalidOperationException($"Join request modify failed (HTTP {response.StatusCode}). Do you have permission to accept/decline join requests?");
             }
         }
