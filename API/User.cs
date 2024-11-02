@@ -1,6 +1,7 @@
 ﻿using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using RoSharp.API;
+using RoSharp.API.Assets;
 using RoSharp.Enums;
 using RoSharp.Utility;
 using System;
@@ -211,6 +212,14 @@ namespace RoSharp.API
                 throw new InvalidOperationException("Invalid user to get thumbnail for.");
             return data.data[0].imageUrl;
         }
+
+        public bool OwnsAsset(ulong assetId, int assetItemType = 0)
+        {
+            string result = GetString($"v1/users/{Id}/items/{assetItemType}/{assetId}/is-owned", "https://inventory.roblox.com");
+            return Convert.ToBoolean(result);
+        }
+
+        public bool OwnsAsset(Asset asset) => OwnsAsset(asset.Id, asset.AssetItemType);
 
         public User AttachSessionAndReturn(Session? session)
         {
