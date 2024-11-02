@@ -20,7 +20,7 @@ namespace RoSharp.API
                 if (userInfo is null)
                 {
                     SessionErrors.Verify(session);
-                    userInfo = new User(session.userid);
+                    userInfo = new User(session.userid).AttachSessionAndReturn(session);
                 }
                 return userInfo;
             }
