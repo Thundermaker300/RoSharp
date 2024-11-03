@@ -87,6 +87,28 @@ namespace RoSharp.API
             }
         }
 
+        private ReadOnlyDictionary<string, string> socialChannels;
+
+        public ReadOnlyDictionary<string, string> SocialChannels
+        {
+            get
+            {
+                if (socialChannels == null)
+                {
+                    Dictionary<string, string> dict = new();
+                    string rawData = GetString($"/v1/groups/{Id}/social-links");
+                    dynamic data = JObject.Parse(rawData);
+                    foreach (dynamic media in data.data)
+                    {
+                        dict.Add(Convert.ToString(media.type), Convert.ToString(media.url));
+                    }
+                    socialChannels = dict.AsReadOnly();
+                }
+
+                return socialChannels;
+            }
+        }
+
         public async Task<string> GetIconAsync(ThumbnailSize size = ThumbnailSize.S420x420)
         {
             string url = $"/v1/groups/icons?groupIds={Id}&size={size.ToString().Substring(1)}&format=Png&isCircular=false";
@@ -139,7 +161,7 @@ namespace RoSharp.API
             }
 
             return list.AsReadOnly();
-    }
+        }
 
         public Group AttachSessionAndReturn(Session? session)
         {
