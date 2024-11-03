@@ -52,7 +52,7 @@ namespace RoSharp.API
                 AttachSession(session);
         }
 
-        public User(string username) : this(UserUtility.GetUserId(username)) { }
+        public User(string username, Session? session = null) : this(UserUtility.GetUserId(username), session) { }
 
         [UsesSession]
         public bool IsPremium
