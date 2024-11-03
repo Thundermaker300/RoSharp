@@ -13,6 +13,12 @@ namespace RoSharp.API.Assets
         public Group? GroupOwner { get; }
         public User? UserOwner { get; }
 
+        public string Name
+            => OwnerType == AssetOwnerType.User ? UserOwner.Name : GroupOwner.Name;
+
+        public ulong Id
+            => OwnerType == AssetOwnerType.User ? UserOwner.Id : GroupOwner.Id;
+
         internal AssetOwner(AssetOwnerType ownerType, Group? groupOwner, User? userOwner)
         {
             OwnerType = ownerType;

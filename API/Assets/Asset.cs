@@ -25,6 +25,9 @@ namespace RoSharp.API.Assets
         public int Price { get; }
         public bool OnSale { get; }
         public int Sales { get; }
+        public int Remaining { get; }
+        public int InitialQuantity { get; }
+        public int QuantityLimitPerUser { get; }
         public bool IsLimited { get; }
         public bool IsLimitedUnique { get; }
         public AssetType AssetType { get; }
@@ -64,6 +67,14 @@ namespace RoSharp.API.Assets
                 Created = data.Created;
                 LastUpdated = data.Updated;
                 AssetType = (AssetType)Convert.ToInt32(data.AssetTypeId);
+                Remaining = data.Remaining;
+
+                InitialQuantity = data.CollectiblesItemDetails.TotalQuantity != null
+                    ? Convert.ToInt32(data.CollectiblesItemDetails.TotalQuantity)
+                    : -1;
+                QuantityLimitPerUser = data.CollectiblesItemDetails.CollectibleQuantityLimitPerUser != null
+                    ? Convert.ToInt32(data.CollectiblesItemDetails.CollectibleQuantityLimitPerUser)
+                    : -1;
 
                 if (data.PriceInRobux != null)
                 {
@@ -134,6 +145,13 @@ namespace RoSharp.API.Assets
         }
 
         public bool IsOwnedBy(User target) => target.OwnsAsset(this);
+        public bool IsOwnedBy(ulong targetId) => new User(targetId, session).OwnsAsset(this);
+        public bool IsOwnedBy(string targetUsername) => new User(targetUsername, session).OwnsAsset(this);
+
+        public override string ToString()
+        {
+            return $"{Name} [{Id}] ({AssetType}) {{{(Owner.OwnerType == AssetOwnerType.User ? "@" : string.Empty)}{Owner.Name}}} <R${(OnSale == true ? Price : "0")}>";
+        }
     }
 
     public class AssetModifyOptions
