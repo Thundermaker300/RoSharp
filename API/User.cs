@@ -173,6 +173,32 @@ namespace RoSharp.API
             }
         }
 
+        private ReadOnlyDictionary<Group, Role> groups;
+        public async Task<ReadOnlyDictionary<Group, Role>> GetGroupsAsync(int limit = 100)
+        {
+            if (groups == null)
+            {
+                string rawData = await GetStringAsync("/v1/users/39979813/groups/roles", "https://groups.roblox.com");
+                dynamic data = JObject.Parse(rawData);
+
+                Dictionary<Group, Role> dict = new();
+                int count = 0;
+                foreach (dynamic groupData in data.data)
+                {
+                    if (count >= limit)
+                        break;
+
+                    Group group = new(Convert.ToUInt64(groupData.group.id));
+                    dict.Add(group, group.RoleManager.GetRole(Convert.ToInt32(groupData.role.rank)));
+                    count++;
+                }
+
+                groups = dict.AsReadOnly();
+            }
+
+            return groups;
+        }
+
         private bool privateInventory;
         public bool PrivateInventory
         {
@@ -209,6 +235,42 @@ namespace RoSharp.API
 
                 return socialChannels;
             }
+        }
+
+        private ReadOnlyCollection<Asset> currentlyWearing;
+        public async Task<ReadOnlyCollection<Asset>> GetCurrentlyWearingAsync()
+        {
+            if (currentlyWearing == null)
+            {
+                string rawData = GetString("/v1/users/39979813/currently-wearing", "https://avatar.roblox.com");
+                dynamic data = JObject.Parse(rawData);
+
+                List<Asset> list = new List<Asset>();
+                foreach (dynamic item in data.assetIds)
+                {
+                    list.Add(new Asset(Convert.ToUInt64(item), session));
+                }
+                currentlyWearing = list.AsReadOnly();
+            }
+            return currentlyWearing;
+        }
+
+        private ReadOnlyCollection<Asset> collections;
+        public async Task<ReadOnlyCollection<Asset>> GetCollectionItemsAsync()
+        {
+            if (collections == null)
+            {
+                string rawData = GetString($"/users/profile/robloxcollections-json?userId={Id}", "https://www.roblox.com");
+                dynamic data = JObject.Parse(rawData);
+
+                List<Asset> list = new List<Asset>();
+                foreach (dynamic item in data.CollectionsItems)
+                {
+                    list.Add(new Asset(Convert.ToUInt64(item.Id), session));
+                }
+                collections = list.AsReadOnly();
+            }
+            return collections;
         }
 
         public async Task<ReadOnlyCollection<User>> GetFriendsAsync()
