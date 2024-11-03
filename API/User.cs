@@ -27,7 +27,7 @@ namespace RoSharp.API
         public TimeSpan AccountAge => DateTime.UtcNow - JoinDate;
         public bool ProfileHidden { get; }
 
-        public User(ulong userId)
+        public User(ulong userId, Session? session = null)
         {
             HttpResponseMessage response = Get($"/v1/users/{userId}", verifySession: false);
             if (response.IsSuccessStatusCode)
@@ -47,6 +47,9 @@ namespace RoSharp.API
             {
                 throw new InvalidOperationException("Invalid user ID");
             }
+
+            if (session != null)
+                AttachSession(session);
         }
 
         public User(string username) : this(UserUtility.GetUserId(username)) { }

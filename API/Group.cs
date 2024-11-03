@@ -33,7 +33,7 @@ namespace RoSharp.API
 
         internal ulong members;
 
-        public Group(ulong groupId)
+        public Group(ulong groupId, Session? session = null)
         {
             HttpResponseMessage response = Get($"/v1/groups/{groupId}", verifySession: false);
             if (response.IsSuccessStatusCode)
@@ -59,6 +59,9 @@ namespace RoSharp.API
             {
                 throw new InvalidOperationException("Invalid group ID");
             }
+
+            if (session != null)
+                AttachSession(session);
         }
 
         public GroupShoutInfo? shout;
