@@ -185,6 +185,29 @@ namespace RoSharp.API
             }
         }
 
+        private ReadOnlyDictionary<string, string> socialChannels;
+
+        public ReadOnlyDictionary<string, string> SocialChannels
+        {
+            get
+            {
+                if (socialChannels == null)
+                {
+                    Dictionary<string, string> dict = new();
+                    string rawData = GetString($"/v1/users/{Id}/promotion-channels?alwaysReturnUrls=true", "https://accountinformation.roblox.com/");
+                    dynamic data = JObject.Parse(rawData);
+                    foreach (dynamic media in data)
+                    {
+                        if (media.Value == null) continue;
+                        dict.Add(Convert.ToString(media.Name), Convert.ToString(media.Value));
+                    }
+                    socialChannels = dict.AsReadOnly();
+                }
+
+                return socialChannels;
+            }
+        }
+
         public async Task<ReadOnlyCollection<User>> GetFriendsAsync()
         {
             string rawData = await GetStringAsync($"/v1/users/{Id}/friends");
