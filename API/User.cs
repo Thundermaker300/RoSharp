@@ -307,7 +307,7 @@ namespace RoSharp.API
 
         public async Task<ReadOnlyCollection<User>> GetFriendsAsync()
         {
-            string rawData = await GetStringAsync($"/v1/users/{Id}/friends");
+            string rawData = await GetStringAsync($"/v1/users/{Id}/friends", "https://friends.roblox.com");
             dynamic data = JObject.Parse(rawData);
             List<User> friends = new List<User>();
             foreach (dynamic friendData in data.data)

@@ -116,7 +116,7 @@ namespace RoSharp.API.Assets
             }
             else
             {
-                throw new InvalidOperationException($"Invalid asset ID. HTTP {response.StatusCode}");
+                throw new InvalidOperationException($"Invalid asset ID '{Id}'. HTTP {response.StatusCode}");
             }
 
             // Reset properties
@@ -190,6 +190,33 @@ namespace RoSharp.API.Assets
         public bool IsOwnedBy(User target) => target.OwnsAsset(this);
         public bool IsOwnedBy(ulong targetId) => new User(targetId, session).OwnsAsset(this);
         public bool IsOwnedBy(string targetUsername) => new User(targetUsername, session).OwnsAsset(this);
+
+        /// <summary>
+        /// Returns a list of assets that are shown under the "Recommended" section based on this asset.
+        /// This method makes an API call for each asset, and as such is very time consuming the more assets are requested.
+        /// </summary>
+        /// <param name="limit">The limit of assets to return. Maximum: 45.</param>
+        /// <returns>A task representing a list of assets shown as recommended.</returns>
+        /// <remarks>Occasionally, Roblox's API will produce a 'bad recommendation' that leads to an asset that doesn't exist (either deleted or hidden). If this is the case, RoSharp will skip over it automatically. However, if the limit is set to Roblox's maximum of 45, this will result in less than 45 assets being returned.</remarks>
+        public async Task<ReadOnlyCollection<Asset>> GetRecommendedAsync(int limit = 7)
+        {
+            string rawData = await GetStringAsync($"/v2/recommendations/assets?assetId={Id}&assetTypeId={(int)AssetType}&numItems=45", verifySession: false);
+            dynamic data = JObject.Parse(rawData);
+            List<Asset> list = new();
+            foreach (dynamic item in data.data)
+            {
+                try
+                {
+                    Asset asset = new Asset(Convert.ToUInt64(item), session);
+                    list.Add(asset);
+                }
+                catch { }
+
+                if (list.Count >= limit)
+                    break;
+            }
+            return list.AsReadOnly();
+        }
 
         public override string ToString()
         {
