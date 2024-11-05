@@ -3,6 +3,7 @@ using Newtonsoft.Json.Linq;
 using RoSharp.API;
 using RoSharp.API.Assets;
 using RoSharp.Enums;
+using RoSharp.Interfaces;
 using RoSharp.Utility;
 using System;
 using System.Collections.Generic;
@@ -13,43 +14,75 @@ using System.Threading.Tasks;
 
 namespace RoSharp.API
 {
-    public class User : APIMain
+    public class User : APIMain, IRefreshable
     {
         public override string BaseUrl => "https://users.roblox.com";
 
         public ulong Id { get; }
-        public string Name { get; }
+
+        private string name;
+        public string Name => name;
         public string Username => Name;
-        public string DisplayName { get; }
-        public string Bio { get; }
-        public bool Verified { get; }
-        public DateTime JoinDate { get; }
+
+        private string displayName;
+        public string DisplayName => displayName;
+
+        private string bio;
+        public string Bio => bio;
+
+        private bool verified;
+        public bool Verified => verified;
+
+        private DateTime joinDate;
+        public DateTime JoinDate => joinDate;
         public TimeSpan AccountAge => DateTime.UtcNow - JoinDate;
-        public bool ProfileHidden { get; }
+
+        private bool profileHidden;
+        public bool ProfileHidden => ProfileHidden;
+        public DateTime RefreshedAt { get; set; }
 
         public User(ulong userId, Session? session = null)
         {
-            HttpResponseMessage response = Get($"/v1/users/{userId}", verifySession: false);
+            Id = userId;
+
+            Refresh();
+
+            if (session != null)
+                AttachSession(session);
+        }
+
+        public void Refresh()
+        {
+            HttpResponseMessage response = Get($"/v1/users/{Id}", verifySession: false);
             if (response.IsSuccessStatusCode)
             {
                 string raw = response.Content.ReadAsStringAsync().Result;
                 dynamic data = JObject.Parse(raw);
 
-                Id = data.id;
-                Name = data.name;
-                DisplayName = data.displayName;
-                Verified = data.hasVerifiedBadge;
-                JoinDate = data.created;
-                ProfileHidden = data.isBanned;
-                Bio = data.description;
+                name = data.name;
+                displayName = data.displayName;
+                verified = data.hasVerifiedBadge;
+                joinDate = data.created;
+                profileHidden = data.isBanned;
+                bio = data.description;
             }
             else
             {
                 throw new InvalidOperationException("Invalid user ID");
             }
 
-            if (session != null)
-                AttachSession(session);
+            // Reset properties
+            following = -1;
+            followers = -1;
+            robloxBadges = null;
+            renameHistory = null;
+            primaryGroup = null;
+            groups = null;
+            socialChannels = null;
+            currentlyWearing = null;
+            collections = null;
+
+            RefreshedAt = DateTime.Now;
         }
 
         public User(string username, Session? session = null) : this(UserUtility.GetUserId(username), session) { }
@@ -173,7 +206,7 @@ namespace RoSharp.API
             }
         }
 
-        private ReadOnlyDictionary<Group, Role> groups;
+        private ReadOnlyDictionary<Group, Role>? groups;
         public async Task<ReadOnlyDictionary<Group, Role>> GetGroupsAsync(int limit = 100)
         {
             if (groups == null)
@@ -199,7 +232,6 @@ namespace RoSharp.API
             return groups;
         }
 
-        private bool privateInventory;
         public bool PrivateInventory
         {
             get
@@ -208,13 +240,13 @@ namespace RoSharp.API
                 if (response.IsSuccessStatusCode)
                 {
                     dynamic data = JObject.Parse(response.Content.ReadAsStringAsync().Result);
-                    privateInventory = !Convert.ToBoolean(data.canView);
+                    return !Convert.ToBoolean(data.canView);
                 }
-                return privateInventory;
+                return false;
             }
         }
 
-        private ReadOnlyDictionary<string, string> socialChannels;
+        private ReadOnlyDictionary<string, string>? socialChannels;
 
         public ReadOnlyDictionary<string, string> SocialChannels
         {
@@ -237,7 +269,7 @@ namespace RoSharp.API
             }
         }
 
-        private ReadOnlyCollection<Asset> currentlyWearing;
+        private ReadOnlyCollection<Asset>? currentlyWearing;
         public async Task<ReadOnlyCollection<Asset>> GetCurrentlyWearingAsync()
         {
             if (currentlyWearing == null)
@@ -255,7 +287,7 @@ namespace RoSharp.API
             return currentlyWearing;
         }
 
-        private ReadOnlyCollection<Asset> collections;
+        private ReadOnlyCollection<Asset>? collections;
         public async Task<ReadOnlyCollection<Asset>> GetCollectionItemsAsync()
         {
             if (collections == null)

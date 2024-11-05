@@ -1,6 +1,7 @@
 ﻿using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using RoSharp.Enums;
+using RoSharp.Interfaces;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -10,28 +11,59 @@ using System.Threading.Tasks;
 
 namespace RoSharp.API.Assets
 {
-    public class Asset : APIMain
+    public class Asset : APIMain, IRefreshable
     {
         public override string BaseUrl => "https://catalog.roblox.com";
 
         public virtual int AssetItemType { get; } = 0;
 
         public ulong Id { get; }
+
+        private string name;
         public string Name { get; }
+
+        private string description;
         public string Description { get; }
+
+        private AssetOwner owner;
         public AssetOwner Owner { get; }
+
+        private DateTime created;
         public DateTime Created { get; }
+
+        private DateTime lastUpdated;
         public DateTime LastUpdated { get; }
+
+        private int price;
         public int Price { get; }
+
+        private bool onSale;
         public bool OnSale { get; }
+
+        private int sales;
         public int Sales { get; }
+
+        private int remaining;
         public int Remaining { get; }
+
+        private int initialQuantity;
         public int InitialQuantity { get; }
+
+        private int quantityLimitPerUser;
         public int QuantityLimitPerUser { get; }
+
+        private bool isLimited;
         public bool IsLimited { get; }
+
+        private bool isLimitedUnique;
         public bool IsLimitedUnique { get; }
+
+        private AssetType assetType;
         public AssetType AssetType { get; }
+
         public bool HasOwner => Owner != null;
+
+        public DateTime RefreshedAt { get; set; }
 
         private int favorites = -1;
         public int Favorites
@@ -49,51 +81,58 @@ namespace RoSharp.API.Assets
 
         public Asset(ulong assetId, Session session)
         {
-            this.session = session;
+            Id = assetId;
 
-            HttpResponseMessage response = GetAsync($"/v2/assets/{assetId}/details", "https://economy.roblox.com").Result;
+            AttachSession(session);
+            Refresh();
+        }
+
+        public void Refresh()
+        {
+            HttpResponseMessage response = GetAsync($"/v2/assets/{Id}/details", "https://economy.roblox.com").Result;
             if (response.IsSuccessStatusCode)
             {
                 string raw = response.Content.ReadAsStringAsync().Result;
                 dynamic data = JObject.Parse(raw);
 
-                Id = data.TargetId;
-                Name = data.Name;
-                Description = data.Description;
-                Sales = data.Sales;
-                IsLimited = data.IsLimited;
-                IsLimitedUnique = data.IsLimitedUnique;
-                OnSale = data.IsForSale;
-                Created = data.Created;
-                LastUpdated = data.Updated;
-                AssetType = (AssetType)Convert.ToInt32(data.AssetTypeId);
-                Remaining = data.Remaining;
+                name = data.Name;
+                description = data.Description;
+                sales = data.Sales;
+                isLimited = data.IsLimited;
+                isLimitedUnique = data.IsLimitedUnique;
+                onSale = data.IsForSale;
+                created = data.Created;
+                lastUpdated = data.Updated;
+                assetType = (AssetType)Convert.ToInt32(data.AssetTypeId);
+                remaining = data.Remaining;
 
-                InitialQuantity = data.CollectiblesItemDetails.TotalQuantity != null
+                initialQuantity = data.CollectiblesItemDetails.TotalQuantity != null
                     ? Convert.ToInt32(data.CollectiblesItemDetails.TotalQuantity)
                     : -1;
-                QuantityLimitPerUser = data.CollectiblesItemDetails.CollectibleQuantityLimitPerUser != null
+                quantityLimitPerUser = data.CollectiblesItemDetails.CollectibleQuantityLimitPerUser != null
                     ? Convert.ToInt32(data.CollectiblesItemDetails.CollectibleQuantityLimitPerUser)
                     : -1;
 
                 if (data.PriceInRobux != null)
                 {
-                    Price = data.PriceInRobux;
+                    price = data.PriceInRobux;
                 }
 
                 if (data.Creator.CreatorType == "Group")
                 {
-                    Owner = new(AssetOwnerType.Group, new Group(Convert.ToUInt64(data.Creator.CreatorTargetId)).AttachSessionAndReturn(session), null);
+                    owner = new(AssetOwnerType.Group, new Group(Convert.ToUInt64(data.Creator.CreatorTargetId)).AttachSessionAndReturn(session), null);
                 }
                 else if (data.Creator.CreatorType == "User")
                 {
-                    Owner = new(AssetOwnerType.User, null, new User(Convert.ToUInt64(data.Creator.CreatorTargetId)).AttachSessionAndReturn(session));
+                    owner = new(AssetOwnerType.User, null, new User(Convert.ToUInt64(data.Creator.CreatorTargetId)).AttachSessionAndReturn(session));
                 }
             }
             else
             {
                 throw new InvalidOperationException($"Invalid asset ID. HTTP {response.StatusCode}");
             }
+
+            RefreshedAt = DateTime.Now;
         }
 
         public async Task<string> GetThumbnailAsync(ThumbnailSize size = ThumbnailSize.S420x420)

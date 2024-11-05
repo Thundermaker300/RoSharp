@@ -97,15 +97,19 @@ namespace RoSharp.API
 
         internal Role(RoleManager manager) { this.roleManager = manager; }
 
+        [UsesSession]
         public async Task UpdateAsync(string newName)
         {
             await roleManager.RequestUpdateRole(this, newName);
         }
+
+        [UsesSession]
         public async Task UpdateAsync(int newRank)
         {
             await roleManager.RequestUpdateRole(this, newRank);
         }
 
+        [UsesSession]
         public async Task DeleteAsync()
         {
             // TODO: This doesnt' work (forbidden)

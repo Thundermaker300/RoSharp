@@ -1,5 +1,6 @@
 ﻿using Newtonsoft.Json.Linq;
 using RoSharp.Enums;
+using RoSharp.Interfaces;
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
@@ -11,19 +12,29 @@ using static System.Runtime.InteropServices.JavaScript.JSType;
 
 namespace RoSharp.API
 {
-    public class Group : APIMain
+    public class Group : APIMain, IRefreshable
     {
         public override string BaseUrl => "https://groups.roblox.com";
 
         public ulong Id { get; }
+
+        private string name;
         public string Name { get; }
+
+        private string description;
         public string Description { get; }
+
+        private User? owner;
         public User? Owner { get; }
+
         public bool HasOwner => Owner != null;
+
+        private bool isPublic;
         public bool IsPublic { get; }
+
+        private bool verified;
         public bool Verified { get; }
-        public bool GroupFundsVisible { get; }
-        public bool GroupExperiencesVisible { get; }
+
 
         private RoleManager roleManager;
         public RoleManager RoleManager => roleManager ?? new RoleManager(this);
@@ -31,27 +42,38 @@ namespace RoSharp.API
         private MemberManager memberManager;
         public MemberManager MemberManager => memberManager ?? new MemberManager(this);
 
+        public DateTime RefreshedAt { get; set; }
+
         internal ulong members;
 
         public Group(ulong groupId, Session? session = null)
         {
-            HttpResponseMessage response = Get($"/v1/groups/{groupId}", verifySession: false);
+            Id = groupId;
+
+            Refresh();
+
+            if (session != null)
+                AttachSession(session);
+        }
+
+        public void Refresh()
+        {
+            HttpResponseMessage response = Get($"/v1/groups/{Id}", verifySession: false);
             if (response.IsSuccessStatusCode)
             {
                 string raw = response.Content.ReadAsStringAsync().Result;
                 dynamic data = JObject.Parse(raw);
 
-                Id = data.id;
-                Name = data.name;
-                Description = data.description;
+                name = data.name;
+                description = data.description;
 
                 if (data.owner != null)
                 {
-                    Owner = new(Convert.ToUInt64(data.owner.userId));
+                    owner = new(Convert.ToUInt64(data.owner.userId));
                 }
-                
-                IsPublic = data.publicEntryAllowed;
-                Verified = data.hasVerifiedBadge;
+
+                isPublic = data.publicEntryAllowed;
+                verified = data.hasVerifiedBadge;
 
                 members = data.memberCount;
             }
@@ -60,11 +82,14 @@ namespace RoSharp.API
                 throw new InvalidOperationException("Invalid group ID");
             }
 
-            if (session != null)
-                AttachSession(session);
+            // Reset properties
+            shout = null;
+            socialChannels = null;
+
+            RefreshedAt = DateTime.Now;
         }
 
-        public GroupShoutInfo? shout;
+        private GroupShoutInfo? shout;
         public GroupShoutInfo? Shout
         {
             get
@@ -87,8 +112,7 @@ namespace RoSharp.API
             }
         }
 
-        private ReadOnlyDictionary<string, string> socialChannels;
-
+        private ReadOnlyDictionary<string, string>? socialChannels;
         public ReadOnlyDictionary<string, string> SocialChannels
         {
             get
@@ -130,6 +154,7 @@ namespace RoSharp.API
             }
         }
 
+        [UsesSession]
         public async Task ShoutAsync(string text)
         {
             object body = new { message = text };
@@ -140,6 +165,7 @@ namespace RoSharp.API
             }
         }
 
+        [UsesSession]
         public async Task<ReadOnlyCollection<GroupPost>> GetGroupPostsAsync()
         {
             var list = new List<GroupPost>();
