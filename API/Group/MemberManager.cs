@@ -1,5 +1,7 @@
 ﻿using Newtonsoft.Json.Linq;
+using RoSharp.API.Misc;
 using RoSharp.Enums;
+using RoSharp.Extensions;
 using RoSharp.Utility;
 using System;
 using System.Collections.Generic;
@@ -20,9 +22,13 @@ namespace RoSharp.API
 
         public ulong Members => group.members;
 
-        public async Task<ReadOnlyCollection<User>> GetPendingRequestsAsync()
+        public async Task<PageResponse<User>> GetPendingRequestsAsync(FixedLimit limit = FixedLimit.Limit100, string? cursor = null)
         {
-            HttpResponseMessage response = await group.GetAsync($"/v1/groups/{group.Id}/join-requests?limit=100&sortOrder=Desc");
+            string url = $"/v1/groups/{group.Id}/join-requests?limit={limit.Limit()}&sortOrder=Desc";
+            if (cursor != null)
+                url += "&cursor=" + cursor;
+
+            HttpResponseMessage response = await group.GetAsync(url);
             if (!response.IsSuccessStatusCode)
             {
                 throw new InvalidOperationException($"Cannot view pending requests for group (HTTP {response.StatusCode}). Do you have permission to see pending requests?");
@@ -31,11 +37,14 @@ namespace RoSharp.API
             dynamic data = JObject.Parse(rawData);
 
             var list = new List<User>();
+            string? nextPage = data.nextPageCursor;
+            string? previousPage = data.previousPageCursor;
             foreach (dynamic user in data.data)
             {
                 list.Add(new User(Convert.ToUInt64(user.requester.userId)));
             }
-            return list.AsReadOnly();
+
+            return new(list, nextPage, previousPage);
         }
 
         public Role? GetRoleInGroup(ulong userId)

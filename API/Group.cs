@@ -1,5 +1,8 @@
-﻿using Newtonsoft.Json.Linq;
+﻿using Newtonsoft.Json;
+using Newtonsoft.Json.Linq;
+using RoSharp.API.Misc;
 using RoSharp.Enums;
+using RoSharp.Extensions;
 using RoSharp.Interfaces;
 using System;
 using System.Collections.Generic;
@@ -166,10 +169,16 @@ namespace RoSharp.API
         }
 
         [UsesSession]
-        public async Task<ReadOnlyCollection<GroupPost>> GetGroupPostsAsync()
+        public async Task<PageResponse<GroupPost>> GetGroupPostsAsync(FixedLimit limit = FixedLimit.Limit100, string? cursor = null)
         {
+            string url = $"v2/groups/{Id}/wall/posts?limit={limit.Limit()}&sortOrder=Desc";
+            if (cursor != null)
+                url += "&cursor=" + cursor;
+
             var list = new List<GroupPost>();
-            HttpResponseMessage response = Get($"v2/groups/{Id}/wall/posts?limit=100&sortOrder=Desc");
+            string? nextPage = null;
+            string? previousPage = null;
+            HttpResponseMessage response = Get(url);
             if (response.IsSuccessStatusCode)
             {
                 dynamic data = JObject.Parse(response.Content.ReadAsStringAsync().Result);
@@ -178,15 +187,18 @@ namespace RoSharp.API
                     list.Add(new GroupPost()
                     {
                         PostId = post.id,
-                        Poster = new User(Convert.ToUInt64(post.poster.user.userId)),
                         PostedAt = post.updated,
                         Text = post.body,
-                        RankInGroup = post.poster.role.name,
+                        RankInGroup = post.poster == null ? null : post.poster.role.name,
+
+                        posterId = post.poster == null ? null : post.poster.userId,
                     });
                 }
+                nextPage = data.nextPageCursor;
+                previousPage = data.previousPageCursor;
             }
 
-            return list.AsReadOnly();
+            return new(list, nextPage, previousPage);
         }
 
         public Group AttachSessionAndReturn(Session? session)
@@ -213,10 +225,22 @@ namespace RoSharp.API
 
     public class GroupPost
     {
+        internal ulong? posterId;
+
         public ulong PostId { get; init; }
         public string Text { get; init; }
-        public User Poster { get; init; }
+
+        private User poster;
+        public User? Poster
+        {
+            get
+            {
+                if (poster == null && posterId != null && posterId.HasValue)
+                    poster = new User(posterId.Value);
+                return poster;
+            }
+        }
         public DateTime PostedAt { get; init; }
-        public string RankInGroup { get; init; }
+        public string? RankInGroup { get; init; }
     }
 }
