@@ -201,6 +201,31 @@ namespace RoSharp.API
             return new(list, nextPage, previousPage);
         }
 
+        [UsesSession]
+        public async Task<PageResponse<User>> GetMembersAsync(FixedLimit limit = FixedLimit.Limit100, string? cursor = null)
+        {
+            string url = $"/v1/groups/{Id}/users?limit={limit.Limit()}&sortOrder=Asc";
+            if (cursor != null)
+                url += "&cursor=" + cursor;
+
+            var list = new List<User>();
+            string? nextPage = null;
+            string? previousPage = null;
+            HttpResponseMessage response = Get(url);
+            if (response.IsSuccessStatusCode)
+            {
+                dynamic data = JObject.Parse(response.Content.ReadAsStringAsync().Result);
+                foreach (dynamic user in data.data)
+                {
+                    list.Add(new User(Convert.ToUInt64(user.user.userId), session));
+                }
+                nextPage = data.nextPageCursor;
+                previousPage = data.previousPageCursor;
+            }
+
+            return new(list, nextPage, previousPage);
+        }
+
         public Group AttachSessionAndReturn(Session? session)
         {
             if (session is null || !session.LoggedIn)

@@ -47,6 +47,22 @@ namespace RoSharp.API
             return new(list, nextPage, previousPage);
         }
 
+        public bool IsInGroup(ulong userId)
+        {
+            string rawData = group.GetString($"/v1/users/{userId}/groups/roles?includeLocked=true", verifySession: false);
+            dynamic data = JObject.Parse(rawData);
+            foreach (dynamic group in data.data)
+            {
+                if (Convert.ToUInt64(group.group.id) == this.group.Id)
+                {
+                    return true;
+                }
+            }
+            return false;
+        }
+        public bool IsInGroup(string username) => IsInGroup(new User(username));
+        public bool IsInGroup(User user) => IsInGroup(user.Id);
+
         public Role? GetRoleInGroup(ulong userId)
         {
             string rawData = group.GetString($"/v1/users/{userId}/groups/roles?includeLocked=true", verifySession: false);

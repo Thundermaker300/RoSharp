@@ -207,7 +207,7 @@ namespace RoSharp.API
         }
 
         private ReadOnlyDictionary<Group, Role>? groups;
-        public async Task<ReadOnlyDictionary<Group, Role>> GetGroupsAsync(int limit = 100)
+        public async Task<ReadOnlyDictionary<Group, Role>> GetGroupsAsync(int limit = -1)
         {
             if (groups == null)
             {
@@ -218,7 +218,7 @@ namespace RoSharp.API
                 int count = 0;
                 foreach (dynamic groupData in data.data)
                 {
-                    if (count >= limit)
+                    if (limit > 0 && count >= limit)
                         break;
 
                     Group group = new(Convert.ToUInt64(groupData.group.id));
@@ -317,6 +317,9 @@ namespace RoSharp.API
 
             return friends.AsReadOnly();
         }
+
+        public bool IsInGroup(Group group) => group.MemberManager.IsInGroup(Id);
+        public bool IsInGroup(ulong groupId) => new Group(groupId).MemberManager.IsInGroup(Id);
 
         // Thumbnails
         public async Task<string> GetThumbnailAsync(ThumbnailType type = ThumbnailType.Full, ThumbnailSize size = ThumbnailSize.S420x420)
