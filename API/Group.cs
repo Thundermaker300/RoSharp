@@ -19,21 +19,21 @@ namespace RoSharp.API
         public ulong Id { get; }
 
         private string name;
-        public string Name { get; }
+        public string Name => name;
 
         private string description;
-        public string Description { get; }
+        public string Description => description;
 
         private User? owner;
-        public User? Owner { get; }
+        public User? Owner => owner;
 
         public bool HasOwner => Owner != null;
 
         private bool isPublic;
-        public bool IsPublic { get; }
+        public bool IsPublic => isPublic;
 
         private bool verified;
-        public bool Verified { get; }
+        public bool Verified => verified;
 
 
         private RoleManager roleManager;

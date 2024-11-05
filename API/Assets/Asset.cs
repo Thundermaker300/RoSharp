@@ -4,6 +4,7 @@ using RoSharp.Enums;
 using RoSharp.Interfaces;
 using System;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.Linq;
 using System.Text;
 using System.Text.RegularExpressions;
@@ -20,64 +21,50 @@ namespace RoSharp.API.Assets
         public ulong Id { get; }
 
         private string name;
-        public string Name { get; }
+        public string Name => name;
 
         private string description;
-        public string Description { get; }
+        public string Description => description;
 
         private AssetOwner owner;
-        public AssetOwner Owner { get; }
+        public AssetOwner Owner => owner;
 
         private DateTime created;
-        public DateTime Created { get; }
+        public DateTime Created => created;
 
         private DateTime lastUpdated;
-        public DateTime LastUpdated { get; }
+        public DateTime LastUpdated => lastUpdated;
 
         private int price;
-        public int Price { get; }
+        public int Price => price;
 
         private bool onSale;
-        public bool OnSale { get; }
+        public bool OnSale => onSale;
 
         private int sales;
-        public int Sales { get; }
+        public int Sales => sales;
 
         private int remaining;
-        public int Remaining { get; }
+        public int Remaining => remaining;
 
         private int initialQuantity;
-        public int InitialQuantity { get; }
+        public int InitialQuantity => initialQuantity;
 
         private int quantityLimitPerUser;
-        public int QuantityLimitPerUser { get; }
+        public int QuantityLimitPerUser => quantityLimitPerUser;
 
         private bool isLimited;
         public bool IsLimited { get; }
 
         private bool isLimitedUnique;
-        public bool IsLimitedUnique { get; }
+        public bool IsLimitedUnique => isLimitedUnique;
 
         private AssetType assetType;
-        public AssetType AssetType { get; }
+        public AssetType AssetType => assetType;
 
         public bool HasOwner => Owner != null;
 
         public DateTime RefreshedAt { get; set; }
-
-        private int favorites = -1;
-        public int Favorites
-        {
-            get
-            {
-                if (favorites == -1)
-                {
-                    string rawData = GetString($"/v1/favorites/assets/{Id}/count", verifySession: false);
-                    favorites = Convert.ToInt32(rawData);
-                }
-                return favorites;
-            }
-        }
 
         public Asset(ulong assetId, Session session)
         {
@@ -132,7 +119,24 @@ namespace RoSharp.API.Assets
                 throw new InvalidOperationException($"Invalid asset ID. HTTP {response.StatusCode}");
             }
 
+            // Reset properties
+            favorites = -1;
+
             RefreshedAt = DateTime.Now;
+        }
+
+        private int favorites = -1;
+        public int Favorites
+        {
+            get
+            {
+                if (favorites == -1)
+                {
+                    string rawData = GetString($"/v1/favorites/assets/{Id}/count", verifySession: false);
+                    favorites = Convert.ToInt32(rawData);
+                }
+                return favorites;
+            }
         }
 
         public async Task<string> GetThumbnailAsync(ThumbnailSize size = ThumbnailSize.S420x420)
