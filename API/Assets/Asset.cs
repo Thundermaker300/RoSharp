@@ -16,8 +16,6 @@ namespace RoSharp.API.Assets
     {
         public override string BaseUrl => "https://catalog.roblox.com";
 
-        public virtual int AssetItemType { get; } = 0;
-
         public ulong Id { get; }
 
         private string name;
