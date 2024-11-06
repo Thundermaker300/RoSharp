@@ -52,7 +52,7 @@ namespace RoSharp.API.Assets
         public int QuantityLimitPerUser => quantityLimitPerUser;
 
         private bool isLimited;
-        public bool IsLimited { get; }
+        public bool IsLimited => isLimited;
 
         private bool isLimitedUnique;
         public bool IsLimitedUnique => isLimitedUnique;
@@ -139,7 +139,7 @@ namespace RoSharp.API.Assets
 
         public async Task<string> GetThumbnailAsync(ThumbnailSize size = ThumbnailSize.S420x420)
         {
-            string url = $"https://thumbnails.roblox.com/v1/assets?assetIds={Id}&returnPolicy=PlaceHolder&size={size.ToString().Substring(1)}&format=Png&isCircular=false";
+            string url = $"/v1/assets?assetIds={Id}&returnPolicy=PlaceHolder&size={size.ToString().Substring(1)}&format=Png&isCircular=false";
             string rawData = await GetStringAsync(url, "https://thumbnails.roblox.com", verifySession: false);
             dynamic data = JObject.Parse(rawData);
             if (data.data.Count == 0)
@@ -186,8 +186,8 @@ namespace RoSharp.API.Assets
         }
 
         public bool IsOwnedBy(User target) => target.OwnsAsset(this);
-        public bool IsOwnedBy(ulong targetId) => new User(targetId, session).OwnsAsset(this);
-        public bool IsOwnedBy(string targetUsername) => new User(targetUsername, session).OwnsAsset(this);
+        public bool IsOwnedBy(ulong targetId) => IsOwnedBy(new User(targetId, session));
+        public bool IsOwnedBy(string targetUsername) => IsOwnedBy(new User(targetUsername, session));
 
         /// <summary>
         /// Returns a list of assets that are shown under the "Recommended" section based on this asset.

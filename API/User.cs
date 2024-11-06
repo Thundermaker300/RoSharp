@@ -339,11 +339,23 @@ namespace RoSharp.API
 
         public bool OwnsAsset(ulong assetId, int assetItemType = 0)
         {
-            string result = GetString($"v1/users/{Id}/items/{assetItemType}/{assetId}/is-owned", "https://inventory.roblox.com");
+            string result = GetString($"/v1/users/{Id}/items/{assetItemType}/{assetId}/is-owned", "https://inventory.roblox.com");
             return Convert.ToBoolean(result);
         }
 
-        public bool OwnsAsset(Asset asset) => OwnsAsset(asset.Id, asset.AssetItemType);
+        public bool OwnsAsset(Asset asset)
+            => OwnsAsset(asset.Id);
+
+        public bool HasBadge(ulong badgeId)
+        {
+            string rawData = GetString($"/v1/users/{Id}/badges/awarded-dates?badgeIds={badgeId}", "https://badges.roblox.com");
+            dynamic data = JObject.Parse(rawData);
+
+            return data.data.Count > 0;
+        }
+
+        public bool HasBadge(Badge badge)
+            => HasBadge(badge.Id);
 
         public User AttachSessionAndReturn(Session? session)
         {
