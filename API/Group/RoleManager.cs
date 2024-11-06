@@ -1,4 +1,5 @@
 ﻿using Newtonsoft.Json.Linq;
+using RoSharp.Interfaces;
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
@@ -9,11 +10,13 @@ using System.Threading.Tasks;
 
 namespace RoSharp.API
 {
-    public class RoleManager
+    public class RoleManager : IRefreshable
     {
         private Group group;
 
-        private ReadOnlyCollection<Role> roles;
+        public DateTime RefreshedAt { get; set; }
+
+        private ReadOnlyCollection<Role>? roles;
         public ReadOnlyCollection<Role> Roles
         {
             get
@@ -36,9 +39,15 @@ namespace RoSharp.API
                     }
 
                     roles = list.AsReadOnly();
+                    RefreshedAt = DateTime.Now;
                 }
                 return roles;
             }
+        }
+
+        public void Refresh()
+        {
+            roles = null;
         }
 
         internal RoleManager(Group group) { this.group = group; }
