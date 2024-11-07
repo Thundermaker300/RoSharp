@@ -14,7 +14,7 @@ using System.Threading.Tasks;
 
 namespace RoSharp.API
 {
-    public class User : APIMain, IRefreshable
+    public class User : APIMain, IRefreshable, IAssetOwner
     {
         public override string BaseUrl => "https://users.roblox.com";
 

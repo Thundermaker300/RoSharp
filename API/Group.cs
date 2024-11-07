@@ -15,7 +15,7 @@ using static System.Runtime.InteropServices.JavaScript.JSType;
 
 namespace RoSharp.API
 {
-    public class Group : APIMain, IRefreshable
+    public class Group : APIMain, IRefreshable, IAssetOwner
     {
         public override string BaseUrl => "https://groups.roblox.com";
 

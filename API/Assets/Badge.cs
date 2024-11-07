@@ -27,8 +27,8 @@ namespace RoSharp.API.Assets
         private Experience experience;
         public Experience Experience => experience;
 
-        private AssetOwner owner; // TODO not assigned yet
-        public AssetOwner Owner => owner;
+        private IAssetOwner owner; // TODO not assigned yet
+        public IAssetOwner Owner => owner;
 
         private DateTime created;
         public DateTime Created => created;
@@ -112,7 +112,7 @@ namespace RoSharp.API.Assets
 
         public override string ToString()
         {
-            return $"{Name} [{Id}] {{{(Owner.OwnerType == AssetOwnerType.User ? "@" : string.Empty)}{Owner.Name}}} <{AwardedCount}>";
+            return $"{Name} [{Id}] {{{(Owner is User ? "@" : string.Empty)}{Owner.Name}}} <{AwardedCount}>";
         }
     }
 }

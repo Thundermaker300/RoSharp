@@ -24,8 +24,8 @@ namespace RoSharp.API.Assets
         private string description;
         public string Description => description;
 
-        private AssetOwner owner;
-        public AssetOwner Owner => owner;
+        private IAssetOwner owner;
+        public IAssetOwner Owner => owner;
 
         private DateTime created;
         public DateTime Created => created;
@@ -105,11 +105,11 @@ namespace RoSharp.API.Assets
 
                 if (data.Creator.CreatorType == "Group")
                 {
-                    owner = new(AssetOwnerType.Group, new Group(Convert.ToUInt64(data.Creator.CreatorTargetId)).AttachSessionAndReturn(session), null);
+                    owner = new Group(Convert.ToUInt64(data.Creator.CreatorTargetId)).AttachSessionAndReturn(session);
                 }
                 else if (data.Creator.CreatorType == "User")
                 {
-                    owner = new(AssetOwnerType.User, null, new User(Convert.ToUInt64(data.Creator.CreatorTargetId)).AttachSessionAndReturn(session));
+                    owner = new User(Convert.ToUInt64(data.Creator.CreatorTargetId)).AttachSessionAndReturn(session);
                 }
             }
             else
@@ -218,7 +218,7 @@ namespace RoSharp.API.Assets
 
         public override string ToString()
         {
-            return $"{Name} [{Id}] ({AssetType}) {{{(Owner.OwnerType == AssetOwnerType.User ? "@" : string.Empty)}{Owner.Name}}} <R${(OnSale == true ? Price : "0")}>";
+            return $"{Name} [{Id}] ({AssetType}) {{{(Owner is User ? "@" : string.Empty)}{Owner.Name}}} <R${(OnSale == true ? Price : "0")}>";
         }
     }
 
