@@ -1,6 +1,7 @@
 ﻿using RoSharp.Enums;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
+using RoSharp.API.Assets;
 
 namespace RoSharp.API
 {
@@ -83,5 +84,8 @@ namespace RoSharp.API
         }
 
         public async Task UnfriendAsync(User user) => await UnfriendAsync(user.Id);
+
+        public bool FavoritedExperience(Experience experience) => experience.favoritedByUser;
+        public bool FavoritedExperience(ulong experienceId) => new Experience(experienceId, session).favoritedByUser;
     }
 }

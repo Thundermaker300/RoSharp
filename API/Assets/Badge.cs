@@ -26,9 +26,7 @@ namespace RoSharp.API.Assets
 
         private Experience experience;
         public Experience Experience => experience;
-
-        private IAssetOwner owner; // TODO not assigned yet
-        public IAssetOwner Owner => owner;
+        public IAssetOwner Owner => experience.Owner;
 
         private DateTime created;
         public DateTime Created => created;
@@ -69,7 +67,7 @@ namespace RoSharp.API.Assets
                 description = (data.displayDescription == null ? string.Empty : data.displayDescription);
                 created = data.created;
                 lastUpdated = data.updated;
-                experience = new(Convert.ToUInt64(data.awardingUniverse.id));
+                experience = new(Convert.ToUInt64(data.awardingUniverse.id), session);
                 awardedCount = Convert.ToInt32(data.statistics.awardedCount);
                 yesterdayAwardedCount = Convert.ToInt32(data.statistics.pastDayAwardedCount);
             }

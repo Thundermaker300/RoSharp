@@ -74,7 +74,7 @@ namespace RoSharp.API.Assets
 
         public void Refresh()
         {
-            HttpResponseMessage response = GetAsync($"/v2/assets/{Id}/details", "https://economy.roblox.com").Result;
+            HttpResponseMessage response = Get($"/v2/assets/{Id}/details", "https://economy.roblox.com");
             if (response.IsSuccessStatusCode)
             {
                 string raw = response.Content.ReadAsStringAsync().Result;
@@ -89,14 +89,27 @@ namespace RoSharp.API.Assets
                 created = data.Created;
                 lastUpdated = data.Updated;
                 assetType = (AssetType)Convert.ToInt32(data.AssetTypeId);
-                remaining = data.Remaining;
 
-                initialQuantity = data.CollectiblesItemDetails.TotalQuantity != null
-                    ? Convert.ToInt32(data.CollectiblesItemDetails.TotalQuantity)
-                    : -1;
-                quantityLimitPerUser = data.CollectiblesItemDetails.CollectibleQuantityLimitPerUser != null
-                    ? Convert.ToInt32(data.CollectiblesItemDetails.CollectibleQuantityLimitPerUser)
-                    : -1;
+                if (data.Remaining != null)
+                    remaining = Convert.ToInt32(data.Remaining);
+
+                if (data.CollectiblesItemDetails != null)
+                {
+                    if (data.CollectiblesItemDetails.TotalQuantity != null)
+                        initialQuantity = Convert.ToInt32(data.CollectiblesItemDetails.TotalQuantity);
+                    else
+                        initialQuantity = -1;
+
+                    if (data.CollectiblesItemDetails.CollectibleQuantityLimitPerUser != null)
+                        quantityLimitPerUser = Convert.ToInt32(data.CollectiblesItemDetails.CollectibleQuantityLimitPerUser);
+                    else
+                        quantityLimitPerUser = -1;
+                }
+                else
+                {
+                    initialQuantity = -1;
+                    quantityLimitPerUser = -1;
+                }
 
                 if (data.PriceInRobux != null)
                 {
@@ -118,20 +131,20 @@ namespace RoSharp.API.Assets
             }
 
             // Reset properties
-            favorites = -1;
+            favorites = 0;
 
             RefreshedAt = DateTime.Now;
         }
 
-        private int favorites = -1;
-        public int Favorites
+        private ulong favorites = 0;
+        public ulong Favorites
         {
             get
             {
-                if (favorites == -1)
+                if (favorites == 0)
                 {
                     string rawData = GetString($"/v1/favorites/assets/{Id}/count", verifySession: false);
-                    favorites = Convert.ToInt32(rawData);
+                    favorites = Convert.ToUInt64(rawData);
                 }
                 return favorites;
             }
