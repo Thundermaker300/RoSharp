@@ -1,6 +1,7 @@
 ﻿using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using RoSharp.API.Misc;
+using RoSharp.API.Pooling;
 using RoSharp.Enums;
 using RoSharp.Extensions;
 using RoSharp.Interfaces;
@@ -109,13 +110,14 @@ namespace RoSharp.API.Assets
                 else
                     cost = data.price;
 
+                ulong creatorId = Convert.ToUInt64(data.creator.id);
                 if (data.creator.type == "Group")
                 {
-                    owner = new Group(Convert.ToUInt64(data.creator.id)).AttachSessionAndReturn(session);
+                    owner = GroupPool.Get(creatorId) ?? new Group(creatorId, session);
                 }
                 else if (data.creator.type == "User")
                 {
-                    owner = new User(Convert.ToUInt64(data.creator.id)).AttachSessionAndReturn(session);
+                    owner = UserPool.Get(creatorId) ?? new User(creatorId);
                 }
 
                 // configs
@@ -312,7 +314,8 @@ namespace RoSharp.API.Assets
 
             foreach (dynamic item in data.data)
             {
-                list.Add(new Badge(Convert.ToUInt64(item.id), session));
+                ulong id = Convert.ToUInt64(item.id);
+                list.Add(BadgePool.Get(id) ?? new Badge(id, session));
             }
 
             return new PageResponse<Badge>(list, nextPage, previousPage);
@@ -429,6 +432,15 @@ namespace RoSharp.API.Assets
         public override string ToString()
         {
             return $"{Name} [{UniverseId}] {{{(Owner is User ? "@" : string.Empty)}{Owner.Name}}} <R${Cost}>";
+        }
+
+        public Experience AttachSessionAndReturn(Session? session)
+        {
+            if (session is null || !session.LoggedIn)
+                DetachSession();
+            else
+                AttachSession(session);
+            return this;
         }
     }
 

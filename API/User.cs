@@ -2,6 +2,7 @@
 using Newtonsoft.Json.Linq;
 using RoSharp.API;
 using RoSharp.API.Assets;
+using RoSharp.API.Pooling;
 using RoSharp.Enums;
 using RoSharp.Interfaces;
 using RoSharp.Utility;
@@ -45,10 +46,12 @@ namespace RoSharp.API
         {
             Id = userId;
 
-            Refresh();
-
             if (session != null)
                 AttachSession(session);
+
+            Refresh();
+
+            UserPool.Add(this);
         }
 
         public void Refresh()
@@ -68,7 +71,7 @@ namespace RoSharp.API
             }
             else
             {
-                throw new InvalidOperationException("Invalid user ID");
+                throw new InvalidOperationException($"Invalid user ID '{Id}'. HTTP {response.StatusCode}");
             }
 
             // Reset properties

@@ -1,5 +1,6 @@
 ﻿using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
+using RoSharp.API.Pooling;
 using RoSharp.Enums;
 using RoSharp.Interfaces;
 using System;
@@ -53,6 +54,7 @@ namespace RoSharp.API.Assets
                 AttachSession(session);
 
             Refresh();
+            BadgePool.Add(this);
         }
 
         public void Refresh()
@@ -112,6 +114,15 @@ namespace RoSharp.API.Assets
         public override string ToString()
         {
             return $"{Name} [{Id}] {{{(Owner is User ? "@" : string.Empty)}{Owner.Name}}} <{AwardedCount}>";
+        }
+
+        public Badge AttachSessionAndReturn(Session? session)
+        {
+            if (session is null || !session.LoggedIn)
+                DetachSession();
+            else
+                AttachSession(session);
+            return this;
         }
     }
 

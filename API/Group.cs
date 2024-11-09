@@ -1,6 +1,7 @@
 ﻿using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using RoSharp.API.Misc;
+using RoSharp.API.Pooling;
 using RoSharp.Enums;
 using RoSharp.Extensions;
 using RoSharp.Interfaces;
@@ -52,11 +53,13 @@ namespace RoSharp.API
         public Group(ulong groupId, Session? session = null)
         {
             Id = groupId;
+            
+            if (session != null)
+                AttachSession(session);
 
             Refresh();
 
-            if (session != null)
-                AttachSession(session);
+            GroupPool.Add(this);
         }
 
         public void Refresh()
@@ -82,7 +85,7 @@ namespace RoSharp.API
             }
             else
             {
-                throw new InvalidOperationException("Invalid group ID");
+                throw new InvalidOperationException($"Invalid group ID '{Id}'. HTTP {response.StatusCode}");
             }
 
             // Reset properties
