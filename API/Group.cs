@@ -16,7 +16,7 @@ using static System.Runtime.InteropServices.JavaScript.JSType;
 
 namespace RoSharp.API
 {
-    public class Group : APIMain, IRefreshable, IAssetOwner
+    public class Group : APIMain, IRefreshable, IAssetOwner, IPoolable
     {
         public override string BaseUrl => "https://groups.roblox.com";
 
@@ -59,8 +59,8 @@ namespace RoSharp.API
 
             Refresh();
 
-            if (!GroupPool.Contains(Id))
-                GroupPool.Add(this);
+            if (!RoPool<Group>.Contains(Id))
+                RoPool<Group>.Add(this);
         }
 
         public void Refresh()
@@ -221,13 +221,19 @@ namespace RoSharp.API
                 dynamic data = JObject.Parse(response.Content.ReadAsStringAsync().Result);
                 foreach (dynamic user in data.data)
                 {
-                    list.Add(new User(Convert.ToUInt64(user.user.userId), session));
+                    ulong userId = Convert.ToUInt64(user.user.userId);
+                    list.Add(RoPool<User>.Get(userId, session) ?? new User(userId, session));
                 }
                 nextPage = data.nextPageCursor;
                 previousPage = data.previousPageCursor;
             }
 
             return new(list, nextPage, previousPage);
+        }
+
+        public override string ToString()
+        {
+            return $"{Name} [{Id}] {(Verified ? "[V]" : string.Empty)}";
         }
 
         public Group AttachSessionAndReturn(Session? session)
@@ -239,10 +245,8 @@ namespace RoSharp.API
             return this;
         }
 
-        public override string ToString()
-        {
-            return $"{Name} [{Id}] {(Verified ? "[V]" : string.Empty)}";
-        }
+        IPoolable IPoolable.AttachSessionAndReturn(Session? session)
+            => AttachSessionAndReturn(session);
     }
 
     public class GroupShoutInfo

@@ -15,11 +15,12 @@ using System.Threading.Tasks;
 
 namespace RoSharp.API.Assets
 {
-    public class Experience : APIMain, IRefreshable
+    public class Experience : APIMain, IRefreshable, IPoolable
     {
         public override string BaseUrl => "https://games.roblox.com";
 
         public ulong UniverseId { get; }
+        public ulong Id => UniverseId;
 
         private string name;
         public string Name => name;
@@ -76,8 +77,8 @@ namespace RoSharp.API.Assets
                 AttachSession(session);
 
             Refresh();
-            if (!ExperiencePool.Contains(UniverseId))
-                ExperiencePool.Add(this);
+            if (!RoPool<Experience>.Contains(UniverseId))
+                RoPool<Experience>.Add(this);
         }
 
         public void Refresh()
@@ -115,11 +116,11 @@ namespace RoSharp.API.Assets
                 ulong creatorId = Convert.ToUInt64(data.creator.id);
                 if (data.creator.type == "Group")
                 {
-                    owner = GroupPool.Get(creatorId) ?? new Group(creatorId, session);
+                    owner = RoPool<Group>.Get(creatorId) ?? new Group(creatorId, session);
                 }
                 else if (data.creator.type == "User")
                 {
-                    owner = UserPool.Get(creatorId) ?? new User(creatorId);
+                    owner = RoPool<User>.Get(creatorId) ?? new User(creatorId);
                 }
 
                 // configs
@@ -317,7 +318,7 @@ namespace RoSharp.API.Assets
             foreach (dynamic item in data.data)
             {
                 ulong id = Convert.ToUInt64(item.id);
-                list.Add(BadgePool.Get(id) ?? new Badge(id, session));
+                list.Add(RoPool<Badge>.Get(id) ?? new Badge(id, session));
             }
 
             return new PageResponse<Badge>(list, nextPage, previousPage);
@@ -444,6 +445,9 @@ namespace RoSharp.API.Assets
                 AttachSession(session);
             return this;
         }
+
+        IPoolable IPoolable.AttachSessionAndReturn(Session? session)
+            => AttachSessionAndReturn(session);
     }
 
     public class ExperienceModifyOptions

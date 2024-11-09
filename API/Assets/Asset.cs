@@ -13,7 +13,7 @@ using System.Threading.Tasks;
 
 namespace RoSharp.API.Assets
 {
-    public class Asset : APIMain, IRefreshable
+    public class Asset : APIMain, IRefreshable, IPoolable
     {
         public override string BaseUrl => "https://catalog.roblox.com";
 
@@ -72,7 +72,8 @@ namespace RoSharp.API.Assets
             AttachSession(session);
             Refresh();
 
-            AssetPool.Add(this);
+            if (!RoPool<Asset>.Contains(Id))
+                RoPool<Asset>.Add(this);
         }
 
         public void Refresh()
@@ -245,6 +246,9 @@ namespace RoSharp.API.Assets
                 AttachSession(session);
             return this;
         }
+
+        IPoolable IPoolable.AttachSessionAndReturn(Session? session)
+            => AttachSessionAndReturn(session);
     }
 
     public class AssetModifyOptions

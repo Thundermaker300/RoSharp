@@ -15,7 +15,7 @@ using System.Threading.Tasks;
 
 namespace RoSharp.API
 {
-    public class User : APIMain, IRefreshable, IAssetOwner
+    public class User : APIMain, IRefreshable, IAssetOwner, IPoolable
     {
         public override string BaseUrl => "https://users.roblox.com";
 
@@ -51,8 +51,8 @@ namespace RoSharp.API
 
             Refresh();
 
-            if (!UserPool.Contains(Id))
-                UserPool.Add(this);
+            if (!RoPool<User>.Contains(Id))
+                RoPool<User>.Add(this);
         }
 
         public void Refresh()
@@ -204,7 +204,8 @@ namespace RoSharp.API
                         return null;
 
                     dynamic data = JObject.Parse(rawData);
-                    primaryGroup = new Group(Convert.ToUInt64(data.group.id));
+                    ulong groupId = Convert.ToUInt64(data.group.id);
+                    primaryGroup = RoPool<Group>.Get(groupId, session) ?? new Group(groupId, session);
                 }
                 return primaryGroup;
             }
@@ -225,7 +226,8 @@ namespace RoSharp.API
                     if (limit > 0 && count >= limit)
                         break;
 
-                    Group group = new(Convert.ToUInt64(groupData.group.id));
+                    ulong groupId = Convert.ToUInt64(groupData.group.id);
+                    Group group = RoPool<Group>.Get(groupId, session) ?? new(groupId, session);
                     dict.Add(group, group.RoleManager.GetRole(Convert.ToInt32(groupData.role.rank)));
                     count++;
                 }
@@ -278,13 +280,14 @@ namespace RoSharp.API
         {
             if (currentlyWearing == null)
             {
-                string rawData = GetString("/v1/users/39979813/currently-wearing", "https://avatar.roblox.com");
+                string rawData = GetString($"/v1/users/{Id}/currently-wearing", "https://avatar.roblox.com");
                 dynamic data = JObject.Parse(rawData);
 
                 List<Asset> list = new List<Asset>();
                 foreach (dynamic item in data.assetIds)
                 {
-                    list.Add(new Asset(Convert.ToUInt64(item), session));
+                    ulong assetId = Convert.ToUInt64(item);
+                    list.Add(RoPool<Asset>.Get(assetId, session) ?? new Asset(assetId, session));
                 }
                 currentlyWearing = list.AsReadOnly();
             }
@@ -302,21 +305,29 @@ namespace RoSharp.API
                 List<Asset> list = new List<Asset>();
                 foreach (dynamic item in data.CollectionsItems)
                 {
-                    list.Add(new Asset(Convert.ToUInt64(item.Id), session));
+                    ulong assetId = Convert.ToUInt64(item.Id);
+                    list.Add(RoPool<Asset>.Get(assetId, session) ?? new Asset(assetId, session));
                 }
                 collections = list.AsReadOnly();
             }
             return collections;
         }
 
-        public async Task<ReadOnlyCollection<User>> GetFriendsAsync()
+        public async Task<ReadOnlyCollection<User>> GetFriendsAsync(int limit = 50)
         {
             string rawData = await GetStringAsync($"/v1/users/{Id}/friends", "https://friends.roblox.com");
             dynamic data = JObject.Parse(rawData);
             List<User> friends = new List<User>();
+            int count = 0;
             foreach (dynamic friendData in data.data)
             {
-                friends.Add(new User(friendData.id).AttachSessionAndReturn(session));
+                count++;
+
+                ulong friendId = Convert.ToUInt64(friendData.id);
+                friends.Add(RoPool<User>.Get(friendId, session) ?? new User(friendId, session));
+
+                if (count >= limit)
+                    break;
             }
 
             return friends.AsReadOnly();
@@ -361,6 +372,11 @@ namespace RoSharp.API
         public bool HasBadge(Badge badge)
             => HasBadge(badge.Id);
 
+        public override string ToString()
+        {
+            return $"{DisplayName} (@{Name}) [{Id}] {(Verified ? "[V]" : string.Empty)}";
+        }
+
         public User AttachSessionAndReturn(Session? session)
         {
             if (session is null || !session.LoggedIn)
@@ -370,9 +386,7 @@ namespace RoSharp.API
             return this;
         }
 
-        public override string ToString()
-        {
-            return $"{DisplayName} (@{Name}) [{Id}] {(Verified ? "[V]" : string.Empty)}";
-        }
+        IPoolable IPoolable.AttachSessionAndReturn(Session? session)
+            => AttachSessionAndReturn(session);
     }
 }

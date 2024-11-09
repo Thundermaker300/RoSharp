@@ -138,7 +138,7 @@ namespace RoSharp.API
             return await client.DeleteAsync(url);
         }
 
-        protected Session? session;
+        internal Session? session;
         public virtual void AttachSession(Session session)
         {
             ArgumentNullException.ThrowIfNull(session);

@@ -1,5 +1,6 @@
 ﻿using Newtonsoft.Json.Linq;
 using RoSharp.API.Misc;
+using RoSharp.API.Pooling;
 using RoSharp.Enums;
 using RoSharp.Extensions;
 using RoSharp.Utility;
@@ -11,6 +12,7 @@ using System.Linq;
 using System.Net.Http.Json;
 using System.Text;
 using System.Threading.Tasks;
+using static System.Collections.Specialized.BitVector32;
 
 namespace RoSharp.API
 {
@@ -41,7 +43,8 @@ namespace RoSharp.API
             string? previousPage = data.previousPageCursor;
             foreach (dynamic user in data.data)
             {
-                list.Add(new User(Convert.ToUInt64(user.requester.userId)));
+                ulong userId = Convert.ToUInt64(user.requester.userId);
+                list.Add(RoPool<User>.Get(userId, group.session) ?? new User(userId, group.session));
             }
 
             return new(list, nextPage, previousPage);

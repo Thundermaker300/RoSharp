@@ -13,7 +13,7 @@ using System.Threading.Tasks;
 
 namespace RoSharp.API.Assets
 {
-    public class Badge : APIMain, IRefreshable
+    public class Badge : APIMain, IRefreshable, IPoolable
     {
         public override string BaseUrl => "https://badges.roblox.com";
 
@@ -55,8 +55,8 @@ namespace RoSharp.API.Assets
 
             Refresh();
 
-            if (!BadgePool.Contains(Id))
-                BadgePool.Add(this);
+            if (!RoPool<Badge>.Contains(Id))
+                RoPool<Badge>.Add(this);
         }
 
         public void Refresh()
@@ -73,7 +73,7 @@ namespace RoSharp.API.Assets
                 description = (data.displayDescription == null ? string.Empty : data.displayDescription);
                 created = data.created;
                 lastUpdated = data.updated;
-                experience = ExperiencePool.Get(experienceId) ?? new Experience(experienceId);
+                experience = RoPool<Experience>.Get(experienceId) ?? new Experience(experienceId);
                 awardedCount = Convert.ToInt32(data.statistics.awardedCount);
                 yesterdayAwardedCount = Convert.ToInt32(data.statistics.pastDayAwardedCount);
             }
@@ -128,6 +128,9 @@ namespace RoSharp.API.Assets
                 AttachSession(session);
             return this;
         }
+
+        IPoolable IPoolable.AttachSessionAndReturn(Session? session)
+            => AttachSessionAndReturn(session);
     }
 
     public class BadgeModifyOptions
