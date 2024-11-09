@@ -99,7 +99,7 @@ namespace RoSharp.API.Assets
                 lastUpdated = data.Updated;
                 assetType = (AssetType)Convert.ToInt32(data.AssetTypeId);
                 if (data.SaleLocation == null)
-                    saleLocation = SaleLocationType.None;
+                    saleLocation = SaleLocationType.NotApplicable;
                 else
                     saleLocation = (SaleLocationType)Convert.ToInt32(data.SaleLocation.SaleLocationType);
 

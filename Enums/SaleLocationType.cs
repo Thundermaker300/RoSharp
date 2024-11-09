@@ -8,7 +8,7 @@ namespace RoSharp.Enums
 {
     public enum SaleLocationType
     {
-        None = -1,
+        NotApplicable = -1,
 
         ShopAndAllExperiences = 5,
 
