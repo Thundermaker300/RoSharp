@@ -205,7 +205,7 @@ namespace RoSharp.API
 
                     dynamic data = JObject.Parse(rawData);
                     ulong groupId = Convert.ToUInt64(data.group.id);
-                    primaryGroup = RoPool<Group>.Get(groupId, session) ?? new Group(groupId, session);
+                    primaryGroup = RoPool<Group>.Get(groupId, session);
                 }
                 return primaryGroup;
             }
@@ -227,7 +227,7 @@ namespace RoSharp.API
                         break;
 
                     ulong groupId = Convert.ToUInt64(groupData.group.id);
-                    Group group = RoPool<Group>.Get(groupId, session) ?? new(groupId, session);
+                    Group group = RoPool<Group>.Get(groupId, session);
                     dict.Add(group, group.RoleManager.GetRole(Convert.ToInt32(groupData.role.rank)));
                     count++;
                 }
@@ -287,7 +287,7 @@ namespace RoSharp.API
                 foreach (dynamic item in data.assetIds)
                 {
                     ulong assetId = Convert.ToUInt64(item);
-                    list.Add(RoPool<Asset>.Get(assetId, session) ?? new Asset(assetId, session));
+                    list.Add(RoPool<Asset>.Get(assetId, session));
                 }
                 currentlyWearing = list.AsReadOnly();
             }
@@ -306,7 +306,7 @@ namespace RoSharp.API
                 foreach (dynamic item in data.CollectionsItems)
                 {
                     ulong assetId = Convert.ToUInt64(item.Id);
-                    list.Add(RoPool<Asset>.Get(assetId, session) ?? new Asset(assetId, session));
+                    list.Add(RoPool<Asset>.Get(assetId, session));
                 }
                 collections = list.AsReadOnly();
             }
@@ -324,7 +324,7 @@ namespace RoSharp.API
                 count++;
 
                 ulong friendId = Convert.ToUInt64(friendData.id);
-                friends.Add(RoPool<User>.Get(friendId, session) ?? new User(friendId, session));
+                friends.Add(RoPool<User>.Get(friendId, session));
 
                 if (count >= limit)
                     break;

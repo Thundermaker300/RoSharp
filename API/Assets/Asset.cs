@@ -123,11 +123,11 @@ namespace RoSharp.API.Assets
                 ulong creatorId = Convert.ToUInt64(data.Creator.CreatorTargetId);
                 if (data.Creator.CreatorType == "Group")
                 {
-                    owner = RoPool<Group>.Get(creatorId, session) ?? new Group(creatorId, session);
+                    owner = RoPool<Group>.Get(creatorId, session);
                 }
                 else if (data.Creator.CreatorType == "User")
                 {
-                    owner = RoPool<User>.Get(creatorId, session) ?? new User(creatorId, session);
+                    owner = RoPool<User>.Get(creatorId, session);
                 }
             }
             else
@@ -224,7 +224,7 @@ namespace RoSharp.API.Assets
                 try
                 {
                     ulong itemId = Convert.ToUInt64(item);
-                    Asset asset = RoPool<Asset>.Get(itemId, session) ?? new Asset(itemId, session);
+                    Asset asset = RoPool<Asset>.Get(itemId, session);
                     list.Add(asset);
                 }
                 catch { }

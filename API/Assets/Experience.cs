@@ -116,11 +116,11 @@ namespace RoSharp.API.Assets
                 ulong creatorId = Convert.ToUInt64(data.creator.id);
                 if (data.creator.type == "Group")
                 {
-                    owner = RoPool<Group>.Get(creatorId) ?? new Group(creatorId, session);
+                    owner = RoPool<Group>.Get(creatorId);
                 }
                 else if (data.creator.type == "User")
                 {
-                    owner = RoPool<User>.Get(creatorId) ?? new User(creatorId);
+                    owner = RoPool<User>.Get(creatorId);
                 }
 
                 // configs
@@ -273,7 +273,7 @@ namespace RoSharp.API.Assets
                 try
                 {
                     ulong id = Convert.ToUInt64(item.universeId);
-                    Experience asset = RoPool<Experience>.Get(id, session) ?? new Experience(id, session);
+                    Experience asset = RoPool<Experience>.Get(id, session);
                     list.Add(asset);
                 }
                 catch { }
@@ -296,7 +296,7 @@ namespace RoSharp.API.Assets
                     if (data.imageId != null)
                     {
                         ulong assetId = Convert.ToUInt64(data.imageId);
-                        icon = RoPool<Asset>.Get(assetId, session) ?? new(assetId, session);
+                        icon = RoPool<Asset>.Get(assetId, session);
                     }
                 }
 
@@ -320,7 +320,7 @@ namespace RoSharp.API.Assets
             foreach (dynamic item in data.data)
             {
                 ulong id = Convert.ToUInt64(item.id);
-                list.Add(RoPool<Badge>.Get(id) ?? new Badge(id, session));
+                list.Add(RoPool<Badge>.Get(id));
             }
 
             return new PageResponse<Badge>(list, nextPage, previousPage);

@@ -44,7 +44,7 @@ namespace RoSharp.API
             foreach (dynamic user in data.data)
             {
                 ulong userId = Convert.ToUInt64(user.requester.userId);
-                list.Add(RoPool<User>.Get(userId, group.session) ?? new User(userId, group.session));
+                list.Add(RoPool<User>.Get(userId, group.session));
             }
 
             return new(list, nextPage, previousPage);
