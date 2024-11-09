@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Linq;
@@ -7,7 +8,7 @@ using System.Threading.Tasks;
 
 namespace RoSharp.API.Misc
 {
-    public class PageResponse<T>
+    public class PageResponse<T> : IEnumerable<T>
         where T: class
     {
         public ReadOnlyCollection<T> List { get; }
@@ -19,6 +20,16 @@ namespace RoSharp.API.Misc
             List = list.AsReadOnly();
             NextPageCursor = nextPageCursor;
             PreviousPageCursor = previousPageCursor;
+        }
+
+        public IEnumerator<T> GetEnumerator()
+        {
+            return List.GetEnumerator();
+        }
+
+        IEnumerator IEnumerable.GetEnumerator()
+        {
+            return GetEnumerator();
         }
     }
 }
