@@ -43,6 +43,8 @@ namespace RoSharp.API.Assets
         private int sales;
         public int Sales => sales;
 
+        public bool Free => OnSale && Price == 0;
+
         private int remaining;
         public int Remaining => remaining;
 
@@ -60,6 +62,9 @@ namespace RoSharp.API.Assets
 
         private AssetType assetType;
         public AssetType AssetType => assetType;
+
+        private SaleLocationType saleLocation;
+        public SaleLocationType SaleLocation => saleLocation;
 
         public bool HasOwner => Owner != null;
 
@@ -93,6 +98,10 @@ namespace RoSharp.API.Assets
                 created = data.Created;
                 lastUpdated = data.Updated;
                 assetType = (AssetType)Convert.ToInt32(data.AssetTypeId);
+                if (data.SaleLocation == null)
+                    saleLocation = SaleLocationType.None;
+                else
+                    saleLocation = (SaleLocationType)Convert.ToInt32(data.SaleLocation.SaleLocationType);
 
                 if (data.Remaining != null)
                     remaining = Convert.ToInt32(data.Remaining);
