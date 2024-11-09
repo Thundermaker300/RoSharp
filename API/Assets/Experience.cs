@@ -220,6 +220,58 @@ namespace RoSharp.API.Assets
             }
         }
 
+        private int? minimumAge;
+        public int MinimumAge
+        {
+            get
+            {
+                if (!minimumAge.HasValue)
+                {
+                    UpdateExperienceGuidelinesData();
+                }
+
+                return minimumAge.Value;
+            }
+        }
+
+        private ReadOnlyCollection<ExperienceDescriptors>? experienceDescriptors;
+        public ReadOnlyCollection<ExperienceDescriptors> ExperienceDescriptors
+        {
+            get
+            {
+                if (experienceDescriptors == null)
+                {
+                    UpdateExperienceGuidelinesData();
+                }
+                return experienceDescriptors;
+            }
+        }
+
+        public void UpdateExperienceGuidelinesData()
+        {
+            object body = new
+            {
+                universeId = UniverseId.ToString()
+            };
+
+            HttpResponseMessage response = PostAsync("/experience-guidelines-api/experience-guidelines/get-age-recommendation", body, "https://apis.roblox.com").Result;
+            string rawData = response.Content.ReadAsStringAsync().Result;
+            dynamic dataUseless = JObject.Parse(rawData);
+            dynamic data = dataUseless.ageRecommendationDetails;
+
+            minimumAge = data.summary.ageRecommendation.minimumAge;
+            List<ExperienceDescriptors> list = new();
+            foreach (dynamic item in data.descriptorUsages)
+            {
+                string itemName = Convert.ToString(item.name);
+                if (item.contains == true && Utility.Constants.DescriptorIdToEnumMapping.ContainsKey(itemName))
+                {
+                    list.Add(Utility.Constants.DescriptorIdToEnumMapping[itemName]);
+                }
+            }
+            experienceDescriptors = list.AsReadOnly();
+        }
+
         // Configuration related properties
         private List<string>? devices = new List<string>(0);
         public ReadOnlyCollection<Device> Devices => devices.Select(Enum.Parse<Device>).ToList().AsReadOnly();
@@ -326,7 +378,7 @@ namespace RoSharp.API.Assets
             return new PageResponse<Badge>(list, nextPage, previousPage);
         }
 
-        public async Task<ReadOnlyCollection<string>> GetThumbnailsAsync(ExperienceThumbnailSize size = ExperienceThumbnailSize.S768x432, bool defaultRobloxThumbnailIfNecessary = true)
+        public async Task<ReadOnlyCollection<Asset>> GetThumbnailsAsync(ExperienceThumbnailSize size = ExperienceThumbnailSize.S768x432, bool defaultRobloxThumbnailIfNecessary = true)
         {
             string url = $"/v1/games/multiget/thumbnails?universeIds={UniverseId}&countPerUniverse=25&defaults={defaultRobloxThumbnailIfNecessary.ToString().ToLower()}&size={size.ToString().Substring(1)}&format=Png&isCircular=false";
             string rawData = await GetStringAsync(url, "https://thumbnails.roblox.com", verifySession: false);
@@ -334,13 +386,15 @@ namespace RoSharp.API.Assets
             if (data.data.Count == 0)
                 throw new InvalidOperationException("Invalid asset to get thumbnail for.");
 
-            List<string> thumbnails = new List<string>();
+            List<Asset> thumbnails = new List<Asset>();
             foreach (dynamic thumbnail in data.data[0].thumbnails)
             {
                 if (thumbnail.state != "Completed")
                     continue;
 
-                thumbnails.Add(Convert.ToString(thumbnail.imageUrl));
+                ulong assetId = Convert.ToUInt64(thumbnail.targetId);
+
+                thumbnails.Add(RoPool<Asset>.Get(assetId, session));
             }
 
             return thumbnails.AsReadOnly();

@@ -1,0 +1,29 @@
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
+
+namespace RoSharp.Enums
+{
+    public enum ExperienceDescriptors
+    {
+        Alcohol,
+
+        Blood,
+
+        CrudeHumor,
+
+        Fear,
+
+        Gambling,
+
+        Romance,
+
+        StrongLanguage,
+
+        SocialHangout,
+
+        Violence,
+    }
+}
