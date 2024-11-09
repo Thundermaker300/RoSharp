@@ -51,7 +51,8 @@ namespace RoSharp.API
 
             Refresh();
 
-            UserPool.Add(this);
+            if (!UserPool.Contains(Id))
+                UserPool.Add(this);
         }
 
         public void Refresh()

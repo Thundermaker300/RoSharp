@@ -1,5 +1,6 @@
 ﻿using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
+using RoSharp.API.Pooling;
 using RoSharp.Enums;
 using RoSharp.Interfaces;
 using System;
@@ -70,6 +71,8 @@ namespace RoSharp.API.Assets
 
             AttachSession(session);
             Refresh();
+
+            AssetPool.Add(this);
         }
 
         public void Refresh()
@@ -232,6 +235,15 @@ namespace RoSharp.API.Assets
         public override string ToString()
         {
             return $"{Name} [{Id}] ({AssetType}) {{{(Owner is User ? "@" : string.Empty)}{Owner.Name}}} <R${(OnSale == true ? Price : "0")}>";
+        }
+
+        public Asset AttachSessionAndReturn(Session? session)
+        {
+            if (session is null || !session.LoggedIn)
+                DetachSession();
+            else
+                AttachSession(session);
+            return this;
         }
     }
 

@@ -76,6 +76,8 @@ namespace RoSharp.API.Assets
                 AttachSession(session);
 
             Refresh();
+            if (!ExperiencePool.Contains(UniverseId))
+                ExperiencePool.Add(this);
         }
 
         public void Refresh()

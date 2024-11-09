@@ -59,7 +59,8 @@ namespace RoSharp.API
 
             Refresh();
 
-            GroupPool.Add(this);
+            if (!GroupPool.Contains(Id))
+                GroupPool.Add(this);
         }
 
         public void Refresh()

@@ -54,7 +54,9 @@ namespace RoSharp.API.Assets
                 AttachSession(session);
 
             Refresh();
-            BadgePool.Add(this);
+
+            if (!BadgePool.Contains(Id))
+                BadgePool.Add(this);
         }
 
         public void Refresh()
@@ -65,11 +67,13 @@ namespace RoSharp.API.Assets
                 string raw = response.Content.ReadAsStringAsync().Result;
                 dynamic data = JObject.Parse(raw);
 
+                ulong experienceId = Convert.ToUInt64(data.awardingUniverse.id);
+
                 name = data.displayName;
                 description = (data.displayDescription == null ? string.Empty : data.displayDescription);
                 created = data.created;
                 lastUpdated = data.updated;
-                experience = new(Convert.ToUInt64(data.awardingUniverse.id), session);
+                experience = ExperiencePool.Get(experienceId) ?? new Experience(experienceId);
                 awardedCount = Convert.ToInt32(data.statistics.awardedCount);
                 yesterdayAwardedCount = Convert.ToInt32(data.statistics.pastDayAwardedCount);
             }
