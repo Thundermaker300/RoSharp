@@ -89,20 +89,21 @@ namespace RoSharp.API.Assets
             return data.data[0].imageUrl;
         }
 
-        /*public async Task ModifyAsync(AssetModifyOptions options)
+        public async Task ModifyAsync(BadgeModifyOptions options)
         {
             object body = new
             {
                 name = options.Name,
                 description = options.Description,
+                enabled = options.IsEnabled,
             };
 
-            HttpResponseMessage response = await PatchAsync($"/v1/assets/{Id}", body, "https://develop.roblox.com");
+            HttpResponseMessage response = await PatchAsync($"/v1/badges/{Id}", body);
             if (!response.IsSuccessStatusCode)
             {
                 throw new HttpRequestException($"Failed to modify asset. Error code {response.StatusCode}. {response.Content.ReadAsStringAsync().Result}");
             }
-        }*/
+        }
 
         public bool IsOwnedBy(User target) => target.HasBadge(this);
         public bool IsOwnedBy(ulong targetId) => IsOwnedBy(new User(targetId, session));
@@ -111,6 +112,20 @@ namespace RoSharp.API.Assets
         public override string ToString()
         {
             return $"{Name} [{Id}] {{{(Owner is User ? "@" : string.Empty)}{Owner.Name}}} <{AwardedCount}>";
+        }
+    }
+
+    public class BadgeModifyOptions
+    {
+        public string Name { get; set; }
+        public string Description { get; set; }
+        public bool IsEnabled { get; set; }
+
+        public BadgeModifyOptions(Badge target)
+        {
+            Name = target.Name;
+            Description = target.Description;
+            IsEnabled = target.IsEnabled;
         }
     }
 }
