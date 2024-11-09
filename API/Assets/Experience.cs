@@ -325,7 +325,7 @@ namespace RoSharp.API.Assets
 
         private void UpdateConfiguration()
         {
-            HttpResponseMessage response = PatchAsync($"/v2/universes/{UniverseId}/configuration", new { }, "https://develop.roblox.com").Result;
+            HttpResponseMessage response = PatchAsync($"/v2/universes/{UniverseId}/configuration", new { }, "https://develop.roblox.com", false).Result;
             string rawData = response.Content.ReadAsStringAsync().Result;
             dynamic data = JObject.Parse(rawData);
 
