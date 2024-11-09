@@ -25,9 +25,8 @@ namespace RoSharp.API
 
         internal HttpClient MakeHttpClient(string? baseOverride = null, bool verifySession = true)
         {
-            bool isSessionGood = false;
             if (verifySession)
-                isSessionGood = SessionErrors.Verify(session);
+                SessionErrors.Verify(session);
 
             Uri uri = new Uri(baseOverride != null ? baseOverride : BaseUrl);
 
@@ -35,8 +34,8 @@ namespace RoSharp.API
             HttpClientHandler handler = new HttpClientHandler();
             handler.CookieContainer = cookies;
 
-            if (isSessionGood)
-                cookies.Add(uri, new Cookie(".ROBLOSECURITY", session.RobloSecurity));
+            if (session?.RobloSecurity != string.Empty)
+                cookies.Add(uri, new Cookie(".ROBLOSECURITY", session?.RobloSecurity));
 
             HttpClient client = new HttpClient(handler);
             client.BaseAddress = uri;
