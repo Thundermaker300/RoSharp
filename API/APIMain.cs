@@ -47,27 +47,45 @@ namespace RoSharp.API
         internal async Task<HttpResponseMessage> GetAsync(string url, string? baseOverride = null, bool verifySession = true)
         {
             HttpClient client = MakeHttpClient(baseOverride, verifySession);
-            return await client.GetAsync(url);
+            HttpResponseMessage message = await client.GetAsync(url);
+            if (message.StatusCode == HttpStatusCode.TooManyRequests)
+            {
+                throw new HttpRequestException("Too many requests.");
+            }
+            return message;
         }
 
         internal HttpResponseMessage Get(string url, string? baseOverride = null, bool verifySession = true)
         {
             HttpClient client = MakeHttpClient(baseOverride, verifySession);
-            return client.GetAsync(url).Result;
+            HttpResponseMessage message = client.GetAsync(url).Result;
+            if (message.StatusCode == HttpStatusCode.TooManyRequests)
+            {
+                throw new HttpRequestException("Too many requests.");
+            }
+            return message;
         }
 
         internal string GetString(string url, string? baseOverride = null, bool verifySession = true)
         {
             HttpClient client = MakeHttpClient(baseOverride, verifySession);
-            HttpResponseMessage response = client.GetAsync(url).Result;
-            return response.Content.ReadAsStringAsync().Result;
+            HttpResponseMessage message = client.GetAsync(url).Result;
+            if (message.StatusCode == HttpStatusCode.TooManyRequests)
+            {
+                throw new HttpRequestException("Too many requests.");
+            }
+            return message.Content.ReadAsStringAsync().Result;
         }
 
         internal async Task<string> GetStringAsync(string url, string? baseOverride = null, bool verifySession = true)
         {
             HttpClient client = MakeHttpClient(baseOverride, verifySession);
-            HttpResponseMessage response = await client.GetAsync(url);
-            return await response.Content.ReadAsStringAsync();
+            HttpResponseMessage message = await client.GetAsync(url);
+            if (message.StatusCode == HttpStatusCode.TooManyRequests)
+            {
+                throw new HttpRequestException("Too many requests.");
+            }
+            return await message.Content.ReadAsStringAsync();
         }
 
         internal async Task<HttpResponseMessage> PostAsync(string url, object data, string? baseOverride = null, bool verifySession = true)
@@ -76,6 +94,11 @@ namespace RoSharp.API
             JsonContent content = JsonContent.Create(data);
 
             HttpResponseMessage initialResponse = await client.PostAsync(url, null);
+
+            if (initialResponse.StatusCode == HttpStatusCode.TooManyRequests)
+            {
+                throw new HttpRequestException("Too many requests.");
+            }
 
             if (initialResponse.Headers.TryGetValues("x-csrf-token", out IEnumerable<string>? headers))
                 client.DefaultRequestHeaders.Add("x-csrf-token", headers.First());
@@ -89,6 +112,11 @@ namespace RoSharp.API
 
             HttpResponseMessage initialResponse = await client.PatchAsync(url, null);
 
+            if (initialResponse.StatusCode == HttpStatusCode.TooManyRequests)
+            {
+                throw new HttpRequestException("Too many requests.");
+            }
+
             if (initialResponse.Headers.TryGetValues("x-csrf-token", out IEnumerable<string>? headers))
                 client.DefaultRequestHeaders.Add("x-csrf-token", headers.First());
 
@@ -99,6 +127,11 @@ namespace RoSharp.API
             HttpClient client = MakeHttpClient(baseOverride);
 
             HttpResponseMessage initialResponse = await client.DeleteAsync(url);
+
+            if (initialResponse.StatusCode == HttpStatusCode.TooManyRequests)
+            {
+                throw new HttpRequestException("Too many requests.");
+            }
 
             if (initialResponse.Headers.TryGetValues("x-csrf-token", out IEnumerable<string>? headers))
                 client.DefaultRequestHeaders.Add("x-csrf-token", headers.First());
