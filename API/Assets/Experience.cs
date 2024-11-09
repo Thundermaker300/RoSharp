@@ -247,7 +247,7 @@ namespace RoSharp.API.Assets
             }
         }
 
-        public void UpdateExperienceGuidelinesData()
+        private void UpdateExperienceGuidelinesData()
         {
             object body = new
             {
@@ -270,6 +270,39 @@ namespace RoSharp.API.Assets
                 }
             }
             experienceDescriptors = list.AsReadOnly();
+        }
+
+        private int? upvotes;
+        public int Upvotes
+        {
+            get
+            {
+                if (!upvotes.HasValue)
+                    UpdateVotes();
+
+                return upvotes.Value;
+            }
+        }
+
+        private int? downvotes;
+
+        public int Downvotes
+        {
+            get
+            {
+                if (!downvotes.HasValue)
+                    UpdateVotes();
+
+                return downvotes.Value;
+            }
+        }
+
+        private void UpdateVotes()
+        {
+            string rawData = GetString($"/v1/games/votes?universeIds={UniverseId}", verifySession: false);
+            dynamic data = JObject.Parse(rawData);
+            upvotes = data.data[0].upVotes;
+            downvotes = data.data[0].downVotes;
         }
 
         // Configuration related properties
