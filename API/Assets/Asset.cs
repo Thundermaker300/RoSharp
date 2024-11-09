@@ -137,6 +137,7 @@ namespace RoSharp.API.Assets
 
             // Reset properties
             favorites = 0;
+            thumbnailUrl = GetThumbnailAsync(ThumbnailSize.S420x420).Result;
 
             RefreshedAt = DateTime.Now;
         }
@@ -154,6 +155,9 @@ namespace RoSharp.API.Assets
                 return favorites;
             }
         }
+
+        private string thumbnailUrl;
+        public string ThumbnailUrl => thumbnailUrl;
 
         public async Task<string> GetThumbnailAsync(ThumbnailSize size = ThumbnailSize.S420x420)
         {
