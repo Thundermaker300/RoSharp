@@ -120,13 +120,14 @@ namespace RoSharp.API.Assets
                     price = data.PriceInRobux;
                 }
 
+                ulong creatorId = Convert.ToUInt64(data.Creator.CreatorTargetId);
                 if (data.Creator.CreatorType == "Group")
                 {
-                    owner = new Group(Convert.ToUInt64(data.Creator.CreatorTargetId)).AttachSessionAndReturn(session);
+                    owner = RoPool<Group>.Get(creatorId, session) ?? new Group(creatorId, session);
                 }
                 else if (data.Creator.CreatorType == "User")
                 {
-                    owner = new User(Convert.ToUInt64(data.Creator.CreatorTargetId)).AttachSessionAndReturn(session);
+                    owner = RoPool<User>.Get(creatorId, session) ?? new User(creatorId, session);
                 }
             }
             else
@@ -222,7 +223,8 @@ namespace RoSharp.API.Assets
             {
                 try
                 {
-                    Asset asset = new Asset(Convert.ToUInt64(item), session);
+                    ulong itemId = Convert.ToUInt64(item);
+                    Asset asset = RoPool<Asset>.Get(itemId, session) ?? new Asset(itemId, session);
                     list.Add(asset);
                 }
                 catch { }

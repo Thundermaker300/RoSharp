@@ -2,6 +2,7 @@
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using RoSharp.API.Assets;
+using RoSharp.API.Pooling;
 
 namespace RoSharp.API
 {
@@ -21,7 +22,7 @@ namespace RoSharp.API
                 if (userInfo is null)
                 {
                     SessionErrors.Verify(session);
-                    userInfo = new User(session.userid).AttachSessionAndReturn(session);
+                    userInfo = RoPool<User>.Get(session.userid, session) ?? new User(session.userid, session);
                 }
                 return userInfo;
             }

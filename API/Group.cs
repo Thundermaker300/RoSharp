@@ -76,7 +76,8 @@ namespace RoSharp.API
 
                 if (data.owner != null)
                 {
-                    owner = new(Convert.ToUInt64(data.owner.userId));
+                    ulong ownerId = Convert.ToUInt64(data.owner.userId);
+                    owner = RoPool<User>.Get(ownerId, session) ?? new(ownerId, session);
                 }
 
                 isPublic = data.publicEntryAllowed;
@@ -107,10 +108,12 @@ namespace RoSharp.API
                     dynamic data = JObject.Parse(rawData);
                     if (data.shout != null)
                     {
+                        ulong posterId = Convert.ToUInt64(data.shout.poster.userId);
+
                         shout = new GroupShoutInfo
                         {
                             Text = data.shout.body,
-                            Poster = new User(Convert.ToUInt64(data.shout.poster.userId)),
+                            Poster = RoPool<User>.Get(posterId, session) ?? new User(posterId, session),
                             PostedAt = data.shout.updated,
                         };
                     }
@@ -196,6 +199,7 @@ namespace RoSharp.API
                         RankInGroup = post.poster == null ? null : post.poster.role.name,
 
                         posterId = post.poster == null ? null : post.poster.userId,
+                        group = this,
                     });
                 }
                 nextPage = data.nextPageCursor;
@@ -258,6 +262,7 @@ namespace RoSharp.API
 
     public class GroupPost
     {
+        internal Group group;
         internal ulong? posterId;
 
         public ulong PostId { get; init; }
@@ -269,7 +274,7 @@ namespace RoSharp.API
             get
             {
                 if (poster == null && posterId != null && posterId.HasValue)
-                    poster = new User(posterId.Value);
+                    poster = RoPool<User>.Get(posterId.Value, group?.session) ?? new User(posterId.Value, group?.session);
                 return poster;
             }
         }

@@ -272,7 +272,8 @@ namespace RoSharp.API.Assets
             {
                 try
                 {
-                    Experience asset = new Experience(Convert.ToUInt64(item.universeId), session);
+                    ulong id = Convert.ToUInt64(item.universeId);
+                    Experience asset = RoPool<Experience>.Get(id, session) ?? new Experience(id, session);
                     list.Add(asset);
                 }
                 catch { }
@@ -294,7 +295,8 @@ namespace RoSharp.API.Assets
                     dynamic data = JObject.Parse(rawData);
                     if (data.imageId != null)
                     {
-                        icon = new(Convert.ToUInt64(data.imageId), session);
+                        ulong assetId = Convert.ToUInt64(data.imageId);
+                        icon = RoPool<Asset>.Get(assetId, session) ?? new(assetId, session);
                     }
                 }
 
