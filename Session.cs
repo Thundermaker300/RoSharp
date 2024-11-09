@@ -18,8 +18,9 @@ namespace RoSharp
         internal ulong userid = 0;
         internal DateTime loggedAt;
 
+        internal string RobloSecurity => roblosecurity;
+
         public bool LoggedIn => loggedIn;
-        public string RobloSecurity => roblosecurity;
         public DateTime LoggedInAt => loggedAt;
         public TimeSpan Elapsed => DateTime.Now - loggedAt;
         public SessionAPI? User
