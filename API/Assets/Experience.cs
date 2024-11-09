@@ -1,6 +1,8 @@
 ﻿using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
+using RoSharp.API.Misc;
 using RoSharp.Enums;
+using RoSharp.Extensions;
 using RoSharp.Interfaces;
 using System;
 using System.Collections.Generic;
@@ -293,6 +295,27 @@ namespace RoSharp.API.Assets
 
                 return icon;
             }
+        }
+
+        public async Task<PageResponse<Badge>> GetBadgesAsync(FixedLimit limit = FixedLimit.Limit100, string? cursor = null)
+        {
+            string url = $"v1/universes/{UniverseId}/badges?limit={limit.Limit()}&sortOrder=Asc";
+            if (cursor != null)
+                url += "&cursor=" + cursor;
+
+            string rawData = await GetStringAsync(url, "https://badges.roblox.com", false);
+            dynamic data = JObject.Parse(rawData);
+
+            List<Badge> list = new();
+            string? nextPage = data.nextPageCursor;
+            string? previousPage = data.previousPageCursor;
+
+            foreach (dynamic item in data.data)
+            {
+                list.Add(new Badge(Convert.ToUInt64(item.id), session));
+            }
+
+            return new PageResponse<Badge>(list, nextPage, previousPage);
         }
 
         public async Task<ReadOnlyCollection<string>> GetThumbnailsAsync(ExperienceThumbnailSize size = ExperienceThumbnailSize.S768x432, bool defaultRobloxThumbnailIfNecessary = true)
