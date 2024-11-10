@@ -79,10 +79,7 @@ namespace RoSharp.API
 
         public async Task SendFriendRequestAsync(User user) => await SendFriendRequestAsync(user.Id);
 
-        public async Task UnfriendAsync(ulong targetId)
-        {
-            await PostAsync($"/v1/users/{targetId}/unfriend", new { });
-        }
+        public async Task UnfriendAsync(ulong targetId) => await PostAsync($"/v1/users/{targetId}/unfriend", new { });
 
         public async Task UnfriendAsync(User user) => await UnfriendAsync(user.Id);
 
