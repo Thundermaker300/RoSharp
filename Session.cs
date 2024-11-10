@@ -23,7 +23,7 @@ namespace RoSharp
         public bool LoggedIn => loggedIn;
         public DateTime LoggedInAt => loggedAt;
         public TimeSpan Elapsed => DateTime.Now - loggedAt;
-        public SessionAPI? User
+        public SessionAPI? API
         {
             get
             {

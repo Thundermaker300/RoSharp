@@ -12,19 +12,19 @@ namespace RoSharp.API
 
         public override string BaseUrl => "https://users.roblox.com";
 
-        private User? userInfo;
+        private User? user;
 
         [UsesSession]
-        public User UserInfo
+        public User User
         {
             get
             {
-                if (userInfo is null)
+                if (user is null)
                 {
                     SessionErrors.Verify(session);
-                    userInfo = User.FromId(session.userid, session);
+                    user = User.FromId(session.userid, session);
                 }
-                return userInfo;
+                return user;
             }
         }
 
