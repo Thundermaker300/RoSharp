@@ -120,7 +120,7 @@ namespace RoSharp.API.Assets
                 }
                 else if (data.creator.type == "User")
                 {
-                    owner = RoPool<User>.Get(creatorId);
+                    owner = User.FromId(creatorId);
                 }
 
                 // configs
@@ -491,7 +491,7 @@ namespace RoSharp.API.Assets
             => await BanUserAsync(user.Id, displayReason, privateReason, permanent, length, excludeAlts);
 
         public async Task BanUserAsync(string username, string displayReason, string privateReason, bool permanent, TimeSpan? length = null, bool excludeAlts = true)
-            => await BanUserAsync(new User(username, session), displayReason, privateReason, permanent, length, excludeAlts);
+            => await BanUserAsync(User.FromUsername(username, session), displayReason, privateReason, permanent, length, excludeAlts);
 
         public async Task UnbanUserAsync(ulong userId)
         {
@@ -512,7 +512,7 @@ namespace RoSharp.API.Assets
             => await UnbanUserAsync(user.Id);
 
         public async Task UnbanUserAsync(string username)
-            => await UnbanUserAsync(new User(username, session));
+            => await UnbanUserAsync(User.FromUsername(username, session));
 
         public async Task PostUpdateAsync(string text) // TODO: This api may not work? (Not authorized)
         {

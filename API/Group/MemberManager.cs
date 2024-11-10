@@ -44,7 +44,7 @@ namespace RoSharp.API
             foreach (dynamic user in data.data)
             {
                 ulong userId = Convert.ToUInt64(user.requester.userId);
-                list.Add(RoPool<User>.Get(userId, group.session));
+                list.Add(User.FromId(userId, group.session));
             }
 
             return new(list, nextPage, previousPage);
@@ -63,7 +63,7 @@ namespace RoSharp.API
             }
             return false;
         }
-        public bool IsInGroup(string username) => IsInGroup(new User(username));
+        public bool IsInGroup(string username) => IsInGroup(User.FromUsername(username));
         public bool IsInGroup(User user) => IsInGroup(user.Id);
 
         public Role? GetRoleInGroup(ulong userId)
@@ -80,7 +80,7 @@ namespace RoSharp.API
             return null;
         }
 
-        public Role? GetRoleInGroup(string username) => GetRoleInGroup(new User(username));
+        public Role? GetRoleInGroup(string username) => GetRoleInGroup(User.FromUsername(username));
         public Role? GetRoleInGroup(User user) => GetRoleInGroup(user.Id);
 
         [UsesSession]

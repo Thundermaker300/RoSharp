@@ -112,8 +112,8 @@ namespace RoSharp.API.Assets
         }
 
         public bool IsOwnedBy(User target) => target.HasBadge(this);
-        public bool IsOwnedBy(ulong targetId) => IsOwnedBy(new User(targetId, session));
-        public bool IsOwnedBy(string targetUsername) => IsOwnedBy(new User(targetUsername, session));
+        public bool IsOwnedBy(ulong targetId) => IsOwnedBy(User.FromId(targetId, session));
+        public bool IsOwnedBy(string targetUsername) => IsOwnedBy(User.FromUsername(targetUsername, session));
 
         public override string ToString()
         {

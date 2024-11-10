@@ -9,7 +9,7 @@ namespace RoSharp.API.Pooling
         internal static ConcurrentDictionary<ulong, T> Pool = new();
 
         internal static void Add(T asset) => Pool.TryAdd(asset.Id, asset);
-        internal static T Get(ulong id, Session? session = null)
+        internal static T? Get(ulong id, Session? session = null)
         {
             if (session == null && typeof(T) == typeof(Asset))
                 throw new InvalidOperationException("Session cannot be null for Asset types in RoPool.");
@@ -17,7 +17,7 @@ namespace RoSharp.API.Pooling
             {
                 return result.AttachSessionAndReturn(session) as T;
             }
-            return Activator.CreateInstance(typeof(T), id, session) as T;
+            return null;
         }
 
         internal static bool Contains(ulong id) => Pool.ContainsKey(id);

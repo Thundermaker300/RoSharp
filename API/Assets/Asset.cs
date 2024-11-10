@@ -136,7 +136,7 @@ namespace RoSharp.API.Assets
                 }
                 else if (data.Creator.CreatorType == "User")
                 {
-                    owner = RoPool<User>.Get(creatorId, session);
+                    owner = User.FromId(creatorId, session);
                 }
             }
             else
@@ -217,8 +217,8 @@ namespace RoSharp.API.Assets
         }
 
         public bool IsOwnedBy(User target) => target.OwnsAsset(this);
-        public bool IsOwnedBy(ulong targetId) => IsOwnedBy(new User(targetId, session));
-        public bool IsOwnedBy(string targetUsername) => IsOwnedBy(new User(targetUsername, session));
+        public bool IsOwnedBy(ulong targetId) => IsOwnedBy(User.FromId(targetId, session));
+        public bool IsOwnedBy(string targetUsername) => IsOwnedBy(User.FromUsername(targetUsername, session));
 
         /// <summary>
         /// Returns a list of assets that are shown under the "Recommended" section based on this asset.

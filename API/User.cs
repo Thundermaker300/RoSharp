@@ -42,7 +42,7 @@ namespace RoSharp.API
         public bool ProfileHidden => ProfileHidden;
         public DateTime RefreshedAt { get; set; }
 
-        public User(ulong userId, Session? session = null)
+        private User(ulong userId, Session? session = null)
         {
             Id = userId;
 
@@ -54,6 +54,12 @@ namespace RoSharp.API
             if (!RoPool<User>.Contains(Id))
                 RoPool<User>.Add(this);
         }
+
+        public static User FromId(ulong userId, Session? session = null)
+            => RoPool<User>.Get(userId, session) ?? new User(userId, session);
+
+        public static User FromUsername(string username, Session? session = null)
+            => FromId(UserUtility.GetUserId(username), session);
 
         public void Refresh()
         {
@@ -88,8 +94,6 @@ namespace RoSharp.API
 
             RefreshedAt = DateTime.Now;
         }
-
-        public User(string username, Session? session = null) : this(UserUtility.GetUserId(username), session) { }
 
         [UsesSession]
         public bool IsPremium
@@ -324,7 +328,7 @@ namespace RoSharp.API
                 count++;
 
                 ulong friendId = Convert.ToUInt64(friendData.id);
-                friends.Add(RoPool<User>.Get(friendId, session));
+                friends.Add(FromId(friendId, session));
 
                 if (count >= limit)
                     break;

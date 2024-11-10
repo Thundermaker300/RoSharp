@@ -22,7 +22,7 @@ namespace RoSharp.API
                 if (userInfo is null)
                 {
                     SessionErrors.Verify(session);
-                    userInfo = RoPool<User>.Get(session.userid, session);
+                    userInfo = User.FromId(session.userid, session);
                 }
                 return userInfo;
             }
