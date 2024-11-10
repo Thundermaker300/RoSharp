@@ -50,7 +50,7 @@ namespace RoSharp.API
 
         internal ulong members;
 
-        public Group(ulong groupId, Session? session = null)
+        private Group(ulong groupId, Session? session = null)
         {
             Id = groupId;
             
@@ -62,6 +62,9 @@ namespace RoSharp.API
             if (!RoPool<Group>.Contains(Id))
                 RoPool<Group>.Add(this);
         }
+
+        public static Group FromId(ulong groupId, Session? session = null)
+            => RoPool<Group>.Get(groupId, session) ?? new Group(groupId, session);
 
         public void Refresh()
         {

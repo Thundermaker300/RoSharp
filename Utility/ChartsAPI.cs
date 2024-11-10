@@ -31,7 +31,7 @@ namespace RoSharp.Utility
                         foreach (dynamic game in item.games)
                         {
                             ulong id = game.universeId;
-                            dict.Add(RoPool<Experience>.Get(id));
+                            dict.Add(Experience.FromId(id));
                         }
                     }
                 }

@@ -87,6 +87,6 @@ namespace RoSharp.API
         public async Task UnfriendAsync(User user) => await UnfriendAsync(user.Id);
 
         public bool FavoritedExperience(Experience experience) => experience.favoritedByUser;
-        public bool FavoritedExperience(ulong experienceId) => new Experience(experienceId, session).favoritedByUser;
+        public bool FavoritedExperience(ulong experienceId) => Experience.FromId(experienceId, session).favoritedByUser;
     }
 }

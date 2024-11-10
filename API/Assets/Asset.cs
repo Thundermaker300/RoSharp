@@ -70,7 +70,7 @@ namespace RoSharp.API.Assets
 
         public DateTime RefreshedAt { get; set; }
 
-        public Asset(ulong assetId, Session session)
+        private Asset(ulong assetId, Session session)
         {
             Id = assetId;
 
@@ -80,6 +80,9 @@ namespace RoSharp.API.Assets
             if (!RoPool<Asset>.Contains(Id))
                 RoPool<Asset>.Add(this);
         }
+
+        public static Asset FromId(ulong assetId, Session session)
+            => RoPool<Asset>.Get(assetId, session) ?? new Asset(assetId, session);
 
         public void Refresh()
         {
@@ -132,7 +135,7 @@ namespace RoSharp.API.Assets
                 ulong creatorId = Convert.ToUInt64(data.Creator.CreatorTargetId);
                 if (data.Creator.CreatorType == "Group")
                 {
-                    owner = RoPool<Group>.Get(creatorId, session);
+                    owner = Group.FromId(creatorId, session);
                 }
                 else if (data.Creator.CreatorType == "User")
                 {
@@ -237,7 +240,7 @@ namespace RoSharp.API.Assets
                 try
                 {
                     ulong itemId = Convert.ToUInt64(item);
-                    Asset asset = RoPool<Asset>.Get(itemId, session);
+                    Asset asset = FromId(itemId, session);
                     list.Add(asset);
                 }
                 catch { }

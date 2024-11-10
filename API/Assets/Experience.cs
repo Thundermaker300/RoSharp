@@ -59,7 +59,7 @@ namespace RoSharp.API.Assets
 
         public DateTime RefreshedAt { get; set; }
 
-        public Experience(ulong placeOrUniverseId, Session? session = null)
+        private Experience(ulong placeOrUniverseId, Session? session = null)
         {
             HttpResponseMessage response = Get($"/universes/v1/places/{placeOrUniverseId}/universe", "https://apis.roblox.com", verifySession: false);
             string raw = response.Content.ReadAsStringAsync().Result;
@@ -80,6 +80,9 @@ namespace RoSharp.API.Assets
             if (!RoPool<Experience>.Contains(UniverseId))
                 RoPool<Experience>.Add(this);
         }
+
+        public static Experience FromId(ulong placeOrUniverseId, Session? session = null)
+            => RoPool<Experience>.Get(placeOrUniverseId, session) ?? new Experience(placeOrUniverseId, session);
 
         public void Refresh()
         {
@@ -116,7 +119,7 @@ namespace RoSharp.API.Assets
                 ulong creatorId = Convert.ToUInt64(data.creator.id);
                 if (data.creator.type == "Group")
                 {
-                    owner = RoPool<Group>.Get(creatorId);
+                    owner = Group.FromId(creatorId);
                 }
                 else if (data.creator.type == "User")
                 {
@@ -358,7 +361,7 @@ namespace RoSharp.API.Assets
                 try
                 {
                     ulong id = Convert.ToUInt64(item.universeId);
-                    Experience asset = RoPool<Experience>.Get(id, session);
+                    Experience asset = FromId(id, session);
                     list.Add(asset);
                 }
                 catch { }
@@ -381,7 +384,7 @@ namespace RoSharp.API.Assets
                     if (data.imageId != null)
                     {
                         ulong assetId = Convert.ToUInt64(data.imageId);
-                        icon = RoPool<Asset>.Get(assetId, session);
+                        icon = Asset.FromId(assetId, session);
                     }
                 }
 
@@ -405,7 +408,7 @@ namespace RoSharp.API.Assets
             foreach (dynamic item in data.data)
             {
                 ulong id = Convert.ToUInt64(item.id);
-                list.Add(RoPool<Badge>.Get(id));
+                list.Add(Badge.FromId(id));
             }
 
             return new PageResponse<Badge>(list, nextPage, previousPage);
@@ -427,7 +430,7 @@ namespace RoSharp.API.Assets
 
                 ulong assetId = Convert.ToUInt64(thumbnail.targetId);
 
-                thumbnails.Add(RoPool<Asset>.Get(assetId, session));
+                thumbnails.Add(Asset.FromId(assetId, session));
             }
 
             return thumbnails.AsReadOnly();

@@ -46,7 +46,7 @@ namespace RoSharp.API.Assets
 
         public DateTime RefreshedAt { get; set; }
 
-        public Badge(ulong assetId, Session? session = null)
+        private Badge(ulong assetId, Session? session = null)
         {
             Id = assetId;
 
@@ -58,6 +58,9 @@ namespace RoSharp.API.Assets
             if (!RoPool<Badge>.Contains(Id))
                 RoPool<Badge>.Add(this);
         }
+
+        public static Badge FromId(ulong badgeId, Session? session = null)
+            => RoPool<Badge>.Get(badgeId, session) ?? new Badge(badgeId, session);
 
         public void Refresh()
         {

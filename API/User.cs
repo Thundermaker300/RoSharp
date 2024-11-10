@@ -209,7 +209,7 @@ namespace RoSharp.API
 
                     dynamic data = JObject.Parse(rawData);
                     ulong groupId = Convert.ToUInt64(data.group.id);
-                    primaryGroup = RoPool<Group>.Get(groupId, session);
+                    primaryGroup = Group.FromId(groupId, session);
                 }
                 return primaryGroup;
             }
@@ -231,7 +231,7 @@ namespace RoSharp.API
                         break;
 
                     ulong groupId = Convert.ToUInt64(groupData.group.id);
-                    Group group = RoPool<Group>.Get(groupId, session);
+                    Group group = Group.FromId(groupId, session);
                     dict.Add(group, group.RoleManager.GetRole(Convert.ToInt32(groupData.role.rank)));
                     count++;
                 }
@@ -291,7 +291,7 @@ namespace RoSharp.API
                 foreach (dynamic item in data.assetIds)
                 {
                     ulong assetId = Convert.ToUInt64(item);
-                    list.Add(RoPool<Asset>.Get(assetId, session));
+                    list.Add(Asset.FromId(assetId, session));
                 }
                 currentlyWearing = list.AsReadOnly();
             }
@@ -310,7 +310,7 @@ namespace RoSharp.API
                 foreach (dynamic item in data.CollectionsItems)
                 {
                     ulong assetId = Convert.ToUInt64(item.Id);
-                    list.Add(RoPool<Asset>.Get(assetId, session));
+                    list.Add(Asset.FromId(assetId, session));
                 }
                 collections = list.AsReadOnly();
             }
@@ -338,7 +338,7 @@ namespace RoSharp.API
         }
 
         public bool IsInGroup(Group group) => group.MemberManager.IsInGroup(Id);
-        public bool IsInGroup(ulong groupId) => new Group(groupId).MemberManager.IsInGroup(Id);
+        public bool IsInGroup(ulong groupId) => Group.FromId(groupId).MemberManager.IsInGroup(Id);
 
         // Thumbnails
         public async Task<string> GetThumbnailAsync(ThumbnailType type = ThumbnailType.Full, ThumbnailSize size = ThumbnailSize.S420x420)
