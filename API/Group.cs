@@ -41,7 +41,7 @@ namespace RoSharp.API
 
 
         private RoleManager roleManager;
-        public RoleManager RoleManager => roleManager ?? new RoleManager(this);
+        public RoleManager RoleManager => roleManager;
 
         private MemberManager memberManager;
         public MemberManager MemberManager => memberManager ?? new MemberManager(this);
@@ -68,6 +68,9 @@ namespace RoSharp.API
 
             Group newGroup = new(groupId, session);
             await newGroup.RefreshAsync();
+
+            newGroup.roleManager = new RoleManager(newGroup);
+            await newGroup.roleManager.RefreshAsync();
 
             return newGroup;
         }
