@@ -190,6 +190,8 @@ namespace RoSharp.API.Assets
 
         public async Task ModifyAsync(AssetModifyOptions options)
         {
+            SessionVerify.ThrowIfNecessary(session, "Asset.ModifyAsync");
+
             object body = new
             {
                 name = options.Name,
@@ -205,6 +207,8 @@ namespace RoSharp.API.Assets
 
         public async Task SetSaleStatusAsync(bool isOnSale, int cost)
         {
+            SessionVerify.ThrowIfNecessary(session, "Asset.SetSaleStatusAsync");
+
             int? priceInRobux = !isOnSale ? null : cost;
             Dictionary<int, int> saleAvailabilityLocations = new() { [0] = 0, [1] = 1 };
             object body = new

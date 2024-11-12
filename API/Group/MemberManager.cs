@@ -26,6 +26,8 @@ namespace RoSharp.API
 
         public async Task<PageResponse<User>> GetPendingRequestsAsync(FixedLimit limit = FixedLimit.Limit100, string? cursor = null)
         {
+            SessionVerify.ThrowIfNecessary(group.session, "MemberManager.GetPendingRequestsAsync");
+
             string url = $"/v1/groups/{group.Id}/join-requests?limit={limit.Limit()}&sortOrder=Desc";
             if (cursor != null)
                 url += "&cursor=" + cursor;
@@ -86,6 +88,8 @@ namespace RoSharp.API
         [UsesSession]
         public async Task ModifyJoinRequestAsync(ulong userId, JoinRequestAction action)
         {
+            SessionVerify.ThrowIfNecessary(group.session, "MemberManager.ModifyJoinRequestAsync");
+
             string url = $"/v1/groups/{group.Id}/join-requests/users/{userId}";
             HttpResponseMessage response = action switch
             {
@@ -109,6 +113,8 @@ namespace RoSharp.API
 
         internal async Task SetRankAsyncInternal(ulong userId, ulong newRoleId)
         {
+            SessionVerify.ThrowIfNecessary(group.session, "MemberManager.SetRankAsync");
+
             object body = new { roleId = newRoleId };
             HttpResponseMessage response = await group.PatchAsync($"/v1/groups/{group.Id}/users/{userId}", body);
             if (!response.IsSuccessStatusCode)
@@ -162,6 +168,8 @@ namespace RoSharp.API
         [UsesSession]
         public async Task KickMemberAsync(ulong userId)
         {
+            SessionVerify.ThrowIfNecessary(group.session, "MemberManager.KickMemberAsync");
+
             // TODO look into
             HttpResponseMessage response = await group.DeleteAsync($"/v1/groups/{group.Id}/users/{userId}");
             if (!response.IsSuccessStatusCode)

@@ -50,6 +50,8 @@ namespace RoSharp.API
 
         internal async Task RequestDeleteRole(ulong roleId)
         {
+            SessionVerify.ThrowIfNecessary(group.session, "Role.DeleteAsync");
+
             HttpResponseMessage response = await group.DeleteAsync($"/v1/groups/{group.Id}/rolesets/{roleId}");
             if (!response.IsSuccessStatusCode)
             {
@@ -59,6 +61,8 @@ namespace RoSharp.API
 
         internal async Task RequestUpdateRole(Role roleId, string newName)
         {
+            SessionVerify.ThrowIfNecessary(group.session, "Role.UpdateAsync");
+
             object body = new { name = newName, rank = roleId.Rank };
             JsonContent content = JsonContent.Create(body);
             HttpResponseMessage response = await group.PatchAsync($"/v1/groups/{group.Id}/rolesets/{roleId.Id}", body);
@@ -70,6 +74,8 @@ namespace RoSharp.API
 
         internal async Task RequestUpdateRole(Role roleId, int newRank)
         {
+            SessionVerify.ThrowIfNecessary(group.session, "Role.UpdateAsync");
+
             object body = new { name = roleId.Name, rank = newRank };
             JsonContent content = JsonContent.Create(body);
             HttpResponseMessage response = await group.PatchAsync($"/v1/groups/{group.Id}/rolesets/{roleId.Id}", body);

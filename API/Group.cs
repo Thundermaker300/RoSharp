@@ -168,6 +168,8 @@ namespace RoSharp.API
         [UsesSession]
         public async Task ModifyDescriptionAsync(string text)
         {
+            SessionVerify.ThrowIfNecessary(session, "Group.ModifyDescriptionAsync");
+
             object body = new { description = text };
             HttpResponseMessage response = await PatchAsync($"/v1/groups/{Id}/description", body);
             if (!response.IsSuccessStatusCode)
@@ -179,6 +181,8 @@ namespace RoSharp.API
         [UsesSession]
         public async Task ShoutAsync(string text)
         {
+            SessionVerify.ThrowIfNecessary(session, "Group.ShoutAsync");
+
             object body = new { message = text };
             HttpResponseMessage response = await PatchAsync($"/v1/groups/{Id}/status", body);
             if (!response.IsSuccessStatusCode)
@@ -190,6 +194,8 @@ namespace RoSharp.API
         [UsesSession]
         public async Task<PageResponse<GroupPost>> GetGroupPostsAsync(FixedLimit limit = FixedLimit.Limit100, string? cursor = null)
         {
+            SessionVerify.ThrowIfNecessary(session, "Group.GetGroupPostsAsync");
+
             string url = $"v2/groups/{Id}/wall/posts?limit={limit.Limit()}&sortOrder=Desc";
             if (cursor != null)
                 url += "&cursor=" + cursor;
@@ -224,6 +230,8 @@ namespace RoSharp.API
         [UsesSession]
         public async Task<PageResponse<User>> GetMembersAsync(FixedLimit limit = FixedLimit.Limit100, string? cursor = null)
         {
+            SessionVerify.ThrowIfNecessary(session, "Group.GetMembersAsync");
+
             string url = $"/v1/groups/{Id}/users?limit={limit.Limit()}&sortOrder=Asc";
             if (cursor != null)
                 url += "&cursor=" + cursor;

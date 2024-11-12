@@ -27,7 +27,7 @@ namespace RoSharp.API
         internal HttpClient MakeHttpClient(string? baseOverride = null, bool verifySession = true)
         {
             if (verifySession)
-                SessionVerify.ThrowIfNecessary(session, "-");
+                SessionVerify.ThrowIfNecessary(session, "UNKNOWN API, REPORT TO DEV");
 
             Uri uri = new Uri(baseOverride != null ? baseOverride : BaseUrl);
 

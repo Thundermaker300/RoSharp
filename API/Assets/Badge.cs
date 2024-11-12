@@ -106,6 +106,8 @@ namespace RoSharp.API.Assets
 
         public async Task ModifyAsync(BadgeModifyOptions options)
         {
+            SessionVerify.ThrowIfNecessary(session, "Badge.ModifyAsync");
+
             object body = new
             {
                 name = options.Name,

@@ -14,8 +14,6 @@ namespace RoSharp.Utility
     {
         public static async Task<ReadOnlyDictionary<AssetType, int>> GetPriceFloorsAsync(Session session)
         {
-            ArgumentNullException.ThrowIfNull(session);
-
             HttpClient client = MakeClient(session);
             HttpResponseMessage response = await client.GetAsync("/v1/collectibles/metadata");
             var dict = new Dictionary<AssetType, int>();

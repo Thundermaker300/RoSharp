@@ -406,6 +406,8 @@ namespace RoSharp.API.Assets
 
         public async Task SetPrivacyAsync(bool isPublic)
         {
+            SessionVerify.ThrowIfNecessary(session, "Experience.SetPrivacyAsync");
+
             string url = $"/v1/universes/6723876149/{(isPublic == false ? "de" : string.Empty)}activate";
             HttpResponseMessage response = await PostAsync(url, new { }, "https://develop.roblox.com");
             if (!response.IsSuccessStatusCode)
@@ -416,6 +418,8 @@ namespace RoSharp.API.Assets
 
         public async Task ModifyAsync(ExperienceModifyOptions options)
         {
+            SessionVerify.ThrowIfNecessary(session, "Experience.ModifyAsync");
+
             object body = new
             {
                 name = options.Name,
@@ -438,6 +442,8 @@ namespace RoSharp.API.Assets
 
         public async Task BanUserAsync(ulong userId, string displayReason, string privateReason, bool permanent, TimeSpan? length = null, bool excludeAlts = true)
         {
+            SessionVerify.ThrowIfNecessary(session, "Experience.BanUserAsync");
+
             if (permanent == false && !length.HasValue)
                 throw new ArgumentException("length cannot be null if permanent is false.");
 
@@ -466,6 +472,8 @@ namespace RoSharp.API.Assets
 
         public async Task UnbanUserAsync(ulong userId)
         {
+            SessionVerify.ThrowIfNecessary(session, "Experience.UnbanUserAsync");
+
             var body = new
             {
                 gameJoinRestriction = new
@@ -487,6 +495,8 @@ namespace RoSharp.API.Assets
 
         public async Task PostUpdateAsync(string text) // TODO: This api may not work? (Not authorized)
         {
+            SessionVerify.ThrowIfNecessary(session, "Experience.PostUpdateAsync");
+
             HttpResponseMessage response = await PostAsync($"/game-update-notifications/v1/publish/{UniverseId}", text, "https://apis.roblox.com");
             if (!response.IsSuccessStatusCode)
                 throw new HttpRequestException($"Failed to post update. Error code {response.StatusCode}. {response.Content.ReadAsStringAsync().Result}");

@@ -6,6 +6,8 @@ using RoSharp.API.Pooling;
 
 namespace RoSharp.API
 {
+    // TODO: The API in this class needs converted to use the new system (SessionVerify.ThrowIfNecessary)
+    // The API should also all be obtained in a ctor or refresh method instead of each access.
     public class SessionAPI : APIMain
     {
         public SessionAPI(Session session) : base(session) { }
