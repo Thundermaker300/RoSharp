@@ -378,7 +378,7 @@ namespace RoSharp.API
 
         public async Task<bool> OwnsAssetAsync(ulong assetId, int assetItemType = 0)
         {
-            string result = await GetStringAsync($"/v1/users/{Id}/items/{assetItemType}/{assetId}/is-owned", "https://inventory.roblox.com");
+            string result = await GetStringAsync($"/v1/users/{Id}/items/{assetItemType}/{assetId}/is-owned", "https://inventory.roblox.com", false);
             return Convert.ToBoolean(result);
         }
 
@@ -387,7 +387,7 @@ namespace RoSharp.API
 
         public async Task<bool> HasBadgeAsync(ulong badgeId)
         {
-            string rawData = await GetStringAsync($"/v1/users/{Id}/badges/awarded-dates?badgeIds={badgeId}", "https://badges.roblox.com");
+            string rawData = await GetStringAsync($"/v1/users/{Id}/badges/awarded-dates?badgeIds={badgeId}", "https://badges.roblox.com", false);
             dynamic data = JObject.Parse(rawData);
 
             return data.data.Count > 0;
