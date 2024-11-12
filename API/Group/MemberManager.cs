@@ -1,18 +1,8 @@
 ﻿using Newtonsoft.Json.Linq;
 using RoSharp.API.Misc;
-using RoSharp.API.Pooling;
 using RoSharp.Enums;
 using RoSharp.Extensions;
 using RoSharp.Utility;
-using System;
-using System.Collections.Generic;
-using System.Collections.ObjectModel;
-using System.Data;
-using System.Linq;
-using System.Net.Http.Json;
-using System.Text;
-using System.Threading.Tasks;
-using static System.Collections.Specialized.BitVector32;
 
 namespace RoSharp.API
 {
