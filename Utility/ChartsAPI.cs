@@ -15,7 +15,7 @@ namespace RoSharp.Utility
     public static class ChartsAPI
     {
         // TODO: Sort of works. help
-        public static async Task<ReadOnlyCollection<Experience>> GetFrontPageExperiences(string category, Session? session = null)
+        public static async Task<ReadOnlyCollection<Experience>> GetFrontPageExperiencesAsync(string category, Session? session = null)
         {
             HttpClient client = MakeClient(session);
             HttpResponseMessage response = await client.GetAsync("/explore-api/v1/get-sorts?sessionId=1");
@@ -31,7 +31,7 @@ namespace RoSharp.Utility
                         foreach (dynamic game in item.games)
                         {
                             ulong id = game.universeId;
-                            dict.Add(Experience.FromId(id));
+                            dict.Add(await Experience.FromId(id));
                         }
                     }
                 }

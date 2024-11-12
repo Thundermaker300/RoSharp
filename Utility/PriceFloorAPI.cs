@@ -47,7 +47,7 @@ namespace RoSharp.Utility
 
         private static HttpClient MakeClient(Session session)
         {
-            SessionErrors.Verify(session);
+            SessionVerify.ThrowIfNecessary(session, "PriceFloorAPI");
 
             Uri uri = new Uri("https://itemconfiguration.roblox.com");
 

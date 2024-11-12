@@ -53,21 +53,27 @@ namespace RoSharp.API.Assets
             if (session != null)
                 AttachSession(session);
 
-            Refresh();
-
             if (!RoPool<Badge>.Contains(Id))
                 RoPool<Badge>.Add(this);
         }
 
-        public static Badge FromId(ulong badgeId, Session? session = null)
-            => RoPool<Badge>.Get(badgeId, session) ?? new Badge(badgeId, session);
-
-        public void Refresh()
+        public static async Task<Badge> FromId(ulong badgeId, Session? session = null)
         {
-            HttpResponseMessage response = GetAsync($"/v1/badges/{Id}", verifySession: false).Result;
+            if (RoPool<Badge>.Contains(badgeId))
+                return RoPool<Badge>.Get(badgeId, session);
+
+            Badge newUser = new(badgeId, session);
+            await newUser.RefreshAsync();
+
+            return newUser;
+        }
+
+        public async Task RefreshAsync()
+        {
+            HttpResponseMessage response = await GetAsync($"/v1/badges/{Id}", verifySession: false);
             if (response.IsSuccessStatusCode)
             {
-                string raw = response.Content.ReadAsStringAsync().Result;
+                string raw = await response.Content.ReadAsStringAsync();
                 dynamic data = JObject.Parse(raw);
 
                 ulong experienceId = Convert.ToUInt64(data.awardingUniverse.id);
@@ -76,7 +82,7 @@ namespace RoSharp.API.Assets
                 description = (data.displayDescription == null ? string.Empty : data.displayDescription);
                 created = data.created;
                 lastUpdated = data.updated;
-                experience = RoPool<Experience>.Get(experienceId);
+                experience = await Experience.FromId(experienceId);
                 awardedCount = Convert.ToInt32(data.statistics.awardedCount);
                 yesterdayAwardedCount = Convert.ToInt32(data.statistics.pastDayAwardedCount);
             }
@@ -114,9 +120,9 @@ namespace RoSharp.API.Assets
             }
         }
 
-        public bool IsOwnedBy(User target) => target.HasBadge(this);
-        public bool IsOwnedBy(ulong targetId) => IsOwnedBy(User.FromId(targetId, session));
-        public bool IsOwnedBy(string targetUsername) => IsOwnedBy(User.FromUsername(targetUsername, session));
+        public async Task<bool> IsOwnedByAsync(User target) => await target.HasBadgeAsync(this);
+        public async Task<bool> IsOwnedByAsync(ulong targetId) => await IsOwnedByAsync(await User.FromId(targetId, session));
+        public async Task<bool> IsOwnedByAsync(string targetUsername) => await IsOwnedByAsync(await User.FromUsername(targetUsername, session));
 
         public override string ToString()
         {

@@ -49,24 +49,30 @@ namespace RoSharp.API
             if (session != null)
                 AttachSession(session);
 
-            Refresh();
-
             if (!RoPool<User>.Contains(Id))
                 RoPool<User>.Add(this);
         }
 
-        public static User FromId(ulong userId, Session? session = null)
-            => RoPool<User>.Get(userId, session) ?? new User(userId, session);
-
-        public static User FromUsername(string username, Session? session = null)
-            => FromId(UserUtility.GetUserId(username), session);
-
-        public void Refresh()
+        public static async Task<User> FromId(ulong userId, Session? session = null)
         {
-            HttpResponseMessage response = Get($"/v1/users/{Id}", verifySession: false);
+            if (RoPool<User>.Contains(userId))
+                return RoPool<User>.Get(userId, session);
+
+            User newUser = new(userId, session);
+            await newUser.RefreshAsync();
+
+            return newUser;
+        }
+
+        public static async Task<User> FromUsername(string username, Session? session = null)
+            => await FromId(await UserUtility.GetUserIdAsync(username), session);
+
+        public async Task RefreshAsync()
+        {
+            HttpResponseMessage response = await GetAsync($"/v1/users/{Id}", verifySession: false);
             if (response.IsSuccessStatusCode)
             {
-                string raw = response.Content.ReadAsStringAsync().Result;
+                string raw = await response.Content.ReadAsStringAsync();
                 dynamic data = JObject.Parse(raw);
 
                 name = data.name;
@@ -81,31 +87,45 @@ namespace RoSharp.API
                 throw new InvalidOperationException($"Invalid user ID '{Id}'. HTTP {response.StatusCode}");
             }
 
-            // Reset properties
+            // TODO: These properties should be reset through this method.
             following = -1;
             followers = -1;
             robloxBadges = null;
             renameHistory = null;
             primaryGroup = null;
-            groups = null;
             socialChannels = null;
+
             currentlyWearing = null;
             collections = null;
+            groups = null;
+
+            // Update premium
+            if (SessionVerify.Verify(session))
+            {
+                HttpResponseMessage premiumResponse = await GetAsync($"/v1/users/{Id}/validate-membership", "https://premiumfeatures.roblox.com");
+                if (premiumResponse.IsSuccessStatusCode)
+                {
+                    isPremium = Convert.ToBoolean(await premiumResponse.Content.ReadAsStringAsync());
+                }
+            }
+            else
+            {
+                isPremium = null;
+            }
 
             RefreshedAt = DateTime.Now;
         }
 
-        [UsesSession]
+        private bool? isPremium;
         public bool IsPremium
         {
             get
             {
-                HttpResponseMessage response = Get($"/v1/users/{Id}/validate-membership", "https://premiumfeatures.roblox.com");
-                if (response.IsSuccessStatusCode)
+                if (!isPremium.HasValue)
                 {
-                    return Convert.ToBoolean(response.Content.ReadAsStringAsync().Result);
+                    SessionVerify.ThrowRefresh("User.IsPremium");
                 }
-                return false;
+                return isPremium.Value;
             }
         }
 
@@ -209,7 +229,7 @@ namespace RoSharp.API
 
                     dynamic data = JObject.Parse(rawData);
                     ulong groupId = Convert.ToUInt64(data.group.id);
-                    primaryGroup = Group.FromId(groupId, session);
+                    primaryGroup = Group.FromId(groupId, session).Result;
                 }
                 return primaryGroup;
             }
@@ -231,7 +251,7 @@ namespace RoSharp.API
                         break;
 
                     ulong groupId = Convert.ToUInt64(groupData.group.id);
-                    Group group = Group.FromId(groupId, session);
+                    Group group = await Group.FromId(groupId, session);
                     dict.Add(group, group.RoleManager.GetRole(Convert.ToInt32(groupData.role.rank)));
                     count++;
                 }
@@ -284,14 +304,14 @@ namespace RoSharp.API
         {
             if (currentlyWearing == null)
             {
-                string rawData = GetString($"/v1/users/{Id}/currently-wearing", "https://avatar.roblox.com");
+                string rawData = await GetStringAsync($"/v1/users/{Id}/currently-wearing", "https://avatar.roblox.com");
                 dynamic data = JObject.Parse(rawData);
 
                 List<Asset> list = new List<Asset>();
                 foreach (dynamic item in data.assetIds)
                 {
                     ulong assetId = Convert.ToUInt64(item);
-                    list.Add(Asset.FromId(assetId, session));
+                    list.Add(await Asset.FromId(assetId, session));
                 }
                 currentlyWearing = list.AsReadOnly();
             }
@@ -303,14 +323,14 @@ namespace RoSharp.API
         {
             if (collections == null)
             {
-                string rawData = GetString($"/users/profile/robloxcollections-json?userId={Id}", "https://www.roblox.com");
+                string rawData = await GetStringAsync($"/users/profile/robloxcollections-json?userId={Id}", "https://www.roblox.com");
                 dynamic data = JObject.Parse(rawData);
 
                 List<Asset> list = new List<Asset>();
                 foreach (dynamic item in data.CollectionsItems)
                 {
                     ulong assetId = Convert.ToUInt64(item.Id);
-                    list.Add(Asset.FromId(assetId, session));
+                    list.Add(await Asset.FromId(assetId, session));
                 }
                 collections = list.AsReadOnly();
             }
@@ -328,7 +348,7 @@ namespace RoSharp.API
                 count++;
 
                 ulong friendId = Convert.ToUInt64(friendData.id);
-                friends.Add(FromId(friendId, session));
+                friends.Add(await FromId(friendId, session));
 
                 if (count >= limit)
                     break;
@@ -337,8 +357,8 @@ namespace RoSharp.API
             return friends.AsReadOnly();
         }
 
-        public bool IsInGroup(Group group) => group.MemberManager.IsInGroup(Id);
-        public bool IsInGroup(ulong groupId) => Group.FromId(groupId).MemberManager.IsInGroup(Id);
+        public async Task<bool> IsInGroupAsync(Group group) => await group.MemberManager.IsInGroupAsync(Id);
+        public async Task<bool> IsInGroupAsync(ulong groupId) => await (await Group.FromId(groupId)).MemberManager.IsInGroupAsync(Id);
 
         // Thumbnails
         public async Task<string> GetThumbnailAsync(ThumbnailType type = ThumbnailType.Full, ThumbnailSize size = ThumbnailSize.S420x420)
@@ -356,25 +376,25 @@ namespace RoSharp.API
             return data.data[0].imageUrl;
         }
 
-        public bool OwnsAsset(ulong assetId, int assetItemType = 0)
+        public async Task<bool> OwnsAssetAsync(ulong assetId, int assetItemType = 0)
         {
-            string result = GetString($"/v1/users/{Id}/items/{assetItemType}/{assetId}/is-owned", "https://inventory.roblox.com");
+            string result = await GetStringAsync($"/v1/users/{Id}/items/{assetItemType}/{assetId}/is-owned", "https://inventory.roblox.com");
             return Convert.ToBoolean(result);
         }
 
-        public bool OwnsAsset(Asset asset)
-            => OwnsAsset(asset.Id);
+        public async Task<bool> OwnsAssetAsync(Asset asset)
+            => await OwnsAssetAsync(asset.Id);
 
-        public bool HasBadge(ulong badgeId)
+        public async Task<bool> HasBadgeAsync(ulong badgeId)
         {
-            string rawData = GetString($"/v1/users/{Id}/badges/awarded-dates?badgeIds={badgeId}", "https://badges.roblox.com");
+            string rawData = await GetStringAsync($"/v1/users/{Id}/badges/awarded-dates?badgeIds={badgeId}", "https://badges.roblox.com");
             dynamic data = JObject.Parse(rawData);
 
             return data.data.Count > 0;
         }
 
-        public bool HasBadge(Badge badge)
-            => HasBadge(badge.Id);
+        public async Task<bool> HasBadgeAsync(Badge badge)
+            => await HasBadgeAsync(badge.Id);
 
         public override string ToString()
         {

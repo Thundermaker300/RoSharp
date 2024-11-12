@@ -1,4 +1,5 @@
-﻿using System;
+﻿using RoSharp.Interfaces;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Net;
@@ -26,7 +27,7 @@ namespace RoSharp.API
         internal HttpClient MakeHttpClient(string? baseOverride = null, bool verifySession = true)
         {
             if (verifySession)
-                SessionErrors.Verify(session);
+                SessionVerify.ThrowIfNecessary(session, "-");
 
             Uri uri = new Uri(baseOverride != null ? baseOverride : BaseUrl);
 
@@ -54,6 +55,8 @@ namespace RoSharp.API
             return message;
         }
 
+
+        [Obsolete("Use async version where possible")]
         internal HttpResponseMessage Get(string url, string? baseOverride = null, bool verifySession = true)
         {
             HttpClient client = MakeHttpClient(baseOverride, verifySession);
@@ -65,6 +68,7 @@ namespace RoSharp.API
             return message;
         }
 
+        [Obsolete("Use async version where possible")]
         internal string GetString(string url, string? baseOverride = null, bool verifySession = true)
         {
             HttpClient client = MakeHttpClient(baseOverride, verifySession);
@@ -139,7 +143,7 @@ namespace RoSharp.API
         }
 
         internal Session? session;
-        public virtual void AttachSession(Session session)
+        public virtual void AttachSession(Session session, bool refreshIfPossible = false)
         {
             ArgumentNullException.ThrowIfNull(session);
 
@@ -147,6 +151,11 @@ namespace RoSharp.API
                 throw new InvalidOperationException("The provided session is not logged in!");
 
             this.session = session;
+
+            if (refreshIfPossible && this is IRefreshable refreshable)
+            {
+                refreshable.RefreshAsync().Wait();
+            }
         }
 
         public virtual void DetachSession()

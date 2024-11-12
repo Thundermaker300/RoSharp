@@ -21,8 +21,8 @@ namespace RoSharp.API
             {
                 if (user is null)
                 {
-                    SessionErrors.Verify(session);
-                    user = User.FromId(session.userid, session);
+                    SessionVerify.ThrowIfNecessary(session, "SessionAPI.User");
+                    user = User.FromId(session.userid, session).Result;
                 }
                 return user;
             }
@@ -83,7 +83,7 @@ namespace RoSharp.API
 
         public async Task UnfriendAsync(User user) => await UnfriendAsync(user.Id);
 
-        public bool FavoritedExperience(Experience experience) => experience.favoritedByUser;
-        public bool FavoritedExperience(ulong experienceId) => Experience.FromId(experienceId, session).favoritedByUser;
+        public async Task<bool> FavoritedExperienceAsync(Experience experience) => experience.favoritedByUser; // TODO: This api does not check for matching session.
+        public async Task<bool> FavoritedExperienceAsync(ulong experienceId) => await FavoritedExperienceAsync(await Experience.FromId(experienceId, session));
     }
 }

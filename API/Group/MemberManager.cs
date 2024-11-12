@@ -35,7 +35,7 @@ namespace RoSharp.API
             {
                 throw new InvalidOperationException($"Cannot view pending requests for group (HTTP {response.StatusCode}). Do you have permission to see pending requests?");
             }
-            string rawData = response.Content.ReadAsStringAsync().Result;
+            string rawData = await response.Content.ReadAsStringAsync();
             dynamic data = JObject.Parse(rawData);
 
             var list = new List<User>();
@@ -44,15 +44,15 @@ namespace RoSharp.API
             foreach (dynamic user in data.data)
             {
                 ulong userId = Convert.ToUInt64(user.requester.userId);
-                list.Add(User.FromId(userId, group.session));
+                list.Add(await User.FromId(userId, group.session));
             }
 
             return new(list, nextPage, previousPage);
         }
 
-        public bool IsInGroup(ulong userId)
+        public async Task<bool> IsInGroupAsync(ulong userId)
         {
-            string rawData = group.GetString($"/v1/users/{userId}/groups/roles?includeLocked=true", verifySession: false);
+            string rawData = await group.GetStringAsync($"/v1/users/{userId}/groups/roles?includeLocked=true", verifySession: false);
             dynamic data = JObject.Parse(rawData);
             foreach (dynamic group in data.data)
             {
@@ -63,12 +63,12 @@ namespace RoSharp.API
             }
             return false;
         }
-        public bool IsInGroup(string username) => IsInGroup(User.FromUsername(username));
-        public bool IsInGroup(User user) => IsInGroup(user.Id);
+        public async Task<bool> IsInGroupAsync(string username) => await IsInGroupAsync(await User.FromUsername(username));
+        public async Task<bool> IsInGroupAsync(User user) => await IsInGroupAsync(user.Id);
 
-        public Role? GetRoleInGroup(ulong userId)
+        public async Task<Role?> GetRoleInGroupAsync(ulong userId)
         {
-            string rawData = group.GetString($"/v1/users/{userId}/groups/roles?includeLocked=true", verifySession: false);
+            string rawData = await group.GetStringAsync($"/v1/users/{userId}/groups/roles?includeLocked=true", verifySession: false);
             dynamic data = JObject.Parse(rawData);
             foreach (dynamic group in data.data)
             {
@@ -80,8 +80,8 @@ namespace RoSharp.API
             return null;
         }
 
-        public Role? GetRoleInGroup(string username) => GetRoleInGroup(User.FromUsername(username));
-        public Role? GetRoleInGroup(User user) => GetRoleInGroup(user.Id);
+        public async Task<Role?> GetRoleInGroupAsync(string username) => await GetRoleInGroupAsync(await User.FromUsername(username));
+        public async Task<Role?> GetRoleInGroupAsync(User user) => await GetRoleInGroupAsync(user.Id);
 
         [UsesSession]
         public async Task ModifyJoinRequestAsync(ulong userId, JoinRequestAction action)
@@ -105,7 +105,7 @@ namespace RoSharp.API
 
         [UsesSession]
         public async Task ModifyJoinRequestAsync(string username, JoinRequestAction action)
-            => await ModifyJoinRequestAsync(UserUtility.GetUserId(username), action);
+            => await ModifyJoinRequestAsync(await UserUtility.GetUserIdAsync(username), action);
 
         internal async Task SetRankAsyncInternal(ulong userId, ulong newRoleId)
         {
@@ -149,15 +149,15 @@ namespace RoSharp.API
 
         [UsesSession]
         public async Task SetRankAsync(string username, Role role)
-            => await SetRankAsync(UserUtility.GetUserId(username), role);
+            => await SetRankAsync(await UserUtility.GetUserIdAsync(username), role);
 
         [UsesSession]
         public async Task SetRankAsync(string username, int rankId)
-            => await SetRankAsync(UserUtility.GetUserId(username), rankId);
+            => await SetRankAsync(await UserUtility.GetUserIdAsync(username), rankId);
 
         [UsesSession]
         public async Task SetRankAsync(string username, string roleName)
-            => await SetRankAsync(UserUtility.GetUserId(username), roleName);
+            => await SetRankAsync(await UserUtility.GetUserIdAsync(username), roleName);
 
         [UsesSession]
         public async Task KickMemberAsync(ulong userId)
@@ -166,7 +166,6 @@ namespace RoSharp.API
             HttpResponseMessage response = await group.DeleteAsync($"/v1/groups/{group.Id}/users/{userId}");
             if (!response.IsSuccessStatusCode)
             {
-                Console.WriteLine(response.Content.ReadAsStringAsync().Result);
                 throw new InvalidOperationException($"User kick failed (HTTP {response.StatusCode}). Do you have permission to kick members?");
             }
         }

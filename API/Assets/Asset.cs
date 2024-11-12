@@ -75,21 +75,28 @@ namespace RoSharp.API.Assets
             Id = assetId;
 
             AttachSession(session);
-            Refresh();
 
             if (!RoPool<Asset>.Contains(Id))
                 RoPool<Asset>.Add(this);
         }
 
-        public static Asset FromId(ulong assetId, Session session)
-            => RoPool<Asset>.Get(assetId, session) ?? new Asset(assetId, session);
-
-        public void Refresh()
+        public static async Task<Asset> FromId(ulong assetId, Session? session = null)
         {
-            HttpResponseMessage response = Get($"/v2/assets/{Id}/details", "https://economy.roblox.com");
+            if (RoPool<Asset>.Contains(assetId))
+                return RoPool<Asset>.Get(assetId, session);
+
+            Asset newUser = new(assetId, session);
+            await newUser.RefreshAsync();
+
+            return newUser;
+        }
+
+        public async Task RefreshAsync()
+        {
+            HttpResponseMessage response = await GetAsync($"/v2/assets/{Id}/details", "https://economy.roblox.com");
             if (response.IsSuccessStatusCode)
             {
-                string raw = response.Content.ReadAsStringAsync().Result;
+                string raw = await response.Content.ReadAsStringAsync();
                 dynamic data = JObject.Parse(raw);
 
                 name = data.Name;
@@ -135,11 +142,11 @@ namespace RoSharp.API.Assets
                 ulong creatorId = Convert.ToUInt64(data.Creator.CreatorTargetId);
                 if (data.Creator.CreatorType == "Group")
                 {
-                    owner = Group.FromId(creatorId, session);
+                    owner = await Group.FromId(creatorId, session);
                 }
                 else if (data.Creator.CreatorType == "User")
                 {
-                    owner = User.FromId(creatorId, session);
+                    owner = await User.FromId(creatorId, session);
                 }
             }
             else
@@ -149,7 +156,7 @@ namespace RoSharp.API.Assets
 
             // Reset properties
             favorites = 0;
-            thumbnailUrl = GetThumbnailAsync(ThumbnailSize.S420x420).Result;
+            thumbnailUrl = await GetThumbnailAsync(ThumbnailSize.S420x420);
 
             RefreshedAt = DateTime.Now;
         }
@@ -219,9 +226,9 @@ namespace RoSharp.API.Assets
             }
         }
 
-        public bool IsOwnedBy(User target) => target.OwnsAsset(this);
-        public bool IsOwnedBy(ulong targetId) => IsOwnedBy(User.FromId(targetId, session));
-        public bool IsOwnedBy(string targetUsername) => IsOwnedBy(User.FromUsername(targetUsername, session));
+        public async Task<bool> IsOwnedByAsync(User target) => await target.OwnsAssetAsync(this);
+        public async Task<bool> IsOwnedByAsync(ulong targetId) => await IsOwnedByAsync(await User.FromId(targetId, session));
+        public async Task<bool> IsOwnedByAsync(string targetUsername) => await IsOwnedByAsync(await User.FromUsername(targetUsername, session));
 
         /// <summary>
         /// Returns a list of assets that are shown under the "Recommended" section based on this asset.
@@ -240,7 +247,7 @@ namespace RoSharp.API.Assets
                 try
                 {
                     ulong itemId = Convert.ToUInt64(item);
-                    Asset asset = FromId(itemId, session);
+                    Asset asset = await FromId(itemId, session);
                     list.Add(asset);
                 }
                 catch { }

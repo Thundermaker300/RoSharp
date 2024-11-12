@@ -17,37 +17,27 @@ namespace RoSharp.API
         public DateTime RefreshedAt { get; set; }
 
         private ReadOnlyCollection<Role>? roles;
-        public ReadOnlyCollection<Role> Roles
+        public ReadOnlyCollection<Role> Roles => roles;
+
+        public async Task RefreshAsync()
         {
-            get
+            List<Role> list = [];
+            string rawData = await group.GetStringAsync($"/v1/groups/{group.Id}/roles", verifySession: false);
+            dynamic data = JObject.Parse(rawData);
+            foreach (dynamic rank in data.roles)
             {
-                if (roles == null)
+                Role role = new Role(this)
                 {
-                    List<Role> list = [];
-                    string rawData = group.GetString($"/v1/groups/{group.Id}/roles", verifySession: false);
-                    dynamic data = JObject.Parse(rawData);
-                    foreach (dynamic rank in data.roles)
-                    {
-                        Role role = new Role(this)
-                        {
-                            Id = rank.id,
-                            Name = rank.name,
-                            Rank = rank.rank,
-                            MemberCount = rank.memberCount,
-                        };
-                        list.Add(role);
-                    }
-
-                    roles = list.AsReadOnly();
-                    RefreshedAt = DateTime.Now;
-                }
-                return roles;
+                    Id = rank.id,
+                    Name = rank.name,
+                    Rank = rank.rank,
+                    MemberCount = rank.memberCount,
+                };
+                list.Add(role);
             }
-        }
 
-        public void Refresh()
-        {
-            roles = null;
+            roles = list.AsReadOnly();
+            RefreshedAt = DateTime.Now;
         }
 
         internal RoleManager(Group group) { this.group = group; }

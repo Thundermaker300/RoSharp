@@ -57,21 +57,27 @@ namespace RoSharp.API
             if (session != null)
                 AttachSession(session);
 
-            Refresh();
-
             if (!RoPool<Group>.Contains(Id))
                 RoPool<Group>.Add(this);
         }
 
-        public static Group FromId(ulong groupId, Session? session = null)
-            => RoPool<Group>.Get(groupId, session) ?? new Group(groupId, session);
-
-        public void Refresh()
+        public static async Task<Group> FromId(ulong groupId, Session? session = null)
         {
-            HttpResponseMessage response = Get($"/v1/groups/{Id}", verifySession: false);
+            if (RoPool<Group>.Contains(groupId))
+                return RoPool<Group>.Get(groupId, session);
+
+            Group newGroup = new(groupId, session);
+            await newGroup.RefreshAsync();
+
+            return newGroup;
+        }
+
+        public async Task RefreshAsync()
+        {
+            HttpResponseMessage response = await GetAsync($"/v1/groups/{Id}", verifySession: false);
             if (response.IsSuccessStatusCode)
             {
-                string raw = response.Content.ReadAsStringAsync().Result;
+                string raw = await response.Content.ReadAsStringAsync();
                 dynamic data = JObject.Parse(raw);
 
                 name = data.name;
@@ -80,7 +86,7 @@ namespace RoSharp.API
                 if (data.owner != null)
                 {
                     ulong ownerId = Convert.ToUInt64(data.owner.userId);
-                    owner = User.FromId(ownerId, session);
+                    owner = await User.FromId(ownerId, session);
                 }
 
                 isPublic = data.publicEntryAllowed;
@@ -116,7 +122,7 @@ namespace RoSharp.API
                         shout = new GroupShoutInfo
                         {
                             Text = data.shout.body,
-                            Poster = User.FromId(posterId, session),
+                            Poster = User.FromId(posterId, session).Result,
                             PostedAt = data.shout.updated,
                         };
                     }
@@ -191,7 +197,7 @@ namespace RoSharp.API
             HttpResponseMessage response = Get(url);
             if (response.IsSuccessStatusCode)
             {
-                dynamic data = JObject.Parse(response.Content.ReadAsStringAsync().Result);
+                dynamic data = JObject.Parse(await response.Content.ReadAsStringAsync());
                 foreach (dynamic post in data.data)
                 {
                     list.Add(new GroupPost()
@@ -222,14 +228,14 @@ namespace RoSharp.API
             var list = new List<User>();
             string? nextPage = null;
             string? previousPage = null;
-            HttpResponseMessage response = Get(url);
+            HttpResponseMessage response = await GetAsync(url);
             if (response.IsSuccessStatusCode)
             {
-                dynamic data = JObject.Parse(response.Content.ReadAsStringAsync().Result);
+                dynamic data = JObject.Parse(await response.Content.ReadAsStringAsync());
                 foreach (dynamic user in data.data)
                 {
                     ulong userId = Convert.ToUInt64(user.user.userId);
-                    list.Add(User.FromId(userId, session));
+                    list.Add(await User.FromId(userId, session));
                 }
                 nextPage = data.nextPageCursor;
                 previousPage = data.previousPageCursor;
@@ -277,7 +283,7 @@ namespace RoSharp.API
             get
             {
                 if (poster == null && posterId != null && posterId.HasValue)
-                    poster = User.FromId(posterId.Value, group?.session);
+                    poster = User.FromId(posterId.Value, group?.session).Result;
                 return poster;
             }
         }

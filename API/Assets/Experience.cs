@@ -19,6 +19,8 @@ namespace RoSharp.API.Assets
     {
         public override string BaseUrl => "https://games.roblox.com";
 
+        private static HttpClient genericClient { get; } = new HttpClient();
+
         public ulong UniverseId { get; }
         public ulong Id => UniverseId;
 
@@ -59,45 +61,56 @@ namespace RoSharp.API.Assets
 
         public DateTime RefreshedAt { get; set; }
 
-        private Experience(ulong placeOrUniverseId, Session? session = null)
+        private Experience(ulong universeId, Session? session = null)
         {
-            HttpResponseMessage response = Get($"/universes/v1/places/{placeOrUniverseId}/universe", "https://apis.roblox.com", verifySession: false);
-            string raw = response.Content.ReadAsStringAsync().Result;
-            dynamic universeData = JObject.Parse(raw);
-            if (universeData.universeId != null)
-            {
-                UniverseId = universeData.universeId;
-            }
-            else
-            {
-                UniverseId = placeOrUniverseId;
-            }
+            UniverseId = universeId;
 
             if (session != null)
                 AttachSession(session);
 
-            Refresh();
             if (!RoPool<Experience>.Contains(UniverseId))
                 RoPool<Experience>.Add(this);
         }
 
-        public static Experience FromId(ulong placeOrUniverseId, Session? session = null)
-            => RoPool<Experience>.Get(placeOrUniverseId, session) ?? new Experience(placeOrUniverseId, session);
+        public static async Task<Experience> FromId(ulong placeOrUniverseId, Session? session = null)
+        {
+            ulong universeId = 0;
 
-        public void Refresh()
+            HttpResponseMessage response = await genericClient.GetAsync($"https://apis.roblox.com/universes/v1/places/{placeOrUniverseId}/universe");
+            string raw = await response.Content.ReadAsStringAsync();
+            dynamic universeData = JObject.Parse(raw);
+            if (universeData.universeId != null)
+            {
+                universeId = universeData.universeId;
+            }
+            else
+            {
+                universeId = placeOrUniverseId;
+            }
+
+            if (RoPool<Experience>.Contains(universeId))
+                return RoPool<Experience>.Get(universeId, session);
+
+            Experience newUser = new(universeId, session);
+            await newUser.RefreshAsync();
+
+            return newUser;
+        }
+
+        public async Task RefreshAsync()
         {
             // Reset properties
+            // TODO: These need to be updated within this method
             voiceEnabled = null;
             videoEnabled = null;
             playabilityStatus = null;
-            profanityAllowed = null;
             socialChannels = null;
             icon = null;
 
-            HttpResponseMessage response = Get($"/v1/games?universeIds={UniverseId}", verifySession: false);
+            HttpResponseMessage response = await GetAsync($"/v1/games?universeIds={UniverseId}", verifySession: false);
             if (response.IsSuccessStatusCode)
             {
-                dynamic whyaretheresomanywrappers = JObject.Parse(response.Content.ReadAsStringAsync().Result);
+                dynamic whyaretheresomanywrappers = JObject.Parse(await response.Content.ReadAsStringAsync());
                 dynamic data = whyaretheresomanywrappers.data[0];
                 name = data.sourceName;
                 description = data.sourceDescription;
@@ -119,20 +132,23 @@ namespace RoSharp.API.Assets
                 ulong creatorId = Convert.ToUInt64(data.creator.id);
                 if (data.creator.type == "Group")
                 {
-                    owner = Group.FromId(creatorId);
+                    owner = await Group.FromId(creatorId);
                 }
                 else if (data.creator.type == "User")
                 {
-                    owner = User.FromId(creatorId);
+                    owner = await User.FromId(creatorId);
                 }
 
                 // configs
-                UpdateConfiguration();
+                await UpdateConfigurationAsync();
             }
             else
             {
                 throw new InvalidOperationException($"Invalid universe ID '{UniverseId}'. HTTP {response.StatusCode}");
             }
+
+            await UpdateExperienceGuidelinesDataAsync();
+            await UpdateVoiceVideo();
 
             RefreshedAt = DateTime.Now;
         }
@@ -140,38 +156,19 @@ namespace RoSharp.API.Assets
         private bool? voiceEnabled = null;
         private bool? videoEnabled = null;
 
-        private void UpdateVoiceVideo()
+        private async Task UpdateVoiceVideo()
         {
-            string commSetting = GetString($"/v1/settings/universe/1318971886", "https://voice.roblox.com");
+            string commSetting = await GetStringAsync($"/v1/settings/universe/1318971886", "https://voice.roblox.com");
             dynamic data = JObject.Parse(commSetting);
 
             voiceEnabled = data.isUniverseEnabledForVoice;
             videoEnabled = data.isUniverseEnabledForAvatarVideo;
         }
 
-        [UsesSession]
-        public bool VoiceEnabled
-        {
-            get
-            {
-                if (!voiceEnabled.HasValue)
-                    UpdateVoiceVideo();
+        public bool VoiceEnabled => voiceEnabled.Value;
 
-                return voiceEnabled.Value;
-            }
-        }
+        public bool VideoEnabled => videoEnabled.Value;
 
-        [UsesSession]
-        public bool VideoEnabled
-        {
-            get
-            {
-                if (!videoEnabled.HasValue)
-                    UpdateVoiceVideo();
-
-                return videoEnabled.Value;
-            }
-        }
 
         private PlayabilityStatus? playabilityStatus;
         public PlayabilityStatus PlayabilityStatus
@@ -185,21 +182,7 @@ namespace RoSharp.API.Assets
         }
 
         private bool? profanityAllowed;
-        public bool ProfanityAllowed
-        {
-            get
-            {
-                if (!profanityAllowed.HasValue)
-                {
-                    string commSetting = GetString($"/asset-text-filter-settings/public/universe/{UniverseId}", "https://apis.roblox.com");
-                    dynamic data = JObject.Parse(commSetting);
-
-
-                    profanityAllowed = data.Profanity;
-                }
-                return profanityAllowed.Value;
-            }
-        }
+        public bool ProfanityAllowed => profanityAllowed.Value;
 
         private ReadOnlyDictionary<string, string>? socialChannels;
 
@@ -224,41 +207,26 @@ namespace RoSharp.API.Assets
         }
 
         private int? minimumAge;
-        public int MinimumAge
-        {
-            get
-            {
-                if (!minimumAge.HasValue)
-                {
-                    UpdateExperienceGuidelinesData();
-                }
-
-                return minimumAge.Value;
-            }
-        }
+        public int MinimumAge => minimumAge.Value;
 
         private ReadOnlyCollection<ExperienceDescriptors>? experienceDescriptors;
-        public ReadOnlyCollection<ExperienceDescriptors> ExperienceDescriptors
-        {
-            get
-            {
-                if (experienceDescriptors == null)
-                {
-                    UpdateExperienceGuidelinesData();
-                }
-                return experienceDescriptors;
-            }
-        }
+        public ReadOnlyCollection<ExperienceDescriptors> ExperienceDescriptors => experienceDescriptors;
 
-        private void UpdateExperienceGuidelinesData()
+        private async Task UpdateExperienceGuidelinesDataAsync()
         {
+            // Update profanity
+            string commSetting = await GetStringAsync($"/asset-text-filter-settings/public/universe/{UniverseId}", "https://apis.roblox.com");
+            dynamic dataProfane = JObject.Parse(commSetting);
+            profanityAllowed = dataProfane.Profanity;
+
+            // Update guidelines
             object body = new
             {
                 universeId = UniverseId.ToString()
             };
 
-            HttpResponseMessage response = PostAsync("/experience-guidelines-api/experience-guidelines/get-age-recommendation", body, "https://apis.roblox.com").Result;
-            string rawData = response.Content.ReadAsStringAsync().Result;
+            HttpResponseMessage response = await PostAsync("/experience-guidelines-api/experience-guidelines/get-age-recommendation", body, "https://apis.roblox.com");
+            string rawData = await response.Content.ReadAsStringAsync();
             dynamic dataUseless = JObject.Parse(rawData);
             dynamic data = dataUseless.ageRecommendationDetails;
 
@@ -326,9 +294,9 @@ namespace RoSharp.API.Assets
         private bool studioAccessToAPIsAllowed;
         public bool StudioAccessToAPIsAllowed => studioAccessToAPIsAllowed;
 
-        private void UpdateConfiguration()
+        private async Task UpdateConfigurationAsync()
         {
-            HttpResponseMessage response = PatchAsync($"/v2/universes/{UniverseId}/configuration", new { }, "https://develop.roblox.com", false).Result;
+            HttpResponseMessage response = await PatchAsync($"/v2/universes/{UniverseId}/configuration", new { }, "https://develop.roblox.com", false);
             string rawData = response.Content.ReadAsStringAsync().Result;
             dynamic data = JObject.Parse(rawData);
 
@@ -361,7 +329,7 @@ namespace RoSharp.API.Assets
                 try
                 {
                     ulong id = Convert.ToUInt64(item.universeId);
-                    Experience asset = FromId(id, session);
+                    Experience asset = await FromId(id, session);
                     list.Add(asset);
                 }
                 catch { }
@@ -384,7 +352,7 @@ namespace RoSharp.API.Assets
                     if (data.imageId != null)
                     {
                         ulong assetId = Convert.ToUInt64(data.imageId);
-                        icon = Asset.FromId(assetId, session);
+                        icon = Asset.FromId(assetId, session).Result;
                     }
                 }
 
@@ -408,7 +376,7 @@ namespace RoSharp.API.Assets
             foreach (dynamic item in data.data)
             {
                 ulong id = Convert.ToUInt64(item.id);
-                list.Add(Badge.FromId(id));
+                list.Add(await Badge.FromId(id));
             }
 
             return new PageResponse<Badge>(list, nextPage, previousPage);
@@ -430,7 +398,7 @@ namespace RoSharp.API.Assets
 
                 ulong assetId = Convert.ToUInt64(thumbnail.targetId);
 
-                thumbnails.Add(Asset.FromId(assetId, session));
+                thumbnails.Add(await Asset.FromId(assetId, session));
             }
 
             return thumbnails.AsReadOnly();
@@ -494,7 +462,7 @@ namespace RoSharp.API.Assets
             => await BanUserAsync(user.Id, displayReason, privateReason, permanent, length, excludeAlts);
 
         public async Task BanUserAsync(string username, string displayReason, string privateReason, bool permanent, TimeSpan? length = null, bool excludeAlts = true)
-            => await BanUserAsync(User.FromUsername(username, session), displayReason, privateReason, permanent, length, excludeAlts);
+            => await BanUserAsync(await User.FromUsername(username, session), displayReason, privateReason, permanent, length, excludeAlts);
 
         public async Task UnbanUserAsync(ulong userId)
         {
@@ -515,7 +483,7 @@ namespace RoSharp.API.Assets
             => await UnbanUserAsync(user.Id);
 
         public async Task UnbanUserAsync(string username)
-            => await UnbanUserAsync(User.FromUsername(username, session));
+            => await UnbanUserAsync(await User.FromUsername(username, session));
 
         public async Task PostUpdateAsync(string text) // TODO: This api may not work? (Not authorized)
         {
