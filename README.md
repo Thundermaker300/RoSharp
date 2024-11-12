@@ -2,6 +2,7 @@
 ![GitHub Issues](https://img.shields.io/github/issues/Thundermaker300/RoSharp?style=for-the-badge)
 ![GitHub code size](https://img.shields.io/github/languages/code-size/Thundermaker300/RoSharp?style=for-the-badge)
 [![Discord](https://img.shields.io/discord/1305657567137107978?color=738adb&label=Discord&logo=discord&logoColor=white&style=for-the-badge)](https://discord.gg/QMGBeCqYEZ)
+[![ko-fi](https://ko-fi.com/img/githubbutton_sm.svg)](https://ko-fi.com/P5P416152H)
 
 # RoSharp
 See [wiki](https://github.com/Thundermaker300/RoSharp/wiki) for documentation.
