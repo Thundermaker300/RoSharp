@@ -240,7 +240,7 @@ namespace RoSharp.API
         {
             if (groups == null)
             {
-                string rawData = await GetStringAsync("/v1/users/39979813/groups/roles", "https://groups.roblox.com");
+                string rawData = await GetStringAsync($"/v1/users/{Id}/groups/roles", "https://groups.roblox.com");
                 dynamic data = JObject.Parse(rawData);
 
                 Dictionary<Group, Role> dict = new();
