@@ -191,7 +191,7 @@ namespace RoSharp.API.Assets
                 if (socialChannels == null)
                 {
                     Dictionary<string, string> dict = new();
-                    string rawData = GetString($"/v1/games/{UniverseId}/social-links/list");
+                    string rawData = GetString($"/v1/games/{UniverseId}/social-links/list", verifyApiName: "Experience.SocialChannels");
                     dynamic data = JObject.Parse(rawData);
                     foreach (dynamic media in data.data)
                     {
