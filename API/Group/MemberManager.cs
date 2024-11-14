@@ -152,7 +152,6 @@ namespace RoSharp.API
         [UsesSession]
         public async Task KickMemberAsync(ulong userId)
         {
-            // TODO look into
             HttpResponseMessage response = await group.DeleteAsync($"/v1/groups/{group.Id}/users/{userId}", verifyApiName: "MemberManager.KickMemberAsync");
             if (!response.IsSuccessStatusCode)
             {

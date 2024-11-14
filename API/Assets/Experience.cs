@@ -94,8 +94,6 @@ namespace RoSharp.API.Assets
         {
             // Reset properties
             // TODO: These need to be updated within this method
-            voiceEnabled = null;
-            videoEnabled = null;
             playabilityStatus = null;
             socialChannels = null;
             icon = null;
@@ -207,8 +205,8 @@ namespace RoSharp.API.Assets
         private int? minimumAge;
         public int MinimumAge => minimumAge.Value;
 
-        private ReadOnlyCollection<ExperienceDescriptors>? experienceDescriptors;
-        public ReadOnlyCollection<ExperienceDescriptors> ExperienceDescriptors => experienceDescriptors;
+        private ReadOnlyCollection<ExperienceDescriptor>? experienceDescriptors;
+        public ReadOnlyCollection<ExperienceDescriptor> ExperienceDescriptors => experienceDescriptors;
 
         private async Task UpdateExperienceGuidelinesDataAsync()
         {
@@ -233,15 +231,39 @@ namespace RoSharp.API.Assets
             else
                 minimumAge = 0;
 
-            List<ExperienceDescriptors> list = new();
+            List<ExperienceDescriptor> list = new();
             if (data.descriptorUsages.Count != 0)
             {
                 foreach (dynamic item in data.descriptorUsages)
                 {
+                    string getDimensionValue(string target)
+                    {
+                        foreach (dynamic descriptorData in item.descriptorDimensionUsages)
+                        {
+                            if (descriptorData.dimensionName == target)
+                                return descriptorData.dimensionValue;
+                        }
+                        return null;
+                    }
+
                     string itemName = Convert.ToString(item.name);
                     if (item.contains == true && Utility.Constants.DescriptorIdToEnumMapping.ContainsKey(itemName))
                     {
-                        list.Add(Utility.Constants.DescriptorIdToEnumMapping[itemName]);
+                        ExperienceDescriptor descriptor = new()
+                        {
+                            DescriptorType = Utility.Constants.DescriptorIdToEnumMapping[itemName],
+                            IconUrl = item.descriptor.iconUrl,
+                            DisplayText = item.descriptor.displayName,
+
+                            Type = getDimensionValue("type"),
+                            Presence = getDimensionValue("presence"),
+                            Intensity = getDimensionValue("intensity"),
+                            Frequency = getDimensionValue("frequency"),
+                            Realism = getDimensionValue("realism"),
+                            BloodLevel = getDimensionValue("blood-level"),
+                        };
+
+                        list.Add(descriptor);
                     }
                 }
             }
@@ -490,7 +512,7 @@ namespace RoSharp.API.Assets
         public async Task UnbanUserAsync(string username)
             => await UnbanUserAsync(await User.FromUsername(username, session));
 
-        public async Task PostUpdateAsync(string text) // TODO: This api may not work? (Not authorized)
+        public async Task PostUpdateAsync(string text)
         {
             HttpResponseMessage response = await PostAsync($"/game-update-notifications/v1/publish/{UniverseId}", text, "https://apis.roblox.com", "Experience.PostUpdateAsync");
             if (!response.IsSuccessStatusCode)
@@ -513,6 +535,20 @@ namespace RoSharp.API.Assets
 
         IPoolable IPoolable.AttachSessionAndReturn(Session? session)
             => AttachSessionAndReturn(session);
+    }
+
+    public class ExperienceDescriptor
+    {
+        public ExperienceDescriptorType DescriptorType { get; init; }
+        public string IconUrl { get; init; }
+        public string DisplayText { get; init; }
+
+        public string? Type { get; init; }
+        public string? Frequency { get; init; }
+        public string? Realism { get; init; }
+        public string? BloodLevel { get; init; }
+        public string? Intensity { get; init; }
+        public string? Presence { get; init; }
     }
 
     public class ExperienceModifyOptions

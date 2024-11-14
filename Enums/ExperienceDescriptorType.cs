@@ -1,6 +1,6 @@
 ﻿namespace RoSharp.Enums
 {
-    public enum ExperienceDescriptors
+    public enum ExperienceDescriptorType
     {
         Alcohol,
 

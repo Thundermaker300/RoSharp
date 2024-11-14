@@ -1,5 +1,6 @@
 ﻿using Newtonsoft.Json.Linq;
 using RoSharp.API.Assets;
+using RoSharp.API.Misc;
 using System.Collections.ObjectModel;
 using System.Net;
 
@@ -7,30 +8,50 @@ namespace RoSharp.Utility
 {
     public static class ChartsAPI
     {
-        // TODO: Sort of works. help
-        public static async Task<ReadOnlyCollection<Experience>> GetFrontPageExperiencesAsync(string category, Session? session = null)
+        public static async Task<ChartsResponse> GetFrontPageExperiencesAsync(Session? session = null, string? cursor = null)
         {
+            string url = $"/explore-api/v1/get-sorts?sessionId={DateTime.UtcNow.Ticks}";
+            if (cursor != null)
+                url += $"&sortsPageToken={cursor}";
+
             HttpClient client = MakeClient(session);
-            HttpResponseMessage response = await client.GetAsync("/explore-api/v1/get-sorts?sessionId=1");
-            var dict = new List<Experience>();
+            HttpResponseMessage response = await client.GetAsync(url);
             if (response.IsSuccessStatusCode)
             {
-
+                List<ChartCategory> categories = new();
                 dynamic data = JObject.Parse(await response.Content.ReadAsStringAsync());
-                foreach (dynamic item in data.sorts)
+                foreach (dynamic sort in data.sorts)
                 {
-                    if (item.sortDisplayName == category)
+                    if (sort.contentType != "Games")
+                        continue;
+
+                    List<ulong> list = new();
+
+                    foreach (dynamic game in sort.games)
                     {
-                        foreach (dynamic game in item.games)
-                        {
-                            ulong id = game.universeId;
-                            dict.Add(await Experience.FromId(id));
-                        }
+                        ulong id = game.universeId;
+                        list.Add(id);
                     }
+
+                    ChartCategory category = new()
+                    {
+                        DisplayName = sort.sortDisplayName,
+                        Id = sort.sortId,
+                        Description = sort.topicLayoutData.infoText,
+                        ExperienceIds = list.AsReadOnly(),
+                    };
+                    categories.Add(category);
                 }
+
+                string token = data.nextSortsPageToken;
+                return new()
+                {
+                    NextPageToken = token == string.Empty ? null : token,
+                    Categories = categories.AsReadOnly(),
+                };
             }
 
-            return dict.AsReadOnly();
+            throw new HttpRequestException("Failed to get front page experiences. Try again later.");
         }
 
         private static HttpClient MakeClient(Session? session = null)
@@ -49,5 +70,19 @@ namespace RoSharp.Utility
 
             return client;
         }
+    }
+
+    public sealed class ChartsResponse
+    {
+        public string? NextPageToken { get; init; }
+        public ReadOnlyCollection<ChartCategory> Categories { get; init; }
+    }
+
+    public sealed class ChartCategory
+    {
+        public string DisplayName { get; init; }
+        public string Id { get; init; }
+        public string Description { get; init; }
+        public ReadOnlyCollection<ulong> ExperienceIds { get; init; }
     }
 }
