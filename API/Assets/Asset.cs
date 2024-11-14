@@ -150,28 +150,23 @@ namespace RoSharp.API.Assets
                 throw new InvalidOperationException($"Invalid asset ID '{Id}'. HTTP {response.StatusCode}");
             }
 
+            // Update favorites
+            favorites = Convert.ToUInt64(await GetStringAsync($"/v1/favorites/assets/{Id}/count"));
+
             // Reset properties
-            favorites = 0;
             thumbnailUrl = await GetThumbnailAsync(ThumbnailSize.S420x420);
 
             RefreshedAt = DateTime.Now;
         }
 
         private ulong favorites = 0;
-        public ulong Favorites
-        {
-            get
-            {
-                if (favorites == 0)
-                {
-                    string rawData = GetString($"/v1/favorites/assets/{Id}/count");
-                    favorites = Convert.ToUInt64(rawData);
-                }
-                return favorites;
-            }
-        }
+        public ulong Favorites => favorites;
 
         private string thumbnailUrl;
+
+        /// <summary>
+        /// Returns this asset's thumbnail. Equivalent to calling <see cref="GetThumbnailAsync(ThumbnailSize)"/> with <see cref="ThumbnailSize.S420x420"/>, except this value is cached.
+        /// </summary>
         public string ThumbnailUrl => thumbnailUrl;
 
         public async Task<string> GetThumbnailAsync(ThumbnailSize size = ThumbnailSize.S420x420)
