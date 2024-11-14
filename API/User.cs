@@ -214,22 +214,19 @@ namespace RoSharp.API
         }
 
         private Group? primaryGroup;
-        public Group? PrimaryGroup
+        public async Task<Group?> GetPrimaryGroupAsync()
         {
-            get
+            if (primaryGroup == null)
             {
-                if (primaryGroup == null)
-                {
-                    string rawData = GetString($"/v1/users/{Id}/groups/primary/role", "https://groups.roblox.com");
-                    if (rawData == "null")
-                        return null;
+                string rawData = await GetStringAsync($"/v1/users/{Id}/groups/primary/role", "https://groups.roblox.com");
+                if (rawData == "null")
+                    return null;
 
-                    dynamic data = JObject.Parse(rawData);
-                    ulong groupId = Convert.ToUInt64(data.group.id);
-                    primaryGroup = Group.FromId(groupId, session).Result;
-                }
-                return primaryGroup;
+                dynamic data = JObject.Parse(rawData);
+                ulong groupId = Convert.ToUInt64(data.group.id);
+                primaryGroup = Group.FromId(groupId, session).Result;
             }
+            return primaryGroup;
         }
 
         private ReadOnlyDictionary<Group, Role>? groups;
@@ -275,28 +272,36 @@ namespace RoSharp.API
 
         private ReadOnlyDictionary<string, string>? socialChannels;
 
-        public ReadOnlyDictionary<string, string> SocialChannels
+        /// <summary>
+        /// Returns this user's social channels.
+        /// </summary>
+        /// <returns>A task containing a <see cref="ReadOnlyDictionary{TKey, TValue}"/> when complete.</returns>
+        /// <remarks>The keys of the dictionary are the social media type, the value is the URL.</remarks>
+        public async Task<ReadOnlyDictionary<string, string>> GetSocialChannelsAsync()
         {
-            get
+            if (socialChannels == null)
             {
-                if (socialChannels == null)
+                Dictionary<string, string> dict = new();
+                string rawData = await GetStringAsync($"/v1/users/{Id}/promotion-channels?alwaysReturnUrls=true", "https://accountinformation.roblox.com/");
+                dynamic data = JObject.Parse(rawData);
+                foreach (dynamic media in data)
                 {
-                    Dictionary<string, string> dict = new();
-                    string rawData = GetString($"/v1/users/{Id}/promotion-channels?alwaysReturnUrls=true", "https://accountinformation.roblox.com/");
-                    dynamic data = JObject.Parse(rawData);
-                    foreach (dynamic media in data)
-                    {
-                        if (media.Value == null) continue;
-                        dict.Add(Convert.ToString(media.Name), Convert.ToString(media.Value));
-                    }
-                    socialChannels = dict.AsReadOnly();
+                    if (media.Value == null) continue;
+                    dict.Add(Convert.ToString(media.Name), Convert.ToString(media.Value));
                 }
-
-                return socialChannels;
+                socialChannels = dict.AsReadOnly();
             }
+
+            return socialChannels;
         }
 
         private ReadOnlyCollection<Asset>? currentlyWearing;
+
+        /// <summary>
+        /// Returns a <see cref="ReadOnlyCollection{T}"/> of <see cref="Asset"/> this user is currently wearing.
+        /// </summary>
+        /// <returns><see cref="ReadOnlyCollection{T}"/></returns>
+        /// <remarks>The <see cref="Session"/> attached to this <see cref="User"/> will automatically be added to the returned <see cref="Asset"/> instances. This method will throw an exception if this User instance has no <see cref="Session"/> attached, as <see cref="Asset"/> instances must have a session attached.</remarks>
         public async Task<ReadOnlyCollection<Asset>> GetCurrentlyWearingAsync()
         {
             if (currentlyWearing == null)
@@ -316,6 +321,12 @@ namespace RoSharp.API
         }
 
         private ReadOnlyCollection<Asset>? collections;
+
+        /// <summary>
+        /// Returns a <see cref="ReadOnlyCollection{T}"/> of <see cref="Asset"/> that are in this user's collection.
+        /// </summary>
+        /// <returns><see cref="ReadOnlyCollection{T}"/></returns>
+        /// <remarks>The <see cref="Session"/> attached to this <see cref="User"/> will automatically be added to the returned <see cref="Asset"/> instances. This method will throw an exception if this User instance has no <see cref="Session"/> attached, as <see cref="Asset"/> instances must have a session attached.</remarks>
         public async Task<ReadOnlyCollection<Asset>> GetCollectionItemsAsync()
         {
             if (collections == null)
@@ -334,6 +345,12 @@ namespace RoSharp.API
             return collections;
         }
 
+        /// <summary>
+        /// Returns a <see cref="ReadOnlyCollection{T}"/> of <see cref="User"/> instances that are friends with this user.
+        /// </summary>
+        /// <param name="limit">The maximum amount of friends to return.</param>
+        /// <returns><see cref="ReadOnlyCollection{T}"/></returns>
+        /// <remarks>The <see cref="Session"/> attached to this <see cref="User"/> will automatically be added to the returned <see cref="User"/> instances.</remarks>
         public async Task<ReadOnlyCollection<User>> GetFriendsAsync(int limit = 50)
         {
             string rawData = await GetStringAsync($"/v1/users/{Id}/friends", "https://friends.roblox.com");
