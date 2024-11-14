@@ -36,6 +36,14 @@ namespace RoSharp.API.Assets
         private int yesterdayAwardedCount;
         public int YesterdayAwardedCount => yesterdayAwardedCount;
 
+        private Asset thumbnailAsset;
+
+        /// <summary>
+        /// Gets an <see cref="Asset"/> that is used for this badge.
+        /// </summary>
+        /// <remarks>This value will be <see langword="null"/> if this <see cref="Badge"/> is created without an authenticated <see cref="Session"/> as Asset instances require an authenticated session.</remarks>
+        public Asset ThumbnailAsset => thumbnailAsset;
+
         /// <inheritdoc/>
         public DateTime RefreshedAt { get; set; }
 
@@ -79,6 +87,12 @@ namespace RoSharp.API.Assets
                 experience = await Experience.FromId(experienceId);
                 awardedCount = Convert.ToInt32(data.statistics.awardedCount);
                 yesterdayAwardedCount = Convert.ToInt32(data.statistics.pastDayAwardedCount);
+                isEnabled = data.enabled;
+
+                if (SessionVerify.Verify(session))
+                {
+                    thumbnailAsset = await Asset.FromId(Convert.ToUInt64(data.displayIconImageId), session);
+                }
             }
             else
             {
