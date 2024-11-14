@@ -168,9 +168,14 @@ namespace RoSharp.API.Assets
         {
             get
             {
-                string raw = GetString($"v1/games/multiget-playability-status?universeIds={UniverseId}");
-                dynamic data = JArray.Parse(raw);
-                return Enum.Parse<PlayabilityStatus>(Convert.ToString(data[0].playabilityStatus));
+                if (!playabilityStatus.HasValue)
+                {
+                    string raw = GetString($"v1/games/multiget-playability-status?universeIds={UniverseId}");
+                    dynamic data = JArray.Parse(raw);
+                    playabilityStatus = Enum.Parse<PlayabilityStatus>(Convert.ToString(data[0].playabilityStatus));
+                }
+
+                return playabilityStatus.Value;
             }
         }
 
