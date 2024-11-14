@@ -84,5 +84,23 @@ namespace RoSharp.Utility
         public string Id { get; init; }
         public string Description { get; init; }
         public ReadOnlyCollection<ulong> ExperienceIds { get; init; }
+
+        public async Task<ReadOnlyCollection<Experience>> ToExperienceListAsync()
+        {
+            List<Experience> experiences = new List<Experience>();
+            foreach (ulong id in ExperienceIds)
+            {
+                experiences.Add(await Experience.FromId(id));
+            }
+            return experiences.AsReadOnly();
+        }
+
+        public async Task ForEachExperienceAsync(Action<Experience> action)
+        {
+            foreach (ulong id in ExperienceIds)
+            {
+                action(await Experience.FromId(id));
+            }
+        }
     }
 }
