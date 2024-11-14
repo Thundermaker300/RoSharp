@@ -6,6 +6,7 @@ namespace RoSharp.API.Assets
 {
     public class Badge : APIMain, IRefreshable, IPoolable
     {
+        /// <inheritdoc/>
         public override string BaseUrl => "https://badges.roblox.com";
 
         public ulong Id { get; }
@@ -35,6 +36,7 @@ namespace RoSharp.API.Assets
         private int yesterdayAwardedCount;
         public int YesterdayAwardedCount => yesterdayAwardedCount;
 
+        /// <inheritdoc/>
         public DateTime RefreshedAt { get; set; }
 
         private Badge(ulong assetId, Session? session = null)
@@ -59,6 +61,7 @@ namespace RoSharp.API.Assets
             return newUser;
         }
 
+        /// <inheritdoc/>
         public async Task RefreshAsync()
         {
             HttpResponseMessage response = await GetAsync($"/v1/badges/{Id}");
@@ -111,15 +114,40 @@ namespace RoSharp.API.Assets
             }
         }
 
+        /// <summary>
+        /// Gets whether or not this badge is owned by the given <see cref="User"/>.
+        /// </summary>
+        /// <param name="target">The user to check.</param>
+        /// <returns>A task which contains a boolean when completed.</returns>
+        /// <seealso cref="User.HasBadgeAsync(Badge)"/>
+        /// <seealso cref="User.HasBadgeAsync(ulong)"/>
         public async Task<bool> IsOwnedByAsync(User target) => await target.HasBadgeAsync(this);
+
+        /// <summary>
+        /// Gets whether or not this badge is owned by the user with the given user Id.
+        /// </summary>
+        /// <param name="targetId">The user ID to check.</param>
+        /// <returns>A task which contains a boolean when completed.</returns>
+        /// <seealso cref="User.HasBadgeAsync(Badge)"/>
+        /// <seealso cref="User.HasBadgeAsync(ulong)"/>
         public async Task<bool> IsOwnedByAsync(ulong targetId) => await IsOwnedByAsync(await User.FromId(targetId, session));
+
+        /// <summary>
+        /// Gets whether or not this badge is owned by the user with the given username.
+        /// </summary>
+        /// <param name="targetUsername">The username to check.</param>
+        /// <returns>A task which contains a boolean when completed.</returns>
+        /// <seealso cref="User.HasBadgeAsync(Badge)"/>
+        /// <seealso cref="User.HasBadgeAsync(ulong)"/>
         public async Task<bool> IsOwnedByAsync(string targetUsername) => await IsOwnedByAsync(await User.FromUsername(targetUsername, session));
 
+        /// <inheritdoc/>
         public override string ToString()
         {
             return $"{Name} [{Id}] {{{(Owner is User ? "@" : string.Empty)}{Owner.Name}}} <{AwardedCount}>";
         }
-
+        
+        /// <inheritdoc/>
         public Badge AttachSessionAndReturn(Session? session)
         {
             if (session is null || !session.LoggedIn)

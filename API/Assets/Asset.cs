@@ -8,6 +8,7 @@ namespace RoSharp.API.Assets
 {
     public class Asset : APIMain, IRefreshable, IPoolable
     {
+        /// <inheritdoc/>
         public override string BaseUrl => "https://catalog.roblox.com";
 
         public ulong Id { get; }
@@ -61,6 +62,7 @@ namespace RoSharp.API.Assets
 
         public bool HasOwner => Owner != null;
 
+        /// <inheritdoc/>
         public DateTime RefreshedAt { get; set; }
 
         private Asset(ulong assetId, Session session)
@@ -84,6 +86,7 @@ namespace RoSharp.API.Assets
             return newUser;
         }
 
+        /// <inheritdoc/>
         public async Task RefreshAsync()
         {
             HttpResponseMessage response = await GetAsync($"/v2/assets/{Id}/details", "https://economy.roblox.com", "Asset.RefreshAsync");
@@ -251,6 +254,7 @@ namespace RoSharp.API.Assets
             return list.AsReadOnly();
         }
 
+        /// <inheritdoc/>
         public override string ToString()
         {
             return $"{Name} [{Id}] ({AssetType}) {{{(Owner is User ? "@" : string.Empty)}{Owner.Name}}} <R${(OnSale == true ? Price : "0")}>";

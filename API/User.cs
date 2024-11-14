@@ -10,6 +10,7 @@ namespace RoSharp.API
 {
     public class User : APIMain, IRefreshable, IAssetOwner, IPoolable
     {
+        /// <inheritdoc/>
         public override string BaseUrl => "https://users.roblox.com";
 
         public ulong Id { get; }
@@ -33,6 +34,8 @@ namespace RoSharp.API
 
         private bool profileHidden;
         public bool ProfileHidden => ProfileHidden;
+
+        /// <inheritdoc/>
         public DateTime RefreshedAt { get; set; }
 
         private User(ulong userId, Session? session = null)
@@ -60,6 +63,7 @@ namespace RoSharp.API
         public static async Task<User> FromUsername(string username, Session? session = null)
             => await FromId(await UserUtility.GetUserIdAsync(username), session);
 
+        /// <inheritdoc/>
         public async Task RefreshAsync()
         {
             HttpResponseMessage response = await GetAsync($"/v1/users/{Id}");
@@ -389,6 +393,7 @@ namespace RoSharp.API
         public async Task<bool> HasBadgeAsync(Badge badge)
             => await HasBadgeAsync(badge.Id);
 
+        /// <inheritdoc/>
         public override string ToString()
         {
             return $"{DisplayName} (@{Name}) [{Id}] {(Verified ? "[V]" : string.Empty)}";

@@ -10,6 +10,7 @@ namespace RoSharp.API
 {
     public class Group : APIMain, IRefreshable, IAssetOwner, IPoolable
     {
+        /// <inheritdoc/>
         public override string BaseUrl => "https://groups.roblox.com";
 
         public ulong Id { get; }
@@ -38,6 +39,7 @@ namespace RoSharp.API
         private MemberManager memberManager;
         public MemberManager MemberManager => memberManager ?? new MemberManager(this);
 
+        /// <inheritdoc/>
         public DateTime RefreshedAt { get; set; }
 
         internal ulong members;
@@ -67,6 +69,7 @@ namespace RoSharp.API
             return newGroup;
         }
 
+        /// <inheritdoc/>
         public async Task RefreshAsync()
         {
             HttpResponseMessage response = await GetAsync($"/v1/groups/{Id}");
@@ -239,6 +242,7 @@ namespace RoSharp.API
             return new(list, nextPage, previousPage);
         }
 
+        /// <inheritdoc/>
         public override string ToString()
         {
             return $"{Name} [{Id}] {(Verified ? "[V]" : string.Empty)}";

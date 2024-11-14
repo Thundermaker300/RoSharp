@@ -10,6 +10,7 @@ namespace RoSharp.API.Assets
 {
     public class Experience : APIMain, IRefreshable, IPoolable
     {
+        /// <inheritdoc/>
         public override string BaseUrl => "https://games.roblox.com";
 
         private static HttpClient genericClient { get; } = new HttpClient();
@@ -52,6 +53,7 @@ namespace RoSharp.API.Assets
 
         internal bool favoritedByUser;
 
+        /// <inheritdoc/>
         public DateTime RefreshedAt { get; set; }
 
         private Experience(ulong universeId, Session? session = null)
@@ -90,6 +92,7 @@ namespace RoSharp.API.Assets
             return newUser;
         }
 
+        /// <inheritdoc/>
         public async Task RefreshAsync()
         {
             // Reset properties
@@ -519,6 +522,7 @@ namespace RoSharp.API.Assets
                 throw new HttpRequestException($"Failed to post update. Error code {response.StatusCode}. {response.Content.ReadAsStringAsync().Result}");
         }
 
+        /// <inheritdoc/>
         public override string ToString()
         {
             return $"{Name} [{UniverseId}] {{{(Owner is User ? "@" : string.Empty)}{Owner.Name}}} <R${Cost}>";

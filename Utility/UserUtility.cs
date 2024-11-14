@@ -5,8 +5,14 @@ namespace RoSharp.Utility
 {
     public static class UserUtility
     {
-        public static HttpClient userUtilityClient { get; } = new HttpClient();
+        private static HttpClient userUtilityClient { get; } = new HttpClient();
 
+        /// <summary>
+        /// Gets the User Id that corresponds with the given username.
+        /// </summary>
+        /// <param name="username">The username.</param>
+        /// <returns>The matching User Id.</returns>
+        /// <exception cref="HttpRequestException">Invalid username provided.</exception>
         public static async Task<ulong> GetUserIdAsync(string username)
         {
             object request = new
@@ -20,7 +26,7 @@ namespace RoSharp.Utility
                 dynamic data = JObject.Parse(await response.Content.ReadAsStringAsync());
                 if (data.data.Count == 0)
                 {
-                    throw new InvalidOperationException("Invalid username provided.");
+                    throw new HttpRequestException("Invalid username provided.");
                 }
                 return data.data[0].id;
             }
