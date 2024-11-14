@@ -53,7 +53,10 @@ namespace RoSharp.API
             HttpResponseMessage response = await group.DeleteAsync($"/v1/groups/{group.Id}/rolesets/{roleId}", verifyApiName: "Role.DeleteAsync");
             if (!response.IsSuccessStatusCode)
             {
-                throw new InvalidOperationException($"Roleset delete failed (HTTP {response.StatusCode}). Do you have permission to delete this group's rolesets?");
+                string errorText = await response.Content.ReadAsStringAsync();
+                if (errorText.Contains("There are users in this role."))
+                    throw new HttpRequestException($"Cannot delete role '{roleId}' because there are users still in this role. Please remove all users from this role and try again.");
+                throw new HttpRequestException($"Roleset delete failed (HTTP {response.StatusCode}). Do you have permission to delete this group's rolesets?");
             }
         }
 
@@ -111,8 +114,6 @@ namespace RoSharp.API
         [UsesSession]
         public async Task DeleteAsync()
         {
-            // TODO: This doesnt' work (forbidden)
-            throw new Exception("This method has been disabled.");
             await roleManager.RequestDeleteRole(Id);
         }
     }
