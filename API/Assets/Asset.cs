@@ -73,7 +73,7 @@ namespace RoSharp.API.Assets
                 RoPool<Asset>.Add(this);
         }
 
-        public static async Task<Asset> FromId(ulong assetId, Session? session = null)
+        public static async Task<Asset> FromId(ulong assetId, Session session)
         {
             if (RoPool<Asset>.Contains(assetId))
                 return RoPool<Asset>.Get(assetId, session);
@@ -86,7 +86,7 @@ namespace RoSharp.API.Assets
 
         public async Task RefreshAsync()
         {
-            HttpResponseMessage response = await GetAsync($"/v2/assets/{Id}/details", "https://economy.roblox.com");
+            HttpResponseMessage response = await GetAsync($"/v2/assets/{Id}/details", "https://economy.roblox.com", "Asset.RefreshAsync");
             if (response.IsSuccessStatusCode)
             {
                 string raw = await response.Content.ReadAsStringAsync();
@@ -161,7 +161,7 @@ namespace RoSharp.API.Assets
             {
                 if (favorites == 0)
                 {
-                    string rawData = GetString($"/v1/favorites/assets/{Id}/count", verifySession: false);
+                    string rawData = GetString($"/v1/favorites/assets/{Id}/count");
                     favorites = Convert.ToUInt64(rawData);
                 }
                 return favorites;
@@ -174,7 +174,7 @@ namespace RoSharp.API.Assets
         public async Task<string> GetThumbnailAsync(ThumbnailSize size = ThumbnailSize.S420x420)
         {
             string url = $"/v1/assets?assetIds={Id}&returnPolicy=PlaceHolder&size={size.ToString().Substring(1)}&format=Png&isCircular=false";
-            string rawData = await GetStringAsync(url, "https://thumbnails.roblox.com", verifySession: false);
+            string rawData = await GetStringAsync(url, "https://thumbnails.roblox.com");
             dynamic data = JObject.Parse(rawData);
             if (data.data.Count == 0)
                 throw new InvalidOperationException("Invalid asset to get thumbnail for.");
@@ -183,15 +183,13 @@ namespace RoSharp.API.Assets
 
         public async Task ModifyAsync(AssetModifyOptions options)
         {
-            SessionVerify.ThrowIfNecessary(session, "Asset.ModifyAsync");
-
             object body = new
             {
                 name = options.Name,
                 description = options.Description,
             };
 
-            HttpResponseMessage response = await PatchAsync($"/v1/assets/{Id}", body, "https://develop.roblox.com");
+            HttpResponseMessage response = await PatchAsync($"/v1/assets/{Id}", body, "https://develop.roblox.com", "Asset.ModifyAsync");
             if (!response.IsSuccessStatusCode)
             {
                 throw new HttpRequestException($"Failed to modify asset. Error code {response.StatusCode}. {response.Content.ReadAsStringAsync().Result}");
@@ -200,8 +198,6 @@ namespace RoSharp.API.Assets
 
         public async Task SetSaleStatusAsync(bool isOnSale, int cost)
         {
-            SessionVerify.ThrowIfNecessary(session, "Asset.SetSaleStatusAsync");
-
             int? priceInRobux = !isOnSale ? null : cost;
             Dictionary<int, int> saleAvailabilityLocations = new() { [0] = 0, [1] = 1 };
             object body = new
@@ -216,7 +212,7 @@ namespace RoSharp.API.Assets
                     saleAvailabilityLocations = saleAvailabilityLocations
                 }
             };
-            HttpResponseMessage response = await PostAsync("/v1/assets/3307894526/release", body, "https://itemconfiguration.roblox.com");
+            HttpResponseMessage response = await PostAsync("/v1/assets/3307894526/release", body, "https://itemconfiguration.roblox.com", "Asset.SetSaleStatusAsync");
             if (!response.IsSuccessStatusCode)
             {
                 throw new HttpRequestException($"Failed to modify asset. Error code {response.StatusCode}. {response.Content.ReadAsStringAsync().Result}");
@@ -236,7 +232,7 @@ namespace RoSharp.API.Assets
         /// <remarks>Occasionally, Roblox's API will produce a 'bad recommendation' that leads to an asset that doesn't exist (either deleted or hidden). If this is the case, RoSharp will skip over it automatically. However, if the limit is set to Roblox's maximum of 45, this will result in less than 45 assets being returned.</remarks>
         public async Task<ReadOnlyCollection<Asset>> GetRecommendedAsync(int limit = 7)
         {
-            string rawData = await GetStringAsync($"/v2/recommendations/assets?assetId={Id}&assetTypeId={(int)AssetType}&numItems=45", verifySession: false);
+            string rawData = await GetStringAsync($"/v2/recommendations/assets?assetId={Id}&assetTypeId={(int)AssetType}&numItems=45");
             dynamic data = JObject.Parse(rawData);
             List<Asset> list = new();
             foreach (dynamic item in data.data)

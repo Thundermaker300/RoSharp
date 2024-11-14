@@ -22,7 +22,7 @@ namespace RoSharp.API
         public async Task RefreshAsync()
         {
             List<Role> list = [];
-            string rawData = await group.GetStringAsync($"/v1/groups/{group.Id}/roles", verifySession: false);
+            string rawData = await group.GetStringAsync($"/v1/groups/{group.Id}/roles");
             dynamic data = JObject.Parse(rawData);
             foreach (dynamic rank in data.roles)
             {
@@ -50,9 +50,7 @@ namespace RoSharp.API
 
         internal async Task RequestDeleteRole(ulong roleId)
         {
-            SessionVerify.ThrowIfNecessary(group.session, "Role.DeleteAsync");
-
-            HttpResponseMessage response = await group.DeleteAsync($"/v1/groups/{group.Id}/rolesets/{roleId}");
+            HttpResponseMessage response = await group.DeleteAsync($"/v1/groups/{group.Id}/rolesets/{roleId}", verifyApiName: "Role.DeleteAsync");
             if (!response.IsSuccessStatusCode)
             {
                 throw new InvalidOperationException($"Roleset delete failed (HTTP {response.StatusCode}). Do you have permission to delete this group's rolesets?");
@@ -61,11 +59,9 @@ namespace RoSharp.API
 
         internal async Task RequestUpdateRole(Role roleId, string newName)
         {
-            SessionVerify.ThrowIfNecessary(group.session, "Role.UpdateAsync");
-
             object body = new { name = newName, rank = roleId.Rank };
             JsonContent content = JsonContent.Create(body);
-            HttpResponseMessage response = await group.PatchAsync($"/v1/groups/{group.Id}/rolesets/{roleId.Id}", body);
+            HttpResponseMessage response = await group.PatchAsync($"/v1/groups/{group.Id}/rolesets/{roleId.Id}", body, verifyApiName: "Role.UpdateAsync");
             if (!response.IsSuccessStatusCode)
             {
                 throw new InvalidOperationException($"Roleset modification failed (HTTP {response.StatusCode}). Do you have permission to modify this group's rolesets?");
@@ -74,11 +70,9 @@ namespace RoSharp.API
 
         internal async Task RequestUpdateRole(Role roleId, int newRank)
         {
-            SessionVerify.ThrowIfNecessary(group.session, "Role.UpdateAsync");
-
             object body = new { name = roleId.Name, rank = newRank };
             JsonContent content = JsonContent.Create(body);
-            HttpResponseMessage response = await group.PatchAsync($"/v1/groups/{group.Id}/rolesets/{roleId.Id}", body);
+            HttpResponseMessage response = await group.PatchAsync($"/v1/groups/{group.Id}/rolesets/{roleId.Id}", body, verifyApiName: "Role.UpdateAsync");
             if (!response.IsSuccessStatusCode)
             {
                 throw new InvalidOperationException($"Roleset modification failed (HTTP {response.StatusCode}). Do you have permission to modify this group's rolesets?");

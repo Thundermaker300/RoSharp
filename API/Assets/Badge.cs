@@ -61,7 +61,7 @@ namespace RoSharp.API.Assets
 
         public async Task RefreshAsync()
         {
-            HttpResponseMessage response = await GetAsync($"/v1/badges/{Id}", verifySession: false);
+            HttpResponseMessage response = await GetAsync($"/v1/badges/{Id}");
             if (response.IsSuccessStatusCode)
             {
                 string raw = await response.Content.ReadAsStringAsync();
@@ -88,7 +88,7 @@ namespace RoSharp.API.Assets
         public async Task<string> GetThumbnailAsync()
         {
             string url = $"/v1/badges/icons?badgeIds={Id}&size=150x150&format=Png&isCircular=false";
-            string rawData = await GetStringAsync(url, "https://thumbnails.roblox.com", verifySession: false);
+            string rawData = await GetStringAsync(url, "https://thumbnails.roblox.com");
             dynamic data = JObject.Parse(rawData);
             if (data.data.Count == 0)
                 throw new InvalidOperationException("Invalid badge to get thumbnail for.");
@@ -97,8 +97,6 @@ namespace RoSharp.API.Assets
 
         public async Task ModifyAsync(BadgeModifyOptions options)
         {
-            SessionVerify.ThrowIfNecessary(session, "Badge.ModifyAsync");
-
             object body = new
             {
                 name = options.Name,
@@ -106,7 +104,7 @@ namespace RoSharp.API.Assets
                 enabled = options.IsEnabled,
             };
 
-            HttpResponseMessage response = await PatchAsync($"/v1/badges/{Id}", body);
+            HttpResponseMessage response = await PatchAsync($"/v1/badges/{Id}", body, verifyApiName: "Badge.ModifyAsync");
             if (!response.IsSuccessStatusCode)
             {
                 throw new HttpRequestException($"Failed to modify asset. Error code {response.StatusCode}. {response.Content.ReadAsStringAsync().Result}");

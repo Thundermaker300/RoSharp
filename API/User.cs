@@ -62,7 +62,7 @@ namespace RoSharp.API
 
         public async Task RefreshAsync()
         {
-            HttpResponseMessage response = await GetAsync($"/v1/users/{Id}", verifySession: false);
+            HttpResponseMessage response = await GetAsync($"/v1/users/{Id}");
             if (response.IsSuccessStatusCode)
             {
                 string raw = await response.Content.ReadAsStringAsync();
@@ -129,7 +129,7 @@ namespace RoSharp.API
             {
                 if (following == -1)
                 {
-                    HttpResponseMessage response = Get($"/v1/users/{Id}/followings/count", "https://friends.roblox.com", false);
+                    HttpResponseMessage response = Get($"/v1/users/{Id}/followings/count", "https://friends.roblox.com");
                     if (response.IsSuccessStatusCode)
                     {
                         string raw = response.Content.ReadAsStringAsync().Result;
@@ -152,7 +152,7 @@ namespace RoSharp.API
             {
                 if (followers == -1)
                 {
-                    HttpResponseMessage response = Get($"/v1/users/{Id}/followers/count", "https://friends.roblox.com", false);
+                    HttpResponseMessage response = Get($"/v1/users/{Id}/followers/count", "https://friends.roblox.com");
                     if (response.IsSuccessStatusCode)
                     {
                         string raw = response.Content.ReadAsStringAsync().Result;
@@ -176,7 +176,7 @@ namespace RoSharp.API
                 if (robloxBadges == null)
                 {
                     List<string> badges = new();
-                    string rawData = GetString($"/v1/users/{Id}/roblox-badges", "https://accountinformation.roblox.com", false);
+                    string rawData = GetString($"/v1/users/{Id}/roblox-badges", "https://accountinformation.roblox.com");
                     JArray data = JArray.Parse(rawData);
                     foreach (dynamic badgeData in data.Children<JObject>())
                     {
@@ -197,7 +197,7 @@ namespace RoSharp.API
                 if (renameHistory == null)
                 {
                     List<string> history = new();
-                    string rawData = GetString($"/v1/users/{Id}/username-history?limit=100&sortOrder=Desc", verifySession: false);
+                    string rawData = GetString($"/v1/users/{Id}/username-history?limit=100&sortOrder=Desc");
                     dynamic data = JObject.Parse(rawData);
                     foreach (dynamic historyData in data.data)
                     {
@@ -216,7 +216,7 @@ namespace RoSharp.API
             {
                 if (primaryGroup == null)
                 {
-                    string rawData = GetString($"/v1/users/{Id}/groups/primary/role", "https://groups.roblox.com", verifySession: false);
+                    string rawData = GetString($"/v1/users/{Id}/groups/primary/role", "https://groups.roblox.com");
                     if (rawData == "null")
                         return null;
 
@@ -259,7 +259,7 @@ namespace RoSharp.API
         {
             get
             {
-                HttpResponseMessage response = Get($"/v1/users/{Id}/can-view-inventory", "https://inventory.roblox.com", false);
+                HttpResponseMessage response = Get($"/v1/users/{Id}/can-view-inventory", "https://inventory.roblox.com");
                 if (response.IsSuccessStatusCode)
                 {
                     dynamic data = JObject.Parse(response.Content.ReadAsStringAsync().Result);
@@ -362,7 +362,7 @@ namespace RoSharp.API
                 ThumbnailType.Headshot => "-headshot",
                 _ => string.Empty,
             } + $"?userIds={Id}&size={size.ToString().Substring(1)}&format=Png&isCircular=false";
-            string rawData = await GetStringAsync(url, "https://thumbnails.roblox.com", verifySession: false);
+            string rawData = await GetStringAsync(url, "https://thumbnails.roblox.com");
             dynamic data = JObject.Parse(rawData);
             if (data.data.Count == 0)
                 throw new InvalidOperationException("Invalid user to get thumbnail for.");
@@ -371,7 +371,7 @@ namespace RoSharp.API
 
         public async Task<bool> OwnsAssetAsync(ulong assetId, int assetItemType = 0)
         {
-            string result = await GetStringAsync($"/v1/users/{Id}/items/{assetItemType}/{assetId}/is-owned", "https://inventory.roblox.com", false);
+            string result = await GetStringAsync($"/v1/users/{Id}/items/{assetItemType}/{assetId}/is-owned", "https://inventory.roblox.com");
             return Convert.ToBoolean(result);
         }
 
@@ -380,7 +380,7 @@ namespace RoSharp.API
 
         public async Task<bool> HasBadgeAsync(ulong badgeId)
         {
-            string rawData = await GetStringAsync($"/v1/users/{Id}/badges/awarded-dates?badgeIds={badgeId}", "https://badges.roblox.com", false);
+            string rawData = await GetStringAsync($"/v1/users/{Id}/badges/awarded-dates?badgeIds={badgeId}", "https://badges.roblox.com");
             dynamic data = JObject.Parse(rawData);
 
             return data.data.Count > 0;

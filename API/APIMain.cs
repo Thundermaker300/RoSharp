@@ -19,10 +19,10 @@ namespace RoSharp.API
 
         public APIMain() { }
 
-        internal HttpClient MakeHttpClient(string? baseOverride = null, bool verifySession = true)
+        internal HttpClient MakeHttpClient(string? baseOverride = null, string? verifyApiName = null)
         {
-            if (verifySession)
-                SessionVerify.ThrowIfNecessary(session, "UNKNOWN API, REPORT TO DEV");
+            if (verifyApiName != null)
+                SessionVerify.ThrowIfNecessary(session, verifyApiName);
 
             Uri uri = new Uri(baseOverride != null ? baseOverride : BaseUrl);
 
@@ -39,9 +39,9 @@ namespace RoSharp.API
             return client;
         }
 
-        internal async Task<HttpResponseMessage> GetAsync(string url, string? baseOverride = null, bool verifySession = true)
+        internal async Task<HttpResponseMessage> GetAsync(string url, string? baseOverride = null, string? verifyApiName = null)
         {
-            HttpClient client = MakeHttpClient(baseOverride, verifySession);
+            HttpClient client = MakeHttpClient(baseOverride, verifyApiName);
             HttpResponseMessage message = await client.GetAsync(url);
             if (message.StatusCode == HttpStatusCode.TooManyRequests)
             {
@@ -52,9 +52,9 @@ namespace RoSharp.API
 
 
         [Obsolete("Use async version where possible")]
-        internal HttpResponseMessage Get(string url, string? baseOverride = null, bool verifySession = true)
+        internal HttpResponseMessage Get(string url, string? baseOverride = null, string? verifyApiName = null)
         {
-            HttpClient client = MakeHttpClient(baseOverride, verifySession);
+            HttpClient client = MakeHttpClient(baseOverride, verifyApiName);
             HttpResponseMessage message = client.GetAsync(url).Result;
             if (message.StatusCode == HttpStatusCode.TooManyRequests)
             {
@@ -64,9 +64,9 @@ namespace RoSharp.API
         }
 
         [Obsolete("Use async version where possible")]
-        internal string GetString(string url, string? baseOverride = null, bool verifySession = true)
+        internal string GetString(string url, string? baseOverride = null, string? verifyApiName = null)
         {
-            HttpClient client = MakeHttpClient(baseOverride, verifySession);
+            HttpClient client = MakeHttpClient(baseOverride, verifyApiName);
             HttpResponseMessage message = client.GetAsync(url).Result;
             if (message.StatusCode == HttpStatusCode.TooManyRequests)
             {
@@ -75,9 +75,9 @@ namespace RoSharp.API
             return message.Content.ReadAsStringAsync().Result;
         }
 
-        internal async Task<string> GetStringAsync(string url, string? baseOverride = null, bool verifySession = true)
+        internal async Task<string> GetStringAsync(string url, string? baseOverride = null, string? verifyApiName = null)
         {
-            HttpClient client = MakeHttpClient(baseOverride, verifySession);
+            HttpClient client = MakeHttpClient(baseOverride, verifyApiName);
             HttpResponseMessage message = await client.GetAsync(url);
             if (message.StatusCode == HttpStatusCode.TooManyRequests)
             {
@@ -86,9 +86,9 @@ namespace RoSharp.API
             return await message.Content.ReadAsStringAsync();
         }
 
-        internal async Task<HttpResponseMessage> PostAsync(string url, object data, string? baseOverride = null, bool verifySession = true)
+        internal async Task<HttpResponseMessage> PostAsync(string url, object data, string? baseOverride = null, string? verifyApiName = null)
         {
-            HttpClient client = MakeHttpClient(baseOverride, verifySession);
+            HttpClient client = MakeHttpClient(baseOverride, verifyApiName);
             JsonContent content = JsonContent.Create(data);
 
             HttpResponseMessage initialResponse = await client.PostAsync(url, null);
@@ -103,9 +103,9 @@ namespace RoSharp.API
 
             return await client.PostAsync(url, content);
         }
-        internal async Task<HttpResponseMessage> PatchAsync(string url, object data, string? baseOverride = null, bool verifySession = true)
+        internal async Task<HttpResponseMessage> PatchAsync(string url, object data, string? baseOverride = null, string? verifyApiName = null)
         {
-            HttpClient client = MakeHttpClient(baseOverride, verifySession);
+            HttpClient client = MakeHttpClient(baseOverride, verifyApiName);
             JsonContent content = JsonContent.Create(data);
 
             HttpResponseMessage initialResponse = await client.PatchAsync(url, null);
@@ -120,9 +120,9 @@ namespace RoSharp.API
 
             return await client.PatchAsync(url, content);
         }
-        internal async Task<HttpResponseMessage> DeleteAsync(string url, string? baseOverride = null)
+        internal async Task<HttpResponseMessage> DeleteAsync(string url, string? baseOverride = null, string? verifyApiName = null)
         {
-            HttpClient client = MakeHttpClient(baseOverride);
+            HttpClient client = MakeHttpClient(baseOverride, verifyApiName);
 
             HttpResponseMessage initialResponse = await client.DeleteAsync(url);
 

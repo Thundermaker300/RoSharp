@@ -16,13 +16,11 @@ namespace RoSharp.API
 
         public async Task<PageResponse<User>> GetPendingRequestsAsync(FixedLimit limit = FixedLimit.Limit100, string? cursor = null)
         {
-            SessionVerify.ThrowIfNecessary(group.session, "MemberManager.GetPendingRequestsAsync");
-
             string url = $"/v1/groups/{group.Id}/join-requests?limit={limit.Limit()}&sortOrder=Desc";
             if (cursor != null)
                 url += "&cursor=" + cursor;
 
-            HttpResponseMessage response = await group.GetAsync(url);
+            HttpResponseMessage response = await group.GetAsync(url, verifyApiName: "Group.GetPendingRequestsAsync");
             if (!response.IsSuccessStatusCode)
             {
                 throw new InvalidOperationException($"Cannot view pending requests for group (HTTP {response.StatusCode}). Do you have permission to see pending requests?");
@@ -44,7 +42,7 @@ namespace RoSharp.API
 
         public async Task<bool> IsInGroupAsync(ulong userId)
         {
-            string rawData = await group.GetStringAsync($"/v1/users/{userId}/groups/roles?includeLocked=true", verifySession: false);
+            string rawData = await group.GetStringAsync($"/v1/users/{userId}/groups/roles?includeLocked=true");
             dynamic data = JObject.Parse(rawData);
             foreach (dynamic group in data.data)
             {
@@ -60,7 +58,7 @@ namespace RoSharp.API
 
         public async Task<Role?> GetRoleInGroupAsync(ulong userId)
         {
-            string rawData = await group.GetStringAsync($"/v1/users/{userId}/groups/roles?includeLocked=true", verifySession: false);
+            string rawData = await group.GetStringAsync($"/v1/users/{userId}/groups/roles?includeLocked=true");
             dynamic data = JObject.Parse(rawData);
             foreach (dynamic group in data.data)
             {
@@ -78,13 +76,11 @@ namespace RoSharp.API
         [UsesSession]
         public async Task ModifyJoinRequestAsync(ulong userId, JoinRequestAction action)
         {
-            SessionVerify.ThrowIfNecessary(group.session, "MemberManager.ModifyJoinRequestAsync");
-
             string url = $"/v1/groups/{group.Id}/join-requests/users/{userId}";
             HttpResponseMessage response = action switch
             {
-                JoinRequestAction.Accept => await group.PostAsync(url, null),
-                JoinRequestAction.Decline => await group.DeleteAsync(url),
+                JoinRequestAction.Accept => await group.PostAsync(url, new { }, verifyApiName: "MemberManager.ModifyJoinRequestAsync"),
+                JoinRequestAction.Decline => await group.DeleteAsync(url, "MemberManager.ModifyJoinRequestAsync"),
                 _ => throw new NotImplementedException("JoinRequestAction must be Accept or Decline."),
             };
             if (!response.IsSuccessStatusCode)
@@ -103,10 +99,8 @@ namespace RoSharp.API
 
         internal async Task SetRankAsyncInternal(ulong userId, ulong newRoleId)
         {
-            SessionVerify.ThrowIfNecessary(group.session, "MemberManager.SetRankAsync");
-
             object body = new { roleId = newRoleId };
-            HttpResponseMessage response = await group.PatchAsync($"/v1/groups/{group.Id}/users/{userId}", body);
+            HttpResponseMessage response = await group.PatchAsync($"/v1/groups/{group.Id}/users/{userId}", body, verifyApiName: "MemberManager.SetRankAsync");
             if (!response.IsSuccessStatusCode)
             {
                 throw new InvalidOperationException($"User modify failed (HTTP {response.StatusCode}). Do you have permission change this user's role?");
@@ -158,10 +152,8 @@ namespace RoSharp.API
         [UsesSession]
         public async Task KickMemberAsync(ulong userId)
         {
-            SessionVerify.ThrowIfNecessary(group.session, "MemberManager.KickMemberAsync");
-
             // TODO look into
-            HttpResponseMessage response = await group.DeleteAsync($"/v1/groups/{group.Id}/users/{userId}");
+            HttpResponseMessage response = await group.DeleteAsync($"/v1/groups/{group.Id}/users/{userId}", verifyApiName: "MemberManager.KickMemberAsync");
             if (!response.IsSuccessStatusCode)
             {
                 throw new InvalidOperationException($"User kick failed (HTTP {response.StatusCode}). Do you have permission to kick members?");

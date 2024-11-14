@@ -100,7 +100,7 @@ namespace RoSharp.API.Assets
             socialChannels = null;
             icon = null;
 
-            HttpResponseMessage response = await GetAsync($"/v1/games?universeIds={UniverseId}", verifySession: false);
+            HttpResponseMessage response = await GetAsync($"/v1/games?universeIds={UniverseId}");
             if (response.IsSuccessStatusCode)
             {
                 dynamic whyaretheresomanywrappers = JObject.Parse(await response.Content.ReadAsStringAsync());
@@ -263,7 +263,7 @@ namespace RoSharp.API.Assets
 
         private void UpdateVotes()
         {
-            string rawData = GetString($"/v1/games/votes?universeIds={UniverseId}", verifySession: false);
+            string rawData = GetString($"/v1/games/votes?universeIds={UniverseId}");
             dynamic data = JObject.Parse(rawData);
             upvotes = data.data[0].upVotes;
             downvotes = data.data[0].downVotes;
@@ -289,7 +289,7 @@ namespace RoSharp.API.Assets
 
         private async Task UpdateConfigurationAsync()
         {
-            HttpResponseMessage response = await PatchAsync($"/v2/universes/{UniverseId}/configuration", new { }, "https://develop.roblox.com", false);
+            HttpResponseMessage response = await PatchAsync($"/v2/universes/{UniverseId}/configuration", new { }, "https://develop.roblox.com");
             string rawData = response.Content.ReadAsStringAsync().Result;
             dynamic data = JObject.Parse(rawData);
 
@@ -314,7 +314,7 @@ namespace RoSharp.API.Assets
         /// <remarks>Occasionally, Roblox's API will produce a 'bad recommendation' that leads to an asset that doesn't exist (either deleted or hidden). If this is the case, RoSharp will skip over it automatically. However, if the limit is set to Roblox's maximum of 45, this will result in less than 45 assets being returned.</remarks>
         public async Task<ReadOnlyCollection<Experience>> GetRecommendedAsync(int limit = 6)
         {
-            string rawData = await GetStringAsync($"/v1/games/recommendations/game/{UniverseId}?maxRows={limit}", verifySession: false);
+            string rawData = await GetStringAsync($"/v1/games/recommendations/game/{UniverseId}?maxRows={limit}");
             dynamic data = JObject.Parse(rawData);
             List<Experience> list = new();
             foreach (dynamic item in data.games)
@@ -359,7 +359,7 @@ namespace RoSharp.API.Assets
             if (cursor != null)
                 url += "&cursor=" + cursor;
 
-            string rawData = await GetStringAsync(url, "https://badges.roblox.com", false);
+            string rawData = await GetStringAsync(url, "https://badges.roblox.com");
             dynamic data = JObject.Parse(rawData);
 
             List<Badge> list = new();
@@ -378,7 +378,7 @@ namespace RoSharp.API.Assets
         public async Task<ReadOnlyCollection<Asset>> GetThumbnailsAsync(ExperienceThumbnailSize size = ExperienceThumbnailSize.S768x432, bool defaultRobloxThumbnailIfNecessary = true)
         {
             string url = $"/v1/games/multiget/thumbnails?universeIds={UniverseId}&countPerUniverse=25&defaults={defaultRobloxThumbnailIfNecessary.ToString().ToLower()}&size={size.ToString().Substring(1)}&format=Png&isCircular=false";
-            string rawData = await GetStringAsync(url, "https://thumbnails.roblox.com", verifySession: false);
+            string rawData = await GetStringAsync(url, "https://thumbnails.roblox.com");
             dynamic data = JObject.Parse(rawData);
             if (data.data.Count == 0)
                 throw new InvalidOperationException("Invalid asset to get thumbnail for.");
@@ -399,10 +399,8 @@ namespace RoSharp.API.Assets
 
         public async Task SetPrivacyAsync(bool isPublic)
         {
-            SessionVerify.ThrowIfNecessary(session, "Experience.SetPrivacyAsync");
-
             string url = $"/v1/universes/6723876149/{(isPublic == false ? "de" : string.Empty)}activate";
-            HttpResponseMessage response = await PostAsync(url, new { }, "https://develop.roblox.com");
+            HttpResponseMessage response = await PostAsync(url, new { }, "https://develop.roblox.com", "Experience.SetPrivacyAsync");
             if (!response.IsSuccessStatusCode)
             {
                 throw new InvalidOperationException($"Failed to {(isPublic == false ? "de" : string.Empty)}activate experience (HTTP {response.StatusCode}) (UniverseId {UniverseId}). Do you have permission to modify this experience?");
@@ -411,8 +409,6 @@ namespace RoSharp.API.Assets
 
         public async Task ModifyAsync(ExperienceModifyOptions options)
         {
-            SessionVerify.ThrowIfNecessary(session, "Experience.ModifyAsync");
-
             object body = new
             {
                 name = options.Name,
@@ -426,7 +422,7 @@ namespace RoSharp.API.Assets
                 studioAccessToApisAllowed = options.StudioAccessToAPIsAllowed
             };
 
-            HttpResponseMessage response = await PatchAsync($"/v2/universes/{UniverseId}/configuration", body, "https://develop.roblox.com");
+            HttpResponseMessage response = await PatchAsync($"/v2/universes/{UniverseId}/configuration", body, "https://develop.roblox.com", "Experience.ModifyAsync");
             if (!response.IsSuccessStatusCode)
             {
                 throw new HttpRequestException($"Failed to modify asset. Error code {response.StatusCode}. {response.Content.ReadAsStringAsync().Result}");
@@ -435,8 +431,6 @@ namespace RoSharp.API.Assets
 
         public async Task BanUserAsync(ulong userId, string displayReason, string privateReason, bool permanent, TimeSpan? length = null, bool excludeAlts = true)
         {
-            SessionVerify.ThrowIfNecessary(session, "Experience.BanUserAsync");
-
             if (permanent == false && !length.HasValue)
                 throw new ArgumentException("length cannot be null if permanent is false.");
 
@@ -452,7 +446,7 @@ namespace RoSharp.API.Assets
                 }
             };
 
-            HttpResponseMessage response = await PatchAsync($"/user/cloud/v2/universes/{UniverseId}/user-restrictions/{userId}?", body, "https://apis.roblox.com");
+            HttpResponseMessage response = await PatchAsync($"/user/cloud/v2/universes/{UniverseId}/user-restrictions/{userId}?", body, "https://apis.roblox.com", "Experience.BanUserAsync");
             if (!response.IsSuccessStatusCode)
                 throw new HttpRequestException($"Failed to add ban. Error code {response.StatusCode}. {response.Content.ReadAsStringAsync().Result}");
         }
@@ -465,8 +459,6 @@ namespace RoSharp.API.Assets
 
         public async Task UnbanUserAsync(ulong userId)
         {
-            SessionVerify.ThrowIfNecessary(session, "Experience.UnbanUserAsync");
-
             var body = new
             {
                 gameJoinRestriction = new
@@ -475,7 +467,7 @@ namespace RoSharp.API.Assets
                 }
             };
 
-            HttpResponseMessage response = await PatchAsync($"/user/cloud/v2/universes/{UniverseId}/user-restrictions/{userId}?", body, "https://apis.roblox.com");
+            HttpResponseMessage response = await PatchAsync($"/user/cloud/v2/universes/{UniverseId}/user-restrictions/{userId}?", body, "https://apis.roblox.com", "Experience.UnbanUserAsync");
             if (!response.IsSuccessStatusCode)
                 throw new HttpRequestException($"Failed to unban user. Error code {response.StatusCode}. {response.Content.ReadAsStringAsync().Result}");
         }
@@ -488,9 +480,7 @@ namespace RoSharp.API.Assets
 
         public async Task PostUpdateAsync(string text) // TODO: This api may not work? (Not authorized)
         {
-            SessionVerify.ThrowIfNecessary(session, "Experience.PostUpdateAsync");
-
-            HttpResponseMessage response = await PostAsync($"/game-update-notifications/v1/publish/{UniverseId}", text, "https://apis.roblox.com");
+            HttpResponseMessage response = await PostAsync($"/game-update-notifications/v1/publish/{UniverseId}", text, "https://apis.roblox.com", "Experience.PostUpdateAsync");
             if (!response.IsSuccessStatusCode)
                 throw new HttpRequestException($"Failed to post update. Error code {response.StatusCode}. {response.Content.ReadAsStringAsync().Result}");
         }

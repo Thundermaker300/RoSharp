@@ -69,7 +69,7 @@ namespace RoSharp.API
 
         public async Task RefreshAsync()
         {
-            HttpResponseMessage response = await GetAsync($"/v1/groups/{Id}", verifySession: false);
+            HttpResponseMessage response = await GetAsync($"/v1/groups/{Id}");
             if (response.IsSuccessStatusCode)
             {
                 string raw = await response.Content.ReadAsStringAsync();
@@ -150,7 +150,7 @@ namespace RoSharp.API
         public async Task<string> GetIconAsync(ThumbnailSize size = ThumbnailSize.S420x420)
         {
             string url = $"/v1/groups/icons?groupIds={Id}&size={size.ToString().Substring(1)}&format=Png&isCircular=false";
-            string rawData = await GetStringAsync(url, "https://thumbnails.roblox.com", verifySession: false);
+            string rawData = await GetStringAsync(url, "https://thumbnails.roblox.com");
             dynamic data = JObject.Parse(rawData);
             if (data.data.Count == 0)
                 throw new InvalidOperationException("Invalid group to get icon for.");
@@ -160,10 +160,8 @@ namespace RoSharp.API
         [UsesSession]
         public async Task ModifyDescriptionAsync(string text)
         {
-            SessionVerify.ThrowIfNecessary(session, "Group.ModifyDescriptionAsync");
-
             object body = new { description = text };
-            HttpResponseMessage response = await PatchAsync($"/v1/groups/{Id}/description", body);
+            HttpResponseMessage response = await PatchAsync($"/v1/groups/{Id}/description", body, verifyApiName: "Group.ModifyDescriptionAsync");
             if (!response.IsSuccessStatusCode)
             {
                 throw new InvalidOperationException($"Group description modification failed (HTTP {response.StatusCode}). Do you have permission to modify this group's description?");
@@ -173,10 +171,8 @@ namespace RoSharp.API
         [UsesSession]
         public async Task ShoutAsync(string text)
         {
-            SessionVerify.ThrowIfNecessary(session, "Group.ShoutAsync");
-
             object body = new { message = text };
-            HttpResponseMessage response = await PatchAsync($"/v1/groups/{Id}/status", body);
+            HttpResponseMessage response = await PatchAsync($"/v1/groups/{Id}/status", body, verifyApiName: "Group.ShoutAsync");
             if (!response.IsSuccessStatusCode)
             {
                 throw new InvalidOperationException($"Group shout failed (HTTP {response.StatusCode}). Do you have permission to modify this group's status?");
@@ -186,8 +182,6 @@ namespace RoSharp.API
         [UsesSession]
         public async Task<PageResponse<GroupPost>> GetGroupPostsAsync(FixedLimit limit = FixedLimit.Limit100, string? cursor = null)
         {
-            SessionVerify.ThrowIfNecessary(session, "Group.GetGroupPostsAsync");
-
             string url = $"v2/groups/{Id}/wall/posts?limit={limit.Limit()}&sortOrder=Desc";
             if (cursor != null)
                 url += "&cursor=" + cursor;
@@ -195,7 +189,7 @@ namespace RoSharp.API
             var list = new List<GroupPost>();
             string? nextPage = null;
             string? previousPage = null;
-            HttpResponseMessage response = Get(url);
+            HttpResponseMessage response = await GetAsync(url, verifyApiName: "Group.GetGroupPostsAsync");
             if (response.IsSuccessStatusCode)
             {
                 dynamic data = JObject.Parse(await response.Content.ReadAsStringAsync());
@@ -222,8 +216,6 @@ namespace RoSharp.API
         [UsesSession]
         public async Task<PageResponse<User>> GetMembersAsync(FixedLimit limit = FixedLimit.Limit100, string? cursor = null)
         {
-            SessionVerify.ThrowIfNecessary(session, "Group.GetMembersAsync");
-
             string url = $"/v1/groups/{Id}/users?limit={limit.Limit()}&sortOrder=Asc";
             if (cursor != null)
                 url += "&cursor=" + cursor;
@@ -231,7 +223,7 @@ namespace RoSharp.API
             var list = new List<User>();
             string? nextPage = null;
             string? previousPage = null;
-            HttpResponseMessage response = await GetAsync(url);
+            HttpResponseMessage response = await GetAsync(url, verifyApiName: "Group.GetMembersAsync");
             if (response.IsSuccessStatusCode)
             {
                 dynamic data = JObject.Parse(await response.Content.ReadAsStringAsync());
