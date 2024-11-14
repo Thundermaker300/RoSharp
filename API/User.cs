@@ -410,6 +410,34 @@ namespace RoSharp.API
         public async Task<bool> HasBadgeAsync(Badge badge)
             => await HasBadgeAsync(badge.Id);
 
+        /// <summary>
+        /// Gets this user's current presence status, including their location and last online.
+        /// </summary>
+        /// <returns>A task containing a <see cref="UserPresence"/>, when completed.</returns>
+        /// <remarks>Unlike other API, this method will never cache and will always make an API request when called. Authentication is not required for this API, however providing an authenticated session may return more data.</remarks>
+        /// <exception cref="HttpRequestException">Failed to retrieve presence information, please try again later.</exception>
+        public async Task<UserPresence> GetPresenceAsync()
+        {
+            object body = new
+            {
+                userIds = new[] { Id },
+            };
+
+            HttpResponseMessage response = await PostAsync("/v1/presence/users", body, "https://presence.roblox.com");
+            if (response.IsSuccessStatusCode)
+            {
+                dynamic uselessData = JObject.Parse(await response.Content.ReadAsStringAsync());
+                dynamic data = uselessData.userPresences[0];
+
+                UserLocationType type = (UserLocationType)Convert.ToInt32(data.userPresenceType);
+                Experience? exp = data.universeId != null ? await Experience.FromId(Convert.ToUInt64(data.universeId)) : null;
+                DateTime lastOnline = data.lastOnline;
+                return new UserPresence(type, exp, lastOnline);
+            }
+
+            throw new HttpRequestException($"Failed to retrieve presence information, please try again later. HTTP {response.StatusCode}.");
+        }
+
         /// <inheritdoc/>
         public override string ToString()
         {
@@ -427,5 +455,20 @@ namespace RoSharp.API
 
         IPoolable IPoolable.AttachSessionAndReturn(Session? session)
             => AttachSessionAndReturn(session);
+    }
+
+    public class UserPresence
+    {
+        public UserLocationType PresenceType { get; }
+        public Experience? PresenceLocation { get; }
+        public DateTime LastOnline { get; }
+        public bool IsOnline => PresenceType is not UserLocationType.Offline;
+
+        internal UserPresence(UserLocationType type, Experience? location, DateTime lastOnline)
+        {
+            PresenceType = type;
+            PresenceLocation = location;
+            LastOnline = lastOnline;
+        }
     }
 }
