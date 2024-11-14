@@ -29,7 +29,7 @@ namespace RoSharp.Utility
             return dict.AsReadOnly();
         }
 
-        public static async Task<int?> GetPriceFloorForTypeAsync(Session session, AssetType assetType)
+        public static async Task<int?> GetPriceFloorForTypeAsync(AssetType assetType, Session session)
         {
             var priceFloors = await GetPriceFloorsAsync(session);
             if (priceFloors.TryGetValue(assetType, out int value))
