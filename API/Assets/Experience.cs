@@ -142,7 +142,8 @@ namespace RoSharp.API.Assets
             }
 
             await UpdateExperienceGuidelinesDataAsync();
-            await UpdateVoiceVideo();
+            await UpdateVoiceVideoAsync();
+            await UpdateVotesAsync();
 
             RefreshedAt = DateTime.Now;
         }
@@ -150,9 +151,9 @@ namespace RoSharp.API.Assets
         private bool? voiceEnabled = null;
         private bool? videoEnabled = null;
 
-        private async Task UpdateVoiceVideo()
+        private async Task UpdateVoiceVideoAsync()
         {
-            string commSetting = await GetStringAsync($"/v1/settings/universe/1318971886", "https://voice.roblox.com");
+            string commSetting = await GetStringAsync($"/v1/settings/universe/{UniverseId}", "https://voice.roblox.com");
             dynamic data = JObject.Parse(commSetting);
 
             voiceEnabled = data.isUniverseEnabledForVoice;
@@ -165,19 +166,28 @@ namespace RoSharp.API.Assets
 
 
         private PlayabilityStatus? playabilityStatus;
-        public PlayabilityStatus PlayabilityStatus
-        {
-            get
-            {
-                if (!playabilityStatus.HasValue)
-                {
-                    string raw = GetString($"v1/games/multiget-playability-status?universeIds={UniverseId}");
-                    dynamic data = JArray.Parse(raw);
-                    playabilityStatus = Enum.Parse<PlayabilityStatus>(Convert.ToString(data[0].playabilityStatus));
-                }
 
-                return playabilityStatus.Value;
+        /// <summary>
+        /// Returns the experience's playability status.
+        /// </summary>
+        /// <returns>A task containing the <see cref="PlayabilityStatus"/> when completed.</returns>
+        public async Task<PlayabilityStatus> GetPlayabilityStatusAsync()
+        {
+            if (!playabilityStatus.HasValue)
+            {
+                string raw = await GetStringAsync($"v1/games/multiget-playability-status?universeIds={UniverseId}");
+                dynamic data = JArray.Parse(raw);
+                if (Enum.TryParse<PlayabilityStatus>(Convert.ToString(data[0].playabilityStatus), out PlayabilityStatus result))
+                {
+                    playabilityStatus = result;
+                }
+                else
+                {
+                    playabilityStatus = PlayabilityStatus.Unknown;
+                }
             }
+
+            return playabilityStatus.Value;
         }
 
         private bool? profanityAllowed;
@@ -185,24 +195,26 @@ namespace RoSharp.API.Assets
 
         private ReadOnlyDictionary<string, string>? socialChannels;
 
-        public ReadOnlyDictionary<string, string> SocialChannels
+        /// <summary>
+        /// Returns this experience's social channels.
+        /// </summary>
+        /// <returns>A task containing a <see cref="ReadOnlyDictionary{TKey, TValue}"/> when complete.</returns>
+        /// <remarks>The keys of the dictionary are the social media type, the value is the URL.</remarks>
+        public async Task<ReadOnlyDictionary<string, string>> GetSocialChannelsAsync()
         {
-            get
+            if (socialChannels == null)
             {
-                if (socialChannels == null)
+                Dictionary<string, string> dict = new();
+                string rawData = await GetStringAsync($"/v1/games/{UniverseId}/social-links/list", verifyApiName: "Experience.SocialChannels");
+                dynamic data = JObject.Parse(rawData);
+                foreach (dynamic media in data.data)
                 {
-                    Dictionary<string, string> dict = new();
-                    string rawData = GetString($"/v1/games/{UniverseId}/social-links/list", verifyApiName: "Experience.SocialChannels");
-                    dynamic data = JObject.Parse(rawData);
-                    foreach (dynamic media in data.data)
-                    {
-                        dict.Add(Convert.ToString(media.type), Convert.ToString(media.url));
-                    }
-                    socialChannels = dict.AsReadOnly();
+                    dict.Add(Convert.ToString(media.type), Convert.ToString(media.url));
                 }
-
-                return socialChannels;
+                socialChannels = dict.AsReadOnly();
             }
+
+            return socialChannels;
         }
 
         private int? minimumAge;
@@ -239,7 +251,7 @@ namespace RoSharp.API.Assets
             {
                 foreach (dynamic item in data.descriptorUsages)
                 {
-                    string getDimensionValue(string target)
+                    string? getDimensionValue(string target)
                     {
                         foreach (dynamic descriptorData in item.descriptorDimensionUsages)
                         {
@@ -274,33 +286,15 @@ namespace RoSharp.API.Assets
         }
 
         private int? upvotes;
-        public int Upvotes
-        {
-            get
-            {
-                if (!upvotes.HasValue)
-                    UpdateVotes();
-
-                return upvotes.Value;
-            }
-        }
+        public int Upvotes => upvotes.Value;
 
         private int? downvotes;
 
-        public int Downvotes
-        {
-            get
-            {
-                if (!downvotes.HasValue)
-                    UpdateVotes();
+        public int Downvotes => downvotes.Value;
 
-                return downvotes.Value;
-            }
-        }
-
-        private void UpdateVotes()
+        private async Task UpdateVotesAsync()
         {
-            string rawData = GetString($"/v1/games/votes?universeIds={UniverseId}");
+            string rawData = await GetStringAsync($"/v1/games/votes?universeIds={UniverseId}");
             dynamic data = JObject.Parse(rawData);
             upvotes = data.data[0].upVotes;
             downvotes = data.data[0].downVotes;
