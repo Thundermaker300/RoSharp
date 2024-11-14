@@ -2,6 +2,11 @@
 {
     public enum AssetType
     {
+        // "Body" isn't an official AssetType. However, it is included in the enum so that it can be included in the
+        // Price floor APIs (GetPriceFloorsAsync and GetPriceFloorForTypeAsync)
+        Body = -1,
+
+        // Regular
         Image = 1,
         TShirt = 2,
         Audio = 3,
