@@ -228,14 +228,21 @@ namespace RoSharp.API.Assets
             dynamic dataUseless = JObject.Parse(rawData);
             dynamic data = dataUseless.ageRecommendationDetails;
 
-            minimumAge = data.summary.ageRecommendation.minimumAge;
+            if (data.summary.ageRecommendation != null)
+                minimumAge = data.summary.ageRecommendation.minimumAge;
+            else
+                minimumAge = 0;
+
             List<ExperienceDescriptors> list = new();
-            foreach (dynamic item in data.descriptorUsages)
+            if (data.descriptorUsages.Count != 0)
             {
-                string itemName = Convert.ToString(item.name);
-                if (item.contains == true && Utility.Constants.DescriptorIdToEnumMapping.ContainsKey(itemName))
+                foreach (dynamic item in data.descriptorUsages)
                 {
-                    list.Add(Utility.Constants.DescriptorIdToEnumMapping[itemName]);
+                    string itemName = Convert.ToString(item.name);
+                    if (item.contains == true && Utility.Constants.DescriptorIdToEnumMapping.ContainsKey(itemName))
+                    {
+                        list.Add(Utility.Constants.DescriptorIdToEnumMapping[itemName]);
+                    }
                 }
             }
             experienceDescriptors = list.AsReadOnly();
