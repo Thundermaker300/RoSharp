@@ -15,40 +15,98 @@ namespace RoSharp.API.Assets
 
         private static HttpClient genericClient { get; } = new HttpClient();
 
+        /// <summary>
+        /// Gets the universe ID of this experience. Equivalent to <see cref="Id"/>.
+        /// </summary>
         public ulong UniverseId { get; }
+        
+        /// <summary>
+        /// Gets the universe ID of this experience. Equivalent to <see cref="UniverseId"/>.
+        /// </summary>
         public ulong Id => UniverseId;
 
         private string name;
+
+        /// <summary>
+        /// Gets the name of the experience.
+        /// </summary>
         public string Name => name;
 
         private string description;
+
+        /// <summary>
+        /// Gets the description of the experience.
+        /// </summary>
         public string Description => description;
 
         private IAssetOwner owner;
+
+        /// <summary>
+        /// Gets the owner of the experience. Can be casted to <see cref="Group"/> or <see cref="User"/>.
+        /// </summary>
+        /// <seealso cref="IsGroupOwned"/>
         public IAssetOwner Owner => owner;
 
+        /// <summary>
+        /// Gets whether or not this experience is owned by a group.
+        /// </summary>
+        /// <seealso cref="Owner"/>
+        public bool IsGroupOwned => Owner is Group;
+
         private DateTime created;
+
+        /// <summary>
+        /// Gets a <see cref="DateTime"/> representing the date this experience was created.
+        /// </summary>
         public DateTime Created => created;
 
         private DateTime lastUpdated;
+
+        /// <summary>
+        /// Gets a <see cref="DateTime"/> representing the date this experience was last updated.
+        /// </summary>
         public DateTime LastUpdated => lastUpdated;
 
         private int cost;
+
+        /// <summary>
+        /// Gets the price in Robux to play this experience, if it is paid access.
+        /// </summary>
         public int Cost => cost;
 
         private bool uncopylocked;
+
+        /// <summary>
+        /// Gets whether or not this experience is uncopylocked.
+        /// </summary>
         public bool Uncopylocked => uncopylocked;
 
         private int maxPlayers;
+
+        /// <summary>
+        /// Gets the maximum amount of players for one server.
+        /// </summary>
         public int MaxPlayers => maxPlayers;
 
         private int playingNow;
+
+        /// <summary>
+        /// Gets the amount of players that are playing this experience now.
+        /// </summary>
         public int PlayingNow => playingNow;
 
         private ulong visits;
+
+        /// <summary>
+        /// Gets the total amount of visits this experience has.
+        /// </summary>
         public ulong Visits => visits;
 
         private ulong favorites;
+
+        /// <summary>
+        /// Gets the total amount of favorites this experience has.
+        /// </summary>
         public ulong Favorites => favorites;
 
         internal bool favoritedByUser;
@@ -191,6 +249,10 @@ namespace RoSharp.API.Assets
         }
 
         private bool? profanityAllowed;
+
+        /// <summary>
+        /// Indicates whether or not profane language is allowed in the chat in this experience.
+        /// </summary>
         public bool ProfanityAllowed => profanityAllowed.Value;
 
         private ReadOnlyDictionary<string, string>? socialChannels;
@@ -218,9 +280,17 @@ namespace RoSharp.API.Assets
         }
 
         private int? minimumAge;
+
+        /// <summary>
+        /// The minimum age required to play this experience.
+        /// </summary>
         public int MinimumAge => minimumAge.Value;
 
         private ReadOnlyCollection<ExperienceDescriptor>? experienceDescriptors;
+
+        /// <summary>
+        /// Gets a read-only collection of defined descriptors that contribute to this experience's <see cref="MinimumAge"/>.
+        /// </summary>
         public ReadOnlyCollection<ExperienceDescriptor> ExperienceDescriptors => experienceDescriptors;
 
         private async Task UpdateExperienceGuidelinesDataAsync()
@@ -286,10 +356,17 @@ namespace RoSharp.API.Assets
         }
 
         private int? upvotes;
+
+        /// <summary>
+        /// Gets the amount of thumb's up this experience has.
+        /// </summary>
         public int Upvotes => upvotes.Value;
 
         private int? downvotes;
 
+        /// <summary>
+        /// Gets the amount of thumb's down this experience has.
+        /// </summary>
         public int Downvotes => downvotes.Value;
 
         private async Task UpdateVotesAsync()
@@ -302,6 +379,11 @@ namespace RoSharp.API.Assets
 
         // Configuration related properties
         private List<string>? devices = new List<string>(0);
+
+        /// <summary>
+        /// Gets the devices that this experience is playable on.
+        /// </summary>
+        /// <remarks>This list will be empty for experiences that the authenticated user does not have access to modify.</remarks>
         public ReadOnlyCollection<Device> Devices => devices.Select(Enum.Parse<Device>).ToList().AsReadOnly();
 
         private bool? privateServers;

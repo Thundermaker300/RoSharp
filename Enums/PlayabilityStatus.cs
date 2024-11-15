@@ -26,6 +26,11 @@
         GuestProhibited,
 
         /// <summary>
+        /// Experience is unavailable on this device.
+        /// </summary>
+        DeviceRestricted,
+
+        /// <summary>
         /// Experience is under moderation review.
         /// </summary>
         UnderReview,
