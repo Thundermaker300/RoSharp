@@ -18,7 +18,7 @@ namespace RoSharp.Utility
         /// <param name="session">Logged in session, optional.</param>
         /// <param name="cursor">The cursor to use to advance to the next page. Obtained by calling this API previously.</param>
         /// <returns>A task containing a <see cref="ChartsResponse"/> upon completion.</returns>
-        /// <exception cref="HttpRequestException">Error from the Roblox API.</exception>
+        /// <exception cref="RobloxAPIException">Error from the Roblox API.</exception>
         public static async Task<ChartsResponse> GetFrontPageExperiencesAsync(Session? session = null, string? cursor = null)
         {
             string url = $"/explore-api/v1/get-sorts?sessionId={DateTime.UtcNow.Ticks}";

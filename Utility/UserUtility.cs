@@ -13,7 +13,8 @@ namespace RoSharp.Utility
         /// </summary>
         /// <param name="username">The username.</param>
         /// <returns>The matching User Id.</returns>
-        /// <exception cref="HttpRequestException">Invalid username provided.</exception>
+        /// <exception cref="ArgumentException">Invalid username provided.</exception>
+        /// <exception cref="RobloxAPIException">Roblox API failure.</exception>
         public static async Task<ulong> GetUserIdAsync(string username)
         {
             object request = new
@@ -27,10 +28,11 @@ namespace RoSharp.Utility
                 dynamic data = JObject.Parse(await response.Content.ReadAsStringAsync());
                 if (data.data.Count == 0)
                 {
-                    throw new RobloxAPIException("Invalid username provided.");
+                    throw new ArgumentException("Invalid username provided.");
                 }
                 return data.data[0].id;
             }
+            HttpVerify.ThrowIfNecessary(response);
             return 0;
         }
     }

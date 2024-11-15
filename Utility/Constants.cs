@@ -1,10 +1,11 @@
 ﻿using RoSharp.Enums;
+using System.Collections.ObjectModel;
 
 namespace RoSharp.Utility
 {
     public static class Constants
     {
-        public static readonly Dictionary<string, ExperienceDescriptorType> DescriptorIdToEnumMapping = new()
+        public static readonly ReadOnlyDictionary<string, ExperienceDescriptorType> DescriptorIdToEnumMapping = new Dictionary<string, ExperienceDescriptorType>()
         {
             ["alcohol"] = ExperienceDescriptorType.Alcohol,
             ["blood"] = ExperienceDescriptorType.Blood,
@@ -15,6 +16,6 @@ namespace RoSharp.Utility
             ["strong-language"] = ExperienceDescriptorType.StrongLanguage,
             ["social-hangout"] = ExperienceDescriptorType.SocialHangout,
             ["violence"] = ExperienceDescriptorType.Violence,
-        };
+        }.AsReadOnly();
     }
 }

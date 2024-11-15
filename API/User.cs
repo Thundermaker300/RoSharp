@@ -416,7 +416,7 @@ namespace RoSharp.API
         /// </summary>
         /// <returns>A task containing a <see cref="UserPresence"/>, when completed.</returns>
         /// <remarks>Unlike other API, this method will never cache and will always make an API request when called. Authentication is not required for this API, however providing an authenticated session may return more data.</remarks>
-        /// <exception cref="HttpRequestException">Failed to retrieve presence information, please try again later.</exception>
+        /// <exception cref="RobloxAPIException">Failed to retrieve presence information, please try again later.</exception>
         public async Task<UserPresence> GetPresenceAsync()
         {
             object body = new
