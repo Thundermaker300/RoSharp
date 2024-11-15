@@ -1,6 +1,7 @@
 ﻿using Newtonsoft.Json.Linq;
 using RoSharp.API.Pooling;
 using RoSharp.Enums;
+using RoSharp.Exceptions;
 using RoSharp.Interfaces;
 using System.Collections.ObjectModel;
 
@@ -147,7 +148,7 @@ namespace RoSharp.API.Assets
             }
             else
             {
-                throw new InvalidOperationException($"Invalid asset ID '{Id}'. HTTP {response.StatusCode}");
+                throw new ArgumentException($"Invalid asset ID '{Id}'. HTTP {response.StatusCode}");
             }
 
             // Update favorites
@@ -175,7 +176,7 @@ namespace RoSharp.API.Assets
             string rawData = await GetStringAsync(url, "https://thumbnails.roblox.com");
             dynamic data = JObject.Parse(rawData);
             if (data.data.Count == 0)
-                throw new InvalidOperationException("Invalid asset to get thumbnail for.");
+                throw new ArgumentException("Invalid asset to get thumbnail for.");
             return data.data[0].imageUrl;
         }
 
@@ -190,7 +191,7 @@ namespace RoSharp.API.Assets
             HttpResponseMessage response = await PatchAsync($"/v1/assets/{Id}", body, "https://develop.roblox.com", "Asset.ModifyAsync");
             if (!response.IsSuccessStatusCode)
             {
-                throw new HttpRequestException($"Failed to modify asset. Error code {response.StatusCode}. {response.Content.ReadAsStringAsync().Result}");
+                throw new RobloxAPIException($"Failed to modify asset. Error code {response.StatusCode}. {response.Content.ReadAsStringAsync().Result}");
             }
         }
 
@@ -213,7 +214,7 @@ namespace RoSharp.API.Assets
             HttpResponseMessage response = await PostAsync("/v1/assets/3307894526/release", body, "https://itemconfiguration.roblox.com", "Asset.SetSaleStatusAsync");
             if (!response.IsSuccessStatusCode)
             {
-                throw new HttpRequestException($"Failed to modify asset. Error code {response.StatusCode}. {response.Content.ReadAsStringAsync().Result}");
+                throw new RobloxAPIException($"Failed to modify asset. Error code {response.StatusCode}. {response.Content.ReadAsStringAsync().Result}");
             }
         }
 

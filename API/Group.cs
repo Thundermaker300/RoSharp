@@ -2,6 +2,7 @@
 using RoSharp.API.Misc;
 using RoSharp.API.Pooling;
 using RoSharp.Enums;
+using RoSharp.Exceptions;
 using RoSharp.Extensions;
 using RoSharp.Interfaces;
 using System.Collections.ObjectModel;
@@ -94,7 +95,7 @@ namespace RoSharp.API
             }
             else
             {
-                throw new InvalidOperationException($"Invalid group ID '{Id}'. HTTP {response.StatusCode}");
+                throw new ArgumentException($"Invalid group ID '{Id}'. HTTP {response.StatusCode}");
             }
 
             // Reset properties
@@ -156,7 +157,7 @@ namespace RoSharp.API
             string rawData = await GetStringAsync(url, "https://thumbnails.roblox.com");
             dynamic data = JObject.Parse(rawData);
             if (data.data.Count == 0)
-                throw new InvalidOperationException("Invalid group to get icon for.");
+                throw new ArgumentException("Invalid group to get icon for.");
             return data.data[0].imageUrl;
         }
 
@@ -167,7 +168,7 @@ namespace RoSharp.API
             HttpResponseMessage response = await PatchAsync($"/v1/groups/{Id}/description", body, verifyApiName: "Group.ModifyDescriptionAsync");
             if (!response.IsSuccessStatusCode)
             {
-                throw new InvalidOperationException($"Group description modification failed (HTTP {response.StatusCode}). Do you have permission to modify this group's description?");
+                throw new RobloxAPIException($"Group description modification failed (HTTP {response.StatusCode}). Do you have permission to modify this group's description?");
             }
         }
 
@@ -178,7 +179,7 @@ namespace RoSharp.API
             HttpResponseMessage response = await PatchAsync($"/v1/groups/{Id}/status", body, verifyApiName: "Group.ShoutAsync");
             if (!response.IsSuccessStatusCode)
             {
-                throw new InvalidOperationException($"Group shout failed (HTTP {response.StatusCode}). Do you have permission to modify this group's status?");
+                throw new RobloxAPIException($"Group shout failed (HTTP {response.StatusCode}). Do you have permission to modify this group's status?");
             }
         }
 

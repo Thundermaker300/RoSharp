@@ -1,4 +1,5 @@
 ﻿using Newtonsoft.Json.Linq;
+using RoSharp.Exceptions;
 using System.Net.Http.Json;
 
 namespace RoSharp.Utility
@@ -26,7 +27,7 @@ namespace RoSharp.Utility
                 dynamic data = JObject.Parse(await response.Content.ReadAsStringAsync());
                 if (data.data.Count == 0)
                 {
-                    throw new HttpRequestException("Invalid username provided.");
+                    throw new RobloxAPIException("Invalid username provided.");
                 }
                 return data.data[0].id;
             }

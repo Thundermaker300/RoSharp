@@ -1,4 +1,5 @@
 ﻿using Newtonsoft.Json.Linq;
+using RoSharp.Exceptions;
 using RoSharp.Interfaces;
 using System;
 using System.Collections.Generic;
@@ -55,8 +56,8 @@ namespace RoSharp.API
             {
                 string errorText = await response.Content.ReadAsStringAsync();
                 if (errorText.Contains("There are users in this role."))
-                    throw new HttpRequestException($"Cannot delete role '{roleId}' because there are users still in this role. Please remove all users from this role and try again.");
-                throw new HttpRequestException($"Roleset delete failed (HTTP {response.StatusCode}). Do you have permission to delete this group's rolesets?");
+                    throw new InvalidOperationException($"Cannot delete role '{roleId}' because there are users still in this role. Please remove all users from this role and try again.");
+                throw new RobloxAPIException($"Roleset delete failed (HTTP {response.StatusCode}). Do you have permission to delete this group's rolesets?");
             }
         }
 
@@ -67,7 +68,7 @@ namespace RoSharp.API
             HttpResponseMessage response = await group.PatchAsync($"/v1/groups/{group.Id}/rolesets/{roleId.Id}", body, verifyApiName: "Role.UpdateAsync");
             if (!response.IsSuccessStatusCode)
             {
-                throw new InvalidOperationException($"Roleset modification failed (HTTP {response.StatusCode}). Do you have permission to modify this group's rolesets?");
+                throw new RobloxAPIException($"Roleset modification failed (HTTP {response.StatusCode}). Do you have permission to modify this group's rolesets?");
             }
         }
 
@@ -78,7 +79,7 @@ namespace RoSharp.API
             HttpResponseMessage response = await group.PatchAsync($"/v1/groups/{group.Id}/rolesets/{roleId.Id}", body, verifyApiName: "Role.UpdateAsync");
             if (!response.IsSuccessStatusCode)
             {
-                throw new InvalidOperationException($"Roleset modification failed (HTTP {response.StatusCode}). Do you have permission to modify this group's rolesets?");
+                throw new RobloxAPIException($"Roleset modification failed (HTTP {response.StatusCode}). Do you have permission to modify this group's rolesets?");
             }
         }
 

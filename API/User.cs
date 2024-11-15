@@ -2,6 +2,7 @@
 using RoSharp.API.Assets;
 using RoSharp.API.Pooling;
 using RoSharp.Enums;
+using RoSharp.Exceptions;
 using RoSharp.Interfaces;
 using RoSharp.Utility;
 using System.Collections.ObjectModel;
@@ -81,7 +82,7 @@ namespace RoSharp.API
             }
             else
             {
-                throw new InvalidOperationException($"Invalid user ID '{Id}'. HTTP {response.StatusCode}");
+                throw new ArgumentException($"Invalid user ID '{Id}'. HTTP {response.StatusCode}");
             }
 
             // TODO: These properties should be reset through this method.
@@ -386,7 +387,7 @@ namespace RoSharp.API
             string rawData = await GetStringAsync(url, "https://thumbnails.roblox.com");
             dynamic data = JObject.Parse(rawData);
             if (data.data.Count == 0)
-                throw new InvalidOperationException("Invalid user to get thumbnail for.");
+                throw new ArgumentException("Invalid user to get thumbnail for.");
             return data.data[0].imageUrl;
         }
 
@@ -435,7 +436,7 @@ namespace RoSharp.API
                 return new UserPresence(type, exp, lastOnline);
             }
 
-            throw new HttpRequestException($"Failed to retrieve presence information, please try again later. HTTP {response.StatusCode}.");
+            throw new RobloxAPIException($"Failed to retrieve presence information, please try again later. HTTP {response.StatusCode}.");
         }
 
         /// <inheritdoc/>

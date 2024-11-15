@@ -1,8 +1,10 @@
 ﻿using Newtonsoft.Json.Linq;
 using RoSharp.API.Misc;
 using RoSharp.Enums;
+using RoSharp.Exceptions;
 using RoSharp.Extensions;
 using RoSharp.Utility;
+using System.Diagnostics;
 
 namespace RoSharp.API
 {
@@ -23,7 +25,7 @@ namespace RoSharp.API
             HttpResponseMessage response = await group.GetAsync(url, verifyApiName: "Group.GetPendingRequestsAsync");
             if (!response.IsSuccessStatusCode)
             {
-                throw new InvalidOperationException($"Cannot view pending requests for group (HTTP {response.StatusCode}). Do you have permission to see pending requests?");
+                throw new RobloxAPIException($"Cannot view pending requests for group (HTTP {response.StatusCode}). Do you have permission to see pending requests?");
             }
             string rawData = await response.Content.ReadAsStringAsync();
             dynamic data = JObject.Parse(rawData);
@@ -81,11 +83,11 @@ namespace RoSharp.API
             {
                 JoinRequestAction.Accept => await group.PostAsync(url, new { }, verifyApiName: "MemberManager.ModifyJoinRequestAsync"),
                 JoinRequestAction.Decline => await group.DeleteAsync(url, "MemberManager.ModifyJoinRequestAsync"),
-                _ => throw new NotImplementedException("JoinRequestAction must be Accept or Decline."),
+                _ => throw new UnreachableException("JoinRequestAction must be Accept or Decline."),
             };
             if (!response.IsSuccessStatusCode)
             {
-                throw new InvalidOperationException($"Join request modify failed (HTTP {response.StatusCode}). Do you have permission to accept/decline join requests?");
+                throw new RobloxAPIException($"Join request modify failed (HTTP {response.StatusCode}). Do you have permission to accept/decline join requests?");
             }
         }
 
@@ -103,7 +105,7 @@ namespace RoSharp.API
             HttpResponseMessage response = await group.PatchAsync($"/v1/groups/{group.Id}/users/{userId}", body, verifyApiName: "MemberManager.SetRankAsync");
             if (!response.IsSuccessStatusCode)
             {
-                throw new InvalidOperationException($"User modify failed (HTTP {response.StatusCode}). Do you have permission change this user's role?");
+                throw new RobloxAPIException($"User modify failed (HTTP {response.StatusCode}). Do you have permission change this user's role?");
             }
         }
 
@@ -112,7 +114,7 @@ namespace RoSharp.API
         {
             if (role == null)
             {
-                throw new InvalidOperationException("Invalid role provided.");
+                throw new ArgumentException("Invalid role provided.");
             }
             await SetRankAsyncInternal(userId, role.Id);
         }
@@ -155,7 +157,7 @@ namespace RoSharp.API
             HttpResponseMessage response = await group.DeleteAsync($"/v1/groups/{group.Id}/users/{userId}", verifyApiName: "MemberManager.KickMemberAsync");
             if (!response.IsSuccessStatusCode)
             {
-                throw new InvalidOperationException($"User kick failed (HTTP {response.StatusCode}). Do you have permission to kick members?");
+                throw new RobloxAPIException($"User kick failed (HTTP {response.StatusCode}). Do you have permission to kick members?");
             }
         }
 

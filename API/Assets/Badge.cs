@@ -1,5 +1,6 @@
 ﻿using Newtonsoft.Json.Linq;
 using RoSharp.API.Pooling;
+using RoSharp.Exceptions;
 using RoSharp.Interfaces;
 
 namespace RoSharp.API.Assets
@@ -96,7 +97,7 @@ namespace RoSharp.API.Assets
             }
             else
             {
-                throw new InvalidOperationException($"Invalid badge ID '{Id}'. HTTP {response.StatusCode}");
+                throw new ArgumentException($"Invalid badge ID '{Id}'. HTTP {response.StatusCode}");
             }
 
             RefreshedAt = DateTime.Now;
@@ -108,7 +109,7 @@ namespace RoSharp.API.Assets
             string rawData = await GetStringAsync(url, "https://thumbnails.roblox.com");
             dynamic data = JObject.Parse(rawData);
             if (data.data.Count == 0)
-                throw new InvalidOperationException("Invalid badge to get thumbnail for.");
+                throw new ArgumentException("Invalid badge to get thumbnail for.");
             return data.data[0].imageUrl;
         }
 
@@ -124,7 +125,7 @@ namespace RoSharp.API.Assets
             HttpResponseMessage response = await PatchAsync($"/v1/badges/{Id}", body, verifyApiName: "Badge.ModifyAsync");
             if (!response.IsSuccessStatusCode)
             {
-                throw new HttpRequestException($"Failed to modify asset. Error code {response.StatusCode}. {response.Content.ReadAsStringAsync().Result}");
+                throw new RobloxAPIException($"Failed to modify asset. Error code {response.StatusCode}. {response.Content.ReadAsStringAsync().Result}");
             }
         }
 

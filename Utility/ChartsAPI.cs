@@ -1,6 +1,7 @@
 ﻿using Newtonsoft.Json.Linq;
 using RoSharp.API.Assets;
 using RoSharp.API.Misc;
+using RoSharp.Exceptions;
 using System.Collections.ObjectModel;
 using System.Net;
 
@@ -61,7 +62,7 @@ namespace RoSharp.Utility
                 };
             }
 
-            throw new HttpRequestException($"Failed to get front page experiences (HTTP {response.StatusCode}). Try again later.");
+            throw new RobloxAPIException($"Failed to get front page experiences (HTTP {response.StatusCode}). Try again later.");
         }
 
         private static HttpClient MakeClient(Session? session = null)

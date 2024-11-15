@@ -1,4 +1,5 @@
-﻿using RoSharp.Interfaces;
+﻿using RoSharp.Exceptions;
+using RoSharp.Interfaces;
 using System.Net;
 using System.Net.Http.Json;
 
@@ -48,7 +49,7 @@ namespace RoSharp.API
             HttpResponseMessage message = await client.GetAsync(url);
             if (message.StatusCode == HttpStatusCode.TooManyRequests)
             {
-                throw new HttpRequestException("Too many requests.");
+                throw new TooManyRequestsException();
             }
             return message;
         }
@@ -61,7 +62,7 @@ namespace RoSharp.API
             HttpResponseMessage message = client.GetAsync(url).Result;
             if (message.StatusCode == HttpStatusCode.TooManyRequests)
             {
-                throw new HttpRequestException("Too many requests.");
+                throw new TooManyRequestsException();
             }
             return message;
         }
@@ -73,7 +74,7 @@ namespace RoSharp.API
             HttpResponseMessage message = client.GetAsync(url).Result;
             if (message.StatusCode == HttpStatusCode.TooManyRequests)
             {
-                throw new HttpRequestException("Too many requests.");
+                throw new TooManyRequestsException();
             }
             return message.Content.ReadAsStringAsync().Result;
         }
@@ -84,7 +85,7 @@ namespace RoSharp.API
             HttpResponseMessage message = await client.GetAsync(url);
             if (message.StatusCode == HttpStatusCode.TooManyRequests)
             {
-                throw new HttpRequestException("Too many requests.");
+                throw new TooManyRequestsException();
             }
             return await message.Content.ReadAsStringAsync();
         }
@@ -98,7 +99,7 @@ namespace RoSharp.API
 
             if (initialResponse.StatusCode == HttpStatusCode.TooManyRequests)
             {
-                throw new HttpRequestException("Too many requests.");
+                throw new TooManyRequestsException();
             }
 
             if (initialResponse.Headers.TryGetValues("x-csrf-token", out IEnumerable<string>? headers))
@@ -115,7 +116,7 @@ namespace RoSharp.API
 
             if (initialResponse.StatusCode == HttpStatusCode.TooManyRequests)
             {
-                throw new HttpRequestException("Too many requests.");
+                throw new TooManyRequestsException();
             }
 
             if (initialResponse.Headers.TryGetValues("x-csrf-token", out IEnumerable<string>? headers))
@@ -131,7 +132,7 @@ namespace RoSharp.API
 
             if (initialResponse.StatusCode == HttpStatusCode.TooManyRequests)
             {
-                throw new HttpRequestException("Too many requests.");
+                throw new TooManyRequestsException();
             }
 
             if (initialResponse.Headers.TryGetValues("x-csrf-token", out IEnumerable<string>? headers))
@@ -147,13 +148,13 @@ namespace RoSharp.API
         /// </summary>
         /// <param name="session">The session to attach.</param>
         /// <param name="refreshIfPossible">If true, will yield the current thread to run <see cref="IRefreshable.RefreshAsync"/>, if this instance is refreshable.</param>
-        /// <exception cref="InvalidOperationException">The provided session is not logged in!</exception>
+        /// <exception cref="ArgumentException">The provided session is not logged in!</exception>
         public virtual void AttachSession(Session session, bool refreshIfPossible = false)
         {
             ArgumentNullException.ThrowIfNull(session);
 
             if (!session.LoggedIn)
-                throw new InvalidOperationException("The provided session is not logged in!");
+                throw new ArgumentException("The provided session is not logged in!");
 
             this.session = session;
 
