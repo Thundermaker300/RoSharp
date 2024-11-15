@@ -214,15 +214,16 @@ namespace RoSharp.API
             HttpResponseMessage response = await PatchAsync($"/v1/groups/{Id}/description", body, verifyApiName: "Group.ModifyDescriptionAsync");
         }
 
-        [UsesSession]
+        /// <summary>
+        /// Creates a group shout.
+        /// </summary>
+        /// <param name="text">The text for the shout.</param>
+        /// <returns>Task that completes when the operation is finished.</returns>
+        /// <exception cref="RobloxAPIException">Roblox API failure or lack of permissions.</exception>
         public async Task ShoutAsync(string text)
         {
             object body = new { message = text };
             HttpResponseMessage response = await PatchAsync($"/v1/groups/{Id}/status", body, verifyApiName: "Group.ShoutAsync");
-            if (!response.IsSuccessStatusCode)
-            {
-                throw new RobloxAPIException($"Group shout failed (HTTP {response.StatusCode}). Do you have permission to modify this group's status?");
-            }
         }
 
         [UsesSession]
