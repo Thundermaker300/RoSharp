@@ -11,6 +11,7 @@ namespace RoSharp.Utility
         {
             HttpClient client = MakeClient(session);
             HttpResponseMessage response = await client.GetAsync("/v1/collectibles/metadata");
+            HttpVerify.ThrowIfNecessary(response);
             var dict = new Dictionary<AssetType, int>();
             if (response.IsSuccessStatusCode)
             {

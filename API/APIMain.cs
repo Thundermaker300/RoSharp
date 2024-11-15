@@ -47,10 +47,7 @@ namespace RoSharp.API
         {
             HttpClient client = MakeHttpClient(baseOverride, verifyApiName);
             HttpResponseMessage message = await client.GetAsync(url);
-            if (message.StatusCode == HttpStatusCode.TooManyRequests)
-            {
-                throw new TooManyRequestsException();
-            }
+            HttpVerify.ThrowIfNecessary(message);
             return message;
         }
 
@@ -60,10 +57,7 @@ namespace RoSharp.API
         {
             HttpClient client = MakeHttpClient(baseOverride, verifyApiName);
             HttpResponseMessage message = client.GetAsync(url).Result;
-            if (message.StatusCode == HttpStatusCode.TooManyRequests)
-            {
-                throw new TooManyRequestsException();
-            }
+            HttpVerify.ThrowIfNecessary(message);
             return message;
         }
 
@@ -72,10 +66,7 @@ namespace RoSharp.API
         {
             HttpClient client = MakeHttpClient(baseOverride, verifyApiName);
             HttpResponseMessage message = client.GetAsync(url).Result;
-            if (message.StatusCode == HttpStatusCode.TooManyRequests)
-            {
-                throw new TooManyRequestsException();
-            }
+            HttpVerify.ThrowIfNecessary(message);
             return message.Content.ReadAsStringAsync().Result;
         }
 
@@ -83,10 +74,7 @@ namespace RoSharp.API
         {
             HttpClient client = MakeHttpClient(baseOverride, verifyApiName);
             HttpResponseMessage message = await client.GetAsync(url);
-            if (message.StatusCode == HttpStatusCode.TooManyRequests)
-            {
-                throw new TooManyRequestsException();
-            }
+            HttpVerify.ThrowIfNecessary(message);
             return await message.Content.ReadAsStringAsync();
         }
 
@@ -95,50 +83,44 @@ namespace RoSharp.API
             HttpClient client = MakeHttpClient(baseOverride, verifyApiName);
             JsonContent content = JsonContent.Create(data);
 
-            HttpResponseMessage initialResponse = await client.PostAsync(url, null);
-
-            if (initialResponse.StatusCode == HttpStatusCode.TooManyRequests)
-            {
-                throw new TooManyRequestsException();
-            }
+            HttpResponseMessage initialResponse = await client.PostAsync(url, JsonContent.Create(new { }));
+            //HttpVerify.ThrowIfNecessary(initialResponse);
 
             if (initialResponse.Headers.TryGetValues("x-csrf-token", out IEnumerable<string>? headers))
                 client.DefaultRequestHeaders.Add("x-csrf-token", headers.First());
 
-            return await client.PostAsync(url, content);
+            HttpResponseMessage response = await client.PostAsync(url, content);
+            HttpVerify.ThrowIfNecessary(response);
+            return response;
         }
         internal async Task<HttpResponseMessage> PatchAsync(string url, object data, string? baseOverride = null, string? verifyApiName = null)
         {
             HttpClient client = MakeHttpClient(baseOverride, verifyApiName);
             JsonContent content = JsonContent.Create(data);
 
-            HttpResponseMessage initialResponse = await client.PatchAsync(url, null);
-
-            if (initialResponse.StatusCode == HttpStatusCode.TooManyRequests)
-            {
-                throw new TooManyRequestsException();
-            }
+            HttpResponseMessage initialResponse = await client.PatchAsync(url, JsonContent.Create(new { }));
+            //HttpVerify.ThrowIfNecessary(initialResponse);
 
             if (initialResponse.Headers.TryGetValues("x-csrf-token", out IEnumerable<string>? headers))
                 client.DefaultRequestHeaders.Add("x-csrf-token", headers.First());
 
-            return await client.PatchAsync(url, content);
+            HttpResponseMessage response = await client.PatchAsync(url, content);
+            HttpVerify.ThrowIfNecessary(response);
+            return response;
         }
         internal async Task<HttpResponseMessage> DeleteAsync(string url, string? baseOverride = null, string? verifyApiName = null)
         {
             HttpClient client = MakeHttpClient(baseOverride, verifyApiName);
 
             HttpResponseMessage initialResponse = await client.DeleteAsync(url);
-
-            if (initialResponse.StatusCode == HttpStatusCode.TooManyRequests)
-            {
-                throw new TooManyRequestsException();
-            }
+            //HttpVerify.ThrowIfNecessary(initialResponse);
 
             if (initialResponse.Headers.TryGetValues("x-csrf-token", out IEnumerable<string>? headers))
                 client.DefaultRequestHeaders.Add("x-csrf-token", headers.First());
 
-            return await client.DeleteAsync(url);
+            HttpResponseMessage response = await client.DeleteAsync(url);
+            HttpVerify.ThrowIfNecessary(response);
+            return response;
         }
 
         internal Session? session;

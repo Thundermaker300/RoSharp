@@ -6,6 +6,7 @@ using RoSharp.Exceptions;
 using RoSharp.Extensions;
 using RoSharp.Interfaces;
 using System.Collections.ObjectModel;
+using System.Net;
 
 namespace RoSharp.API.Assets
 {
@@ -403,7 +404,17 @@ namespace RoSharp.API.Assets
 
         private async Task UpdateConfigurationAsync()
         {
-            HttpResponseMessage response = await PatchAsync($"/v2/universes/{UniverseId}/configuration", new { }, "https://develop.roblox.com");
+            HttpResponseMessage? response = null;
+            try // Catch unauthorized errors for configuration data
+            {
+                response = await PatchAsync($"/v2/universes/{UniverseId}/configuration", new { }, "https://develop.roblox.com", "Experience.UpdateConfigurationAsync");
+            }
+            catch (RobloxAPIException ex)
+            {}
+
+            if (response == null)
+                return;
+
             string rawData = response.Content.ReadAsStringAsync().Result;
             dynamic data = JObject.Parse(rawData);
 

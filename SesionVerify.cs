@@ -1,6 +1,6 @@
 ﻿namespace RoSharp
 {
-    public class SessionVerify
+    public static class SessionVerify
     {
         public const string GENERIC_MESSAGE =
             "This API member ({0}) requires a logged-in session to be attached. Did you call AttachSession or a constructor with a session that has been logged in via session.LoginAsync()?";
