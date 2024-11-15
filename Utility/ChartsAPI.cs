@@ -91,6 +91,7 @@ namespace RoSharp.Utility
         /// <summary>
         /// Gets the token that can be used in the cursor parameter of <see cref="ChartsAPI.GetFrontPageExperiencesAsync(Session?, string?)"/> to advance to the next page.
         /// </summary>
+        /// <remarks>Will be <see langword="null"/> if it is already on the last page.</remarks>
         public string? NextPageToken { get; init; }
 
         /// <summary>
@@ -133,6 +134,7 @@ namespace RoSharp.Utility
         /// <param name="startAt">The amount of Ids to skip before converting.</param>
         /// <returns>A task containing the list of experiences upon completion.</returns>
         /// <remarks>This API is very time-consuming as each new experience is an API call, and Too Many Requests is a common error. As such, a limit should be used in conjunction with the <paramref name="startAt"/> parameter to only convert a certain amount of experiences at a time.</remarks>
+        /// <exception cref="RobloxAPIException">Roblox API failure.</exception>
         public async Task<ReadOnlyCollection<Experience>> ToExperienceListAsync(int limit = -1, int startAt = 0)
         {
             List<Experience> experiences = new List<Experience>();
@@ -154,6 +156,7 @@ namespace RoSharp.Utility
         /// <param name="startAt">The amount of Ids to skip before calling the <paramref name="action"/>.</param>
         /// <returns>A task that completes when the process is done.</returns>
         /// <remarks>This API is very time-consuming as each new experience is an API call, and Too Many Requests is a common error. As such, a limit should be used in conjunction with the <paramref name="startAt"/> parameter to only peform the action with a certain amount of experiences at a time.</remarks>
+        /// <exception cref="RobloxAPIException">Roblox API failure.</exception>
         public async Task ForEachExperienceAsync(Action<Experience> action, int limit = -1, int startAt = 0)
         {
             int count = 0;

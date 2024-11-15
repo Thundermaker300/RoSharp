@@ -12,55 +12,133 @@ namespace RoSharp.API.Assets
         /// <inheritdoc/>
         public override string BaseUrl => "https://catalog.roblox.com";
 
+        /// <summary>
+        /// Gets the unique Id of the asset.
+        /// </summary>
         public ulong Id { get; }
 
         private string name;
+
+        /// <summary>
+        /// Gets the name of the asset.
+        /// </summary>
         public string Name => name;
 
         private string description;
+
+        /// <summary>
+        /// Gets the description of the asset.
+        /// </summary>
         public string Description => description;
 
         private IAssetOwner owner;
+
+        /// <summary>
+        /// Gets the owner of the asset.
+        /// </summary>
+        /// <remarks>The returned <see cref="IAssetOwner"/> can be casted to <see cref="Group"/> or <see cref="User"/>.</remarks>
+        /// <seealso cref="IsGroupOwned"/>
         public IAssetOwner Owner => owner;
 
+        /// <summary>
+        /// Gets whether or not this asset is owned by a group.
+        /// </summary>
+        /// <seealso cref="Owner"/>
+        public bool IsGroupOwned => Owner is Group;
+
         private DateTime created;
+        
+        /// <summary>
+        /// Gets a <see cref="DateTime"/> representing the time this asset was created.
+        /// </summary>
         public DateTime Created => created;
 
         private DateTime lastUpdated;
+
+        /// <summary>
+        /// Gets a <see cref="DateTime"/> representing the time this asset was last updated.
+        /// </summary>
         public DateTime LastUpdated => lastUpdated;
 
         private int price;
+
+        /// <summary>
+        /// Gets the Robux price of this asset.
+        /// </summary>
         public int Price => price;
 
         private bool onSale;
+
+        /// <summary>
+        /// Gets whether or not this asset is available for purchase.
+        /// </summary>
         public bool OnSale => onSale;
 
         private int sales;
+
+        /// <summary>
+        /// Gets the amount of sales this asset has.
+        /// </summary>
+        /// <remarks>This will be <c>0</c> unless the authenticated user has the ability to see this asset's sales.</remarks>
         public int Sales => sales;
 
+        /// <summary>
+        /// Gets whether or not this asset can be purchased for free.
+        /// </summary>
         public bool Free => OnSale && Price == 0;
 
         private int remaining;
+
+        /// <summary>
+        /// For limited items, gets the amount of quantity remaining before the item becomes resellable.
+        /// </summary>
         public int Remaining => remaining;
 
         private int initialQuantity;
+
+        /// <summary>
+        /// For limited items, gets the initial quantity amount.
+        /// </summary>
         public int InitialQuantity => initialQuantity;
 
         private int quantityLimitPerUser;
+        
+        /// <summary>
+        /// For limited items, gets the total amount of copies one user is allowed to have.
+        /// </summary>
         public int QuantityLimitPerUser => quantityLimitPerUser;
 
         private bool isLimited;
+
+        /// <summary>
+        /// Gets whether or not this asset is limited.
+        /// </summary>
         public bool IsLimited => isLimited;
 
         private bool isLimitedUnique;
+
+        /// <summary>
+        /// Gets whether or not this asset is limited unique.
+        /// </summary>
         public bool IsLimitedUnique => isLimitedUnique;
 
         private AssetType assetType;
+
+        /// <summary>
+        /// Gets the <see cref="Enums.AssetType"/> of this asset.
+        /// </summary>
         public AssetType AssetType => assetType;
 
         private SaleLocationType saleLocation;
+
+        /// <summary>
+        /// Gets the <see cref="Enums.SaleLocationType"/> of this asset, indicating where it can be purchased.
+        /// </summary>
         public SaleLocationType SaleLocation => saleLocation;
 
+        /// <summary>
+        /// Indicates whether or not this asset has an owner.
+        /// </summary>
         public bool HasOwner => Owner != null;
 
         /// <inheritdoc/>
@@ -161,6 +239,10 @@ namespace RoSharp.API.Assets
         }
 
         private ulong favorites = 0;
+
+        /// <summary>
+        /// Gets this asset's total amount of favorites.
+        /// </summary>
         public ulong Favorites => favorites;
 
         private string thumbnailUrl;
@@ -180,6 +262,12 @@ namespace RoSharp.API.Assets
             return data.data[0].imageUrl;
         }
 
+        /// <summary>
+        /// Modifies the asset using the provided options.
+        /// </summary>
+        /// <param name="options">The options.</param>
+        /// <returns>A task that completes when the operation is finished.</returns>
+        /// <exception cref="RobloxAPIException">Roblox API failure or lack of permissions.</exception>
         public async Task ModifyAsync(AssetModifyOptions options)
         {
             object body = new
@@ -189,12 +277,15 @@ namespace RoSharp.API.Assets
             };
 
             HttpResponseMessage response = await PatchAsync($"/v1/assets/{Id}", body, "https://develop.roblox.com", "Asset.ModifyAsync");
-            if (!response.IsSuccessStatusCode)
-            {
-                throw new RobloxAPIException($"Failed to modify asset. Error code {response.StatusCode}. {response.Content.ReadAsStringAsync().Result}");
-            }
         }
 
+        /// <summary>
+        /// Toggles the sale status of the asset.
+        /// </summary>
+        /// <param name="isOnSale">Whether or not the asset is on sale.</param>
+        /// <param name="cost">The cost to purchase the asset.</param>
+        /// <returns>A task that completes when the operation is finished.</returns>
+        /// <exception cref="RobloxAPIException">Roblox API failure or lack of permissions.</exception>
         public async Task SetSaleStatusAsync(bool isOnSale, int cost)
         {
             int? priceInRobux = !isOnSale ? null : cost;
@@ -212,10 +303,6 @@ namespace RoSharp.API.Assets
                 }
             };
             HttpResponseMessage response = await PostAsync("/v1/assets/3307894526/release", body, "https://itemconfiguration.roblox.com", "Asset.SetSaleStatusAsync");
-            if (!response.IsSuccessStatusCode)
-            {
-                throw new RobloxAPIException($"Failed to modify asset. Error code {response.StatusCode}. {response.Content.ReadAsStringAsync().Result}");
-            }
         }
 
         public async Task<bool> IsOwnedByAsync(User target) => await target.OwnsAssetAsync(this);

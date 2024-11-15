@@ -14,26 +14,61 @@ namespace RoSharp.API
         /// <inheritdoc/>
         public override string BaseUrl => "https://users.roblox.com";
 
+        /// <summary>
+        /// Gets the user's unique Id.
+        /// </summary>
         public ulong Id { get; }
 
         private string name;
+
+        /// <summary>
+        /// Gets the user's username. Equivalent to <see cref="Username"/>.
+        /// </summary>
         public string Name => name;
+
+        /// <summary>
+        /// Gets the user's username. Equivalent to <see cref="Name"/>.
+        /// </summary>
         public string Username => Name;
 
         private string displayName;
+
+        /// <summary>
+        /// Gets the user's display name, or their <see cref="Username"/> if one is not set.
+        /// </summary>
         public string DisplayName => displayName;
 
         private string bio;
+        
+        /// <summary>
+        /// Gets the user's bio.
+        /// </summary>
         public string Bio => bio;
 
         private bool verified;
+
+        /// <summary>
+        /// Gets whether or not this user is verified (blue checkmark).
+        /// </summary>
         public bool Verified => verified;
 
         private DateTime joinDate;
+
+        /// <summary>
+        /// Gets a <see cref="DateTime"/> representing the time the user joined Roblox.
+        /// </summary>
         public DateTime JoinDate => joinDate;
+
+        /// <summary>
+        /// Gets a <see cref="TimeSpan"/> representing the age of the account.
+        /// </summary>
         public TimeSpan AccountAge => DateTime.UtcNow - JoinDate;
 
         private bool profileHidden;
+
+        /// <summary>
+        /// Gets whether or not their profile is hidden (either banned or disabled account).
+        /// </summary>
         public bool ProfileHidden => ProfileHidden;
 
         /// <inheritdoc/>
@@ -278,6 +313,7 @@ namespace RoSharp.API
         /// </summary>
         /// <returns>A task containing a <see cref="ReadOnlyDictionary{TKey, TValue}"/> when complete.</returns>
         /// <remarks>The keys of the dictionary are the social media type, the value is the URL.</remarks>
+        /// <exception cref="RobloxAPIException">Roblox API failure.</exception>
         public async Task<ReadOnlyDictionary<string, string>> GetSocialChannelsAsync()
         {
             if (socialChannels == null)
@@ -303,6 +339,7 @@ namespace RoSharp.API
         /// </summary>
         /// <returns><see cref="ReadOnlyCollection{T}"/></returns>
         /// <remarks>The <see cref="Session"/> attached to this <see cref="User"/> will automatically be added to the returned <see cref="Asset"/> instances. This method will throw an exception if this User instance has no <see cref="Session"/> attached, as <see cref="Asset"/> instances must have a session attached.</remarks>
+        /// <exception cref="RobloxAPIException">Roblox API failure.</exception>
         public async Task<ReadOnlyCollection<Asset>> GetCurrentlyWearingAsync()
         {
             if (currentlyWearing == null)
@@ -328,6 +365,7 @@ namespace RoSharp.API
         /// </summary>
         /// <returns><see cref="ReadOnlyCollection{T}"/></returns>
         /// <remarks>The <see cref="Session"/> attached to this <see cref="User"/> will automatically be added to the returned <see cref="Asset"/> instances. This method will throw an exception if this User instance has no <see cref="Session"/> attached, as <see cref="Asset"/> instances must have a session attached.</remarks>
+        /// <exception cref="RobloxAPIException">Roblox API failure.</exception>
         public async Task<ReadOnlyCollection<Asset>> GetCollectionItemsAsync()
         {
             if (collections == null)
@@ -352,6 +390,7 @@ namespace RoSharp.API
         /// <param name="limit">The maximum amount of friends to return.</param>
         /// <returns><see cref="ReadOnlyCollection{T}"/></returns>
         /// <remarks>The <see cref="Session"/> attached to this <see cref="User"/> will automatically be added to the returned <see cref="User"/> instances.</remarks>
+        /// <exception cref="RobloxAPIException">Roblox API failure.</exception>
         public async Task<ReadOnlyCollection<User>> GetFriendsAsync(int limit = 50)
         {
             string rawData = await GetStringAsync($"/v1/users/{Id}/friends", "https://friends.roblox.com");

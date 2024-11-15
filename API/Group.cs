@@ -6,6 +6,7 @@ using RoSharp.Exceptions;
 using RoSharp.Extensions;
 using RoSharp.Interfaces;
 using System.Collections.ObjectModel;
+using System.Diagnostics;
 
 namespace RoSharp.API
 {
@@ -14,30 +15,64 @@ namespace RoSharp.API
         /// <inheritdoc/>
         public override string BaseUrl => "https://groups.roblox.com";
 
+        /// <summary>
+        /// Gets the unique Id of the group.
+        /// </summary>
         public ulong Id { get; }
 
         private string name;
+
+        /// <summary>
+        /// Gets the group's name.
+        /// </summary>
         public string Name => name;
 
         private string description;
+
+        /// <summary>
+        /// Gets the group's description.
+        /// </summary>
         public string Description => description;
 
         private User? owner;
+
+        /// <summary>
+        /// Gets the group's owner. Can be <see langword="null"/> if the group does not have an owner (abandoned).
+        /// </summary>
         public User? Owner => owner;
 
+        /// <summary>
+        /// Indicates whether or not the group has an owner. Equivalent to checking if <see cref="Owner"/> is <see langword="null"/>.
+        /// </summary>
         public bool HasOwner => Owner != null;
 
         private bool isPublic;
+
+        /// <summary>
+        /// Gets whether or not the group is publicly joinable.
+        /// </summary>
         public bool IsPublic => isPublic;
 
         private bool verified;
+
+        /// <summary>
+        /// Gets whether or not the group is verified (blue checkmark).
+        /// </summary>
         public bool Verified => verified;
 
 
         private RoleManager roleManager;
+
+        /// <summary>
+        /// Gets a <see cref="API.RoleManager"/> class that has additional API to manage group roles.
+        /// </summary>
         public RoleManager RoleManager => roleManager;
 
         private MemberManager memberManager;
+
+        /// <summary>
+        /// Gets a <see cref="API.MemberManager"/> class that has additional API to manage group members.
+        /// </summary>
         public MemberManager MemberManager => memberManager ?? new MemberManager(this);
 
         /// <inheritdoc/>
@@ -151,25 +186,32 @@ namespace RoSharp.API
             }
         }
 
+        /// <summary>
+        /// Gets the group's icon.
+        /// </summary>
+        /// <param name="size"></param>
+        /// <returns>Task that contains a URL to the icon, upon completion.</returns>
+        /// <exception cref="RobloxAPIException">Roblox API failure.</exception>
         public async Task<string> GetIconAsync(ThumbnailSize size = ThumbnailSize.S420x420)
         {
             string url = $"/v1/groups/icons?groupIds={Id}&size={size.ToString().Substring(1)}&format=Png&isCircular=false";
             string rawData = await GetStringAsync(url, "https://thumbnails.roblox.com");
             dynamic data = JObject.Parse(rawData);
             if (data.data.Count == 0)
-                throw new ArgumentException("Invalid group to get icon for.");
+                throw new UnreachableException("Invalid group to get icon for.");
             return data.data[0].imageUrl;
         }
 
-        [UsesSession]
+        /// <summary>
+        /// Modifies the group description.
+        /// </summary>
+        /// <param name="text">The new group description.</param>
+        /// <returns>Task that completes when the operation is finished.</returns>
+        /// <exception cref="RobloxAPIException">Roblox API failure or lack of permissions.</exception>
         public async Task ModifyDescriptionAsync(string text)
         {
             object body = new { description = text };
             HttpResponseMessage response = await PatchAsync($"/v1/groups/{Id}/description", body, verifyApiName: "Group.ModifyDescriptionAsync");
-            if (!response.IsSuccessStatusCode)
-            {
-                throw new RobloxAPIException($"Group description modification failed (HTTP {response.StatusCode}). Do you have permission to modify this group's description?");
-            }
         }
 
         [UsesSession]

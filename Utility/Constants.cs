@@ -5,6 +5,9 @@ namespace RoSharp.Utility
 {
     public static class Constants
     {
+        /// <summary>
+        /// Contains a mapping of strings returned by the experience age recommendation API, mapped to the matching <see cref="ExperienceDescriptorType"/>.
+        /// </summary>
         public static readonly ReadOnlyDictionary<string, ExperienceDescriptorType> DescriptorIdToEnumMapping = new Dictionary<string, ExperienceDescriptorType>()
         {
             ["alcohol"] = ExperienceDescriptorType.Alcohol,
