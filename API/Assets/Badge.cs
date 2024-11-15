@@ -8,7 +8,7 @@ namespace RoSharp.API.Assets
     public class Badge : APIMain, IRefreshable, IPoolable
     {
         /// <inheritdoc/>
-        public override string BaseUrl => "https://badges.roblox.com";
+        public override string BaseUrl => Constants.URL("badges");
 
         public ulong Id { get; }
 
@@ -106,7 +106,7 @@ namespace RoSharp.API.Assets
         public async Task<string> GetThumbnailAsync()
         {
             string url = $"/v1/badges/icons?badgeIds={Id}&size=150x150&format=Png&isCircular=false";
-            string rawData = await GetStringAsync(url, "https://thumbnails.roblox.com");
+            string rawData = await GetStringAsync(url, Constants.URL("thumbnails"));
             dynamic data = JObject.Parse(rawData);
             if (data.data.Count == 0)
                 throw new ArgumentException("Invalid badge to get thumbnail for.");

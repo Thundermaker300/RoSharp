@@ -10,7 +10,7 @@ namespace RoSharp.API
     {
         public SessionAPI(Session session) : base(session) { }
 
-        public override string BaseUrl => "https://users.roblox.com";
+        public override string BaseUrl => Constants.URL("users");
 
         private User? user;
 
@@ -66,7 +66,7 @@ namespace RoSharp.API
         {
             get
             {
-                string rawData = GetString("/v1/user/currency", "https://economy.roblox.com");
+                string rawData = GetString("/v1/user/currency", Constants.URL("economy"));
                 dynamic data = JObject.Parse(rawData);
                 return data.robux;
             }

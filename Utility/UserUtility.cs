@@ -22,7 +22,7 @@ namespace RoSharp.Utility
                 usernames = new[] { username },
             };
             var content = JsonContent.Create(request);
-            HttpResponseMessage response = await userUtilityClient.PostAsync("https://users.roblox.com/v1/usernames/users", content);
+            HttpResponseMessage response = await userUtilityClient.PostAsync($"{Constants.URL("users")}/v1/usernames/users", content);
             if (response.IsSuccessStatusCode)
             {
                 dynamic data = JObject.Parse(await response.Content.ReadAsStringAsync());

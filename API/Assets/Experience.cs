@@ -13,7 +13,7 @@ namespace RoSharp.API.Assets
     public class Experience : APIMain, IRefreshable, IPoolable
     {
         /// <inheritdoc/>
-        public override string BaseUrl => "https://games.roblox.com";
+        public override string BaseUrl => Constants.URL("games");
 
         private static HttpClient genericClient { get; } = new HttpClient();
 
@@ -131,7 +131,7 @@ namespace RoSharp.API.Assets
         {
             ulong universeId = 0;
 
-            HttpResponseMessage response = await genericClient.GetAsync($"https://apis.roblox.com/universes/v1/places/{placeOrUniverseId}/universe");
+            HttpResponseMessage response = await genericClient.GetAsync($"{Constants.URL("apis")}/universes/v1/places/{placeOrUniverseId}/universe");
             string raw = await response.Content.ReadAsStringAsync();
             dynamic universeData = JObject.Parse(raw);
             if (universeData.universeId != null)
@@ -213,7 +213,7 @@ namespace RoSharp.API.Assets
 
         private async Task UpdateVoiceVideoAsync()
         {
-            string commSetting = await GetStringAsync($"/v1/settings/universe/{UniverseId}", "https://voice.roblox.com");
+            string commSetting = await GetStringAsync($"/v1/settings/universe/{UniverseId}", Constants.URL("voice"));
             dynamic data = JObject.Parse(commSetting);
 
             voiceEnabled = data.isUniverseEnabledForVoice;
@@ -298,7 +298,7 @@ namespace RoSharp.API.Assets
         private async Task UpdateExperienceGuidelinesDataAsync()
         {
             // Update profanity
-            string commSetting = await GetStringAsync($"/asset-text-filter-settings/public/universe/{UniverseId}", "https://apis.roblox.com");
+            string commSetting = await GetStringAsync($"/asset-text-filter-settings/public/universe/{UniverseId}", Constants.URL("apis"));
             dynamic dataProfane = JObject.Parse(commSetting);
             profanityAllowed = dataProfane.Profanity;
 
@@ -308,7 +308,7 @@ namespace RoSharp.API.Assets
                 universeId = UniverseId.ToString()
             };
 
-            HttpResponseMessage response = await PostAsync("/experience-guidelines-api/experience-guidelines/get-age-recommendation", body, "https://apis.roblox.com");
+            HttpResponseMessage response = await PostAsync("/experience-guidelines-api/experience-guidelines/get-age-recommendation", body, Constants.URL("apis"));
             string rawData = await response.Content.ReadAsStringAsync();
             dynamic dataUseless = JObject.Parse(rawData);
             dynamic data = dataUseless.ageRecommendationDetails;
@@ -334,11 +334,11 @@ namespace RoSharp.API.Assets
                     }
 
                     string itemName = Convert.ToString(item.name);
-                    if (item.contains == true && Utility.Constants.DescriptorIdToEnumMapping.ContainsKey(itemName))
+                    if (item.contains == true && Constants.DescriptorIdToEnumMapping.ContainsKey(itemName))
                     {
                         ExperienceDescriptor descriptor = new()
                         {
-                            DescriptorType = Utility.Constants.DescriptorIdToEnumMapping[itemName],
+                            DescriptorType = Constants.DescriptorIdToEnumMapping[itemName],
                             IconUrl = item.descriptor.iconUrl,
                             DisplayText = item.descriptor.displayName,
 
@@ -407,7 +407,7 @@ namespace RoSharp.API.Assets
             HttpResponseMessage? response = null;
             try // Catch unauthorized errors for configuration data
             {
-                response = await PatchAsync($"/v2/universes/{UniverseId}/configuration", new { }, "https://develop.roblox.com", "Experience.UpdateConfigurationAsync");
+                response = await PatchAsync($"/v2/universes/{UniverseId}/configuration", new { }, Constants.URL("develop"), "Experience.UpdateConfigurationAsync");
             }
             catch (RobloxAPIException ex)
             {}
@@ -484,7 +484,7 @@ namespace RoSharp.API.Assets
             if (cursor != null)
                 url += "&cursor=" + cursor;
 
-            string rawData = await GetStringAsync(url, "https://badges.roblox.com");
+            string rawData = await GetStringAsync(url, Constants.URL("badges"));
             dynamic data = JObject.Parse(rawData);
 
             List<Badge> list = new();
@@ -503,7 +503,7 @@ namespace RoSharp.API.Assets
         public async Task<ReadOnlyCollection<Asset>> GetThumbnailsAsync(ExperienceThumbnailSize size = ExperienceThumbnailSize.S768x432, bool defaultRobloxThumbnailIfNecessary = true)
         {
             string url = $"/v1/games/multiget/thumbnails?universeIds={UniverseId}&countPerUniverse=25&defaults={defaultRobloxThumbnailIfNecessary.ToString().ToLower()}&size={size.ToString().Substring(1)}&format=Png&isCircular=false";
-            string rawData = await GetStringAsync(url, "https://thumbnails.roblox.com");
+            string rawData = await GetStringAsync(url, Constants.URL("thumbnails"));
             dynamic data = JObject.Parse(rawData);
             if (data.data.Count == 0)
                 throw new ArgumentException("Invalid asset to get thumbnail for.");
@@ -525,7 +525,7 @@ namespace RoSharp.API.Assets
         public async Task SetPrivacyAsync(bool isPublic)
         {
             string url = $"/v1/universes/6723876149/{(isPublic == false ? "de" : string.Empty)}activate";
-            HttpResponseMessage response = await PostAsync(url, new { }, "https://develop.roblox.com", "Experience.SetPrivacyAsync");
+            HttpResponseMessage response = await PostAsync(url, new { }, Constants.URL("develop"), "Experience.SetPrivacyAsync");
             if (!response.IsSuccessStatusCode)
             {
                 throw new RobloxAPIException($"Failed to {(isPublic == false ? "de" : string.Empty)}activate experience (HTTP {response.StatusCode}) (UniverseId {UniverseId}). Do you have permission to modify this experience?");
@@ -547,7 +547,7 @@ namespace RoSharp.API.Assets
                 studioAccessToApisAllowed = options.StudioAccessToAPIsAllowed
             };
 
-            HttpResponseMessage response = await PatchAsync($"/v2/universes/{UniverseId}/configuration", body, "https://develop.roblox.com", "Experience.ModifyAsync");
+            HttpResponseMessage response = await PatchAsync($"/v2/universes/{UniverseId}/configuration", body, Constants.URL("develop"), "Experience.ModifyAsync");
             if (!response.IsSuccessStatusCode)
             {
                 throw new RobloxAPIException($"Failed to modify asset. Error code {response.StatusCode}. {response.Content.ReadAsStringAsync().Result}");
@@ -571,7 +571,7 @@ namespace RoSharp.API.Assets
                 }
             };
 
-            HttpResponseMessage response = await PatchAsync($"/user/cloud/v2/universes/{UniverseId}/user-restrictions/{userId}?", body, "https://apis.roblox.com", "Experience.BanUserAsync");
+            HttpResponseMessage response = await PatchAsync($"/user/cloud/v2/universes/{UniverseId}/user-restrictions/{userId}?", body, Constants.URL("apis"), "Experience.BanUserAsync");
             if (!response.IsSuccessStatusCode)
                 throw new RobloxAPIException($"Failed to add ban. Error code {response.StatusCode}. {response.Content.ReadAsStringAsync().Result}");
         }
@@ -592,7 +592,7 @@ namespace RoSharp.API.Assets
                 }
             };
 
-            HttpResponseMessage response = await PatchAsync($"/user/cloud/v2/universes/{UniverseId}/user-restrictions/{userId}?", body, "https://apis.roblox.com", "Experience.UnbanUserAsync");
+            HttpResponseMessage response = await PatchAsync($"/user/cloud/v2/universes/{UniverseId}/user-restrictions/{userId}?", body, Constants.URL("apis"), "Experience.UnbanUserAsync");
             if (!response.IsSuccessStatusCode)
                 throw new RobloxAPIException($"Failed to unban user. Error code {response.StatusCode}. {response.Content.ReadAsStringAsync().Result}");
         }
@@ -605,7 +605,7 @@ namespace RoSharp.API.Assets
 
         public async Task PostUpdateAsync(string text)
         {
-            HttpResponseMessage response = await PostAsync($"/game-update-notifications/v1/publish/{UniverseId}", text, "https://apis.roblox.com", "Experience.PostUpdateAsync");
+            HttpResponseMessage response = await PostAsync($"/game-update-notifications/v1/publish/{UniverseId}", text, Constants.URL("apis"), "Experience.PostUpdateAsync");
             if (!response.IsSuccessStatusCode)
                 throw new RobloxAPIException($"Failed to post update. Error code {response.StatusCode}. {response.Content.ReadAsStringAsync().Result}");
         }

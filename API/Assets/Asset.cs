@@ -10,7 +10,7 @@ namespace RoSharp.API.Assets
     public class Asset : APIMain, IRefreshable, IPoolable
     {
         /// <inheritdoc/>
-        public override string BaseUrl => "https://catalog.roblox.com";
+        public override string BaseUrl => Constants.URL("catalog");
 
         /// <summary>
         /// Gets the unique Id of the asset.
@@ -168,7 +168,7 @@ namespace RoSharp.API.Assets
         /// <inheritdoc/>
         public async Task RefreshAsync()
         {
-            HttpResponseMessage response = await GetAsync($"/v2/assets/{Id}/details", "https://economy.roblox.com", "Asset.RefreshAsync");
+            HttpResponseMessage response = await GetAsync($"/v2/assets/{Id}/details", Constants.URL("economy"), "Asset.RefreshAsync");
             if (response.IsSuccessStatusCode)
             {
                 string raw = await response.Content.ReadAsStringAsync();
@@ -255,7 +255,7 @@ namespace RoSharp.API.Assets
         public async Task<string> GetThumbnailAsync(ThumbnailSize size = ThumbnailSize.S420x420)
         {
             string url = $"/v1/assets?assetIds={Id}&returnPolicy=PlaceHolder&size={size.ToString().Substring(1)}&format=Png&isCircular=false";
-            string rawData = await GetStringAsync(url, "https://thumbnails.roblox.com");
+            string rawData = await GetStringAsync(url, Constants.URL("thumbnails"));
             dynamic data = JObject.Parse(rawData);
             if (data.data.Count == 0)
                 throw new ArgumentException("Invalid asset to get thumbnail for.");
@@ -276,7 +276,7 @@ namespace RoSharp.API.Assets
                 description = options.Description,
             };
 
-            HttpResponseMessage response = await PatchAsync($"/v1/assets/{Id}", body, "https://develop.roblox.com", "Asset.ModifyAsync");
+            HttpResponseMessage response = await PatchAsync($"/v1/assets/{Id}", body, Constants.URL("develop"), "Asset.ModifyAsync");
         }
 
         /// <summary>
@@ -302,7 +302,7 @@ namespace RoSharp.API.Assets
                     saleAvailabilityLocations = saleAvailabilityLocations
                 }
             };
-            HttpResponseMessage response = await PostAsync("/v1/assets/3307894526/release", body, "https://itemconfiguration.roblox.com", "Asset.SetSaleStatusAsync");
+            HttpResponseMessage response = await PostAsync("/v1/assets/3307894526/release", body, Constants.URL("itemconfiguration"), "Asset.SetSaleStatusAsync");
         }
 
         public async Task<bool> IsOwnedByAsync(User target) => await target.OwnsAssetAsync(this);

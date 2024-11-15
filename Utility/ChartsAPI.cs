@@ -67,7 +67,7 @@ namespace RoSharp.Utility
 
         private static HttpClient MakeClient(Session? session = null)
         {
-            Uri uri = new Uri("https://apis.roblox.com");
+            Uri uri = new Uri(Constants.URL("apis"));
 
             CookieContainer cookies = new CookieContainer();
             HttpClientHandler handler = new HttpClientHandler();

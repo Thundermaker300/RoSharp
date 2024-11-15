@@ -37,13 +37,15 @@ namespace RoSharp
 
         public async Task LoginAsync(string roblosecurity)
         {
+            Uri uri = new(Constants.URL("users"));
+
             CookieContainer cookies = new CookieContainer();
             HttpClientHandler handler = new HttpClientHandler();
             handler.CookieContainer = cookies;
-            cookies.Add(UriPages.Users, new Cookie(".ROBLOSECURITY", roblosecurity));
+            cookies.Add(uri, new Cookie(".ROBLOSECURITY", roblosecurity));
 
             HttpClient client = new HttpClient(handler);
-            client.BaseAddress = UriPages.Users;
+            client.BaseAddress = uri;
 
             HttpResponseMessage authResponse = await client.GetAsync("/v1/users/authenticated");
             if (authResponse.StatusCode == HttpStatusCode.Unauthorized)

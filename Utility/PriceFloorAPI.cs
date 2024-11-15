@@ -43,7 +43,7 @@ namespace RoSharp.Utility
         {
             SessionVerify.ThrowIfNecessary(session, "PriceFloorAPI");
 
-            Uri uri = new Uri("https://itemconfiguration.roblox.com");
+            Uri uri = new Uri(Constants.URL("itemconfiguration"));
 
             CookieContainer cookies = new CookieContainer();
             HttpClientHandler handler = new HttpClientHandler();

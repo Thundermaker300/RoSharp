@@ -13,7 +13,7 @@ namespace RoSharp.API
     public class Group : APIMain, IRefreshable, IAssetOwner, IPoolable
     {
         /// <inheritdoc/>
-        public override string BaseUrl => "https://groups.roblox.com";
+        public override string BaseUrl => Constants.URL("groups");
 
         /// <summary>
         /// Gets the unique Id of the group.
@@ -195,7 +195,7 @@ namespace RoSharp.API
         public async Task<string> GetIconAsync(ThumbnailSize size = ThumbnailSize.S420x420)
         {
             string url = $"/v1/groups/icons?groupIds={Id}&size={size.ToString().Substring(1)}&format=Png&isCircular=false";
-            string rawData = await GetStringAsync(url, "https://thumbnails.roblox.com");
+            string rawData = await GetStringAsync(url, Constants.URL("thumbnails"));
             dynamic data = JObject.Parse(rawData);
             if (data.data.Count == 0)
                 throw new UnreachableException("Invalid group to get icon for.");

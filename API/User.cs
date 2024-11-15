@@ -12,7 +12,7 @@ namespace RoSharp.API
     public class User : APIMain, IRefreshable, IAssetOwner, IPoolable
     {
         /// <inheritdoc/>
-        public override string BaseUrl => "https://users.roblox.com";
+        public override string BaseUrl => Constants.URL("users");
 
         /// <summary>
         /// Gets the user's unique Id.
@@ -135,7 +135,7 @@ namespace RoSharp.API
             // Update premium
             if (SessionVerify.Verify(session))
             {
-                HttpResponseMessage premiumResponse = await GetAsync($"/v1/users/{Id}/validate-membership", "https://premiumfeatures.roblox.com");
+                HttpResponseMessage premiumResponse = await GetAsync($"/v1/users/{Id}/validate-membership", Constants.URL("premiumfeatures"));
                 if (premiumResponse.IsSuccessStatusCode)
                 {
                     isPremium = Convert.ToBoolean(await premiumResponse.Content.ReadAsStringAsync());
@@ -169,7 +169,7 @@ namespace RoSharp.API
             {
                 if (following == -1)
                 {
-                    HttpResponseMessage response = Get($"/v1/users/{Id}/followings/count", "https://friends.roblox.com");
+                    HttpResponseMessage response = Get($"/v1/users/{Id}/followings/count", Constants.URL("friends"));
                     if (response.IsSuccessStatusCode)
                     {
                         string raw = response.Content.ReadAsStringAsync().Result;
@@ -192,7 +192,7 @@ namespace RoSharp.API
             {
                 if (followers == -1)
                 {
-                    HttpResponseMessage response = Get($"/v1/users/{Id}/followers/count", "https://friends.roblox.com");
+                    HttpResponseMessage response = Get($"/v1/users/{Id}/followers/count", Constants.URL("friends"));
                     if (response.IsSuccessStatusCode)
                     {
                         string raw = response.Content.ReadAsStringAsync().Result;
@@ -216,7 +216,7 @@ namespace RoSharp.API
                 if (robloxBadges == null)
                 {
                     List<string> badges = new();
-                    string rawData = GetString($"/v1/users/{Id}/roblox-badges", "https://accountinformation.roblox.com");
+                    string rawData = GetString($"/v1/users/{Id}/roblox-badges", Constants.URL("accountinformation"));
                     JArray data = JArray.Parse(rawData);
                     foreach (dynamic badgeData in data.Children<JObject>())
                     {
@@ -254,7 +254,7 @@ namespace RoSharp.API
         {
             if (primaryGroup == null)
             {
-                string rawData = await GetStringAsync($"/v1/users/{Id}/groups/primary/role", "https://groups.roblox.com");
+                string rawData = await GetStringAsync($"/v1/users/{Id}/groups/primary/role", Constants.URL("groups"));
                 if (rawData == "null")
                     return null;
 
@@ -270,7 +270,7 @@ namespace RoSharp.API
         {
             if (groups == null)
             {
-                string rawData = await GetStringAsync($"/v1/users/{Id}/groups/roles", "https://groups.roblox.com");
+                string rawData = await GetStringAsync($"/v1/users/{Id}/groups/roles", Constants.URL("groups"));
                 dynamic data = JObject.Parse(rawData);
 
                 Dictionary<Group, Role> dict = new();
@@ -296,7 +296,7 @@ namespace RoSharp.API
         {
             get
             {
-                HttpResponseMessage response = Get($"/v1/users/{Id}/can-view-inventory", "https://inventory.roblox.com");
+                HttpResponseMessage response = Get($"/v1/users/{Id}/can-view-inventory", Constants.URL("inventory"));
                 if (response.IsSuccessStatusCode)
                 {
                     dynamic data = JObject.Parse(response.Content.ReadAsStringAsync().Result);
@@ -319,7 +319,7 @@ namespace RoSharp.API
             if (socialChannels == null)
             {
                 Dictionary<string, string> dict = new();
-                string rawData = await GetStringAsync($"/v1/users/{Id}/promotion-channels?alwaysReturnUrls=true", "https://accountinformation.roblox.com/");
+                string rawData = await GetStringAsync($"/v1/users/{Id}/promotion-channels?alwaysReturnUrls=true", Constants.URL("accountinformation"));
                 dynamic data = JObject.Parse(rawData);
                 foreach (dynamic media in data)
                 {
@@ -344,7 +344,7 @@ namespace RoSharp.API
         {
             if (currentlyWearing == null)
             {
-                string rawData = await GetStringAsync($"/v1/users/{Id}/currently-wearing", "https://avatar.roblox.com");
+                string rawData = await GetStringAsync($"/v1/users/{Id}/currently-wearing", Constants.URL("avatar"));
                 dynamic data = JObject.Parse(rawData);
 
                 List<Asset> list = new List<Asset>();
@@ -369,8 +369,8 @@ namespace RoSharp.API
         public async Task<ReadOnlyCollection<Asset>> GetCollectionItemsAsync()
         {
             if (collections == null)
-            {
-                string rawData = await GetStringAsync($"/users/profile/robloxcollections-json?userId={Id}", "https://www.roblox.com");
+            { // TODO: "infinity value error"
+                string rawData = await GetStringAsync($"/users/profile/robloxcollections-json?userId={Id}", Constants.ROBLOX_URL);
                 dynamic data = JObject.Parse(rawData);
 
                 List<Asset> list = new List<Asset>();
@@ -393,7 +393,7 @@ namespace RoSharp.API
         /// <exception cref="RobloxAPIException">Roblox API failure.</exception>
         public async Task<ReadOnlyCollection<User>> GetFriendsAsync(int limit = 50)
         {
-            string rawData = await GetStringAsync($"/v1/users/{Id}/friends", "https://friends.roblox.com");
+            string rawData = await GetStringAsync($"/v1/users/{Id}/friends", Constants.URL("friends"));
             dynamic data = JObject.Parse(rawData);
             List<User> friends = new List<User>();
             int count = 0;
@@ -423,7 +423,7 @@ namespace RoSharp.API
                 ThumbnailType.Headshot => "-headshot",
                 _ => string.Empty,
             } + $"?userIds={Id}&size={size.ToString().Substring(1)}&format=Png&isCircular=false";
-            string rawData = await GetStringAsync(url, "https://thumbnails.roblox.com");
+            string rawData = await GetStringAsync(url, Constants.URL("thumbnails"));
             dynamic data = JObject.Parse(rawData);
             if (data.data.Count == 0)
                 throw new ArgumentException("Invalid user to get thumbnail for.");
@@ -432,7 +432,7 @@ namespace RoSharp.API
 
         public async Task<bool> OwnsAssetAsync(ulong assetId, int assetItemType = 0)
         {
-            string result = await GetStringAsync($"/v1/users/{Id}/items/{assetItemType}/{assetId}/is-owned", "https://inventory.roblox.com");
+            string result = await GetStringAsync($"/v1/users/{Id}/items/{assetItemType}/{assetId}/is-owned", Constants.URL("inventory"));
             return Convert.ToBoolean(result);
         }
 
@@ -441,7 +441,7 @@ namespace RoSharp.API
 
         public async Task<bool> HasBadgeAsync(ulong badgeId)
         {
-            string rawData = await GetStringAsync($"/v1/users/{Id}/badges/awarded-dates?badgeIds={badgeId}", "https://badges.roblox.com");
+            string rawData = await GetStringAsync($"/v1/users/{Id}/badges/awarded-dates?badgeIds={badgeId}", Constants.URL("badges"));
             dynamic data = JObject.Parse(rawData);
 
             return data.data.Count > 0;
@@ -463,7 +463,7 @@ namespace RoSharp.API
                 userIds = new[] { Id },
             };
 
-            HttpResponseMessage response = await PostAsync("/v1/presence/users", body, "https://presence.roblox.com");
+            HttpResponseMessage response = await PostAsync("/v1/presence/users", body, Constants.URL("presence"));
             if (response.IsSuccessStatusCode)
             {
                 dynamic uselessData = JObject.Parse(await response.Content.ReadAsStringAsync());

@@ -1,10 +1,23 @@
 ﻿using RoSharp.Enums;
 using System.Collections.ObjectModel;
 
-namespace RoSharp.Utility
+namespace RoSharp
 {
+    /// <summary>
+    /// Constant information that doesn't change.
+    /// </summary>
     public static class Constants
     {
+        /// <summary>
+        /// Contains the current Roblox URL.
+        /// </summary>
+        public const string ROBLOX_URL = "https://roblox.com";
+
+        /// <summary>
+        /// Contains a formatting URL used in <see cref="URL(string)"/>.
+        /// </summary>
+        public const string FORMAT_URL = "https://{0}.roblox.com";
+
         /// <summary>
         /// Contains a mapping of strings returned by the experience age recommendation API, mapped to the matching <see cref="ExperienceDescriptorType"/>.
         /// </summary>
@@ -20,5 +33,12 @@ namespace RoSharp.Utility
             ["social-hangout"] = ExperienceDescriptorType.SocialHangout,
             ["violence"] = ExperienceDescriptorType.Violence,
         }.AsReadOnly();
+
+        /// <summary>
+        /// Returns the Roblox API URL for the <paramref name="key"/>.
+        /// </summary>
+        /// <param name="key">The subdomain of the url, eg. 'catalog' for 'catalog.roblox.com'.</param>
+        /// <returns>String URL</returns>
+        public static string URL(string key) => string.Format(FORMAT_URL, key);
     }
 }
