@@ -20,6 +20,7 @@ namespace RoSharp.Utility
         /// <param name="cursor">The cursor to use to advance to the next page. Obtained by calling this API previously.</param>
         /// <returns>A task containing a <see cref="ChartsResponse"/> upon completion.</returns>
         /// <exception cref="RobloxAPIException">Error from the Roblox API.</exception>
+        /// <remarks>This API method does not cache and will make a request each time it is called.</remarks>
         public static async Task<ChartsResponse> GetFrontPageExperiencesAsync(Session? session = null, string? cursor = null)
         {
             string url = $"/explore-api/v1/get-sorts?sessionId={DateTime.UtcNow.Ticks}";
