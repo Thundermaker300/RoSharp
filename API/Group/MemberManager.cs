@@ -16,9 +16,9 @@ namespace RoSharp.API
 
         public ulong Members => group.members;
 
-        public async Task<PageResponse<GenericId<User>>> GetPendingRequestsAsync(FixedLimit limit = FixedLimit.Limit100, string? cursor = null)
+        public async Task<PageResponse<GenericId<User>>> GetPendingRequestsAsync(FixedLimit limit = FixedLimit.Limit100, RequestSortOrder sortOrder = RequestSortOrder.Desc, string? cursor = null)
         {
-            string url = $"/v1/groups/{group.Id}/join-requests?limit={limit.Limit()}&sortOrder=Desc";
+            string url = $"/v1/groups/{group.Id}/join-requests?limit={limit.Limit()}&sortOrder={sortOrder}";
             if (cursor != null)
                 url += "&cursor=" + cursor;
 

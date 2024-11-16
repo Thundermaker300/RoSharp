@@ -234,12 +234,13 @@ namespace RoSharp.API
         /// Gets this user's rename history.
         /// </summary>
         /// <param name="limit">The limit of usernames to retrieve.</param>
+        /// <param name="sortOrder">Sort order.</param>
         /// <param name="cursor">The cursor for the next page. Obtained by calling this API previously.</param>
         /// <returns>A task containing a <see cref="ReadOnlyCollection{T}"/> of strings when completed.</returns>
         /// <remarks>This API method does not cache and will make a request each time it is called.</remarks>
-        public async Task<ReadOnlyCollection<string>> GetRenameHistoryAsync(FixedLimit limit = FixedLimit.Limit100, string? cursor = null)
+        public async Task<ReadOnlyCollection<string>> GetRenameHistoryAsync(FixedLimit limit = FixedLimit.Limit100, RequestSortOrder sortOrder = RequestSortOrder.Desc, string? cursor = null)
         {
-            string url = $"/v1/users/{Id}/username-history?limit={limit.Limit()}&sortOrder=Desc";
+            string url = $"/v1/users/{Id}/username-history?limit={limit.Limit()}&sortOrder={sortOrder}";
             if (cursor != null)
                 url += "&cursor=" + cursor;
 
@@ -459,12 +460,13 @@ namespace RoSharp.API
         /// Gets this user's player badges.
         /// </summary>
         /// <param name="limit">The amount to get at one time.</param>
+        /// <param name="sortOrder">Sort order.</param>
         /// <param name="cursor">The cursor for the next page. Obtained by calling this API previously.</param>
         /// <returns>A task containing a <see cref="PageResponse{T}"/> of <see cref="GenericId{T}"/> upon completion.</returns>
         /// <remarks>This API method does not cache and will make a request each time it is called.</remarks>
-        public async Task<PageResponse<GenericId<Badge>>> GetBadgesAsync(FixedLimit limit = FixedLimit.Limit100, string? cursor = null)
+        public async Task<PageResponse<GenericId<Badge>>> GetBadgesAsync(FixedLimit limit = FixedLimit.Limit100, RequestSortOrder sortOrder = RequestSortOrder.Desc, string? cursor = null)
         {
-            string url = $"/v1/users/{Id}/badges?sortOrder=Desc&limit={limit.Limit()}";
+            string url = $"/v1/users/{Id}/badges?sortOrder={sortOrder}&limit={limit.Limit()}";
             if (cursor != null)
                 url += "&cursor=" + cursor;
 

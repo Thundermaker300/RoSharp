@@ -221,9 +221,9 @@ namespace RoSharp.API
         }
 
         [UsesSession]
-        public async Task<PageResponse<GroupPost>> GetGroupPostsAsync(FixedLimit limit = FixedLimit.Limit100, string? cursor = null)
+        public async Task<PageResponse<GroupPost>> GetGroupPostsAsync(FixedLimit limit = FixedLimit.Limit100, RequestSortOrder sortOrder = RequestSortOrder.Desc, string? cursor = null)
         {
-            string url = $"v2/groups/{Id}/wall/posts?limit={limit.Limit()}&sortOrder=Desc";
+            string url = $"v2/groups/{Id}/wall/posts?limit={limit.Limit()}&sortOrder={sortOrder}";
             if (cursor != null)
                 url += "&cursor=" + cursor;
 
@@ -255,9 +255,9 @@ namespace RoSharp.API
         }
 
         [UsesSession]
-        public async Task<PageResponse<GenericId<User>>> GetMembersAsync(FixedLimit limit = FixedLimit.Limit100, string? cursor = null)
+        public async Task<PageResponse<GenericId<User>>> GetMembersAsync(FixedLimit limit = FixedLimit.Limit100, RequestSortOrder sortOrder = RequestSortOrder.Asc, string? cursor = null)
         {
-            string url = $"/v1/groups/{Id}/users?limit={limit.Limit()}&sortOrder=Asc";
+            string url = $"/v1/groups/{Id}/users?limit={limit.Limit()}&sortOrder={sortOrder}";
             if (cursor != null)
                 url += "&cursor=" + cursor;
 

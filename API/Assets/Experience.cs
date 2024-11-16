@@ -482,12 +482,13 @@ namespace RoSharp.API.Assets
         /// Gets this experience's badges.
         /// </summary>
         /// <param name="limit">The amount of badges to get at one time.</param>
+        /// <param name="sortOrder">The sort order.</param>
         /// <param name="cursor">The cursor for the next page. Obtained by calling this API previously.</param>
         /// <returns>A task containing a <see cref="PageResponse{T}"/> of <see cref="GenericId{T}"/> upon completion.</returns>
         /// <remarks>This API method does not cache and will make a request each time it is called.</remarks>
-        public async Task<PageResponse<GenericId<Badge>>> GetBadgesAsync(FixedLimit limit = FixedLimit.Limit100, string? cursor = null)
+        public async Task<PageResponse<GenericId<Badge>>> GetBadgesAsync(FixedLimit limit = FixedLimit.Limit100, RequestSortOrder sortOrder = RequestSortOrder.Asc, string? cursor = null)
         {
-            string url = $"v1/universes/{UniverseId}/badges?limit={limit.Limit()}&sortOrder=Asc";
+            string url = $"v1/universes/{UniverseId}/badges?limit={limit.Limit()}&sortOrder={sortOrder}";
             if (cursor != null)
                 url += "&cursor=" + cursor;
 
