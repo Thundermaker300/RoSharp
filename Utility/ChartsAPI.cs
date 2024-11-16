@@ -1,4 +1,5 @@
 ﻿using Newtonsoft.Json.Linq;
+using RoSharp.API;
 using RoSharp.API.Assets;
 using RoSharp.API.Misc;
 using RoSharp.Exceptions;
@@ -36,12 +37,12 @@ namespace RoSharp.Utility
                     if (sort.contentType != "Games")
                         continue;
 
-                    List<ulong> list = new();
+                    List<GenericId<Experience>> list = new();
 
                     foreach (dynamic game in sort.games)
                     {
                         ulong id = game.universeId;
-                        list.Add(id);
+                        list.Add(new(id, session));
                     }
 
                     ChartCategory category = new()
@@ -125,7 +126,7 @@ namespace RoSharp.Utility
         /// <summary>
         /// Gets a list of experience Ids within this category.
         /// </summary>
-        public ReadOnlyCollection<ulong> ExperienceIds { get; init; }
+        public ReadOnlyCollection<GenericId<Experience>> ExperienceIds { get; init; }
 
         /// <summary>
         /// Converts <see cref="ExperienceIds"/> to a read-only <see cref="Experience"/> collection.
@@ -138,9 +139,9 @@ namespace RoSharp.Utility
         public async Task<ReadOnlyCollection<Experience>> ToExperienceListAsync(int limit = -1, int startAt = 0)
         {
             List<Experience> experiences = new List<Experience>();
-            foreach (ulong id in ExperienceIds.Skip(startAt))
+            foreach (GenericId<Experience> id in ExperienceIds.Skip(startAt))
             {
-                experiences.Add(await Experience.FromId(id));
+                experiences.Add(await id.GetInstanceAsync());
 
                 if (limit > 0 && experiences.Count >= limit)
                     break;
@@ -160,9 +161,9 @@ namespace RoSharp.Utility
         public async Task ForEachExperienceAsync(Action<Experience> action, int limit = -1, int startAt = 0)
         {
             int count = 0;
-            foreach (ulong id in ExperienceIds.Skip(startAt))
+            foreach (GenericId<Experience> id in ExperienceIds.Skip(startAt))
             {
-                action(await Experience.FromId(id));
+                action(await id.GetInstanceAsync());
                 count++;
 
                 if (limit > 0 && count >= limit)
