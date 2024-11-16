@@ -5,7 +5,7 @@ using RoSharp.Interfaces;
 
 namespace RoSharp.API.Assets
 {
-    public class Badge : APIMain, IRefreshable, IPoolable
+    public class Badge : APIMain, IRefreshable, IPoolable, IIdApi<Badge>
     {
         /// <inheritdoc/>
         public override string BaseUrl => Constants.URL("badges");

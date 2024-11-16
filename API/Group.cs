@@ -10,7 +10,7 @@ using System.Diagnostics;
 
 namespace RoSharp.API
 {
-    public class Group : APIMain, IRefreshable, IAssetOwner, IPoolable
+    public class Group : APIMain, IRefreshable, IAssetOwner, IPoolable, IIdApi<Group>
     {
         /// <inheritdoc/>
         public override string BaseUrl => Constants.URL("groups");
@@ -242,7 +242,7 @@ namespace RoSharp.API
                         PostedAt = post.updated,
                         Text = post.body,
                         RankInGroup = post.poster == null ? null : post.poster.role.name,
-                        PosterId = post.poster == null ? null : new UserId(Convert.ToUInt64(post.poster.userId)),
+                        PosterId = post.poster == null ? null : new GenericId<User>(Convert.ToUInt64(post.poster.userId)),
 
                         group = this,
                     });
@@ -255,13 +255,13 @@ namespace RoSharp.API
         }
 
         [UsesSession]
-        public async Task<PageResponse<UserId>> GetMembersAsync(FixedLimit limit = FixedLimit.Limit100, string? cursor = null)
+        public async Task<PageResponse<GenericId<User>>> GetMembersAsync(FixedLimit limit = FixedLimit.Limit100, string? cursor = null)
         {
             string url = $"/v1/groups/{Id}/users?limit={limit.Limit()}&sortOrder=Asc";
             if (cursor != null)
                 url += "&cursor=" + cursor;
 
-            var list = new List<UserId>();
+            var list = new List<GenericId<User>>();
             string? nextPage = null;
             string? previousPage = null;
             HttpResponseMessage response = await GetAsync(url, verifyApiName: "Group.GetMembersAsync");
@@ -271,7 +271,7 @@ namespace RoSharp.API
                 foreach (dynamic user in data.data)
                 {
                     ulong userId = Convert.ToUInt64(user.user.userId);
-                    list.Add(new UserId(userId));
+                    list.Add(new GenericId<User>(userId, session));
                 }
                 nextPage = data.nextPageCursor;
                 previousPage = data.previousPageCursor;
@@ -335,7 +335,7 @@ namespace RoSharp.API
         /// <summary>
         /// Gets the unique Id of the poster. Can be <see langword="null"/>.
         /// </summary>
-        public UserId? PosterId { get; init; }
+        public GenericId<User>? PosterId { get; init; }
 
         /// <summary>
         /// Gets the text of the post.

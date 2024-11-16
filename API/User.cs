@@ -1,15 +1,17 @@
 ﻿using Newtonsoft.Json.Linq;
 using RoSharp.API.Assets;
+using RoSharp.API.Misc;
 using RoSharp.API.Pooling;
 using RoSharp.Enums;
 using RoSharp.Exceptions;
+using RoSharp.Extensions;
 using RoSharp.Interfaces;
 using RoSharp.Utility;
 using System.Collections.ObjectModel;
 
 namespace RoSharp.API
 {
-    public class User : APIMain, IRefreshable, IAssetOwner, IPoolable
+    public class User : APIMain, IRefreshable, IAssetOwner, IPoolable, IIdApi<User>
     {
         /// <inheritdoc/>
         public override string BaseUrl => Constants.URL("users");
@@ -96,7 +98,7 @@ namespace RoSharp.API
             return newUser;
         }
 
-        public static async Task<User> FromId(UserId id, Session? session) => await id.GetUserAsync(session);
+        public static async Task<User> FromGenericId(GenericId<User> id, Session? session) => await id.GetInstanceAsync(session);
 
         public static async Task<User> FromUsername(string username, Session? session = null)
             => await FromId(await UserUtility.GetUserIdAsync(username), session);
@@ -386,18 +388,18 @@ namespace RoSharp.API
         /// <param name="limit">The maximum amount of friends to return.</param>
         /// <returns><see cref="ReadOnlyCollection{T}"/></returns>
         /// <exception cref="RobloxAPIException">Roblox API failure.</exception>
-        public async Task<ReadOnlyCollection<UserId>> GetFriendsAsync(int limit = 50)
+        public async Task<ReadOnlyCollection<GenericId<User>>> GetFriendsAsync(int limit = 50)
         {
             string rawData = await GetStringAsync($"/v1/users/{Id}/friends", Constants.URL("friends"));
             dynamic data = JObject.Parse(rawData);
-            List<UserId> friends = new List<UserId>();
+            List<GenericId<User>> friends = new List<GenericId<User>>();
             int count = 0;
             foreach (dynamic friendData in data.data)
             {
                 count++;
 
                 ulong friendId = Convert.ToUInt64(friendData.id);
-                friends.Add(new UserId(friendId));
+                friends.Add(new GenericId<User>(friendId, session));
 
                 if (count >= limit)
                     break;
@@ -444,6 +446,28 @@ namespace RoSharp.API
 
         public async Task<bool> HasBadgeAsync(Badge badge)
             => await HasBadgeAsync(badge.Id);
+
+        public async Task<PageResponse<GenericId<Badge>>> GetBadgesAsync(FixedLimit limit = FixedLimit.Limit100, string? cursor = null)
+        {
+            string url = $"/v1/users/{Id}/badges?sortOrder=Desc&limit={limit.Limit()}";
+            if (cursor != null)
+                url += "&cursor=" + cursor;
+
+            string rawData = await GetStringAsync(url, Constants.URL("badges"));
+            dynamic data = JObject.Parse(rawData);
+
+            List<GenericId<Badge>> list = new();
+            string? nextPage = data.nextPageCursor;
+            string? previousPage = data.previousPageCursor;
+
+            foreach (dynamic item in data.data)
+            {
+                ulong id = Convert.ToUInt64(item.id);
+                list.Add(new(id, session));
+            }
+
+            return new PageResponse<GenericId<Badge>>(list, nextPage, previousPage);
+        }
 
         /// <summary>
         /// Gets this user's current presence status, including their location and last online.

@@ -16,7 +16,7 @@ namespace RoSharp.API
 
         public ulong Members => group.members;
 
-        public async Task<PageResponse<UserId>> GetPendingRequestsAsync(FixedLimit limit = FixedLimit.Limit100, string? cursor = null)
+        public async Task<PageResponse<GenericId<User>>> GetPendingRequestsAsync(FixedLimit limit = FixedLimit.Limit100, string? cursor = null)
         {
             string url = $"/v1/groups/{group.Id}/join-requests?limit={limit.Limit()}&sortOrder=Desc";
             if (cursor != null)
@@ -30,13 +30,13 @@ namespace RoSharp.API
             string rawData = await response.Content.ReadAsStringAsync();
             dynamic data = JObject.Parse(rawData);
 
-            var list = new List<UserId>();
+            var list = new List<GenericId<User>>();
             string? nextPage = data.nextPageCursor;
             string? previousPage = data.previousPageCursor;
             foreach (dynamic user in data.data)
             {
                 ulong userId = Convert.ToUInt64(user.requester.userId);
-                list.Add(new UserId(userId));
+                list.Add(new GenericId<User>(userId, group.session));
             }
 
             return new(list, nextPage, previousPage);
@@ -153,15 +153,15 @@ namespace RoSharp.API
         
 
         [UsesSession]
-        public async Task SetRankAsync(UserId userId, Role role)
+        public async Task SetRankAsync(GenericId<User> userId, Role role)
             => await SetRankAsync(userId.Id, role);
 
         [UsesSession]
-        public async Task SetRankAsync(UserId userId, int rankId)
+        public async Task SetRankAsync(GenericId<User> userId, int rankId)
             => await SetRankAsync(userId.Id, rankId);
 
         [UsesSession]
-        public async Task SetRankAsync(UserId userId, string roleName)
+        public async Task SetRankAsync(GenericId<User> userId, string roleName)
             => await SetRankAsync(userId.Id, roleName);
 
         [UsesSession]
@@ -177,7 +177,7 @@ namespace RoSharp.API
         [UsesSession]
         public async Task KickMemberAsync(User user) => await KickMemberAsync(user.Id);
 
-        public async Task KickMemberAsync(UserId userId) => await KickMemberAsync(userId.Id);
+        public async Task KickMemberAsync(GenericId<User> userId) => await KickMemberAsync(userId.Id);
 
         public override string ToString()
         {

@@ -7,7 +7,7 @@ using System.Collections.ObjectModel;
 
 namespace RoSharp.API.Assets
 {
-    public class Asset : APIMain, IRefreshable, IPoolable
+    public class Asset : APIMain, IRefreshable, IPoolable, IIdApi<Asset>
     {
         /// <inheritdoc/>
         public override string BaseUrl => Constants.URL("catalog");

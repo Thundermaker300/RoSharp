@@ -10,7 +10,7 @@ using System.Net;
 
 namespace RoSharp.API.Assets
 {
-    public class Experience : APIMain, IRefreshable, IPoolable
+    public class Experience : APIMain, IRefreshable, IPoolable, IIdApi<Experience>
     {
         /// <inheritdoc/>
         public override string BaseUrl => Constants.URL("games");
@@ -213,6 +213,9 @@ namespace RoSharp.API.Assets
 
         private async Task UpdateVoiceVideoAsync()
         {
+            if (!SessionVerify.Verify(session))
+                return;
+
             string commSetting = await GetStringAsync($"/v1/settings/universe/{UniverseId}", Constants.URL("voice"));
             dynamic data = JObject.Parse(commSetting);
 
@@ -409,7 +412,7 @@ namespace RoSharp.API.Assets
             {
                 response = await PatchAsync($"/v2/universes/{UniverseId}/configuration", new { }, Constants.URL("develop"), "Experience.UpdateConfigurationAsync");
             }
-            catch (RobloxAPIException ex)
+            catch (Exception ex)
             {}
 
             if (response == null)
@@ -475,7 +478,7 @@ namespace RoSharp.API.Assets
             return icon;
         }
 
-        public async Task<PageResponse<Badge>> GetBadgesAsync(FixedLimit limit = FixedLimit.Limit100, string? cursor = null)
+        public async Task<PageResponse<GenericId<Badge>>> GetBadgesAsync(FixedLimit limit = FixedLimit.Limit100, string? cursor = null)
         {
             string url = $"v1/universes/{UniverseId}/badges?limit={limit.Limit()}&sortOrder=Asc";
             if (cursor != null)
@@ -484,17 +487,17 @@ namespace RoSharp.API.Assets
             string rawData = await GetStringAsync(url, Constants.URL("badges"));
             dynamic data = JObject.Parse(rawData);
 
-            List<Badge> list = new();
+            List<GenericId<Badge>> list = new();
             string? nextPage = data.nextPageCursor;
             string? previousPage = data.previousPageCursor;
 
             foreach (dynamic item in data.data)
             {
                 ulong id = Convert.ToUInt64(item.id);
-                list.Add(await Badge.FromId(id));
+                list.Add(new(id, session));
             }
 
-            return new PageResponse<Badge>(list, nextPage, previousPage);
+            return new PageResponse<GenericId<Badge>>(list, nextPage, previousPage);
         }
 
         public async Task<ReadOnlyCollection<Asset>> GetThumbnailsAsync(ExperienceThumbnailSize size = ExperienceThumbnailSize.S768x432, bool defaultRobloxThumbnailIfNecessary = true)
