@@ -395,6 +395,7 @@ namespace RoSharp.API
         /// <param name="limit">The maximum amount of friends to return.</param>
         /// <returns><see cref="ReadOnlyCollection{T}"/></returns>
         /// <exception cref="RobloxAPIException">Roblox API failure.</exception>
+        /// <remarks>This API method does not cache and will make a request each time it is called.</remarks>
         public async Task<ReadOnlyCollection<GenericId<User>>> GetFriendsAsync(int limit = 50)
         {
             string rawData = await GetStringAsync($"/v1/users/{Id}/friends", Constants.URL("friends"));
@@ -454,6 +455,13 @@ namespace RoSharp.API
         public async Task<bool> HasBadgeAsync(Badge badge)
             => await HasBadgeAsync(badge.Id);
 
+        /// <summary>
+        /// Gets this user's player badges.
+        /// </summary>
+        /// <param name="limit">The amount to get at one time.</param>
+        /// <param name="cursor">The cursor for the next page. Obtained by calling this API previously.</param>
+        /// <returns>A task containing a <see cref="PageResponse{T}"/> of <see cref="GenericId{T}"/> upon completion.</returns>
+        /// <remarks>This API method does not cache and will make a request each time it is called.</remarks>
         public async Task<PageResponse<GenericId<Badge>>> GetBadgesAsync(FixedLimit limit = FixedLimit.Limit100, string? cursor = null)
         {
             string url = $"/v1/users/{Id}/badges?sortOrder=Desc&limit={limit.Limit()}";
@@ -480,7 +488,7 @@ namespace RoSharp.API
         /// Gets this user's current presence status, including their location and last online.
         /// </summary>
         /// <returns>A task containing a <see cref="UserPresence"/>, when completed.</returns>
-        /// <remarks>Unlike other API, this method will never cache and will always make an API request when called. Authentication is not required for this API, however providing an authenticated session may return more data.</remarks>
+        /// <remarks>This API method does not cache and will make a request each time it is called. Authentication is not required for this API, however providing an authenticated session may return more data.</remarks>
         /// <exception cref="RobloxAPIException">Failed to retrieve presence information, please try again later.</exception>
         public async Task<UserPresence> GetPresenceAsync()
         {
