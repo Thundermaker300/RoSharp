@@ -415,7 +415,7 @@ namespace RoSharp.API.Assets
             if (response == null)
                 return;
 
-            string rawData = response.Content.ReadAsStringAsync().Result;
+            string rawData = await response.Content.ReadAsStringAsync();
             dynamic data = JObject.Parse(rawData);
 
             if (data.playableDevices != null) {
@@ -459,23 +459,20 @@ namespace RoSharp.API.Assets
         }
 
         private Asset? icon;
-        public Asset Icon
+        public async Task<Asset?> GetIconAsync()
         {
-            get
+            if (icon == null)
             {
-                if (icon == null)
+                string rawData = await GetStringAsync($"/v1/games/{UniverseId}/icon");
+                dynamic data = JObject.Parse(rawData);
+                if (data.imageId != null)
                 {
-                    string rawData = GetString($"/v1/games/{UniverseId}/icon");
-                    dynamic data = JObject.Parse(rawData);
-                    if (data.imageId != null)
-                    {
-                        ulong assetId = Convert.ToUInt64(data.imageId);
-                        icon = Asset.FromId(assetId, session).Result;
-                    }
+                    ulong assetId = Convert.ToUInt64(data.imageId);
+                    icon = await Asset.FromId(assetId, session);
                 }
-
-                return icon;
             }
+
+            return icon;
         }
 
         public async Task<PageResponse<Badge>> GetBadgesAsync(FixedLimit limit = FixedLimit.Limit100, string? cursor = null)

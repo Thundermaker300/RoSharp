@@ -16,7 +16,7 @@ namespace RoSharp.API
 
         public ulong Members => group.members;
 
-        public async Task<PageResponse<User>> GetPendingRequestsAsync(FixedLimit limit = FixedLimit.Limit100, string? cursor = null)
+        public async Task<PageResponse<UserId>> GetPendingRequestsAsync(FixedLimit limit = FixedLimit.Limit100, string? cursor = null)
         {
             string url = $"/v1/groups/{group.Id}/join-requests?limit={limit.Limit()}&sortOrder=Desc";
             if (cursor != null)
@@ -30,13 +30,13 @@ namespace RoSharp.API
             string rawData = await response.Content.ReadAsStringAsync();
             dynamic data = JObject.Parse(rawData);
 
-            var list = new List<User>();
+            var list = new List<UserId>();
             string? nextPage = data.nextPageCursor;
             string? previousPage = data.previousPageCursor;
             foreach (dynamic user in data.data)
             {
                 ulong userId = Convert.ToUInt64(user.requester.userId);
-                list.Add(await User.FromId(userId, group.session));
+                list.Add(new UserId(userId));
             }
 
             return new(list, nextPage, previousPage);
@@ -163,6 +163,8 @@ namespace RoSharp.API
 
         [UsesSession]
         public async Task KickMemberAsync(User user) => await KickMemberAsync(user.Id);
+
+        public async Task KickMemberAsync(UserId userId) => await KickMemberAsync(userId.Id);
 
         public override string ToString()
         {

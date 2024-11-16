@@ -96,6 +96,8 @@ namespace RoSharp.API
             return newUser;
         }
 
+        public static async Task<User> FromId(UserId id, Session? session) => await id.GetUserAsync(session);
+
         public static async Task<User> FromUsername(string username, Session? session = null)
             => await FromId(await UserUtility.GetUserIdAsync(username), session);
 
@@ -209,44 +211,38 @@ namespace RoSharp.API
         }
 
         private ReadOnlyCollection<string>? robloxBadges;
-        public ReadOnlyCollection<string> RobloxBadges
+        public async Task<ReadOnlyCollection<string>> GetRobloxBadgesAsync()
         {
-            get
+            if (robloxBadges == null)
             {
-                if (robloxBadges == null)
+                List<string> badges = new();
+                string rawData = await GetStringAsync($"/v1/users/{Id}/roblox-badges", Constants.URL("accountinformation"));
+                JArray data = JArray.Parse(rawData);
+                foreach (dynamic badgeData in data.Children<JObject>())
                 {
-                    List<string> badges = new();
-                    string rawData = GetString($"/v1/users/{Id}/roblox-badges", Constants.URL("accountinformation"));
-                    JArray data = JArray.Parse(rawData);
-                    foreach (dynamic badgeData in data.Children<JObject>())
-                    {
-                        badges.Add(badgeData.name.ToString());
-                    }
-                    robloxBadges = badges.AsReadOnly();
+                    badges.Add(badgeData.name.ToString());
                 }
-
-                return robloxBadges;
+                robloxBadges = badges.AsReadOnly();
             }
+
+            return robloxBadges;
         }
 
         private ReadOnlyCollection<string>? renameHistory;
-        public ReadOnlyCollection<string> RenameHistory
+        public async Task<ReadOnlyCollection<string>> GetRenameHistoryAsync()
         {
-            get
+            if (renameHistory == null)
             {
-                if (renameHistory == null)
+                List<string> history = new();
+                string rawData = await GetStringAsync($"/v1/users/{Id}/username-history?limit=100&sortOrder=Desc");
+                dynamic data = JObject.Parse(rawData);
+                foreach (dynamic historyData in data.data)
                 {
-                    List<string> history = new();
-                    string rawData = GetString($"/v1/users/{Id}/username-history?limit=100&sortOrder=Desc");
-                    dynamic data = JObject.Parse(rawData);
-                    foreach (dynamic historyData in data.data)
-                    {
-                        history.Add(historyData.name.ToString());
-                    }
-                    renameHistory = history.AsReadOnly();
+                    history.Add(historyData.name.ToString());
                 }
-                return renameHistory;
+                renameHistory = history.AsReadOnly();
             }
+            return renameHistory;
         }
 
         private Group? primaryGroup;
@@ -389,20 +385,19 @@ namespace RoSharp.API
         /// </summary>
         /// <param name="limit">The maximum amount of friends to return.</param>
         /// <returns><see cref="ReadOnlyCollection{T}"/></returns>
-        /// <remarks>The <see cref="Session"/> attached to this <see cref="User"/> will automatically be added to the returned <see cref="User"/> instances.</remarks>
         /// <exception cref="RobloxAPIException">Roblox API failure.</exception>
-        public async Task<ReadOnlyCollection<User>> GetFriendsAsync(int limit = 50)
+        public async Task<ReadOnlyCollection<UserId>> GetFriendsAsync(int limit = 50)
         {
             string rawData = await GetStringAsync($"/v1/users/{Id}/friends", Constants.URL("friends"));
             dynamic data = JObject.Parse(rawData);
-            List<User> friends = new List<User>();
+            List<UserId> friends = new List<UserId>();
             int count = 0;
             foreach (dynamic friendData in data.data)
             {
                 count++;
 
                 ulong friendId = Convert.ToUInt64(friendData.id);
-                friends.Add(await FromId(friendId, session));
+                friends.Add(new UserId(friendId));
 
                 if (count >= limit)
                     break;

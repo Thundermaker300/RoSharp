@@ -141,49 +141,43 @@ namespace RoSharp.API
         }
 
         private GroupShoutInfo? shout;
-        public GroupShoutInfo? Shout
+        public async Task<GroupShoutInfo?> GetShoutAsync()
         {
-            get
+            if (shout == null)
             {
-                if (shout == null)
+                string rawData = await GetStringAsync($"/v1/groups/{Id}");
+                dynamic data = JObject.Parse(rawData);
+                if (data.shout != null)
                 {
-                    string rawData = GetString($"/v1/groups/{Id}");
-                    dynamic data = JObject.Parse(rawData);
-                    if (data.shout != null)
-                    {
-                        ulong posterId = Convert.ToUInt64(data.shout.poster.userId);
+                    ulong posterId = Convert.ToUInt64(data.shout.poster.userId);
 
-                        shout = new GroupShoutInfo
-                        {
-                            Text = data.shout.body,
-                            Poster = User.FromId(posterId, session).Result,
-                            PostedAt = data.shout.updated,
-                        };
-                    }
+                    shout = new GroupShoutInfo
+                    {
+                        Text = data.shout.body,
+                        Poster = await User.FromId(posterId, session),
+                        PostedAt = data.shout.updated,
+                    };
                 }
-                return shout;
             }
+            return shout;
         }
 
         private ReadOnlyDictionary<string, string>? socialChannels;
-        public ReadOnlyDictionary<string, string> SocialChannels
+        public async Task<ReadOnlyDictionary<string, string>> GetSocialChannelsAsync()
         {
-            get
+            if (socialChannels == null)
             {
-                if (socialChannels == null)
+                Dictionary<string, string> dict = new();
+                string rawData = await GetStringAsync($"/v1/groups/{Id}/social-links");
+                dynamic data = JObject.Parse(rawData);
+                foreach (dynamic media in data.data)
                 {
-                    Dictionary<string, string> dict = new();
-                    string rawData = GetString($"/v1/groups/{Id}/social-links");
-                    dynamic data = JObject.Parse(rawData);
-                    foreach (dynamic media in data.data)
-                    {
-                        dict.Add(Convert.ToString(media.type), Convert.ToString(media.url));
-                    }
-                    socialChannels = dict.AsReadOnly();
+                    dict.Add(Convert.ToString(media.type), Convert.ToString(media.url));
                 }
-
-                return socialChannels;
+                socialChannels = dict.AsReadOnly();
             }
+
+            return socialChannels;
         }
 
         /// <summary>
@@ -248,8 +242,8 @@ namespace RoSharp.API
                         PostedAt = post.updated,
                         Text = post.body,
                         RankInGroup = post.poster == null ? null : post.poster.role.name,
+                        PosterId = post.poster == null ? null : new UserId(Convert.ToUInt64(post.poster.userId)),
 
-                        posterId = post.poster == null ? null : post.poster.userId,
                         group = this,
                     });
                 }
@@ -261,13 +255,13 @@ namespace RoSharp.API
         }
 
         [UsesSession]
-        public async Task<PageResponse<User>> GetMembersAsync(FixedLimit limit = FixedLimit.Limit100, string? cursor = null)
+        public async Task<PageResponse<UserId>> GetMembersAsync(FixedLimit limit = FixedLimit.Limit100, string? cursor = null)
         {
             string url = $"/v1/groups/{Id}/users?limit={limit.Limit()}&sortOrder=Asc";
             if (cursor != null)
                 url += "&cursor=" + cursor;
 
-            var list = new List<User>();
+            var list = new List<UserId>();
             string? nextPage = null;
             string? previousPage = null;
             HttpResponseMessage response = await GetAsync(url, verifyApiName: "Group.GetMembersAsync");
@@ -277,7 +271,7 @@ namespace RoSharp.API
                 foreach (dynamic user in data.data)
                 {
                     ulong userId = Convert.ToUInt64(user.user.userId);
-                    list.Add(await User.FromId(userId, session));
+                    list.Add(new UserId(userId));
                 }
                 nextPage = data.nextPageCursor;
                 previousPage = data.previousPageCursor;
@@ -305,32 +299,57 @@ namespace RoSharp.API
             => AttachSessionAndReturn(session);
     }
 
+    /// <summary>
+    /// Contains info regarding a group shout.
+    /// </summary>
     public class GroupShoutInfo
     {
+        /// <summary>
+        /// Gets the text of the shout.
+        /// </summary>
         public string Text { get; init; }
+
+        /// <summary>
+        /// Gets the poster of the shout.
+        /// </summary>
         public User Poster { get; init; }
+
+        /// <summary>
+        /// Gets a <see cref="DateTime"/> representing the time the shout was posted.
+        /// </summary>
         public DateTime PostedAt { get; init; }
     }
 
+    /// <summary>
+    /// Represents a group post.
+    /// </summary>
     public class GroupPost
     {
         internal Group group;
-        internal ulong? posterId;
 
+        /// <summary>
+        /// Gets the unique Id of the post.
+        /// </summary>
         public ulong PostId { get; init; }
+
+        /// <summary>
+        /// Gets the unique Id of the poster. Can be <see langword="null"/>.
+        /// </summary>
+        public UserId? PosterId { get; init; }
+
+        /// <summary>
+        /// Gets the text of the post.
+        /// </summary>
         public string Text { get; init; }
 
-        private User poster;
-        public User? Poster
-        {
-            get
-            {
-                if (poster == null && posterId != null && posterId.HasValue)
-                    poster = User.FromId(posterId.Value, group?.session).Result;
-                return poster;
-            }
-        }
+        /// <summary>
+        /// Gets a <see cref="DateTime"/> representing the date the post was created.
+        /// </summary>
         public DateTime PostedAt { get; init; }
+
+        /// <summary>
+        /// Gets the rank of the user that made the post. Can be <see langword="null"/>.
+        /// </summary>
         public string? RankInGroup { get; init; }
     }
 }
