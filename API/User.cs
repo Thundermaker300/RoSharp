@@ -230,21 +230,28 @@ namespace RoSharp.API
             return robloxBadges;
         }
 
-        private ReadOnlyCollection<string>? renameHistory;
-        public async Task<ReadOnlyCollection<string>> GetRenameHistoryAsync()
+        /// <summary>
+        /// Gets this user's rename history.
+        /// </summary>
+        /// <param name="limit">The limit of usernames to retrieve.</param>
+        /// <param name="cursor">The cursor for the next page. Obtained by calling this API previously.</param>
+        /// <returns>A task containing a <see cref="ReadOnlyCollection{T}"/> of strings when completed.</returns>
+        /// <remarks>This API method does not cache and will make a request each time it is called.</remarks>
+        public async Task<ReadOnlyCollection<string>> GetRenameHistoryAsync(FixedLimit limit = FixedLimit.Limit100, string? cursor = null)
         {
-            if (renameHistory == null)
+            string url = $"/v1/users/{Id}/username-history?limit={limit.Limit()}&sortOrder=Desc";
+            if (cursor != null)
+                url += "&cursor=" + cursor;
+
+            List<string> history = new();
+            string rawData = await GetStringAsync(url);
+            dynamic data = JObject.Parse(rawData);
+            foreach (dynamic historyData in data.data)
             {
-                List<string> history = new();
-                string rawData = await GetStringAsync($"/v1/users/{Id}/username-history?limit=100&sortOrder=Desc");
-                dynamic data = JObject.Parse(rawData);
-                foreach (dynamic historyData in data.data)
-                {
-                    history.Add(historyData.name.ToString());
-                }
-                renameHistory = history.AsReadOnly();
+                history.Add(historyData.name.ToString());
             }
-            return renameHistory;
+
+            return history.AsReadOnly();
         }
 
         private Group? primaryGroup;
