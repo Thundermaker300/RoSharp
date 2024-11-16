@@ -533,14 +533,14 @@ namespace RoSharp.API
 
     public class UserPresence
     {
-        public UserLocationType PresenceType { get; }
+        public UserLocationType Location { get; }
         public Experience? PresenceLocation { get; }
         public DateTime LastOnline { get; }
-        public bool IsOnline => PresenceType is not UserLocationType.Offline;
+        public bool IsOnline => Location is not UserLocationType.Offline;
 
         internal UserPresence(UserLocationType type, Experience? location, DateTime lastOnline)
         {
-            PresenceType = type;
+            Location = type;
             PresenceLocation = location;
             LastOnline = lastOnline;
         }
