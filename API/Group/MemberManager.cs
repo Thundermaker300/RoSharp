@@ -150,6 +150,19 @@ namespace RoSharp.API
         [UsesSession]
         public async Task SetRankAsync(string username, string roleName)
             => await SetRankAsync(await UserUtility.GetUserIdAsync(username), roleName);
+        
+
+        [UsesSession]
+        public async Task SetRankAsync(UserId userId, Role role)
+            => await SetRankAsync(userId.Id, role);
+
+        [UsesSession]
+        public async Task SetRankAsync(UserId userId, int rankId)
+            => await SetRankAsync(userId.Id, rankId);
+
+        [UsesSession]
+        public async Task SetRankAsync(UserId userId, string roleName)
+            => await SetRankAsync(userId.Id, roleName);
 
         [UsesSession]
         public async Task KickMemberAsync(ulong userId)
