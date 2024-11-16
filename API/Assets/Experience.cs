@@ -10,7 +10,7 @@ using System.Net;
 
 namespace RoSharp.API.Assets
 {
-    public class Experience : APIMain, IRefreshable, IPoolable, IIdApi<Experience>
+    public class Experience : APIMain, IRefreshable, IIdApi<Experience>
     {
         /// <inheritdoc/>
         public override string BaseUrl => Constants.URL("games");
@@ -632,9 +632,6 @@ namespace RoSharp.API.Assets
                 AttachSession(session);
             return this;
         }
-
-        IPoolable IPoolable.AttachSessionAndReturn(Session? session)
-            => AttachSessionAndReturn(session);
     }
 
     public class ExperienceDescriptor

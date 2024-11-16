@@ -1,10 +1,11 @@
 ﻿using RoSharp.API.Assets;
+using RoSharp.Interfaces;
 using System.Collections.Concurrent;
 
 namespace RoSharp.API.Pooling
 {
     internal static class RoPool<T>
-        where T: class, IPoolable
+        where T: class, IIdApi<T>
     {
         internal static ConcurrentDictionary<ulong, T> Pool = new();
 
@@ -15,7 +16,7 @@ namespace RoSharp.API.Pooling
                 throw new InvalidOperationException("Session cannot be null for Asset types in RoPool.");
             if (Pool.TryGetValue(id, out T result) && result != null)
             {
-                return result.AttachSessionAndReturn(session) as T;
+                return result.AttachSessionAndReturn(session);
             }
             return null;
         }

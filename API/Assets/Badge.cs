@@ -5,7 +5,7 @@ using RoSharp.Interfaces;
 
 namespace RoSharp.API.Assets
 {
-    public class Badge : APIMain, IRefreshable, IPoolable, IIdApi<Badge>
+    public class Badge : APIMain, IRefreshable, IIdApi<Badge>
     {
         /// <inheritdoc/>
         public override string BaseUrl => Constants.URL("badges");
@@ -171,9 +171,6 @@ namespace RoSharp.API.Assets
                 AttachSession(session);
             return this;
         }
-
-        IPoolable IPoolable.AttachSessionAndReturn(Session? session)
-            => AttachSessionAndReturn(session);
     }
 
     public class BadgeModifyOptions

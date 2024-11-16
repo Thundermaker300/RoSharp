@@ -11,7 +11,7 @@ using System.Collections.ObjectModel;
 
 namespace RoSharp.API
 {
-    public class User : APIMain, IRefreshable, IAssetOwner, IPoolable, IIdApi<User>
+    public class User : APIMain, IRefreshable, IAssetOwner, IIdApi<User>
     {
         /// <inheritdoc/>
         public override string BaseUrl => Constants.URL("users");
@@ -128,7 +128,6 @@ namespace RoSharp.API
             following = -1;
             followers = -1;
             robloxBadges = null;
-            renameHistory = null;
             primaryGroup = null;
             socialChannels = null;
 
@@ -528,9 +527,6 @@ namespace RoSharp.API
                 AttachSession(session);
             return this;
         }
-
-        IPoolable IPoolable.AttachSessionAndReturn(Session? session)
-            => AttachSessionAndReturn(session);
     }
 
     public class UserPresence

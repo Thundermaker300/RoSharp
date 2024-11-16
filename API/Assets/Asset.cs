@@ -7,7 +7,7 @@ using System.Collections.ObjectModel;
 
 namespace RoSharp.API.Assets
 {
-    public class Asset : APIMain, IRefreshable, IPoolable, IIdApi<Asset>
+    public class Asset : APIMain, IRefreshable, IIdApi<Asset>
     {
         /// <inheritdoc/>
         public override string BaseUrl => Constants.URL("catalog");
@@ -351,9 +351,6 @@ namespace RoSharp.API.Assets
                 AttachSession(session);
             return this;
         }
-
-        IPoolable IPoolable.AttachSessionAndReturn(Session? session)
-            => AttachSessionAndReturn(session);
     }
 
     public class AssetModifyOptions

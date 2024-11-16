@@ -1,4 +1,5 @@
 ﻿using Newtonsoft.Json.Linq;
+using RoSharp.API.Assets;
 using RoSharp.API.Misc;
 using RoSharp.API.Pooling;
 using RoSharp.Enums;
@@ -10,7 +11,7 @@ using System.Diagnostics;
 
 namespace RoSharp.API
 {
-    public class Group : APIMain, IRefreshable, IAssetOwner, IPoolable, IIdApi<Group>
+    public class Group : APIMain, IRefreshable, IAssetOwner, IIdApi<Group>
     {
         /// <inheritdoc/>
         public override string BaseUrl => Constants.URL("groups");
@@ -294,9 +295,6 @@ namespace RoSharp.API
                 AttachSession(session);
             return this;
         }
-
-        IPoolable IPoolable.AttachSessionAndReturn(Session? session)
-            => AttachSessionAndReturn(session);
     }
 
     /// <summary>
