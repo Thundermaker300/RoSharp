@@ -516,7 +516,7 @@ namespace RoSharp.API
         /// <inheritdoc/>
         public override string ToString()
         {
-            return $"{DisplayName} (@{Name}) [{Id}] {(Verified ? "[V]" : string.Empty)}";
+            return $"{DisplayName} (@{Name}) [{Id}]{(Verified ? " [V]" : string.Empty)}";
         }
 
         public User AttachSessionAndReturn(Session? session)

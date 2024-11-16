@@ -284,7 +284,7 @@ namespace RoSharp.API
         /// <inheritdoc/>
         public override string ToString()
         {
-            return $"{Name} [{Id}] {(Verified ? "[V]" : string.Empty)}";
+            return $"{Name} [{Id}] {{{members}}}{(Verified ? " [V]" : string.Empty)}";
         }
 
         public Group AttachSessionAndReturn(Session? session)

@@ -47,5 +47,12 @@ namespace RoSharp.API
             }
             return stored;
         }
+
+        public override string ToString()
+        {
+            return Id.ToString();
+        }
+
+        public static implicit operator ulong(GenericId<T> id) => id.Id;
     }
 }
