@@ -276,6 +276,25 @@ namespace RoSharp.API
             return new(list, nextPage, previousPage);
         }
 
+        public async Task<int> GetIncomeAsync(AnalyticTimeLength timeLength = AnalyticTimeLength.Day)
+        {
+            var url = $"/v1/groups/2531730/revenue/summary/{timeLength.ToString().ToLower()}";
+            string rawData = await GetStringAsync(url, Constants.URL("economy"), verifyApiName: "Group.GetIncomeAsync");
+            dynamic data = JObject.Parse(rawData);
+
+            int amount = 0;
+
+            foreach (dynamic cat in data)
+            {
+                if (cat.Name == "pendingRobux")
+                    continue;
+
+                int myAmount = Convert.ToInt32(cat.Value);
+                amount += myAmount;
+            }
+            return amount;
+        }
+
         /// <inheritdoc/>
         public override string ToString()
         {
