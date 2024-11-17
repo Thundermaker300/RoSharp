@@ -8,22 +8,46 @@ namespace RoSharp.Enums
 {
     public enum IncomeType
     {
+        // Groups
         RecurringRobuxStipend,
         ItemSaleRobux,
         PurchasedRobux,
         TradeSystemRobux,
-        PendingRobux,
         GroupPayoutRobux,
         IndividualToGroupRobux,
-        PremiumPayouts,
-        GroupPremiumPayouts,
         AdjustmentRobux,
         ImmersiveAdPayouts,
         SubscriptionPayouts,
         SubscriptionClawbacks,
         CommissionRobux,
-        PublishingAdvanceRebates,
         GroupAffiliatePayoutRobux,
 
+        // Users
+        Sales,
+        Purchases,
+        AffiliateSales,
+        GroupPayouts,
+        CurrencyPurchases,
+        PremiumStipends,
+        TradeSystemEarnings,
+        TradeSystemCosts,
+        AdSpend,
+        DeveloperExchange,
+        IndividualToGroup,
+        CSAdjustment,
+        AdsRevsharePayouts,
+        GroupAdsRevsharePayouts,
+        SubscriptionsRevshare,
+        GroupSubscriptionsRevshare,
+        SubscriptionsRevshareOutgoing,
+        GroupSubscriptionsRevshareOutgoing,
+        AffiliatePayout,
+
+
+        // Both
+        PremiumPayouts,
+        GroupPremiumPayouts,
+        PendingRobux,
+        PublishingAdvanceRebates,
     }
 }

@@ -288,13 +288,14 @@ namespace RoSharp.API
             return new(list, nextPage, previousPage);
         }
 
-        public async Task<GroupIncomeBreakdown> GetIncomeAsync(AnalyticTimeLength timeLength = AnalyticTimeLength.Day)
+        public async Task<EconomyBreakdown> GetIncomeAsync(AnalyticTimeLength timeLength = AnalyticTimeLength.Day)
         {
             var url = $"/v1/groups/2531730/revenue/summary/{timeLength.ToString().ToLower()}";
             string rawData = await GetStringAsync(url, Constants.URL("economy"), verifyApiName: "Group.GetIncomeAsync");
             dynamic data = JObject.Parse(rawData);
 
             int amount = 0;
+            int pending = 0;
             Dictionary<IncomeType, int> breakdown = new();
 
             foreach (dynamic cat in data)
@@ -306,16 +307,18 @@ namespace RoSharp.API
 
                 IncomeType incomeType = Enum.Parse<IncomeType>(catName, true);
                 int myAmount = Convert.ToInt32(cat.Value);
-                if (myAmount > 0)
+                if (myAmount != 0)
                 {
                     breakdown.Add(incomeType, myAmount);
 
                     if (cat.Name != "pendingRobux")
                         amount += myAmount;
+                    else
+                        pending = myAmount;
                 }
             }
 
-            return new GroupIncomeBreakdown(timeLength, amount, breakdown);
+            return new EconomyBreakdown(timeLength, amount, breakdown, pending);
         }
 
         /// <inheritdoc/>
@@ -386,45 +389,5 @@ namespace RoSharp.API
         /// Gets the rank of the user that made the post. Can be <see langword="null"/>.
         /// </summary>
         public string? RankInGroup { get; init; }
-    }
-
-    /// <summary>
-    /// Represents a breakdown of group income.
-    /// </summary>
-    public class GroupIncomeBreakdown
-    {
-        /// <summary>
-        /// The time-length that was used to retrieve the data.
-        /// </summary>
-        public AnalyticTimeLength TimeLength { get; }
-
-        /// <summary>
-        /// Gets a <see cref="System.TimeSpan"/> instance representing the length in <see cref="TimeLength"/>.
-        /// </summary>
-        public TimeSpan TimeSpan => TimeLength switch
-        {
-            AnalyticTimeLength.Day => TimeSpan.FromDays(1),
-            AnalyticTimeLength.Week => TimeSpan.FromDays(7),
-            AnalyticTimeLength.Month => TimeSpan.FromDays(31),
-            AnalyticTimeLength.Year => TimeSpan.FromDays(365),
-            _ => throw new UnreachableException("Invalid AnalyticTimeLength"),
-        };
-
-        /// <summary>
-        /// Total amount of income.
-        /// </summary>
-        public int TotalIncome { get; }
-
-        /// <summary>
-        /// Breakdown of income.
-        /// </summary>
-        public ReadOnlyDictionary<IncomeType, int> Breakdown { get; }
-
-        internal GroupIncomeBreakdown(AnalyticTimeLength selected, int totalIncome, Dictionary<IncomeType, int> breakdown)
-        {
-            TimeLength = selected;
-            TotalIncome = totalIncome;
-            Breakdown = breakdown.AsReadOnly();
-        }
     }
 }

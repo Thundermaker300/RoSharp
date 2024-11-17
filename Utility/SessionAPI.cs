@@ -132,5 +132,39 @@ namespace RoSharp.API
         /// <param name="experienceId">The target experience Id.</param>
         /// <returns>A task that contains a bool when completed.</returns>
         public async Task<bool> FavoritedExperienceAsync(ulong experienceId) => await FavoritedExperienceAsync(await Experience.FromId(experienceId, session));
+
+        private string[] incomeSkipList = new[] { "incomingRobuxTotal", "outgoingRobuxTotal" };
+        public async Task<EconomyBreakdown> GetIncomeAsync(AnalyticTimeLength timeLength = AnalyticTimeLength.Day)
+        {
+            var url = $"/v2/users/{session.userid}/transaction-totals?timeFrame={timeLength}&transactionType=summary";
+            string rawData = await GetStringAsync(url, Constants.URL("economy"), verifyApiName: "SessionAPI.GetIncomeAsync");
+            dynamic data = JObject.Parse(rawData);
+
+            int amount = 0;
+            int pending = 0;
+            Dictionary<IncomeType, int> breakdown = new();
+
+            foreach (dynamic cat in data)
+            {
+                string catName = Convert.ToString(cat.Name);
+
+                if (incomeSkipList.Any(sky => catName.ToLower() == sky.ToLower()))
+                    continue;
+
+                IncomeType incomeType = Enum.Parse<IncomeType>(catName.Replace("total", string.Empty, StringComparison.OrdinalIgnoreCase), true);
+                int myAmount = Convert.ToInt32(cat.Value);
+                if (myAmount != 0)
+                {
+                    breakdown.Add(incomeType, myAmount);
+
+                    if (cat.Name != "pendingRobuxTotal")
+                        amount += myAmount;
+                    else
+                        pending = myAmount;
+                }
+            }
+
+            return new EconomyBreakdown(timeLength, amount, breakdown, pending);
+        }
     }
 }
