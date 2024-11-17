@@ -11,6 +11,11 @@ using System.Collections.ObjectModel;
 
 namespace RoSharp.API
 {
+    /// <summary>
+    /// A class that represents a Roblox user.
+    /// </summary>
+    /// <seealso cref="FromId(ulong, Session?)"/>
+    /// <seealso cref="FromUsername(string, Session?)"/>
     public class User : APIMain, IRefreshable, IAssetOwner, IIdApi<User>
     {
         /// <inheritdoc/>
@@ -97,8 +102,6 @@ namespace RoSharp.API
 
             return newUser;
         }
-
-        public static async Task<User> FromGenericId(GenericId<User> id, Session? session) => await id.GetInstanceAsync(session);
 
         public static async Task<User> FromUsername(string username, Session? session = null)
             => await FromId(await UserUtility.GetUserIdAsync(username), session);

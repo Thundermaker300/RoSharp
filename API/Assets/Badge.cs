@@ -5,6 +5,9 @@ using RoSharp.Interfaces;
 
 namespace RoSharp.API.Assets
 {
+    /// <summary>
+    /// A class that represents a Roblox badge.
+    /// </summary>
     public class Badge : APIMain, IRefreshable, IIdApi<Badge>
     {
         /// <inheritdoc/>

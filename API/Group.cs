@@ -11,6 +11,9 @@ using System.Diagnostics;
 
 namespace RoSharp.API
 {
+    /// <summary>
+    /// A class that represents a Roblox group.
+    /// </summary>
     public class Group : APIMain, IRefreshable, IAssetOwner, IIdApi<Group>
     {
         /// <inheritdoc/>

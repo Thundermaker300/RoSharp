@@ -7,6 +7,13 @@ using System.Collections.ObjectModel;
 
 namespace RoSharp.API.Assets
 {
+    /// <summary>
+    /// A class that represents a Roblox asset.
+    /// </summary>
+    /// <remarks>This class consists of every Roblox item type except for Bundles, Game Passes, Experiences, and Badges. See their respective types.</remarks>
+    /// <seealso cref="Badge"/>
+    /// <seealso cref="Experience"/>
+    /// <seealso cref="FromId(ulong, Session)"/>
     public class Asset : APIMain, IRefreshable, IIdApi<Asset>
     {
         /// <inheritdoc/>
