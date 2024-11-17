@@ -32,6 +32,7 @@ namespace RoSharp.API
                     Id = rank.id,
                     Name = rank.name,
                     Rank = rank.rank,
+                    Description = rank.description,
                     MemberCount = rank.memberCount,
                 };
                 list.Add(role);
@@ -48,6 +49,40 @@ namespace RoSharp.API
 
         public Role? GetRole(string roleName)
             => Roles.FirstOrDefault(role => role.Name == roleName);
+
+        /// <summary>
+        /// Purchases and creates a new role in this group.
+        /// </summary>
+        /// <param name="name">The name of the role.</param>
+        /// <param name="description">The private description of the role.</param>
+        /// <param name="rank">The rank of the role.</param>
+        /// <param name="purchaseWithGroupFunds">Purchase with group funds if <see langword="true"/>. Purchase with the authenticated user's funds if <see langword="false"/>.</param>
+        /// <returns></returns>
+        /// <exception cref="RobloxAPIException">Roblox API error or lack of permissions.</exception>
+        /// <remarks>As of November 16th, 2024, roles cost R$25 to make. This method will bypass a confirmation prompt and purchase the role immediately. Use caution in order to not accidentally create roles and burn through money!</remarks>
+        public async Task<Role> CreateRoleAsync(string name, string description, byte rank, bool purchaseWithGroupFunds)
+        {
+            object body = new
+            {
+                name = name,
+                description = description,
+                rank = rank,
+                usingGroupFunds = purchaseWithGroupFunds,
+            };
+
+            HttpResponseMessage response = await group.PostAsync($"/v1/groups/{group.Id}/rolesets/create", body, verifyApiName: "RoleManager.CreateRoleAsync");
+            dynamic data = JObject.Parse(await response.Content.ReadAsStringAsync());
+            Role r = new(this)
+            {
+                Id = data.id,
+                Name = data.name,
+                Rank = data.rank,
+                Description = data.description,
+                MemberCount = 0,
+            };
+            await RefreshAsync();
+            return r;
+        }
 
         internal async Task RequestDeleteRole(ulong roleId)
         {
@@ -95,7 +130,8 @@ namespace RoSharp.API
 
         public ulong Id { get; init; }
         public string Name { get; init; }
-        public int Rank { get; init; }
+        public string? Description { get; init; }
+        public byte Rank { get; init; }
         public ulong MemberCount { get; init; }
 
         internal Role(RoleManager manager) { this.roleManager = manager; }
