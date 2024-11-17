@@ -95,9 +95,9 @@ namespace RoSharp.API
         public static async Task<User> FromId(ulong userId, Session? session = null)
         {
             if (RoPool<User>.Contains(userId))
-                return RoPool<User>.Get(userId, session);
+                return RoPool<User>.Get(userId, session.Global());
 
-            User newUser = new(userId, session);
+            User newUser = new(userId, session.Global());
             await newUser.RefreshAsync();
 
             return newUser;

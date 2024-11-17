@@ -148,9 +148,9 @@ namespace RoSharp.API.Assets
             }
 
             if (RoPool<Experience>.Contains(universeId))
-                return RoPool<Experience>.Get(universeId, session);
+                return RoPool<Experience>.Get(universeId, session.Global());
 
-            Experience newUser = new(universeId, session);
+            Experience newUser = new(universeId, session.Global());
             await newUser.RefreshAsync();
 
             return newUser;

@@ -10,7 +10,7 @@ namespace RoSharp.API
     {
         private Session? session;
 
-        internal CustomRequest(Session? session) { this.session = session; }
+        internal CustomRequest(Session? session) { this.session = session.Global(); }
 
         /// <summary>
         /// Performs a GET request to the provided URL.

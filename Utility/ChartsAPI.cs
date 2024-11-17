@@ -27,7 +27,7 @@ namespace RoSharp.Utility
             if (cursor != null)
                 url += $"&sortsPageToken={cursor}";
 
-            HttpClient client = MakeClient(session);
+            HttpClient client = MakeClient(session.Global());
             HttpResponseMessage response = await client.GetAsync(url);
             if (response.IsSuccessStatusCode)
             {

@@ -65,9 +65,9 @@ namespace RoSharp.API.Assets
         public static async Task<Badge> FromId(ulong badgeId, Session? session = null)
         {
             if (RoPool<Badge>.Contains(badgeId))
-                return RoPool<Badge>.Get(badgeId, session);
+                return RoPool<Badge>.Get(badgeId, session.Global());
 
-            Badge newUser = new(badgeId, session);
+            Badge newUser = new(badgeId, session.Global());
             await newUser.RefreshAsync();
 
             return newUser;

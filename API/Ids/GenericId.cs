@@ -41,7 +41,7 @@ namespace RoSharp.API
         /// <remarks>Roblox's API is only invoked once. Any subsequent calls to this method will return a cached value.</remarks>
         public async Task<T> GetInstanceAsync(Session? session = null)
         {
-            Session? sessionToUse = session ?? storedSession;
+            Session? sessionToUse = session ?? storedSession ?? GlobalSession.Assigned;
             if (stored == null)
             {
                 // Hacky but works

@@ -6,6 +6,7 @@ using RoSharp.Enums;
 using RoSharp.Exceptions;
 using RoSharp.Extensions;
 using RoSharp.Interfaces;
+using RoSharp.Utility;
 using System.Collections.ObjectModel;
 using System.Diagnostics;
 
@@ -95,9 +96,9 @@ namespace RoSharp.API
         public static async Task<Group> FromId(ulong groupId, Session? session = null)
         {
             if (RoPool<Group>.Contains(groupId))
-                return RoPool<Group>.Get(groupId, session);
+                return RoPool<Group>.Get(groupId, session.Global());
 
-            Group newGroup = new(groupId, session);
+            Group newGroup = new(groupId, session.Global());
             await newGroup.RefreshAsync();
 
             return newGroup;

@@ -161,12 +161,12 @@ namespace RoSharp.API.Assets
                 RoPool<Asset>.Add(this);
         }
 
-        public static async Task<Asset> FromId(ulong assetId, Session session)
+        public static async Task<Asset> FromId(ulong assetId, Session? session = null)
         {
             if (RoPool<Asset>.Contains(assetId))
-                return RoPool<Asset>.Get(assetId, session);
+                return RoPool<Asset>.Get(assetId, session.Global("Asset.FromId"));
 
-            Asset newUser = new(assetId, session);
+            Asset newUser = new(assetId, session.Global("Asset.FromId"));
             await newUser.RefreshAsync();
 
             return newUser;

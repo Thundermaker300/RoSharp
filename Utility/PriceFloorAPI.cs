@@ -13,11 +13,11 @@ namespace RoSharp.Utility
         /// <summary>
         /// Gets a <see cref="ReadOnlyDictionary{TKey, TValue}"/> containing the price floors for every <see cref="AssetType"/> that has one.
         /// </summary>
-        /// <param name="session">Logged in session. Required.</param>
+        /// <param name="session">Logged in session. Required but can be replaced with <see langword="null"/> if there is a global session assigned.</param>
         /// <returns>A task containing the <see cref="ReadOnlyDictionary{TKey, TValue}"/> upon completion.</returns>
-        public static async Task<ReadOnlyDictionary<AssetType, int>> GetPriceFloorsAsync(Session session)
+        public static async Task<ReadOnlyDictionary<AssetType, int>> GetPriceFloorsAsync(Session? session)
         {
-            HttpClient client = MakeClient(session);
+            HttpClient client = MakeClient(session.Global("PriceFloorAPI.GetPriceFloorsAsync"));
             HttpResponseMessage response = await client.GetAsync("/v1/collectibles/metadata");
             HttpVerify.ThrowIfNecessary(response);
             var dict = new Dictionary<AssetType, int>();
@@ -42,9 +42,9 @@ namespace RoSharp.Utility
         /// Gets the price floor for a specific <see cref="AssetType"/>.
         /// </summary>
         /// <param name="assetType">The <see cref="AssetType"/> to get the price floor of.</param>
-        /// <param name="session">Logged in session. Required.</param>
+        /// <param name="session">Logged in session. Required but can be replaced with <see langword="null"/> if there is a global session assigned.</param>
         /// <returns>A task containing the price floor as an <see cref="int"/>. Will be <see langword="null"/> if the provided <see cref="AssetType"/> does not have a price floor.</returns>
-        public static async Task<int?> GetPriceFloorForTypeAsync(AssetType assetType, Session session)
+        public static async Task<int?> GetPriceFloorForTypeAsync(AssetType assetType, Session? session)
         {
             var priceFloors = await GetPriceFloorsAsync(session);
             if (priceFloors.TryGetValue(assetType, out int value))
