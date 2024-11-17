@@ -64,6 +64,13 @@ namespace RoSharp.API
         /// </summary>
         public bool Verified => verified;
 
+        private int robux;
+
+        /// <summary>
+        /// Gets the amount of Robux this group has. Will be <c>-1</c> if the authenticated user cannot view funds.
+        /// </summary>
+        public int Robux => robux;
+
 
         private RoleManager roleManager;
 
@@ -131,6 +138,17 @@ namespace RoSharp.API
                 verified = data.hasVerifiedBadge;
 
                 members = data.memberCount;
+
+                try
+                {
+                    string rawData = await GetStringAsync($"/v1/groups/{Id}/currency", Constants.URL("economy"), verifyApiName: "Group.GetGroupFunds");
+                    dynamic robuxData = JObject.Parse(rawData);
+                    robux = robuxData.robux;
+                }
+                catch
+                {
+                    robux = -1;
+                }
             }
             else
             {

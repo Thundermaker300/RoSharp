@@ -1,4 +1,5 @@
 ﻿using Newtonsoft.Json.Linq;
+using RoSharp.Enums;
 using RoSharp.Exceptions;
 using RoSharp.Interfaces;
 using System;
@@ -13,12 +14,14 @@ namespace RoSharp.API
 {
     public class RoleManager : IRefreshable
     {
-        private Group group;
+        internal Group group;
 
         public DateTime RefreshedAt { get; set; }
 
         private ReadOnlyCollection<Role>? roles;
         public ReadOnlyCollection<Role> Roles => roles;
+
+        internal bool areConfigurationsAccessible = true;
 
         public async Task RefreshAsync()
         {
@@ -27,14 +30,13 @@ namespace RoSharp.API
             dynamic data = JObject.Parse(rawData);
             foreach (dynamic rank in data.roles)
             {
-                Role role = new Role(this)
-                {
-                    Id = rank.id,
-                    Name = rank.name,
-                    Rank = rank.rank,
-                    Description = rank.description,
-                    MemberCount = rank.memberCount,
-                };
+                Role role = await Role.MakeNew(this,
+                    Convert.ToUInt64(rank.id),
+                    Convert.ToString(rank.name),
+                    Convert.ToString(rank.description),
+                    Convert.ToByte(rank.rank),
+                    Convert.ToUInt64(rank.memberCount)
+                );
                 list.Add(role);
             }
 
@@ -72,16 +74,8 @@ namespace RoSharp.API
 
             HttpResponseMessage response = await group.PostAsync($"/v1/groups/{group.Id}/rolesets/create", body, verifyApiName: "RoleManager.CreateRoleAsync");
             dynamic data = JObject.Parse(await response.Content.ReadAsStringAsync());
-            Role r = new(this)
-            {
-                Id = data.id,
-                Name = data.name,
-                Rank = data.rank,
-                Description = data.description,
-                MemberCount = 0,
-            };
             await RefreshAsync();
-            return r;
+            return GetRole(Convert.ToByte(data.rank));
         }
 
         internal async Task RequestDeleteRole(ulong roleId)
@@ -128,13 +122,85 @@ namespace RoSharp.API
     {
         internal RoleManager roleManager;
 
-        public ulong Id { get; init; }
-        public string Name { get; init; }
-        public string? Description { get; init; }
-        public byte Rank { get; init; }
-        public ulong MemberCount { get; init; }
 
-        internal Role(RoleManager manager) { this.roleManager = manager; }
+        private ulong id;
+        public ulong Id => id;
+
+
+        private string name;
+        public string Name => name;
+
+
+        private string? description;
+        public string? Description => description;
+
+
+        private byte rank;
+        public byte Rank => rank;
+
+
+        private ulong memberCount;
+        public ulong MemberCount => memberCount;
+
+        private bool canAccessPermissions;
+        public bool CanAccessPermissions => canAccessPermissions;
+
+        private ReadOnlyCollection<GroupPermission> permissions;
+        public ReadOnlyCollection<GroupPermission> Permissions => permissions;
+
+        private Role() { }
+
+        internal async static Task<Role> MakeNew(RoleManager manager, ulong id, string name, string description, byte rank, ulong memberCount)
+        {
+            Role r = new();
+            r.roleManager = manager;
+
+            r.id = id;
+            r.name = name;
+            r.description = description;
+            r.rank = rank;
+            r.memberCount = memberCount;
+            r.canAccessPermissions = false;
+
+            List<GroupPermission> perms = new();
+
+            if (manager.areConfigurationsAccessible)
+            {
+                try
+                {
+                    string rawData = await manager.group.GetStringAsync($"/v1/groups/{manager.group.Id}/roles/permissions", verifyApiName: "Group.GetRolePermissions");
+                    dynamic data = JObject.Parse(rawData);
+                    foreach (dynamic group in data.data)
+                    {
+                        if (group.role.id == id)
+                        {
+                            foreach (dynamic permGroup in group.permissions)
+                            {
+                                foreach (dynamic permission in permGroup.Value)
+                                {
+                                    if (permission.Value == true)
+                                    {
+                                        string permName = permission.Name;
+                                        if (Enum.TryParse(permName, true, out GroupPermission result))
+                                            perms.Add(result);
+                                    }
+                                }
+                            }
+                            break;
+                        }
+                    }
+                    r.canAccessPermissions = true;
+                }
+                catch
+                {
+                    manager.areConfigurationsAccessible = false;
+                }
+            }
+
+            r.permissions = perms.AsReadOnly();
+
+            return r;
+        }
 
         [UsesSession]
         public async Task UpdateAsync(string newName)
