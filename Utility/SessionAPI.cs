@@ -133,7 +133,7 @@ namespace RoSharp.API
         /// <returns>A task that contains a bool when completed.</returns>
         public async Task<bool> FavoritedExperienceAsync(ulong experienceId) => await FavoritedExperienceAsync(await Experience.FromId(experienceId, session));
 
-        private string[] incomeSkipList = new[] { "incomingRobuxTotal", "outgoingRobuxTotal" };
+        private string[] incomeSkipList = ["incomingRobuxTotal", "outgoingRobuxTotal"];
         public async Task<EconomyBreakdown> GetIncomeAsync(AnalyticTimeLength timeLength = AnalyticTimeLength.Day)
         {
             var url = $"/v2/users/{session.userid}/transaction-totals?timeFrame={timeLength}&transactionType=summary";
