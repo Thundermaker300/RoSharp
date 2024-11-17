@@ -74,17 +74,7 @@ namespace RoSharp.API
 
         private RoleManager roleManager;
 
-        /// <summary>
-        /// Gets a <see cref="API.RoleManager"/> class that has additional API to manage group roles.
-        /// </summary>
-        public RoleManager RoleManager => roleManager;
-
         private MemberManager memberManager;
-
-        /// <summary>
-        /// Gets a <see cref="API.MemberManager"/> class that has additional API to manage group members.
-        /// </summary>
-        public MemberManager MemberManager => memberManager ?? new MemberManager(this);
 
         /// <inheritdoc/>
         public DateTime RefreshedAt { get; set; }
@@ -110,10 +100,32 @@ namespace RoSharp.API
             Group newGroup = new(groupId, session);
             await newGroup.RefreshAsync();
 
-            newGroup.roleManager = new RoleManager(newGroup);
-            await newGroup.roleManager.RefreshAsync();
-
             return newGroup;
+        }
+
+        /// <summary>
+        /// Gets a <see cref="RoleManager"/> class that has additional API to manage group roles.
+        /// </summary>
+        public async Task<RoleManager> GetRoleManagerAsync()
+        {
+            if (roleManager == null)
+            {
+                roleManager = new RoleManager(this);
+                await roleManager.RefreshAsync();
+            }
+            return roleManager;
+        }
+
+        /// <summary>
+        /// Gets a <see cref="MemberManager"/> class that has additional API to manage group members.
+        /// </summary>
+        public async Task<MemberManager> GetMemberManagerAsync()
+        {
+            if (memberManager == null)
+            {
+                memberManager = new MemberManager(this);
+            }
+            return memberManager;
         }
 
         /// <inheritdoc/>

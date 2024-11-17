@@ -136,7 +136,7 @@ namespace RoSharp.API
             {
                 if (Convert.ToUInt64(group.group.id) == this.group.Id)
                 {
-                    return this.group.RoleManager.Roles.FirstOrDefault(r => r.Id == Convert.ToUInt64(group.role.id));
+                    return (await this.group.GetRoleManagerAsync()).Roles.FirstOrDefault(r => r.Id == Convert.ToUInt64(group.role.id));
                 }
             }
             return null;
@@ -220,11 +220,11 @@ namespace RoSharp.API
 
         [UsesSession]
         public async Task SetRankAsync(ulong userId, int rankId)
-            => await SetRankAsync(userId, group.RoleManager.Roles.FirstOrDefault(r => r.Rank == rankId));
+            => await SetRankAsync(userId, (await group.GetRoleManagerAsync()).Roles.FirstOrDefault(r => r.Rank == rankId));
 
         [UsesSession]
         public async Task SetRankAsync(ulong userId, string roleName)
-            => await SetRankAsync(userId, group.RoleManager.Roles.FirstOrDefault(r => r.Name == roleName));
+            => await SetRankAsync(userId, (await group.GetRoleManagerAsync()).Roles.FirstOrDefault(r => r.Name == roleName));
 
         [UsesSession]
         public async Task SetRankAsync(User user, Role role)

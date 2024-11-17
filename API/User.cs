@@ -290,7 +290,7 @@ namespace RoSharp.API
 
                     ulong groupId = Convert.ToUInt64(groupData.group.id);
                     Group group = await Group.FromId(groupId, session);
-                    dict.Add(group, group.RoleManager.GetRole(Convert.ToInt32(groupData.role.rank)));
+                    dict.Add(group, (await group.GetRoleManagerAsync()).GetRole(Convert.ToInt32(groupData.role.rank)));
                     count++;
                 }
 
@@ -419,8 +419,8 @@ namespace RoSharp.API
             return friends.AsReadOnly();
         }
 
-        public async Task<bool> IsInGroupAsync(Group group) => await group.MemberManager.IsInGroupAsync(Id);
-        public async Task<bool> IsInGroupAsync(ulong groupId) => await (await Group.FromId(groupId)).MemberManager.IsInGroupAsync(Id);
+        public async Task<bool> IsInGroupAsync(Group group) => await (await group.GetMemberManagerAsync()).IsInGroupAsync(Id);
+        public async Task<bool> IsInGroupAsync(ulong groupId) => await (await (await Group.FromId(groupId)).GetMemberManagerAsync()).IsInGroupAsync(Id);
 
         // Thumbnails
         public async Task<string> GetThumbnailAsync(ThumbnailType type = ThumbnailType.Full, ThumbnailSize size = ThumbnailSize.S420x420)
