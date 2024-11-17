@@ -21,6 +21,7 @@ namespace RoSharp.API
         /// Creates a new <see cref="GenericId{T}"/> with the given Id.
         /// </summary>
         /// <param name="id">The user Id.</param>
+        /// <param name="session">The session. Optional.</param>
         public GenericId(ulong id, Session? session = null)
         {
             Id = id;
@@ -43,16 +44,22 @@ namespace RoSharp.API
             Session? sessionToUse = session ?? storedSession;
             if (stored == null)
             {
+                // Hacky but works
                 stored = await (Task<T>)(typeof(T).GetMethod("FromId").Invoke(null, new object[] { Id, sessionToUse }));
             }
             return stored;
         }
 
+        /// <inheritdoc/>
         public override string ToString()
         {
             return Id.ToString();
         }
 
+        /// <summary>
+        /// Converts the <see cref="GenericId{T}"/> to its Id. Equivalent to accessing <see cref="GenericId{T}.Id"/>.
+        /// </summary>
+        /// <param name="id">The <see cref="GenericId{T}"/> to convert.</param>
         public static implicit operator ulong(GenericId<T> id) => id.Id;
     }
 }

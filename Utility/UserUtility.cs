@@ -4,6 +4,9 @@ using System.Net.Http.Json;
 
 namespace RoSharp.Utility
 {
+    /// <summary>
+    /// Static class that contains utility methods for users.
+    /// </summary>
     public static class UserUtility
     {
         private static HttpClient userUtilityClient { get; } = new HttpClient();

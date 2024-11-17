@@ -16,6 +16,14 @@ namespace RoSharp.API
 
         public ulong Members => group.members;
 
+        /// <summary>
+        /// Gets a <see cref="PageResponse{T}"/> containing IDs of users that are requesting to join the group.
+        /// </summary>
+        /// <param name="limit">The limit of users to return.</param>
+        /// <param name="sortOrder">The sort order.</param>
+        /// <param name="cursor">The cursor for the next page. Obtained by calling this API previously.</param>
+        /// <returns>A task containing a <see cref="PageResponse{T}"/> of <see cref="GenericId{T}"/> upon completion.</returns>
+        /// <exception cref="RobloxAPIException">Roblox API failure or lack of permissions.</exception>
         public async Task<PageResponse<GenericId<User>>> GetPendingRequestsAsync(FixedLimit limit = FixedLimit.Limit100, RequestSortOrder sortOrder = RequestSortOrder.Desc, string? cursor = null)
         {
             string url = $"/v1/groups/{group.Id}/join-requests?limit={limit.Limit()}&sortOrder={sortOrder}";
@@ -42,6 +50,11 @@ namespace RoSharp.API
             return new(list, nextPage, previousPage);
         }
 
+        /// <summary>
+        /// Gets whether or not the user with the given Id is in the group.
+        /// </summary>
+        /// <param name="userId">The user's Id.</param>
+        /// <returns>A task containing a bool upon completion.</returns>
         public async Task<bool> IsInGroupAsync(ulong userId)
         {
             string rawData = await group.GetStringAsync($"/v1/users/{userId}/groups/roles?includeLocked=true");
@@ -55,9 +68,26 @@ namespace RoSharp.API
             }
             return false;
         }
+
+        /// <summary>
+        /// Gets whether or not the user with the given username is in the group.
+        /// </summary>
+        /// <param name="username">The user's username.</param>
+        /// <returns>A task containing a bool upon completion.</returns>
         public async Task<bool> IsInGroupAsync(string username) => await IsInGroupAsync(await User.FromUsername(username));
+
+        /// <summary>
+        /// Gets whether or not the <see cref="User"/> is in the group.
+        /// </summary>
+        /// <param name="user">The user.</param>
+        /// <returns>A task containing a bool upon completion.</returns>
         public async Task<bool> IsInGroupAsync(User user) => await IsInGroupAsync(user.Id);
 
+        /// <summary>
+        /// Gets the role of the user with the given Id.
+        /// </summary>
+        /// <param name="userId">The user's Id.</param>
+        /// <returns>A task containing the <see cref="Role"/> upon completion. Will be <see langword="null"/> if the user is not in the group.</returns>
         public async Task<Role?> GetRoleInGroupAsync(ulong userId)
         {
             string rawData = await group.GetStringAsync($"/v1/users/{userId}/groups/roles?includeLocked=true");
@@ -72,10 +102,27 @@ namespace RoSharp.API
             return null;
         }
 
+        /// <summary>
+        /// Gets the role of the user with the given username.
+        /// </summary>
+        /// <param name="userId">The user's username.</param>
+        /// <returns>A task containing the <see cref="Role"/> upon completion. Will be <see langword="null"/> if the user is not in the group.</returns>
         public async Task<Role?> GetRoleInGroupAsync(string username) => await GetRoleInGroupAsync(await User.FromUsername(username));
+
+        /// <summary>
+        /// Gets the role of the <see cref="User"/>.
+        /// </summary>
+        /// <param name="user">The user.</param>
+        /// <returns>A task containing the <see cref="Role"/> upon completion. Will be <see langword="null"/> if the user is not in the group.</returns>
         public async Task<Role?> GetRoleInGroupAsync(User user) => await GetRoleInGroupAsync(user.Id);
 
-        [UsesSession]
+        /// <summary>
+        /// Modifies the user's join request.
+        /// </summary>
+        /// <param name="userId">The user's Id.</param>
+        /// <param name="action">Whether to accept or deny the request.</param>
+        /// <returns>A task that completes when the operation is finished.</returns>
+        /// <exception cref="RobloxAPIException">Roblox API failure, lack of permissions, or an invalid request (eg. the provided user is not trying to join the group).</exception>
         public async Task ModifyJoinRequestAsync(ulong userId, JoinRequestAction action)
         {
             string url = $"/v1/groups/{group.Id}/join-requests/users/{userId}";
@@ -91,11 +138,23 @@ namespace RoSharp.API
             }
         }
 
-        [UsesSession]
+        /// <summary>
+        /// Modifies the user's join request.
+        /// </summary>
+        /// <param name="user">The user.</param>
+        /// <param name="action">Whether to accept or deny the request.</param>
+        /// <returns>A task that completes when the operation is finished.</returns>
+        /// <exception cref="RobloxAPIException">Roblox API failure, lack of permissions, or an invalid request (eg. the provided user is not trying to join the group).</exception>
         public async Task ModifyJoinRequestAsync(User user, JoinRequestAction action)
             => await ModifyJoinRequestAsync(user.Id, action);
 
-        [UsesSession]
+        /// <summary>
+        /// Modifies the user's join request.
+        /// </summary>
+        /// <param name="username">The user's username.</param>
+        /// <param name="action">Whether to accept or deny the request.</param>
+        /// <returns>A task that completes when the operation is finished.</returns>
+        /// <exception cref="RobloxAPIException">Roblox API failure, lack of permissions, or an invalid request (eg. the provided user is not trying to join the group).</exception>
         public async Task ModifyJoinRequestAsync(string username, JoinRequestAction action)
             => await ModifyJoinRequestAsync(await UserUtility.GetUserIdAsync(username), action);
 
@@ -164,7 +223,12 @@ namespace RoSharp.API
         public async Task SetRankAsync(GenericId<User> userId, string roleName)
             => await SetRankAsync(userId.Id, roleName);
 
-        [UsesSession]
+        /// <summary>
+        /// Kicks the user with the given Id.
+        /// </summary>
+        /// <param name="userId">The user's Id.</param>
+        /// <returns>A task that completes when the operation is finished.</returns>
+        /// <exception cref="RobloxAPIException">Roblox API failure or lack of permissions.</exception>
         public async Task KickMemberAsync(ulong userId)
         {
             HttpResponseMessage response = await group.DeleteAsync($"/v1/groups/{group.Id}/users/{userId}", verifyApiName: "MemberManager.KickMemberAsync");
@@ -174,10 +238,13 @@ namespace RoSharp.API
             }
         }
 
-        [UsesSession]
+        /// <summary>
+        /// Kicks the user.
+        /// </summary>
+        /// <param name="user">The user.</param>
+        /// <returns>A task that completes when the operation is finished.</returns>
+        /// <exception cref="RobloxAPIException">Roblox API failure or lack of permissions.</exception>
         public async Task KickMemberAsync(User user) => await KickMemberAsync(user.Id);
-
-        public async Task KickMemberAsync(GenericId<User> userId) => await KickMemberAsync(userId.Id);
 
         public override string ToString()
         {

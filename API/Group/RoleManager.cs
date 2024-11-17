@@ -60,8 +60,8 @@ namespace RoSharp.API
         /// <param name="rank">The rank of the role.</param>
         /// <param name="purchaseWithGroupFunds">Purchase with group funds if <see langword="true"/>. Purchase with the authenticated user's funds if <see langword="false"/>.</param>
         /// <returns></returns>
-        /// <exception cref="RobloxAPIException">Roblox API error or lack of permissions.</exception>
-        /// <remarks>As of November 16th, 2024, roles cost R$25 to make. This method will bypass a confirmation prompt and purchase the role immediately. Use caution in order to not accidentally create roles and burn through money!</remarks>
+        /// <exception cref="RobloxAPIException">Roblox API failure or lack of permissions.</exception>
+        /// <remarks>This method will call <see cref="RefreshAsync"/> upon completion, forcing <see cref="Roles"/> to be updated automatically. As of November 16th, 2024, roles cost R$25 to make. This method will bypass a confirmation prompt and purchase the role immediately. Use caution in order to not accidentally create roles and burn through money!</remarks>
         public async Task<Role> CreateRoleAsync(string name, string description, byte rank, bool purchaseWithGroupFunds)
         {
             object body = new
@@ -118,34 +118,65 @@ namespace RoSharp.API
         }
     }
 
+    /// <summary>
+    /// Represents a role within a group.
+    /// </summary>
     public class Role
     {
         internal RoleManager roleManager;
 
 
         private ulong id;
+
+        /// <summary>
+        /// Gets the internal id of the role.
+        /// </summary>
         public ulong Id => id;
 
 
         private string name;
+
+        /// <summary>
+        /// Gets the name of the role.
+        /// </summary>
         public string Name => name;
 
 
         private string? description;
+
+        /// <summary>
+        /// Gets the description of the role. Can be <see langword="null"/> if the authenticated user cannot see role descriptions.
+        /// </summary>
         public string? Description => description;
 
 
         private byte rank;
+
+        /// <summary>
+        /// Gets the rank of the role, from <c>0-255</c>.
+        /// </summary>
         public byte Rank => rank;
 
 
         private ulong memberCount;
+
+        /// <summary>
+        /// Gets the amount of members within this role.
+        /// </summary>
         public ulong MemberCount => memberCount;
 
         private bool canAccessPermissions;
+
+        /// <summary>
+        /// Gets whether or not the authenticated user can see the role's <see cref="Permissions"/>.
+        /// </summary>
         public bool CanAccessPermissions => canAccessPermissions;
 
         private ReadOnlyCollection<GroupPermission> permissions;
+
+        /// <summary>
+        /// Gets the permissions of the role. This list will be empty if <see cref="CanAccessPermissions"/> is <see langword="false"/>.
+        /// </summary>
         public ReadOnlyCollection<GroupPermission> Permissions => permissions;
 
         private Role() { }
@@ -202,19 +233,35 @@ namespace RoSharp.API
             return r;
         }
 
-        [UsesSession]
+        
+        /// <summary>
+        /// Changes the name of the role.
+        /// </summary>
+        /// <param name="newName">The new name.</param>
+        /// <returns>A task that completes when the operation is finished.</returns>
+        /// <exception cref="RobloxAPIException">Roblox API failure or lack of permissions.</exception>
         public async Task UpdateAsync(string newName)
         {
             await roleManager.RequestUpdateRole(this, newName);
         }
 
-        [UsesSession]
+        /// <summary>
+        /// Changes the rank of the role.
+        /// </summary>
+        /// <param name="newRank">The new rank.</param>
+        /// <returns>A task that completes when the operation is finished.</returns>
+        /// <exception cref="RobloxAPIException">Roblox API failure or lack of permissions.</exception>
         public async Task UpdateAsync(int newRank)
         {
             await roleManager.RequestUpdateRole(this, newRank);
         }
 
-        [UsesSession]
+
+        /// <summary>
+        /// Deletes the role. ALL USERS MUST BE REMOVED FROM THE ROLE BEFORE IT CAN BE DELETED.
+        /// </summary>
+        /// <returns>A task that completes when the operation is finished.</returns>
+        /// <exception cref="RobloxAPIException">Roblox API failure or lack of permissions.</exception>
         public async Task DeleteAsync()
         {
             await roleManager.RequestDeleteRole(Id);
