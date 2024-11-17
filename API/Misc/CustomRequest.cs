@@ -6,7 +6,7 @@ namespace RoSharp.API
     /// <summary>
     /// The CustomRequest class can be used to make custom requests to the Roblox API using RoSharp's authentication API.
     /// </summary>
-    public class CustomRequest
+    public sealed class CustomRequest
     {
         private Session? session;
 

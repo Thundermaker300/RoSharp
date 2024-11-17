@@ -1,6 +1,8 @@
 ﻿using Newtonsoft.Json.Linq;
+using RoSharp.API.Misc;
 using RoSharp.Enums;
 using RoSharp.Exceptions;
+using RoSharp.Extensions;
 using RoSharp.Interfaces;
 using System;
 using System.Collections.Generic;
@@ -12,17 +14,26 @@ using System.Threading.Tasks;
 
 namespace RoSharp.API
 {
+    /// <summary>
+    /// Class used for managing roles in a group.
+    /// </summary>
     public class RoleManager : IRefreshable
     {
         internal Group group;
 
+        /// <inheritdoc/>
         public DateTime RefreshedAt { get; set; }
 
         private ReadOnlyCollection<Role>? roles;
+
+        /// <summary>
+        /// Gets all roles in the group.
+        /// </summary>
         public ReadOnlyCollection<Role> Roles => roles;
 
         internal bool areConfigurationsAccessible = true;
 
+        /// <inheritdoc/>
         public async Task RefreshAsync()
         {
             List<Role> list = [];
@@ -112,6 +123,7 @@ namespace RoSharp.API
             }
         }
 
+        /// <inheritdoc/>
         public override string ToString()
         {
             return $"RoleManager [#{Roles.Count}]";
@@ -233,7 +245,40 @@ namespace RoSharp.API
             return r;
         }
 
-        
+        /// <summary>
+        /// Gets a <see cref="PageResponse{T}"/> containing IDs of users that are currently in the group under this role.
+        /// </summary>
+        /// <param name="limit">The limit of users to return.</param>
+        /// <param name="sortOrder">The sort order.</param>
+        /// <param name="cursor">The cursor for the next page. Obtained by calling this API previously.</param>
+        /// <returns>A task containing a <see cref="PageResponse{T}"/> of <see cref="GenericId{T}"/> upon completion.</returns>
+        /// <exception cref="RobloxAPIException">Roblox API failure or lack of permissions.</exception>
+        public async Task<PageResponse<GenericId<User>>> GetMembersAsync(FixedLimit limit = FixedLimit.Limit100, RequestSortOrder sortOrder = RequestSortOrder.Asc, string? cursor = null)
+        {
+            string url = $"/v1/groups/{roleManager.group.Id}/roles/{Id}/users?limit={limit.Limit()}&sortOrder={sortOrder}";
+            if (cursor != null)
+                url += "&cursor=" + cursor;
+
+            var list = new List<GenericId<User>>();
+            string? nextPage = null;
+            string? previousPage = null;
+            HttpResponseMessage response = await roleManager.group.GetAsync(url, verifyApiName: "Role.GetMembersAsync");
+            if (response.IsSuccessStatusCode)
+            {
+                dynamic data = JObject.Parse(await response.Content.ReadAsStringAsync());
+                foreach (dynamic user in data.data)
+                {
+                    ulong userId = Convert.ToUInt64(user.userId);
+                    list.Add(new GenericId<User>(userId, roleManager.group.session));
+                }
+                nextPage = data.nextPageCursor;
+                previousPage = data.previousPageCursor;
+            }
+
+            return new(list, nextPage, previousPage);
+        }
+
+
         /// <summary>
         /// Changes the name of the role.
         /// </summary>

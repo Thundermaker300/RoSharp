@@ -11,7 +11,7 @@ namespace RoSharp.API
     /// <summary>
     /// Represents an Id corresponding to the given <typeparamref name="T"/>. This class is created instead of <typeparamref name="T"/> directly in large API requests to avoid Roblox ratelimits.
     /// </summary>
-    public class GenericId<T>
+    public sealed class GenericId<T>
         where T: IIdApi<T>
     {
         private T? stored;

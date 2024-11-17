@@ -8,12 +8,18 @@ using System.Diagnostics;
 
 namespace RoSharp.API
 {
+    /// <summary>
+    /// Class used for managing members of a group.
+    /// </summary>
     public class MemberManager
     {
         private Group group;
 
         internal MemberManager(Group group) { this.group = group; }
 
+        /// <summary>
+        /// Gets the total amount of members in the group.
+        /// </summary>
         public ulong Members => group.members;
 
         /// <summary>
@@ -45,6 +51,40 @@ namespace RoSharp.API
             {
                 ulong userId = Convert.ToUInt64(user.requester.userId);
                 list.Add(new GenericId<User>(userId, group.session));
+            }
+
+            return new(list, nextPage, previousPage);
+        }
+
+
+        /// <summary>
+        /// Gets a <see cref="PageResponse{T}"/> containing IDs of users that are currently in the group.
+        /// </summary>
+        /// <param name="limit">The limit of users to return.</param>
+        /// <param name="sortOrder">The sort order.</param>
+        /// <param name="cursor">The cursor for the next page. Obtained by calling this API previously.</param>
+        /// <returns>A task containing a <see cref="PageResponse{T}"/> of <see cref="GenericId{T}"/> upon completion.</returns>
+        /// <exception cref="RobloxAPIException">Roblox API failure or lack of permissions.</exception>
+        public async Task<PageResponse<GenericId<User>>> GetMembersAsync(FixedLimit limit = FixedLimit.Limit100, RequestSortOrder sortOrder = RequestSortOrder.Asc, string? cursor = null)
+        {
+            string url = $"/v1/groups/{group.Id}/users?limit={limit.Limit()}&sortOrder={sortOrder}";
+            if (cursor != null)
+                url += "&cursor=" + cursor;
+
+            var list = new List<GenericId<User>>();
+            string? nextPage = null;
+            string? previousPage = null;
+            HttpResponseMessage response = await group.GetAsync(url, verifyApiName: "Group.GetMembersAsync");
+            if (response.IsSuccessStatusCode)
+            {
+                dynamic data = JObject.Parse(await response.Content.ReadAsStringAsync());
+                foreach (dynamic user in data.data)
+                {
+                    ulong userId = Convert.ToUInt64(user.user.userId);
+                    list.Add(new GenericId<User>(userId, group.session));
+                }
+                nextPage = data.nextPageCursor;
+                previousPage = data.previousPageCursor;
             }
 
             return new(list, nextPage, previousPage);
@@ -105,7 +145,7 @@ namespace RoSharp.API
         /// <summary>
         /// Gets the role of the user with the given username.
         /// </summary>
-        /// <param name="userId">The user's username.</param>
+        /// <param name="username">The user's username.</param>
         /// <returns>A task containing the <see cref="Role"/> upon completion. Will be <see langword="null"/> if the user is not in the group.</returns>
         public async Task<Role?> GetRoleInGroupAsync(string username) => await GetRoleInGroupAsync(await User.FromUsername(username));
 
@@ -246,6 +286,7 @@ namespace RoSharp.API
         /// <exception cref="RobloxAPIException">Roblox API failure or lack of permissions.</exception>
         public async Task KickMemberAsync(User user) => await KickMemberAsync(user.Id);
 
+        /// <inheritdoc/>
         public override string ToString()
         {
             return $"MemberManager [#{Members}]";

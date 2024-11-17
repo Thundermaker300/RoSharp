@@ -7,7 +7,7 @@ namespace RoSharp.API.Misc
     /// Represents a response from the Roblox API that can be paged (usually via a 'cursor' parameter).
     /// </summary>
     /// <typeparam name="T">The return type from the Roblox API.</typeparam>
-    public class PageResponse<T> : IEnumerable<T>
+    public sealed class PageResponse<T> : IEnumerable<T>
         where T: class
     {
         /// <summary>

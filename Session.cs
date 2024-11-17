@@ -16,13 +16,28 @@ namespace RoSharp
         internal string username = "";
         internal string displayname = "";
         internal ulong userid = 0;
-        internal DateTime loggedAt;
+        internal DateTime? loggedAt;
 
         internal string RobloSecurity => roblosecurity;
 
+        /// <summary>
+        /// Indicates if this session has been logged in.
+        /// </summary>
         public bool LoggedIn => loggedIn;
-        public DateTime LoggedInAt => loggedAt;
-        public TimeSpan Elapsed => DateTime.Now - loggedAt;
+
+        /// <summary>
+        /// If <see cref="LoggedIn"/> is true, this contains a <see cref="DateTime"/> representing when the Session was authenticated.
+        /// </summary>
+        public DateTime LoggedInAt => loggedAt.GetValueOrDefault();
+
+        /// <summary>
+        /// If <see cref="LoggedIn"/> is true, this contains a <see cref="TimeSpan"/> representing the length of time this session has been authenticated for.
+        /// </summary>
+        public TimeSpan Elapsed => DateTime.Now - LoggedInAt;
+
+        /// <summary>
+        /// Gets a <see cref="SessionAPI"/> which contains some API about the current authenticated user.
+        /// </summary>
         public SessionAPI? API
         {
             get
@@ -35,6 +50,12 @@ namespace RoSharp
             }
         }
 
+        /// <summary>
+        /// Authenticates this session using the provided .ROBLOSECURITY token.
+        /// </summary>
+        /// <param name="roblosecurity">The .ROBLOSECURITY token to use for authentication.</param>
+        /// <returns>A Task that completes when the operation is finished.</returns>
+        /// <exception cref="AccessViolationException">Thrown if the authentication fails.</exception>
         public async Task LoginAsync(string roblosecurity)
         {
             Uri uri = new(Constants.URL("users"));
@@ -66,6 +87,7 @@ namespace RoSharp
                     loggedAt = DateTime.Now;
 
                     sessionAPI = new SessionAPI(this);
+                    sessionAPI.user = await User.FromId(userid, this);
                 }
             }
         }

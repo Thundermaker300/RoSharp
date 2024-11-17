@@ -10,10 +10,14 @@ namespace RoSharp.API
     {
         public SessionAPI(Session session) : base(session) { }
 
+        /// <inheritdoc/>
         public override string BaseUrl => Constants.URL("users");
 
-        private User? user;
+        internal User? user;
 
+        /// <summary>
+        /// Gets a <see cref="API.User"/> representing the currently authenticated user.
+        /// </summary>
         [UsesSession]
         public User User
         {
@@ -28,6 +32,9 @@ namespace RoSharp.API
             }
         }
 
+        /// <summary>
+        /// Gets the gender of the authenticated user.
+        /// </summary>
         [UsesSession]
         public Gender Gender
         {
@@ -39,6 +46,9 @@ namespace RoSharp.API
             }
         }
 
+        /// <summary>
+        /// Gets the country code of the authenticated user.
+        /// </summary>
         [UsesSession]
         public string CountryCode
         {
@@ -50,6 +60,9 @@ namespace RoSharp.API
             }
         }
 
+        /// <summary>
+        /// Gets a <see cref="DateTime"/> representing the set birth date of the user.
+        /// </summary>
         [UsesSession]
         public DateTime BirthDate
         {
@@ -61,6 +74,9 @@ namespace RoSharp.API
             }
         }
 
+        /// <summary>
+        /// Gets the amount of Robux the authenticated user has.
+        /// </summary>
         [UsesSession]
         public int Robux
         {
@@ -72,18 +88,49 @@ namespace RoSharp.API
             }
         }
 
+        /// <summary>
+        /// Sends a friend request to the given target.
+        /// </summary>
+        /// <param name="targetId">The target user Id.</param>
+        /// <returns>A task that completes when the operation is finished.</returns>
         public async Task SendFriendRequestAsync(ulong targetId)
         {
             await PostAsync($"/v1/contacts/{targetId}/request-friendship", new { });
         }
 
+        /// <summary>
+        /// Sends a friend request to the given target.
+        /// </summary>
+        /// <param name="user">The target user.</param>
+        /// <returns>A task that completes when the operation is finished.</returns>
         public async Task SendFriendRequestAsync(User user) => await SendFriendRequestAsync(user.Id);
 
+        /// <summary>
+        /// Unfriends the given target.
+        /// </summary>
+        /// <param name="targetId">The target user Id.</param>
+        /// <returns>A task that completes when the operation is finished.</returns>
         public async Task UnfriendAsync(ulong targetId) => await PostAsync($"/v1/users/{targetId}/unfriend", new { });
 
+        /// <summary>
+        /// Unfriends the given target.
+        /// </summary>
+        /// <param name="user">The target user.</param>
+        /// <returns>A task that completes when the operation is finished.</returns>
         public async Task UnfriendAsync(User user) => await UnfriendAsync(user.Id);
 
+        /// <summary>
+        /// Gets a value indicating whether or not the specified experience is favorited by the authenticated user.
+        /// </summary>
+        /// <param name="experience">The target experience.</param>
+        /// <returns>A task that contains a bool when completed.</returns>
         public async Task<bool> FavoritedExperienceAsync(Experience experience) => experience.favoritedByUser; // TODO: This api does not check for matching session.
+
+        /// <summary>
+        /// Gets a value indicating whether or not the specified experience is favorited by the authenticated user.
+        /// </summary>
+        /// <param name="experienceId">The target experience Id.</param>
+        /// <returns>A task that contains a bool when completed.</returns>
         public async Task<bool> FavoritedExperienceAsync(ulong experienceId) => await FavoritedExperienceAsync(await Experience.FromId(experienceId, session));
     }
 }

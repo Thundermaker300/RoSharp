@@ -276,32 +276,6 @@ namespace RoSharp.API
             return new(list, nextPage, previousPage);
         }
 
-        [UsesSession]
-        public async Task<PageResponse<GenericId<User>>> GetMembersAsync(FixedLimit limit = FixedLimit.Limit100, RequestSortOrder sortOrder = RequestSortOrder.Asc, string? cursor = null)
-        {
-            string url = $"/v1/groups/{Id}/users?limit={limit.Limit()}&sortOrder={sortOrder}";
-            if (cursor != null)
-                url += "&cursor=" + cursor;
-
-            var list = new List<GenericId<User>>();
-            string? nextPage = null;
-            string? previousPage = null;
-            HttpResponseMessage response = await GetAsync(url, verifyApiName: "Group.GetMembersAsync");
-            if (response.IsSuccessStatusCode)
-            {
-                dynamic data = JObject.Parse(await response.Content.ReadAsStringAsync());
-                foreach (dynamic user in data.data)
-                {
-                    ulong userId = Convert.ToUInt64(user.user.userId);
-                    list.Add(new GenericId<User>(userId, session));
-                }
-                nextPage = data.nextPageCursor;
-                previousPage = data.previousPageCursor;
-            }
-
-            return new(list, nextPage, previousPage);
-        }
-
         /// <inheritdoc/>
         public override string ToString()
         {
