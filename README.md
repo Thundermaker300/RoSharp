@@ -5,4 +5,9 @@
 [![ko-fi](https://ko-fi.com/img/githubbutton_sm.svg)](https://ko-fi.com/P5P416152H)
 
 # RoSharp
-See [wiki](https://github.com/Thundermaker300/RoSharp/wiki) for documentation.
+RoSharp is a C#/.NET utility package designed as a wrapper for Roblox's API system.
+
+See [wiki](https://github.com/Thundermaker300/RoSharp/wiki) for extensive documentation. Join our [discord](https://discord.gg/FAJ3wrgu) if you have questions!
+
+# Credits
+[Robloxdotnet](https://github.com/Loravis/Robloxdotnet) by [Loravis](https://github.com/Loravis) -- Original inspiration for RoSharp, various inspirations taken from this project.
