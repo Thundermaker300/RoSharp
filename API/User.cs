@@ -127,13 +127,9 @@ namespace RoSharp.API
                 throw new ArgumentException($"Invalid user ID '{Id}'. HTTP {response.StatusCode}");
             }
 
-            // TODO: These properties should be reset through this method.
-            following = -1;
-            followers = -1;
             robloxBadges = null;
             primaryGroup = null;
             socialChannels = null;
-
             currentlyWearing = null;
             collections = null;
             groups = null;
