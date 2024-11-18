@@ -419,7 +419,18 @@ namespace RoSharp.API
             return friends.AsReadOnly();
         }
 
+        /// <summary>
+        /// Gets whether or not this user is in the given <paramref name="group"/>.
+        /// </summary>
+        /// <param name="group">The group.</param>
+        /// <returns>A task containing a bool.</returns>
         public async Task<bool> IsInGroupAsync(Group group) => await (await group.GetMemberManagerAsync()).IsInGroupAsync(Id);
+
+        /// <summary>
+        /// Gets whether or not this user is in the group with the given Id.
+        /// </summary>
+        /// <param name="groupId">The groupId.</param>
+        /// <returns>A task containing a bool.</returns>
         public async Task<bool> IsInGroupAsync(ulong groupId) => await (await (await Group.FromId(groupId)).GetMemberManagerAsync()).IsInGroupAsync(Id);
 
         // Thumbnails

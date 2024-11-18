@@ -7,7 +7,7 @@ using System.Threading.Tasks;
 namespace RoSharp.Enums
 {
     /// <summary>
-    /// Indicates an experience activity history type. Used in <see cref="API.Assets.Experience.GetActivityHistoryAsync"/>
+    /// Indicates an experience activity history type. Used in <see cref="API.Assets.Experience.GetActivityHistoryAsync"/>.
     /// </summary>
     public enum ExperienceActivityHistoryType
     {
