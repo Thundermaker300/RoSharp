@@ -38,8 +38,8 @@ namespace RoSharp.API
         /// <summary>
         /// Returns the <typeparamref name="T"/> associated with this Id. Makes an API call to obtain information.
         /// </summary>
-        /// <returns>A task that contains the <typeparamref name="T"/> upon completion.</returns>
-        /// <remarks>Roblox's API is only invoked once. Any subsequent calls to this method will return a cached value.</remarks>
+        /// <returns>A task that contains the <typeparamref name="T"/> instance upon completion.</returns>
+        /// <remarks>Roblox's API is only invoked once. Any subsequent calls to this method will return a cached value. If the returned <typeparamref name="T"/> is a <see cref="IRefreshable"/>, take advantage of <see cref="IRefreshable.RefreshAsync"/> if you are expecting data to change.</remarks>
         public async Task<T> GetInstanceAsync(Session? session = null)
         {
             Session? sessionToUse = session ?? storedSession ?? GlobalSession.Assigned;
