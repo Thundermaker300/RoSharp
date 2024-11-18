@@ -146,31 +146,6 @@ namespace RoSharp.API.Assets
                 RoPool<Experience>.Add(this);
         }
 
-        public static async Task<Experience> FromId(ulong placeOrUniverseId, Session? session = null)
-        {
-            ulong universeId = 0;
-
-            HttpResponseMessage response = await genericClient.GetAsync($"{Constants.URL("apis")}/universes/v1/places/{placeOrUniverseId}/universe");
-            string raw = await response.Content.ReadAsStringAsync();
-            dynamic universeData = JObject.Parse(raw);
-            if (universeData.universeId != null)
-            {
-                universeId = universeData.universeId;
-            }
-            else
-            {
-                universeId = placeOrUniverseId;
-            }
-
-            if (RoPool<Experience>.Contains(universeId))
-                return RoPool<Experience>.Get(universeId, session.Global());
-
-            Experience newUser = new(universeId, session.Global());
-            await newUser.RefreshAsync();
-
-            return newUser;
-        }
-
         private static Genre GetGenre(string genreName)
         {
             if (genreName != null)
@@ -193,6 +168,39 @@ namespace RoSharp.API.Assets
             throw new UnreachableException($"Unexpected genre type: {genreName}. Please report this error to developer.");
         }
 
+        public static async Task<Experience> FromUniverseId(ulong universeId, Session? session = null)
+        {
+            if (RoPool<Experience>.Contains(universeId))
+                return RoPool<Experience>.Get(universeId, session.Global());
+
+            Experience newUser = new(universeId, session.Global());
+            await newUser.RefreshAsync();
+
+            return newUser;
+        }
+
+        public static async Task<Experience> FromPlaceId(ulong placeId, Session? session = null)
+        {
+            ulong universeId = 0;
+
+            HttpResponseMessage response = await genericClient.GetAsync($"{Constants.URL("apis")}/universes/v1/places/{placeId}/universe");
+            string raw = await response.Content.ReadAsStringAsync();
+            dynamic universeData = JObject.Parse(raw);
+            if (universeData.universeId != null)
+            {
+                universeId = universeData.universeId;
+            }
+            else
+            {
+                throw new ArgumentException("Invalid place ID provided.", nameof(placeId));
+            }
+
+            return await FromUniverseId(universeId, session);
+        }
+
+        internal static async Task<Experience> FromId(ulong universeId, Session? session = null)
+            => await FromUniverseId(universeId, session);
+
         /// <inheritdoc/>
         public async Task RefreshAsync()
         {
@@ -207,6 +215,10 @@ namespace RoSharp.API.Assets
             if (response.IsSuccessStatusCode)
             {
                 dynamic whyaretheresomanywrappers = JObject.Parse(await response.Content.ReadAsStringAsync());
+                if (whyaretheresomanywrappers.data.Count == 0)
+                {
+                    throw new ArgumentException($"Invalid universe ID '{UniverseId}'");
+                }
                 dynamic data = whyaretheresomanywrappers.data[0];
                 name = data.sourceName;
                 description = data.sourceDescription;

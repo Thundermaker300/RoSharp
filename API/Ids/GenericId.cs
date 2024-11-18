@@ -3,6 +3,7 @@ using RoSharp.Interfaces;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Reflection;
 using System.Text;
 using System.Threading.Tasks;
 
@@ -45,7 +46,7 @@ namespace RoSharp.API
             if (stored == null)
             {
                 // Hacky but works
-                stored = await (Task<T>)(typeof(T).GetMethod("FromId").Invoke(null, new object[] { Id, sessionToUse }));
+                stored = await (Task<T>)(typeof(T).GetMethod("FromId", BindingFlags.NonPublic | BindingFlags.Static).Invoke(null, new object[] { Id, sessionToUse }));
             }
             return stored;
         }

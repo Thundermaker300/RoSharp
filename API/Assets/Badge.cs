@@ -88,7 +88,7 @@ namespace RoSharp.API.Assets
                 description = (data.displayDescription == null ? string.Empty : data.displayDescription);
                 created = data.created;
                 lastUpdated = data.updated;
-                experience = await Experience.FromId(experienceId);
+                experience = await Experience.FromUniverseId(experienceId);
                 awardedCount = Convert.ToInt32(data.statistics.awardedCount);
                 yesterdayAwardedCount = Convert.ToInt32(data.statistics.pastDayAwardedCount);
                 isEnabled = data.enabled;
