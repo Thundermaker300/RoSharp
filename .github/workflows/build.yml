@@ -32,11 +32,11 @@ jobs:
       - name: Upload DLL
         uses: actions/upload-artifact@v3
         with:
-          name: RoSharp.dll
+          name: RoSharp dll
           path: ${{ github.workspace }}/bin/Release/net8.0/RoSharp.dll
 
       - name: Upload Documentation
         uses: actions/upload-artifact@v3
         with:
-          name: RoSharp.dll
+          name: RoSharp documentation
           path: ${{ github.workspace }}/bin/Release/net8.0/RoSharp.xml
