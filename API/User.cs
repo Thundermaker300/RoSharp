@@ -508,7 +508,7 @@ namespace RoSharp.API
                 dynamic data = uselessData.userPresences[0];
 
                 UserLocationType type = (UserLocationType)Convert.ToInt32(data.userPresenceType);
-                Experience? exp = data.universeId != null ? await Experience.FromUniverseId(Convert.ToUInt64(data.universeId)) : null;
+                Experience? exp = data.universeId != null ? await Experience.FromId(Convert.ToUInt64(data.universeId)) : null;
                 DateTime lastOnline = data.lastOnline;
                 return new UserPresence(type, exp, lastOnline);
             }

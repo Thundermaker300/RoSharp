@@ -168,17 +168,6 @@ namespace RoSharp.API.Assets
             throw new UnreachableException($"Unexpected genre type: {genreName}. Please report this error to developer.");
         }
 
-        public static async Task<Experience> FromUniverseId(ulong universeId, Session? session = null)
-        {
-            if (RoPool<Experience>.Contains(universeId))
-                return RoPool<Experience>.Get(universeId, session.Global());
-
-            Experience newUser = new(universeId, session.Global());
-            await newUser.RefreshAsync();
-
-            return newUser;
-        }
-
         public static async Task<Experience> FromPlaceId(ulong placeId, Session? session = null)
         {
             ulong universeId = 0;
@@ -195,11 +184,19 @@ namespace RoSharp.API.Assets
                 throw new ArgumentException("Invalid place ID provided.", nameof(placeId));
             }
 
-            return await FromUniverseId(universeId, session);
+            return await FromId(universeId, session);
         }
 
-        internal static async Task<Experience> FromId(ulong universeId, Session? session = null)
-            => await FromUniverseId(universeId, session);
+        public static async Task<Experience> FromId(ulong universeId, Session? session = null)
+        {
+            if (RoPool<Experience>.Contains(universeId))
+                return RoPool<Experience>.Get(universeId, session.Global());
+
+            Experience newUser = new(universeId, session.Global());
+            await newUser.RefreshAsync();
+
+            return newUser;
+        }
 
         /// <inheritdoc/>
         public async Task RefreshAsync()
