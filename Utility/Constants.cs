@@ -27,6 +27,7 @@ namespace RoSharp
             ["blood"] = ExperienceDescriptorType.Blood,
             ["crude-humor"] = ExperienceDescriptorType.CrudeHumor,
             ["fear"] = ExperienceDescriptorType.Fear,
+            ["free-form-user-creation"] = ExperienceDescriptorType.FreeFormUserCreation,
             ["gambling"] = ExperienceDescriptorType.Gambling,
             ["romance"] = ExperienceDescriptorType.Romance,
             ["strong-language"] = ExperienceDescriptorType.StrongLanguage,

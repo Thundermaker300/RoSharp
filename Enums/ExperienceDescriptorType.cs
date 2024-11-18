@@ -26,6 +26,11 @@
         Fear,
 
         /// <summary>
+        /// Indicates that free-form user creation is enabled in an experience.
+        /// </summary>
+        FreeFormUserCreation,
+
+        /// <summary>
         /// Indicates that unplayable gambling content is present in an experience.
         /// </summary>
         Gambling,
