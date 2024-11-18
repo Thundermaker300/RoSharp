@@ -55,5 +55,10 @@
         /// Indicates that violence is present in an experience.
         /// </summary>
         Violence,
+
+        /// <summary>
+        /// Indicates that an experience is for all ages and suitable for everyone.
+        /// </summary>
+        AllAges,
     }
 }

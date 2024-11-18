@@ -33,6 +33,7 @@ namespace RoSharp
             ["strong-language"] = ExperienceDescriptorType.StrongLanguage,
             ["social-hangout"] = ExperienceDescriptorType.SocialHangout,
             ["violence"] = ExperienceDescriptorType.Violence,
+            ["all-ages-suitable-for-everyone"] = ExperienceDescriptorType.AllAges,
         }.AsReadOnly();
 
         /// <summary>

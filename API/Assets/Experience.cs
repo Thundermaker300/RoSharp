@@ -334,6 +334,13 @@ namespace RoSharp.API.Assets
         /// </summary>
         public int MinimumAge => minimumAge.Value;
 
+        private ExperienceMaturityLevel maturityLevel;
+
+        /// <summary>
+        /// Gets a <see cref="ExperienceMaturityLevel"/> representing the maturity level defined by Roblox for this experience.
+        /// </summary>
+        public ExperienceMaturityLevel MaturityLevel => maturityLevel;
+
         private ReadOnlyCollection<ExperienceDescriptor>? experienceDescriptors;
 
         /// <summary>
@@ -360,9 +367,15 @@ namespace RoSharp.API.Assets
             dynamic data = dataUseless.ageRecommendationDetails;
 
             if (data.summary.ageRecommendation != null)
+            {
                 minimumAge = data.summary.ageRecommendation.minimumAge;
+                maturityLevel = Enum.Parse<ExperienceMaturityLevel>(Convert.ToString(data.summary.ageRecommendation.displayName));
+            }
             else
+            {
+                maturityLevel = ExperienceMaturityLevel.Unknown;
                 minimumAge = 0;
+            }
 
             List<ExperienceDescriptor> list = new();
             if (data.descriptorUsages.Count != 0)
@@ -380,7 +393,7 @@ namespace RoSharp.API.Assets
                     }
 
                     string itemName = Convert.ToString(item.name);
-                    if (item.contains == true && Constants.DescriptorIdToEnumMapping.ContainsKey(itemName))
+                    if (item.contains == true)
                     {
                         ExperienceDescriptor descriptor = new()
                         {
