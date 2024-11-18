@@ -29,7 +29,7 @@ jobs:
         run: | 
           msbuild RoSharp.csproj -t:rebuild -property:Configuration=Release
 
-      - name: Upload DLL
+      - name: Upload artifacts
         uses: actions/upload-artifact@v4
         with:
           name: RoSharp
