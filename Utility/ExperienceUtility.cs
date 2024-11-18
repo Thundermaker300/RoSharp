@@ -33,7 +33,7 @@ namespace RoSharp.Utility
                     .Replace("-", string.Empty)
                     .Replace("&", "And");
 
-                if (genreName.ToLower() == "1vsall") // Special case since enums can't start with #s.
+                if (newGenreName.ToLower() == "1vsall") // Special case since enums can't start with #s.
                     return Genre.OneVsAll;
 
                 if (Enum.TryParse(newGenreName, true, out Genre genre))
