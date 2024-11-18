@@ -29,8 +29,14 @@ jobs:
         run: | 
           msbuild RoSharp.csproj -t:rebuild -property:Configuration=Release
 
-      - name: Upload artifacts
+      - name: Upload DLL
         uses: actions/upload-artifact@v3
         with:
-          name: RoSharp
+          name: RoSharp.dll
           path: ${{ github.workspace }}/bin/Release/net8.0/RoSharp.dll
+
+      - name: Upload Documentation
+        uses: actions/upload-artifact@v3
+        with:
+          name: RoSharp.dll
+          path: ${{ github.workspace }}/bin/Release/net8.0/RoSharp.xml
