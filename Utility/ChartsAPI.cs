@@ -151,18 +151,40 @@ namespace RoSharp.Utility
         /// <summary>
         /// Calls a provided action for each experience in the <see cref="ExperienceIds"/> list, converting each to a <see cref="Experience"/> before doing so.
         /// </summary>
+        /// <param name="func">The action to run. Can be asynchronous.</param>
+        /// <param name="limit">The maximum amount of Ids to call the <paramref name="func"/> with. Defaults to <c>-1</c> (unlimited).</param>
+        /// <param name="startAt">The amount of Ids to skip before calling the <paramref name="func"/>.</param>
+        /// <returns>A task that completes when the process is done.</returns>
+        /// <remarks>This API is very time-consuming as each new experience is an API call, and Too Many Requests is a common error. As such, a limit should be used in conjunction with the <paramref name="startAt"/> parameter to only peform the action with a certain amount of experiences at a time.</remarks>
+        /// <exception cref="RobloxAPIException">Roblox API failure.</exception>
+        public async Task ForEachExperienceAsync(Func<Experience, Task> func, int limit = -1, int startAt = 0)
+        {
+            int count = 0;
+            foreach (GenericId<Experience> id in ExperienceIds.Skip(startAt))
+            {
+                await func(await id.GetInstanceAsync());
+                count++;
+
+                if (limit > 0 && count >= limit)
+                    break;
+            }
+        }
+
+        /// <summary>
+        /// Calls a provided action for each experience in the <see cref="ExperienceIds"/> list, converting each to a <see cref="Experience"/> before doing so.
+        /// </summary>
         /// <param name="action">The action to run.</param>
         /// <param name="limit">The maximum amount of Ids to call the <paramref name="action"/> with. Defaults to <c>-1</c> (unlimited).</param>
         /// <param name="startAt">The amount of Ids to skip before calling the <paramref name="action"/>.</param>
         /// <returns>A task that completes when the process is done.</returns>
         /// <remarks>This API is very time-consuming as each new experience is an API call, and Too Many Requests is a common error. As such, a limit should be used in conjunction with the <paramref name="startAt"/> parameter to only peform the action with a certain amount of experiences at a time.</remarks>
         /// <exception cref="RobloxAPIException">Roblox API failure.</exception>
-        public async Task ForEachExperienceAsync(Func<Experience, Task> action, int limit = -1, int startAt = 0)
+        public async Task ForEachExperienceAsync(Action<Experience> action, int limit = -1, int startAt = 0)
         {
             int count = 0;
             foreach (GenericId<Experience> id in ExperienceIds.Skip(startAt))
             {
-                await action(await id.GetInstanceAsync());
+                action(await id.GetInstanceAsync());
                 count++;
 
                 if (limit > 0 && count >= limit)
