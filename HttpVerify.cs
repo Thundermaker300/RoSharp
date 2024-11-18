@@ -26,6 +26,9 @@ namespace RoSharp
             if (message.IsSuccessStatusCode)
                 return;
 
+            if (message.StatusCode == HttpStatusCode.TooManyRequests)
+                throw new RobloxAPIException($"Too many requests to the Roblox API. Request url: {message.RequestMessage?.RequestUri} Request method: {message.RequestMessage?.Method}", HttpStatusCode.TooManyRequests);
+
             if (body == null)
                 body = message.Content.ReadAsStringAsync().Result;
 
