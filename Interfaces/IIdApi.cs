@@ -25,7 +25,7 @@ namespace RoSharp.Interfaces
         /// <param name="session">Session. Optional.</param>
         /// <returns>A task containing the <typeparamref name="T"/>.</returns>
         /// <exception cref="NotImplementedException">Always thrown.</exception>
-        public static Task<T> FromId(ulong id, Session? session) => throw new NotImplementedException();
+        public abstract static Task<T> FromId(ulong id, Session? session);
 
         /// <summary>
         /// Attaches a session to this instance and returns it.

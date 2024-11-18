@@ -45,8 +45,7 @@ namespace RoSharp.API
             Session? sessionToUse = session ?? storedSession ?? GlobalSession.Assigned;
             if (stored == null)
             {
-                // Hacky but works
-                stored = await (Task<T>)(typeof(T).GetMethod("FromId", BindingFlags.NonPublic | BindingFlags.Static).Invoke(null, new object[] { Id, sessionToUse }));
+                stored = await T.FromId(Id, sessionToUse);
             }
             return stored;
         }
