@@ -206,50 +206,43 @@ namespace RoSharp.API.Assets
             history = null;
 
             HttpResponseMessage response = await GetAsync($"/v1/games?universeIds={UniverseId}");
-            if (response.IsSuccessStatusCode)
+            dynamic whyaretheresomanywrappers = JObject.Parse(await response.Content.ReadAsStringAsync());
+            if (whyaretheresomanywrappers.data.Count == 0)
             {
-                dynamic whyaretheresomanywrappers = JObject.Parse(await response.Content.ReadAsStringAsync());
-                if (whyaretheresomanywrappers.data.Count == 0)
-                {
-                    throw new ArgumentException($"Invalid universe ID '{UniverseId}'");
-                }
-                dynamic data = whyaretheresomanywrappers.data[0];
-                name = data.sourceName;
-                description = data.sourceDescription;
-                created = data.created;
-                lastUpdated = data.updated;
-                uncopylocked = data.copyingAllowed;
-                maxPlayers = data.maxPlayers;
-                playingNow = data.playing;
-                visits = data.visits;
-                favorites = data.favoritedCount;
-                genre = ExperienceUtility.GetGenre(Convert.ToString(data.genre_l1));
-                subgenre = ExperienceUtility.GetGenre(Convert.ToString(data.genre_l2));
-
-                favoritedByUser = data.isFavoritedByUser;
-
-                if (data.price == null)
-                    cost = 0;
-                else
-                    cost = data.price;
-
-                ulong creatorId = Convert.ToUInt64(data.creator.id);
-                if (data.creator.type == "Group")
-                {
-                    owner = await Group.FromId(creatorId);
-                }
-                else if (data.creator.type == "User")
-                {
-                    owner = await User.FromId(creatorId);
-                }
-
-                // configs
-                await UpdateConfigurationAsync();
+                throw new ArgumentException($"Invalid universe ID '{UniverseId}'");
             }
+            dynamic data = whyaretheresomanywrappers.data[0];
+            name = data.sourceName;
+            description = data.sourceDescription;
+            created = data.created;
+            lastUpdated = data.updated;
+            uncopylocked = data.copyingAllowed;
+            maxPlayers = data.maxPlayers;
+            playingNow = data.playing;
+            visits = data.visits;
+            favorites = data.favoritedCount;
+            genre = ExperienceUtility.GetGenre(Convert.ToString(data.genre_l1));
+            subgenre = ExperienceUtility.GetGenre(Convert.ToString(data.genre_l2));
+
+            favoritedByUser = data.isFavoritedByUser;
+
+            if (data.price == null)
+                cost = 0;
             else
+                cost = data.price;
+
+            ulong creatorId = Convert.ToUInt64(data.creator.id);
+            if (data.creator.type == "Group")
             {
-                throw new ArgumentException($"Invalid universe ID '{UniverseId}'. HTTP {response.StatusCode}");
+                owner = await Group.FromId(creatorId);
             }
+            else if (data.creator.type == "User")
+            {
+                owner = await User.FromId(creatorId);
+            }
+
+            // configs
+            await UpdateConfigurationAsync();
 
             await UpdateExperienceGuidelinesDataAsync();
             await UpdateVoiceVideoAsync();
@@ -582,12 +575,8 @@ namespace RoSharp.API.Assets
 
         public async Task SetPrivacyAsync(bool isPublic)
         {
-            string url = $"/v1/universes/6723876149/{(isPublic == false ? "de" : string.Empty)}activate";
+            string url = $"/v1/universes/{Id}/{(isPublic == false ? "de" : string.Empty)}activate";
             HttpResponseMessage response = await PostAsync(url, new { }, Constants.URL("develop"), "Experience.SetPrivacyAsync");
-            if (!response.IsSuccessStatusCode)
-            {
-                throw new RobloxAPIException($"Failed to {(isPublic == false ? "de" : string.Empty)}activate experience (HTTP {response.StatusCode}) (UniverseId {UniverseId}). Do you have permission to modify this experience?");
-            }
         }
 
         public async Task ModifyAsync(ExperienceModifyOptions options)
@@ -606,10 +595,6 @@ namespace RoSharp.API.Assets
             };
 
             HttpResponseMessage response = await PatchAsync($"/v2/universes/{UniverseId}/configuration", body, Constants.URL("develop"), "Experience.ModifyAsync");
-            if (!response.IsSuccessStatusCode)
-            {
-                throw new RobloxAPIException($"Failed to modify asset. Error code {response.StatusCode}. {response.Content.ReadAsStringAsync().Result}");
-            }
         }
 
         public async Task BanUserAsync(ulong userId, string displayReason, string privateReason, bool permanent, TimeSpan? length = null, bool excludeAlts = true)
@@ -629,9 +614,7 @@ namespace RoSharp.API.Assets
                 }
             };
 
-            HttpResponseMessage response = await PatchAsync($"/user/cloud/v2/universes/{UniverseId}/user-restrictions/{userId}?", body, Constants.URL("apis"), "Experience.BanUserAsync");
-            if (!response.IsSuccessStatusCode)
-                throw new RobloxAPIException($"Failed to add ban. Error code {response.StatusCode}. {response.Content.ReadAsStringAsync().Result}");
+            HttpResponseMessage response = await PatchAsync($"/user/cloud/v2/universes/{UniverseId}/user-restrictions/{userId}", body, Constants.URL("apis"), "Experience.BanUserAsync");
         }
 
         public async Task BanUserAsync(User user, string displayReason, string privateReason, bool permanent, TimeSpan? length = null, bool excludeAlts = true)
@@ -651,8 +634,6 @@ namespace RoSharp.API.Assets
             };
 
             HttpResponseMessage response = await PatchAsync($"/user/cloud/v2/universes/{UniverseId}/user-restrictions/{userId}?", body, Constants.URL("apis"), "Experience.UnbanUserAsync");
-            if (!response.IsSuccessStatusCode)
-                throw new RobloxAPIException($"Failed to unban user. Error code {response.StatusCode}. {response.Content.ReadAsStringAsync().Result}");
         }
 
         public async Task UnbanUserAsync(User user)
@@ -664,8 +645,6 @@ namespace RoSharp.API.Assets
         public async Task PostUpdateAsync(string text)
         {
             HttpResponseMessage response = await PostAsync($"/game-update-notifications/v1/publish/{UniverseId}", text, Constants.URL("apis"), "Experience.PostUpdateAsync");
-            if (!response.IsSuccessStatusCode)
-                throw new RobloxAPIException($"Failed to post update. Error code {response.StatusCode}. {response.Content.ReadAsStringAsync().Result}");
         }
 
         private ReadOnlyCollection<ExperienceActivityHistory>? history;

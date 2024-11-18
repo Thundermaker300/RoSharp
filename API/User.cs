@@ -110,22 +110,16 @@ namespace RoSharp.API
         public async Task RefreshAsync()
         {
             HttpResponseMessage response = await GetAsync($"/v1/users/{Id}");
-            if (response.IsSuccessStatusCode)
-            {
-                string raw = await response.Content.ReadAsStringAsync();
-                dynamic data = JObject.Parse(raw);
 
-                name = data.name;
-                displayName = data.displayName;
-                verified = data.hasVerifiedBadge;
-                joinDate = data.created;
-                profileHidden = data.isBanned;
-                bio = data.description;
-            }
-            else
-            {
-                throw new ArgumentException($"Invalid user ID '{Id}'. HTTP {response.StatusCode}");
-            }
+            string raw = await response.Content.ReadAsStringAsync();
+            dynamic data = JObject.Parse(raw);
+
+            name = data.name;
+            displayName = data.displayName;
+            verified = data.hasVerifiedBadge;
+            joinDate = data.created;
+            profileHidden = data.isBanned;
+            bio = data.description;
 
             robloxBadges = null;
             primaryGroup = null;
@@ -504,18 +498,13 @@ namespace RoSharp.API
             };
 
             HttpResponseMessage response = await PostAsync("/v1/presence/users", body, Constants.URL("presence"));
-            if (response.IsSuccessStatusCode)
-            {
-                dynamic uselessData = JObject.Parse(await response.Content.ReadAsStringAsync());
-                dynamic data = uselessData.userPresences[0];
+            dynamic uselessData = JObject.Parse(await response.Content.ReadAsStringAsync());
+            dynamic data = uselessData.userPresences[0];
 
-                UserLocationType type = (UserLocationType)Convert.ToInt32(data.userPresenceType);
-                Experience? exp = data.universeId != null ? await Experience.FromId(Convert.ToUInt64(data.universeId)) : null;
-                DateTime lastOnline = data.lastOnline;
-                return new UserPresence(type, exp, lastOnline);
-            }
-
-            throw new RobloxAPIException($"Failed to retrieve presence information, please try again later. HTTP {response.StatusCode}.");
+            UserLocationType type = (UserLocationType)Convert.ToInt32(data.userPresenceType);
+            Experience? exp = data.universeId != null ? await Experience.FromId(Convert.ToUInt64(data.universeId)) : null;
+            DateTime lastOnline = data.lastOnline;
+            return new UserPresence(type, exp, lastOnline);
         }
 
         /// <inheritdoc/>

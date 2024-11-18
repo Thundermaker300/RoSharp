@@ -141,39 +141,32 @@ namespace RoSharp.API
         public async Task RefreshAsync()
         {
             HttpResponseMessage response = await GetAsync($"/v1/groups/{Id}");
-            if (response.IsSuccessStatusCode)
+            string raw = await response.Content.ReadAsStringAsync();
+            dynamic data = JObject.Parse(raw);
+
+            name = data.name;
+            description = data.description;
+
+            if (data.owner != null)
             {
-                string raw = await response.Content.ReadAsStringAsync();
-                dynamic data = JObject.Parse(raw);
-
-                name = data.name;
-                description = data.description;
-
-                if (data.owner != null)
-                {
-                    ulong ownerId = Convert.ToUInt64(data.owner.userId);
-                    owner = await User.FromId(ownerId, session);
-                }
-
-                isPublic = data.publicEntryAllowed;
-                verified = data.hasVerifiedBadge;
-
-                members = data.memberCount;
-
-                try
-                {
-                    string rawData = await GetStringAsync($"/v1/groups/{Id}/currency", Constants.URL("economy"), verifyApiName: "Group.GetGroupFunds");
-                    dynamic robuxData = JObject.Parse(rawData);
-                    robux = robuxData.robux;
-                }
-                catch
-                {
-                    robux = -1;
-                }
+                ulong ownerId = Convert.ToUInt64(data.owner.userId);
+                owner = await User.FromId(ownerId, session);
             }
-            else
+
+            isPublic = data.publicEntryAllowed;
+            verified = data.hasVerifiedBadge;
+
+            members = data.memberCount;
+
+            try
             {
-                throw new ArgumentException($"Invalid group ID '{Id}'. HTTP {response.StatusCode}");
+                string rawData = await GetStringAsync($"/v1/groups/{Id}/currency", Constants.URL("economy"), verifyApiName: "Group.GetGroupFunds");
+                dynamic robuxData = JObject.Parse(rawData);
+                robux = robuxData.robux;
+            }
+            catch
+            {
+                robux = -1;
             }
 
             // Reset properties
@@ -292,25 +285,23 @@ namespace RoSharp.API
             string? nextPage = null;
             string? previousPage = null;
             HttpResponseMessage response = await GetAsync(url, verifyApiName: "Group.GetGroupPostsAsync");
-            if (response.IsSuccessStatusCode)
-            {
-                dynamic data = JObject.Parse(await response.Content.ReadAsStringAsync());
-                foreach (dynamic post in data.data)
-                {
-                    list.Add(new GroupPost()
-                    {
-                        PostId = post.id,
-                        PostedAt = post.updated,
-                        Text = post.body,
-                        RankInGroup = post.poster == null ? null : post.poster.role.name,
-                        PosterId = post.poster == null ? null : new GenericId<User>(Convert.ToUInt64(post.poster.userId)),
 
-                        group = this,
-                    });
-                }
-                nextPage = data.nextPageCursor;
-                previousPage = data.previousPageCursor;
+            dynamic data = JObject.Parse(await response.Content.ReadAsStringAsync());
+            foreach (dynamic post in data.data)
+            {
+                list.Add(new GroupPost()
+                {
+                    PostId = post.id,
+                    PostedAt = post.updated,
+                    Text = post.body,
+                    RankInGroup = post.poster == null ? null : post.poster.role.name,
+                    PosterId = post.poster == null ? null : new GenericId<User>(Convert.ToUInt64(post.poster.userId)),
+
+                    group = this,
+                });
             }
+            nextPage = data.nextPageCursor;
+            previousPage = data.previousPageCursor;
 
             return new(list, nextPage, previousPage);
         }

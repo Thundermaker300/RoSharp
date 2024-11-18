@@ -101,14 +101,7 @@ namespace RoSharp.API
 
         internal async Task RequestDeleteRole(ulong roleId)
         {
-            HttpResponseMessage response = await group.DeleteAsync($"/v1/groups/{group.Id}/rolesets/{roleId}", verifyApiName: "Role.DeleteAsync");
-            if (!response.IsSuccessStatusCode)
-            {
-                string errorText = await response.Content.ReadAsStringAsync();
-                if (errorText.Contains("There are users in this role."))
-                    throw new InvalidOperationException($"Cannot delete role '{roleId}' because there are users still in this role. Please remove all users from this role and try again.");
-                throw new RobloxAPIException($"Roleset delete failed (HTTP {response.StatusCode}). Do you have permission to delete this group's rolesets?");
-            }
+            await group.DeleteAsync($"/v1/groups/{group.Id}/rolesets/{roleId}", verifyApiName: "Role.DeleteAsync");
         }
 
         internal async Task RequestUpdateRole(Role roleId, string newName)
@@ -116,10 +109,6 @@ namespace RoSharp.API
             object body = new { name = newName, rank = roleId.Rank };
             JsonContent content = JsonContent.Create(body);
             HttpResponseMessage response = await group.PatchAsync($"/v1/groups/{group.Id}/rolesets/{roleId.Id}", body, verifyApiName: "Role.UpdateAsync");
-            if (!response.IsSuccessStatusCode)
-            {
-                throw new RobloxAPIException($"Roleset modification failed (HTTP {response.StatusCode}). Do you have permission to modify this group's rolesets?");
-            }
         }
 
         internal async Task RequestUpdateRole(Role roleId, int newRank)
@@ -127,10 +116,6 @@ namespace RoSharp.API
             object body = new { name = roleId.Name, rank = newRank };
             JsonContent content = JsonContent.Create(body);
             HttpResponseMessage response = await group.PatchAsync($"/v1/groups/{group.Id}/rolesets/{roleId.Id}", body, verifyApiName: "Role.UpdateAsync");
-            if (!response.IsSuccessStatusCode)
-            {
-                throw new RobloxAPIException($"Roleset modification failed (HTTP {response.StatusCode}). Do you have permission to modify this group's rolesets?");
-            }
         }
 
         /// <inheritdoc/>
@@ -273,17 +258,15 @@ namespace RoSharp.API
             string? nextPage = null;
             string? previousPage = null;
             HttpResponseMessage response = await roleManager.group.GetAsync(url, verifyApiName: "Role.GetMembersAsync");
-            if (response.IsSuccessStatusCode)
+
+            dynamic data = JObject.Parse(await response.Content.ReadAsStringAsync());
+            foreach (dynamic user in data.data)
             {
-                dynamic data = JObject.Parse(await response.Content.ReadAsStringAsync());
-                foreach (dynamic user in data.data)
-                {
-                    ulong userId = Convert.ToUInt64(user.userId);
-                    list.Add(new GenericId<User>(userId, roleManager.group.session));
-                }
-                nextPage = data.nextPageCursor;
-                previousPage = data.previousPageCursor;
+                ulong userId = Convert.ToUInt64(user.userId);
+                list.Add(new GenericId<User>(userId, roleManager.group.session));
             }
+            nextPage = data.nextPageCursor;
+            previousPage = data.previousPageCursor;
 
             return new(list, nextPage, previousPage);
         }

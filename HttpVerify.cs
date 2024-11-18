@@ -32,12 +32,12 @@ namespace RoSharp
             string? userMessage = null;
             dynamic data = JObject.Parse(body);
             if (data.errors != null)
-                userMessage =  data.errors[0].message ?? data.errors[0].userFacingMessage;
+                userMessage =  data.errors[0].message ?? data.errors[0].userFacingMessage ?? message.ReasonPhrase;
 
             if (userMessage != null)
-                userMessage = $"(HTTP {message.StatusCode}) Roblox API error: {userMessage}. Request url: {message.RequestMessage?.RequestUri} Request method: {message.RequestMessage?.Method}";
+                userMessage = $"(HTTP {message.StatusCode}) Roblox API error: {userMessage}. Please ensure you have proper permissions to perform this action and try again. Request url: {message.RequestMessage?.RequestUri} Request method: {message.RequestMessage?.Method}";
 
-            RobloxAPIException exception = new(userMessage ?? $"(HTTP {message.StatusCode}) No error message provided by Roblox. Request url: {message.RequestMessage?.RequestUri} Request method: {message.RequestMessage?.Method}", message.StatusCode);
+            RobloxAPIException exception = new(userMessage ?? $"(HTTP {message.StatusCode}) No error message provided by Roblox. Please ensure you have proper permissions to perform this action and try again. Request url: {message.RequestMessage?.RequestUri} Request method: {message.RequestMessage?.Method}", message.StatusCode);
             throw exception;
         }
     }

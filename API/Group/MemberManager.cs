@@ -37,10 +37,6 @@ namespace RoSharp.API
                 url += "&cursor=" + cursor;
 
             HttpResponseMessage response = await group.GetAsync(url, verifyApiName: "Group.GetPendingRequestsAsync");
-            if (!response.IsSuccessStatusCode)
-            {
-                throw new RobloxAPIException($"Cannot view pending requests for group (HTTP {response.StatusCode}). Do you have permission to see pending requests?");
-            }
             string rawData = await response.Content.ReadAsStringAsync();
             dynamic data = JObject.Parse(rawData);
 
@@ -75,17 +71,15 @@ namespace RoSharp.API
             string? nextPage = null;
             string? previousPage = null;
             HttpResponseMessage response = await group.GetAsync(url, verifyApiName: "Group.GetMembersAsync");
-            if (response.IsSuccessStatusCode)
+
+            dynamic data = JObject.Parse(await response.Content.ReadAsStringAsync());
+            foreach (dynamic user in data.data)
             {
-                dynamic data = JObject.Parse(await response.Content.ReadAsStringAsync());
-                foreach (dynamic user in data.data)
-                {
-                    ulong userId = Convert.ToUInt64(user.user.userId);
-                    list.Add(new GenericId<User>(userId, group.session));
-                }
-                nextPage = data.nextPageCursor;
-                previousPage = data.previousPageCursor;
+                ulong userId = Convert.ToUInt64(user.user.userId);
+                list.Add(new GenericId<User>(userId, group.session));
             }
+            nextPage = data.nextPageCursor;
+            previousPage = data.previousPageCursor;
 
             return new(list, nextPage, previousPage);
         }
@@ -202,10 +196,6 @@ namespace RoSharp.API
         {
             object body = new { roleId = newRoleId };
             HttpResponseMessage response = await group.PatchAsync($"/v1/groups/{group.Id}/users/{userId}", body, verifyApiName: "MemberManager.SetRankAsync");
-            if (!response.IsSuccessStatusCode)
-            {
-                throw new RobloxAPIException($"User modify failed (HTTP {response.StatusCode}). Do you have permission change this user's role?");
-            }
         }
 
         [UsesSession]
@@ -213,7 +203,7 @@ namespace RoSharp.API
         {
             if (role == null)
             {
-                throw new ArgumentException("Invalid role provided.");
+                throw new ArgumentNullException(nameof(role), "Invalid role provided.");
             }
             await SetRankAsyncInternal(userId, role.Id);
         }
@@ -271,11 +261,7 @@ namespace RoSharp.API
         /// <exception cref="RobloxAPIException">Roblox API failure or lack of permissions.</exception>
         public async Task KickMemberAsync(ulong userId)
         {
-            HttpResponseMessage response = await group.DeleteAsync($"/v1/groups/{group.Id}/users/{userId}", verifyApiName: "MemberManager.KickMemberAsync");
-            if (!response.IsSuccessStatusCode)
-            {
-                throw new RobloxAPIException($"User kick failed (HTTP {response.StatusCode}). Do you have permission to kick members?");
-            }
+            await group.DeleteAsync($"/v1/groups/{group.Id}/users/{userId}", verifyApiName: "MemberManager.KickMemberAsync");
         }
 
         /// <summary>

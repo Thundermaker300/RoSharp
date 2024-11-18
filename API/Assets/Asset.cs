@@ -176,64 +176,57 @@ namespace RoSharp.API.Assets
         public async Task RefreshAsync()
         {
             HttpResponseMessage response = await GetAsync($"/v2/assets/{Id}/details", Constants.URL("economy"), "Asset.RefreshAsync");
-            if (response.IsSuccessStatusCode)
+            string raw = await response.Content.ReadAsStringAsync();
+            dynamic data = JObject.Parse(raw);
+
+            name = data.Name;
+            description = data.Description;
+            sales = data.Sales;
+            isLimited = data.IsLimited;
+            isLimitedUnique = data.IsLimitedUnique;
+            onSale = data.IsForSale;
+            created = data.Created;
+            lastUpdated = data.Updated;
+            assetType = (AssetType)Convert.ToInt32(data.AssetTypeId);
+            if (data.SaleLocation == null)
+                saleLocation = SaleLocationType.NotApplicable;
+            else
+                saleLocation = (SaleLocationType)Convert.ToInt32(data.SaleLocation.SaleLocationType);
+
+            if (data.Remaining != null)
+                remaining = Convert.ToInt32(data.Remaining);
+
+            if (data.CollectiblesItemDetails != null)
             {
-                string raw = await response.Content.ReadAsStringAsync();
-                dynamic data = JObject.Parse(raw);
-
-                name = data.Name;
-                description = data.Description;
-                sales = data.Sales;
-                isLimited = data.IsLimited;
-                isLimitedUnique = data.IsLimitedUnique;
-                onSale = data.IsForSale;
-                created = data.Created;
-                lastUpdated = data.Updated;
-                assetType = (AssetType)Convert.ToInt32(data.AssetTypeId);
-                if (data.SaleLocation == null)
-                    saleLocation = SaleLocationType.NotApplicable;
+                if (data.CollectiblesItemDetails.TotalQuantity != null)
+                    initialQuantity = Convert.ToInt32(data.CollectiblesItemDetails.TotalQuantity);
                 else
-                    saleLocation = (SaleLocationType)Convert.ToInt32(data.SaleLocation.SaleLocationType);
-
-                if (data.Remaining != null)
-                    remaining = Convert.ToInt32(data.Remaining);
-
-                if (data.CollectiblesItemDetails != null)
-                {
-                    if (data.CollectiblesItemDetails.TotalQuantity != null)
-                        initialQuantity = Convert.ToInt32(data.CollectiblesItemDetails.TotalQuantity);
-                    else
-                        initialQuantity = -1;
-
-                    if (data.CollectiblesItemDetails.CollectibleQuantityLimitPerUser != null)
-                        quantityLimitPerUser = Convert.ToInt32(data.CollectiblesItemDetails.CollectibleQuantityLimitPerUser);
-                    else
-                        quantityLimitPerUser = -1;
-                }
-                else
-                {
                     initialQuantity = -1;
+
+                if (data.CollectiblesItemDetails.CollectibleQuantityLimitPerUser != null)
+                    quantityLimitPerUser = Convert.ToInt32(data.CollectiblesItemDetails.CollectibleQuantityLimitPerUser);
+                else
                     quantityLimitPerUser = -1;
-                }
-
-                if (data.PriceInRobux != null)
-                {
-                    price = data.PriceInRobux;
-                }
-
-                ulong creatorId = Convert.ToUInt64(data.Creator.CreatorTargetId);
-                if (data.Creator.CreatorType == "Group")
-                {
-                    owner = await Group.FromId(creatorId, session);
-                }
-                else if (data.Creator.CreatorType == "User")
-                {
-                    owner = await User.FromId(creatorId, session);
-                }
             }
             else
             {
-                throw new ArgumentException($"Invalid asset ID '{Id}'. HTTP {response.StatusCode}");
+                initialQuantity = -1;
+                quantityLimitPerUser = -1;
+            }
+
+            if (data.PriceInRobux != null)
+            {
+                price = data.PriceInRobux;
+            }
+
+            ulong creatorId = Convert.ToUInt64(data.Creator.CreatorTargetId);
+            if (data.Creator.CreatorType == "Group")
+            {
+                owner = await Group.FromId(creatorId, session);
+            }
+            else if (data.Creator.CreatorType == "User")
+            {
+                owner = await User.FromId(creatorId, session);
             }
 
             // Update favorites

@@ -77,30 +77,23 @@ namespace RoSharp.API.Assets
         public async Task RefreshAsync()
         {
             HttpResponseMessage response = await GetAsync($"/v1/badges/{Id}");
-            if (response.IsSuccessStatusCode)
+            string raw = await response.Content.ReadAsStringAsync();
+            dynamic data = JObject.Parse(raw);
+
+            ulong experienceId = Convert.ToUInt64(data.awardingUniverse.id);
+
+            name = data.displayName;
+            description = (data.displayDescription == null ? string.Empty : data.displayDescription);
+            created = data.created;
+            lastUpdated = data.updated;
+            experience = await Experience.FromId(experienceId);
+            awardedCount = Convert.ToInt32(data.statistics.awardedCount);
+            yesterdayAwardedCount = Convert.ToInt32(data.statistics.pastDayAwardedCount);
+            isEnabled = data.enabled;
+
+            if (SessionVerify.Verify(session))
             {
-                string raw = await response.Content.ReadAsStringAsync();
-                dynamic data = JObject.Parse(raw);
-
-                ulong experienceId = Convert.ToUInt64(data.awardingUniverse.id);
-
-                name = data.displayName;
-                description = (data.displayDescription == null ? string.Empty : data.displayDescription);
-                created = data.created;
-                lastUpdated = data.updated;
-                experience = await Experience.FromId(experienceId);
-                awardedCount = Convert.ToInt32(data.statistics.awardedCount);
-                yesterdayAwardedCount = Convert.ToInt32(data.statistics.pastDayAwardedCount);
-                isEnabled = data.enabled;
-
-                if (SessionVerify.Verify(session))
-                {
-                    thumbnailAsset = await Asset.FromId(Convert.ToUInt64(data.displayIconImageId), session);
-                }
-            }
-            else
-            {
-                throw new ArgumentException($"Invalid badge ID '{Id}'. HTTP {response.StatusCode}");
+                thumbnailAsset = await Asset.FromId(Convert.ToUInt64(data.displayIconImageId), session);
             }
 
             RefreshedAt = DateTime.Now;
@@ -126,10 +119,6 @@ namespace RoSharp.API.Assets
             };
 
             HttpResponseMessage response = await PatchAsync($"/v1/badges/{Id}", body, verifyApiName: "Badge.ModifyAsync");
-            if (!response.IsSuccessStatusCode)
-            {
-                throw new RobloxAPIException($"Failed to modify asset. Error code {response.StatusCode}. {response.Content.ReadAsStringAsync().Result}");
-            }
         }
 
         /// <summary>

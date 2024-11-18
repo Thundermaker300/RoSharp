@@ -29,42 +29,40 @@ namespace RoSharp.Utility
 
             HttpClient client = MakeClient(session.Global());
             HttpResponseMessage response = await client.GetAsync(url);
-            if (response.IsSuccessStatusCode)
+            string body = await response.Content.ReadAsStringAsync();
+            HttpVerify.ThrowIfNecessary(response, body);
+
+            List<ChartCategory> categories = new();
+            dynamic data = JObject.Parse(body);
+            foreach (dynamic sort in data.sorts)
             {
-                List<ChartCategory> categories = new();
-                dynamic data = JObject.Parse(await response.Content.ReadAsStringAsync());
-                foreach (dynamic sort in data.sorts)
+                if (sort.contentType != "Games")
+                    continue;
+
+                List<GenericId<Experience>> list = new();
+
+                foreach (dynamic game in sort.games)
                 {
-                    if (sort.contentType != "Games")
-                        continue;
-
-                    List<GenericId<Experience>> list = new();
-
-                    foreach (dynamic game in sort.games)
-                    {
-                        ulong id = game.universeId;
-                        list.Add(new(id, session));
-                    }
-
-                    ChartCategory category = new()
-                    {
-                        DisplayName = sort.sortDisplayName,
-                        Id = sort.sortId,
-                        Description = sort.topicLayoutData.infoText,
-                        ExperienceIds = list.AsReadOnly(),
-                    };
-                    categories.Add(category);
+                    ulong id = game.universeId;
+                    list.Add(new(id, session));
                 }
 
-                string token = data.nextSortsPageToken;
-                return new()
+                ChartCategory category = new()
                 {
-                    NextPageToken = token == string.Empty ? null : token,
-                    Categories = categories.AsReadOnly(),
+                    DisplayName = sort.sortDisplayName,
+                    Id = sort.sortId,
+                    Description = sort.topicLayoutData.infoText,
+                    ExperienceIds = list.AsReadOnly(),
                 };
+                categories.Add(category);
             }
 
-            throw new RobloxAPIException($"Failed to get front page experiences (HTTP {response.StatusCode}). Try again later.");
+            string token = data.nextSortsPageToken;
+            return new()
+            {
+                NextPageToken = token == string.Empty ? null : token,
+                Categories = categories.AsReadOnly(),
+            };
         }
 
         private static HttpClient MakeClient(Session? session = null)
