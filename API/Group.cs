@@ -93,6 +93,14 @@ namespace RoSharp.API
                 RoPool<Group>.Add(this);
         }
 
+        /// <summary>
+        /// Returns a <see cref="Group"/> given its Id.
+        /// </summary>
+        /// <param name="groupId">The group Id.</param>
+        /// <param name="session">The session, optional.</param>
+        /// <returns>A task containing the <see cref="Group"/> upon completion.</returns>
+        /// <exception cref="ArgumentException">If the group Id is invalid.</exception>
+        /// <exception cref="RobloxAPIException">Roblox API failure.</exception>
         public static async Task<Group> FromId(ulong groupId, Session? session = null)
         {
             if (RoPool<Group>.Contains(groupId))
@@ -176,6 +184,11 @@ namespace RoSharp.API
         }
 
         private GroupShoutInfo? shout;
+
+        /// <summary>
+        /// Gets the group's current shout.
+        /// </summary>
+        /// <returns>A task containing a <see cref="GroupShoutInfo"/> representing the shout upon completion. Can be <see langword="null"/> if there is no current shout.</returns>
         public async Task<GroupShoutInfo?> GetShoutAsync()
         {
             if (shout == null)
@@ -198,6 +211,11 @@ namespace RoSharp.API
         }
 
         private ReadOnlyDictionary<string, string>? socialChannels;
+
+        /// <summary>
+        /// Gets this group's social channels.
+        /// </summary>
+        /// <returns>A task containing a <see cref="ReadOnlyDictionary{TKey, TValue}"/> upon completion. The key is the name of the social media platform, and the value is its URL.</returns>
         public async Task<ReadOnlyDictionary<string, string>> GetSocialChannelsAsync()
         {
             if (socialChannels == null)
@@ -255,6 +273,14 @@ namespace RoSharp.API
             HttpResponseMessage response = await PatchAsync($"/v1/groups/{Id}/status", body, verifyApiName: "Group.ShoutAsync");
         }
 
+        /// <summary>
+        /// Gets this group's wall posts.
+        /// </summary>
+        /// <param name="limit">The limit of posts to return.</param>
+        /// <param name="sortOrder">The sort order.</param>
+        /// <param name="cursor">The cursor for the next page. Obtained by calling this API previously.</param>
+        /// <returns>A task containing a <see cref="PageResponse{T}"/> of <see cref="GroupPost"/> upon completion.</returns>
+        /// <exception cref="RobloxAPIException">Roblox API failure or lack of permissions to see the group wall.</exception>
         [UsesSession]
         public async Task<PageResponse<GroupPost>> GetGroupPostsAsync(FixedLimit limit = FixedLimit.Limit100, RequestSortOrder sortOrder = RequestSortOrder.Desc, string? cursor = null)
         {
@@ -289,6 +315,11 @@ namespace RoSharp.API
             return new(list, nextPage, previousPage);
         }
 
+        /// <summary>
+        /// Gets this group's income statistics for the given <paramref name="timeLength"/>.
+        /// </summary>
+        /// <param name="timeLength">The length of time to use for the breakdown.</param>
+        /// <returns>A task containing a <see cref="EconomyBreakdown"/> upon completion.</returns>
         public async Task<EconomyBreakdown> GetIncomeAsync(AnalyticTimeLength timeLength = AnalyticTimeLength.Day)
         {
             var url = $"/v1/groups/2531730/revenue/summary/{timeLength.ToString().ToLower()}";
@@ -328,6 +359,7 @@ namespace RoSharp.API
             return $"{Name} [{Id}] {{{members}}}{(Verified ? " [V]" : string.Empty)}";
         }
 
+        /// <inheritdoc/>
         public Group AttachSessionAndReturn(Session? session)
         {
             if (session is null || !session.LoggedIn)
@@ -341,7 +373,7 @@ namespace RoSharp.API
     /// <summary>
     /// Contains info regarding a group shout.
     /// </summary>
-    public class GroupShoutInfo
+    public struct GroupShoutInfo
     {
         /// <summary>
         /// Gets the text of the shout.
@@ -362,7 +394,7 @@ namespace RoSharp.API
     /// <summary>
     /// Represents a group post.
     /// </summary>
-    public class GroupPost
+    public struct GroupPost
     {
         internal Group group;
 

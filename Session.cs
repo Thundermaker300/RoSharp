@@ -92,6 +92,10 @@ namespace RoSharp
             }
         }
 
+        /// <summary>
+        /// Creates a <see cref="CustomRequest"/> using this Session.
+        /// </summary>
+        /// <returns>The <see cref="CustomRequest"/>.</returns>
         public CustomRequest MakeCustomRequest()
         {
             CustomRequest custom;

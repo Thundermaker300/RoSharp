@@ -57,9 +57,19 @@ namespace RoSharp.API
 
         internal RoleManager(Group group) { this.group = group; }
 
-        public Role? GetRole(int rankId)
+        /// <summary>
+        /// Gets a role with the given rank, from <c>0-255</c>.
+        /// </summary>
+        /// <param name="rankId">The rank ID.</param>
+        /// <returns>The role if it exists.</returns>
+        public Role? GetRole(byte rankId)
             => Roles.FirstOrDefault(role => role.Rank == rankId);
 
+        /// <summary>
+        /// Gets a role with the given name.
+        /// </summary>
+        /// <param name="roleName">The role name.</param>
+        /// <returns>The role if it exists.</returns>
         public Role? GetRole(string roleName)
             => Roles.FirstOrDefault(role => role.Name == roleName);
 

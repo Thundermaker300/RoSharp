@@ -42,7 +42,7 @@ namespace RoSharp.API
         public int PendingRobux { get; }
 
         /// <summary>
-        /// Breakdown of income.
+        /// Breakdown of income, sorted by various <see cref="IncomeType"/>s.
         /// </summary>
         public ReadOnlyDictionary<IncomeType, int> Breakdown { get; }
 

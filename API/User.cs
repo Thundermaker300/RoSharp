@@ -290,7 +290,7 @@ namespace RoSharp.API
 
                     ulong groupId = Convert.ToUInt64(groupData.group.id);
                     Group group = await Group.FromId(groupId, session);
-                    dict.Add(group, (await group.GetRoleManagerAsync()).GetRole(Convert.ToInt32(groupData.role.rank)));
+                    dict.Add(group, (await group.GetRoleManagerAsync()).GetRole(Convert.ToByte(groupData.role.rank)));
                     count++;
                 }
 
@@ -423,6 +423,13 @@ namespace RoSharp.API
         public async Task<bool> IsInGroupAsync(ulong groupId) => await (await (await Group.FromId(groupId)).GetMemberManagerAsync()).IsInGroupAsync(Id);
 
         // Thumbnails
+        /// <summary>
+        /// Returns a thumbnail of the given user.
+        /// </summary>
+        /// <param name="type">The type of thumbnail.</param>
+        /// <param name="size">The size of the thumbnail.</param>
+        /// <returns>A task containing a string URL to the thumbnail upon completion.</returns>
+        /// <exception cref="ArgumentException">Invalid user to get thumbnail for.</exception>
         public async Task<string> GetThumbnailAsync(ThumbnailType type = ThumbnailType.Full, ThumbnailSize size = ThumbnailSize.S420x420)
         {
             string url = "/v1/users/avatar" + type switch
@@ -438,15 +445,31 @@ namespace RoSharp.API
             return data.data[0].imageUrl;
         }
 
+        /// <summary>
+        /// Gets whether or not this user owns the asset with the given Id.
+        /// </summary>
+        /// <param name="assetId">The asset Id.</param>
+        /// <param name="assetItemType">The assetItemType. For most assets this value should be <c>0</c>.</param>
+        /// <returns>A task containing a bool upon completion.</returns>
         public async Task<bool> OwnsAssetAsync(ulong assetId, int assetItemType = 0)
         {
             string result = await GetStringAsync($"/v1/users/{Id}/items/{assetItemType}/{assetId}/is-owned", Constants.URL("inventory"));
             return Convert.ToBoolean(result);
         }
 
+        /// <summary>
+        /// Gets whether or not this user owns the given <paramref name="asset"/>.
+        /// </summary>
+        /// <param name="asset">The asset.</param>
+        /// <returns>A task containing a bool upon completion.</returns>
         public async Task<bool> OwnsAssetAsync(Asset asset)
             => await OwnsAssetAsync(asset.Id);
 
+        /// <summary>
+        /// Gets whether or not this user owns the badge with the given Id.
+        /// </summary>
+        /// <param name="badgeId">The badge Id.</param>
+        /// <returns>A task containing a bool upon completion.</returns>
         public async Task<bool> HasBadgeAsync(ulong badgeId)
         {
             string rawData = await GetStringAsync($"/v1/users/{Id}/badges/awarded-dates?badgeIds={badgeId}", Constants.URL("badges"));
@@ -455,6 +478,11 @@ namespace RoSharp.API
             return data.data.Count > 0;
         }
 
+        /// <summary>
+        /// Gets whether or not this user owns the given <paramref name="badge"/>.
+        /// </summary>
+        /// <param name="badge">The badge.</param>
+        /// <returns>A task containing a bool upon completion.</returns>
         public async Task<bool> HasBadgeAsync(Badge badge)
             => await HasBadgeAsync(badge.Id);
 

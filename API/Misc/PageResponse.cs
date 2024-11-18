@@ -8,7 +8,7 @@ namespace RoSharp.API.Misc
     /// </summary>
     /// <typeparam name="T">The return type from the Roblox API.</typeparam>
     public sealed class PageResponse<T> : IEnumerable<T>
-        where T: class
+        where T: notnull
     {
         /// <summary>
         /// Gets a list of <typeparamref name="T"/> instances that were apart of this API response.
