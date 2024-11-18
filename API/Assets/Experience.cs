@@ -47,19 +47,25 @@ namespace RoSharp.API.Assets
         /// </summary>
         public string Description => description;
 
-        private IAssetOwner owner;
+        private ulong ownerId;
+        private string ownerName;
+        private bool isGroupOwned;
 
         /// <summary>
-        /// Gets the owner of the experience. Can be casted to <see cref="Group"/> or <see cref="User"/>.
+        /// Gets the unique Id (group or user) of the owner of this experience.
         /// </summary>
-        /// <seealso cref="IsGroupOwned"/>
-        public IAssetOwner Owner => owner;
+        public ulong OwnerId => ownerId;
+
+        /// <summary>
+        /// Gets the name (group or user) of the owner of this experience.
+        /// </summary>
+        public string OwnerName => ownerName;
 
         /// <summary>
         /// Gets whether or not this experience is owned by a group.
         /// </summary>
-        /// <seealso cref="Owner"/>
-        public bool IsGroupOwned => Owner is Group;
+        /// <seealso cref="GetOwnerAsync"/>
+        public bool IsGroupOwned => isGroupOwned;
 
         private DateTime created;
 
@@ -232,14 +238,9 @@ namespace RoSharp.API.Assets
                 cost = data.price;
 
             ulong creatorId = Convert.ToUInt64(data.creator.id);
-            if (data.creator.type == "Group")
-            {
-                owner = await Group.FromId(creatorId);
-            }
-            else if (data.creator.type == "User")
-            {
-                owner = await User.FromId(creatorId);
-            }
+            ownerId = creatorId;
+            ownerName = data.creator.name;
+            isGroupOwned = data.creator.type == "Group";
 
             // configs
             await UpdateConfigurationAsync();
@@ -249,6 +250,15 @@ namespace RoSharp.API.Assets
             await UpdateVotesAsync();
 
             RefreshedAt = DateTime.Now;
+        }
+
+        public async Task<IAssetOwner> GetOwnerAsync()
+        {
+            if (IsGroupOwned)
+            {
+                return await Group.FromId(OwnerId);
+            }
+            return await User.FromId(OwnerId);
         }
 
         private bool? voiceEnabled = null;
@@ -690,7 +700,7 @@ namespace RoSharp.API.Assets
         /// <inheritdoc/>
         public override string ToString()
         {
-            return $"{Name} [{UniverseId}] {{{(Owner is User ? "@" : string.Empty)}{Owner.Name}}} <R${Cost}>";
+            return $"{Name} [{UniverseId}] {{{(!IsGroupOwned ? "@" : string.Empty)}{OwnerName}}} <R${Cost}>";
         }
 
         public Experience AttachSessionAndReturn(Session? session)

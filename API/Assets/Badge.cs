@@ -23,7 +23,6 @@ namespace RoSharp.API.Assets
 
         private Experience experience;
         public Experience Experience => experience;
-        public IAssetOwner Owner => experience.Owner;
 
         private DateTime created;
         public DateTime Created => created;
@@ -157,7 +156,7 @@ namespace RoSharp.API.Assets
         /// <inheritdoc/>
         public override string ToString()
         {
-            return $"{Name} [{Id}] {{{(Owner is User ? "@" : string.Empty)}{Owner.Name}}} <{AwardedCount}>";
+            return $"{Name} [{Id}] {{{experience.Name}}} <{AwardedCount}>";
         }
         
         /// <inheritdoc/>

@@ -38,20 +38,25 @@ namespace RoSharp.API.Assets
         /// </summary>
         public string Description => description;
 
-        private IAssetOwner owner;
+        private ulong ownerId;
+        private string ownerName;
+        private bool isGroupOwned;
 
         /// <summary>
-        /// Gets the owner of the asset.
+        /// Gets the unique Id (group or user) of the owner of this asset.
         /// </summary>
-        /// <remarks>The returned <see cref="IAssetOwner"/> can be casted to <see cref="Group"/> or <see cref="User"/>.</remarks>
-        /// <seealso cref="IsGroupOwned"/>
-        public IAssetOwner Owner => owner;
+        public ulong OwnerId => ownerId;
+
+        /// <summary>
+        /// Gets the name (group or user) of the owner of this asset.
+        /// </summary>
+        public string OwnerName => ownerName;
 
         /// <summary>
         /// Gets whether or not this asset is owned by a group.
         /// </summary>
-        /// <seealso cref="Owner"/>
-        public bool IsGroupOwned => Owner is Group;
+        /// <seealso cref="GetOwnerAsync"/>
+        public bool IsGroupOwned => isGroupOwned;
 
         private DateTime created;
         
@@ -143,11 +148,6 @@ namespace RoSharp.API.Assets
         /// </summary>
         public SaleLocationType SaleLocation => saleLocation;
 
-        /// <summary>
-        /// Indicates whether or not this asset has an owner.
-        /// </summary>
-        public bool HasOwner => Owner != null;
-
         /// <inheritdoc/>
         public DateTime RefreshedAt { get; set; }
 
@@ -220,14 +220,9 @@ namespace RoSharp.API.Assets
             }
 
             ulong creatorId = Convert.ToUInt64(data.Creator.CreatorTargetId);
-            if (data.Creator.CreatorType == "Group")
-            {
-                owner = await Group.FromId(creatorId, session);
-            }
-            else if (data.Creator.CreatorType == "User")
-            {
-                owner = await User.FromId(creatorId, session);
-            }
+            ownerId = creatorId;
+            ownerName = data.Creator.Name;
+            isGroupOwned = data.Creator.CreatorType == "Group";
 
             // Update favorites
             favorites = Convert.ToUInt64(await GetStringAsync($"/v1/favorites/assets/{Id}/count"));
@@ -236,6 +231,15 @@ namespace RoSharp.API.Assets
             thumbnailUrl = await GetThumbnailAsync(ThumbnailSize.S420x420);
 
             RefreshedAt = DateTime.Now;
+        }
+
+        public async Task<IAssetOwner> GetOwnerAsync()
+        {
+            if (IsGroupOwned)
+            {
+                return await Group.FromId(OwnerId);
+            }
+            return await User.FromId(OwnerId);
         }
 
         private ulong favorites = 0;
@@ -340,7 +344,7 @@ namespace RoSharp.API.Assets
         /// <inheritdoc/>
         public override string ToString()
         {
-            return $"{Name} [{Id}] ({AssetType}) {{{(Owner is User ? "@" : string.Empty)}{Owner.Name}}} <R${(OnSale == true ? Price : "0")}>";
+            return $"{Name} [{Id}] ({AssetType}) {{{(!IsGroupOwned ? "@" : string.Empty)}{OwnerName}}} <R${(OnSale == true ? Price : "0")}>";
         }
 
         public Asset AttachSessionAndReturn(Session? session)
