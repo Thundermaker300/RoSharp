@@ -1,4 +1,4 @@
-name: ScriptedEvents Build
+name: RoSharp Build
 on:
   push:
     branches:
