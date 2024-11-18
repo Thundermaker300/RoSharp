@@ -19,20 +19,19 @@ namespace RoSharp.Utility
         {
             HttpClient client = MakeClient(session.Global("PriceFloorAPI.GetPriceFloorsAsync"));
             HttpResponseMessage response = await client.GetAsync("/v1/collectibles/metadata");
-            HttpVerify.ThrowIfNecessary(response);
-            var dict = new Dictionary<AssetType, int>();
-            if (response.IsSuccessStatusCode)
-            {
+            string body = await response.Content.ReadAsStringAsync();
 
-                dynamic data = JObject.Parse(await response.Content.ReadAsStringAsync());
-                foreach (JProperty item in data.unlimitedItemPriceFloors)
-                {
-                    string name = item.Name;
-                    JToken jToken = item.Value;
-                    int value = Convert.ToInt32(jToken["priceFloor"]);
-                    if (Enum.TryParse(name, out AssetType result))
-                        dict.Add(result, value);
-                }
+            HttpVerify.ThrowIfNecessary(response, body);
+
+            var dict = new Dictionary<AssetType, int>();
+            dynamic data = JObject.Parse(body);
+            foreach (JProperty item in data.unlimitedItemPriceFloors)
+            {
+                string name = item.Name;
+                JToken jToken = item.Value;
+                int value = Convert.ToInt32(jToken["priceFloor"]);
+                if (Enum.TryParse(name, out AssetType result))
+                    dict.Add(result, value);
             }
 
             return dict.AsReadOnly();

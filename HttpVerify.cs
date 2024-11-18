@@ -21,14 +21,16 @@ namespace RoSharp
         /// </summary>
         /// <param name="message">The message.</param>
         /// <exception cref="RobloxAPIException">Will always throw if <see cref="HttpResponseMessage.IsSuccessStatusCode"/> is <see langword="false"/>.</exception>
-        public static void ThrowIfNecessary(HttpResponseMessage message)
+        public static void ThrowIfNecessary(HttpResponseMessage message, string? body = null)
         {
             if (message.IsSuccessStatusCode)
                 return;
 
+            if (body == null)
+                body = message.Content.ReadAsStringAsync().Result;
+
             string? userMessage = null;
-            string rawData = message.Content.ReadAsStringAsync().Result;
-            dynamic data = JObject.Parse(rawData);
+            dynamic data = JObject.Parse(body);
             if (data.errors != null)
                 userMessage =  data.errors[0].message ?? data.errors[0].userFacingMessage;
 

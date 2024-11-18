@@ -47,7 +47,7 @@ namespace RoSharp.API
         {
             HttpClient client = MakeHttpClient(baseOverride, verifyApiName);
             HttpResponseMessage message = await client.GetAsync(url);
-            HttpVerify.ThrowIfNecessary(message);
+            HttpVerify.ThrowIfNecessary(message, await message.Content.ReadAsStringAsync());
             return message;
         }
 
@@ -55,8 +55,9 @@ namespace RoSharp.API
         {
             HttpClient client = MakeHttpClient(baseOverride, verifyApiName);
             HttpResponseMessage message = await client.GetAsync(url);
-            HttpVerify.ThrowIfNecessary(message);
-            return await message.Content.ReadAsStringAsync();
+            string body = await message.Content.ReadAsStringAsync();
+            HttpVerify.ThrowIfNecessary(message, body);
+            return body;
         }
 
         internal async Task<HttpResponseMessage> PostAsync(string url, object data, string? baseOverride = null, string? verifyApiName = null)
@@ -65,13 +66,12 @@ namespace RoSharp.API
             JsonContent content = JsonContent.Create(data);
 
             HttpResponseMessage initialResponse = await client.PostAsync(url, JsonContent.Create(new { }));
-            //HttpVerify.ThrowIfNecessary(initialResponse);
 
             if (initialResponse.Headers.TryGetValues("x-csrf-token", out IEnumerable<string>? headers))
                 client.DefaultRequestHeaders.Add("x-csrf-token", headers.First());
 
             HttpResponseMessage response = await client.PostAsync(url, content);
-            HttpVerify.ThrowIfNecessary(response);
+            HttpVerify.ThrowIfNecessary(response, await response.Content.ReadAsStringAsync());
             return response;
         }
         internal async Task<HttpResponseMessage> PatchAsync(string url, object data, string? baseOverride = null, string? verifyApiName = null)
@@ -80,13 +80,12 @@ namespace RoSharp.API
             JsonContent content = JsonContent.Create(data);
 
             HttpResponseMessage initialResponse = await client.PatchAsync(url, JsonContent.Create(new { }));
-            //HttpVerify.ThrowIfNecessary(initialResponse);
 
             if (initialResponse.Headers.TryGetValues("x-csrf-token", out IEnumerable<string>? headers))
                 client.DefaultRequestHeaders.Add("x-csrf-token", headers.First());
 
             HttpResponseMessage response = await client.PatchAsync(url, content);
-            HttpVerify.ThrowIfNecessary(response);
+            HttpVerify.ThrowIfNecessary(response, await response.Content.ReadAsStringAsync());
             return response;
         }
         internal async Task<HttpResponseMessage> DeleteAsync(string url, string? baseOverride = null, string? verifyApiName = null)
@@ -100,7 +99,7 @@ namespace RoSharp.API
                 client.DefaultRequestHeaders.Add("x-csrf-token", headers.First());
 
             HttpResponseMessage response = await client.DeleteAsync(url);
-            HttpVerify.ThrowIfNecessary(response);
+            HttpVerify.ThrowIfNecessary(response, await response.Content.ReadAsStringAsync());
             return response;
         }
 

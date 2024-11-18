@@ -26,17 +26,15 @@ namespace RoSharp.Utility
             };
             var content = JsonContent.Create(request);
             HttpResponseMessage response = await userUtilityClient.PostAsync($"{Constants.URL("users")}/v1/usernames/users", content);
-            if (response.IsSuccessStatusCode)
+            string body = await response.Content.ReadAsStringAsync();
+            HttpVerify.ThrowIfNecessary(response, body);
+
+            dynamic data = JObject.Parse(await response.Content.ReadAsStringAsync());
+            if (data.data.Count == 0)
             {
-                dynamic data = JObject.Parse(await response.Content.ReadAsStringAsync());
-                if (data.data.Count == 0)
-                {
-                    throw new ArgumentException("Invalid username provided.");
-                }
-                return data.data[0].id;
+                throw new ArgumentException("Invalid username provided.");
             }
-            HttpVerify.ThrowIfNecessary(response);
-            return 0;
+            return data.data[0].id;
         }
     }
 }
