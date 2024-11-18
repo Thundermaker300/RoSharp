@@ -272,8 +272,8 @@ namespace RoSharp.API.Assets
         {
             object body = new
             {
-                name = options.Name,
-                description = options.Description,
+                name = options.Name ?? Name,
+                description = options.Description ?? Description,
             };
 
             HttpResponseMessage response = await PatchAsync($"/v1/assets/{Id}", body, Constants.URL("develop"), "Asset.ModifyAsync");
@@ -355,13 +355,7 @@ namespace RoSharp.API.Assets
 
     public class AssetModifyOptions
     {
-        public string Name { get; set; }
-        public string Description { get; set; }
-
-        public AssetModifyOptions(Asset target)
-        {
-            Name = target.Name;
-            Description = target.Description;
-        }
+        public string? Name { get; set; }
+        public string? Description { get; set; }
     }
 }

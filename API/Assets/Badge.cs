@@ -109,13 +109,19 @@ namespace RoSharp.API.Assets
             return data.data[0].imageUrl;
         }
 
+        /// <summary>
+        /// Modifies a badge.
+        /// </summary>
+        /// <param name="options">A class representing the options to use to modify the badge.</param>
+        /// <returns>A task that completes when the operation is finished.</returns>
+        /// <exception cref="RobloxAPIException">Roblox API failure or lack of permissions.</exception>
         public async Task ModifyAsync(BadgeModifyOptions options)
         {
             object body = new
             {
-                name = options.Name,
-                description = options.Description,
-                enabled = options.IsEnabled,
+                name = options.Name ?? Name,
+                description = options.Description ?? Description,
+                enabled = options.IsEnabled ?? IsEnabled,
             };
 
             HttpResponseMessage response = await PatchAsync($"/v1/badges/{Id}", body, verifyApiName: "Badge.ModifyAsync");
@@ -167,15 +173,8 @@ namespace RoSharp.API.Assets
 
     public class BadgeModifyOptions
     {
-        public string Name { get; set; }
-        public string Description { get; set; }
-        public bool IsEnabled { get; set; }
-
-        public BadgeModifyOptions(Badge target)
-        {
-            Name = target.Name;
-            Description = target.Description;
-            IsEnabled = target.IsEnabled;
-        }
+        public string? Name { get; set; }
+        public string? Description { get; set; }
+        public bool? IsEnabled { get; set; }
     }
 }

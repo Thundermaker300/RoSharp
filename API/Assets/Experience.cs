@@ -583,15 +583,15 @@ namespace RoSharp.API.Assets
         {
             object body = new
             {
-                name = options.Name,
-                description = options.Description,
-                allowPrivateServers = options.EnablePrivateServers,
-                privateServerPrice = options.PrivateServerPrice,
-                isForSale = options.PurchaseRequired,
-                price = options.Cost,
-                isFriendsOnly = options.FriendsOnly,
-                playableDevices = options.PlayableDevices,
-                studioAccessToApisAllowed = options.StudioAccessToAPIsAllowed
+                name = options.Name ?? Name,
+                description = options.Description ?? Description,
+                allowPrivateServers = options.EnablePrivateServers ?? PrivateServers,
+                privateServerPrice = options.PrivateServerPrice ?? PrivateServerCost,
+                isForSale = options.PurchaseRequired ?? PurchaseRequired,
+                price = options.Cost ?? Cost,
+                isFriendsOnly = options.FriendsOnly ?? FriendsOnly,
+                playableDevices = options.PlayableDevices ?? Devices.ToList(),
+                studioAccessToApisAllowed = options.StudioAccessToAPIsAllowed ?? StudioAccessToAPIsAllowed
             };
 
             HttpResponseMessage response = await PatchAsync($"/v2/universes/{UniverseId}/configuration", body, Constants.URL("develop"), "Experience.ModifyAsync");
@@ -721,27 +721,14 @@ namespace RoSharp.API.Assets
 
     public class ExperienceModifyOptions
     {
-        public string Name { get; set; }
-        public string Description { get; set; }
-        public bool EnablePrivateServers { get; set; }
-        public int PrivateServerPrice { get; set; }
-        public bool PurchaseRequired { get; set; }
-        public int Cost { get; set; }
-        public bool FriendsOnly { get; set; }
-        public List<Device> PlayableDevices { get; set; }
-        public bool StudioAccessToAPIsAllowed { get; set; }
-
-        public ExperienceModifyOptions(Experience experience)
-        {
-            Name = experience.Name;
-            Description = experience.Description;
-            EnablePrivateServers = experience.PrivateServers;
-            PrivateServerPrice = experience.PrivateServerCost;
-            PurchaseRequired = experience.PurchaseRequired;
-            Cost = experience.Cost;
-            FriendsOnly = experience.FriendsOnly;
-            PlayableDevices = experience.Devices.ToList();
-            StudioAccessToAPIsAllowed = experience.StudioAccessToAPIsAllowed;
-        }
+        public string? Name { get; set; }
+        public string? Description { get; set; }
+        public bool? EnablePrivateServers { get; set; }
+        public int? PrivateServerPrice { get; set; }
+        public bool? PurchaseRequired { get; set; }
+        public int? Cost { get; set; }
+        public bool? FriendsOnly { get; set; }
+        public List<Device>? PlayableDevices { get; set; }
+        public bool? StudioAccessToAPIsAllowed { get; set; }
     }
 }
