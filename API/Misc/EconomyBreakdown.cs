@@ -12,7 +12,7 @@ namespace RoSharp.API
     /// <summary>
     /// Represents a breakdown of group income.
     /// </summary>
-    public class EconomyBreakdown
+    public struct EconomyBreakdown
     {
         /// <summary>
         /// The time-length that was used to retrieve the data.
