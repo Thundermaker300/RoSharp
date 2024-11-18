@@ -141,18 +141,34 @@ namespace RoSharp.API
             // Update premium
             if (SessionVerify.Verify(session))
             {
-                HttpResponseMessage premiumResponse = await GetAsync($"/v1/users/{Id}/validate-membership", Constants.URL("premiumfeatures"));
-                if (premiumResponse.IsSuccessStatusCode)
-                {
-                    isPremium = Convert.ToBoolean(await premiumResponse.Content.ReadAsStringAsync());
-                }
+                // Premium
+                HttpResponseMessage premiumResponse = await GetAsync($"/v1/users/{Id}/validate-membership", Constants.URL("premiumfeatures"), "User.IsPremium [RefreshAsync]");
+                isPremium = Convert.ToBoolean(await premiumResponse.Content.ReadAsStringAsync());
+
+                // Private Inventory
+                HttpResponseMessage inventoryResponse = await GetAsync($"/v1/users/{Id}/can-view-inventory", Constants.URL("inventory"), "User.PrivateInventory [RefreshAsync]");
+                dynamic inventoryData = JObject.Parse(await response.Content.ReadAsStringAsync());
+                privateInventory = !Convert.ToBoolean(inventoryData.canView);
             }
             else
             {
                 isPremium = null;
+                privateInventory = true;
             }
 
+
+            // Updating Following/Followers
+            await UpdateFollowingsAsync();
             RefreshedAt = DateTime.Now;
+        }
+
+        public async Task UpdateFollowingsAsync()
+        {
+            dynamic followingsData = JObject.Parse(await GetStringAsync($"/v1/users/{Id}/followings/count", Constants.URL("friends")));
+            dynamic followersData = JObject.Parse(await GetStringAsync($"/v1/users/{Id}/followers/count", Constants.URL("friends")));
+
+            following = followingsData.count;
+            followers = followersData.count;
         }
 
         private bool? isPremium;
@@ -169,50 +185,10 @@ namespace RoSharp.API
         }
 
         private int following = -1;
-        public int Following
-        {
-            get
-            {
-                if (following == -1)
-                {
-                    HttpResponseMessage response = Get($"/v1/users/{Id}/followings/count", Constants.URL("friends"));
-                    if (response.IsSuccessStatusCode)
-                    {
-                        string raw = response.Content.ReadAsStringAsync().Result;
-                        dynamic data = JObject.Parse(raw);
-                        following = data.count;
-                    }
-                    else
-                    {
-                        following = 0;
-                    }
-                }
-                return following;
-            }
-        }
+        public int Following => following;
 
         private int followers = -1;
-        public int Followers
-        {
-            get
-            {
-                if (followers == -1)
-                {
-                    HttpResponseMessage response = Get($"/v1/users/{Id}/followers/count", Constants.URL("friends"));
-                    if (response.IsSuccessStatusCode)
-                    {
-                        string raw = response.Content.ReadAsStringAsync().Result;
-                        dynamic data = JObject.Parse(raw);
-                        followers = data.count;
-                    }
-                    else
-                    {
-                        followers = 0;
-                    }
-                }
-                return followers;
-            }
-        }
+        public int Followers => followers;
 
         private ReadOnlyCollection<string>? robloxBadges;
         public async Task<ReadOnlyCollection<string>> GetRobloxBadgesAsync()
@@ -268,7 +244,7 @@ namespace RoSharp.API
 
                 dynamic data = JObject.Parse(rawData);
                 ulong groupId = Convert.ToUInt64(data.group.id);
-                primaryGroup = Group.FromId(groupId, session).Result;
+                primaryGroup = await Group.FromId(groupId, session);
             }
             return primaryGroup;
         }
@@ -300,19 +276,10 @@ namespace RoSharp.API
             return groups;
         }
 
+        private bool privateInventory;
+
         public bool PrivateInventory
-        {
-            get
-            {
-                HttpResponseMessage response = Get($"/v1/users/{Id}/can-view-inventory", Constants.URL("inventory"));
-                if (response.IsSuccessStatusCode)
-                {
-                    dynamic data = JObject.Parse(response.Content.ReadAsStringAsync().Result);
-                    return !Convert.ToBoolean(data.canView);
-                }
-                return false;
-            }
-        }
+            => privateInventory;
 
         private ReadOnlyDictionary<string, string>? socialChannels;
 

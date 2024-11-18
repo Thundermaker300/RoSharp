@@ -51,25 +51,6 @@ namespace RoSharp.API
             return message;
         }
 
-
-        [Obsolete("Use async version where possible")]
-        internal HttpResponseMessage Get(string url, string? baseOverride = null, string? verifyApiName = null)
-        {
-            HttpClient client = MakeHttpClient(baseOverride, verifyApiName);
-            HttpResponseMessage message = client.GetAsync(url).Result;
-            HttpVerify.ThrowIfNecessary(message);
-            return message;
-        }
-
-        [Obsolete("Use async version where possible")]
-        internal string GetString(string url, string? baseOverride = null, string? verifyApiName = null)
-        {
-            HttpClient client = MakeHttpClient(baseOverride, verifyApiName);
-            HttpResponseMessage message = client.GetAsync(url).Result;
-            HttpVerify.ThrowIfNecessary(message);
-            return message.Content.ReadAsStringAsync().Result;
-        }
-
         internal async Task<string> GetStringAsync(string url, string? baseOverride = null, string? verifyApiName = null)
         {
             HttpClient client = MakeHttpClient(baseOverride, verifyApiName);

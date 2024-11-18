@@ -11,13 +11,19 @@
         Unknown,
 
         /// <summary>
-        /// Female.
+        /// User does not have a specified gender.
         /// </summary>
-        Female,
+        None,
+
 
         /// <summary>
         /// Male.
         /// </summary>
         Male,
+
+        /// <summary>
+        /// Female.
+        /// </summary>
+        Female,
     }
 }

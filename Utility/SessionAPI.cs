@@ -1,14 +1,46 @@
 ﻿using Newtonsoft.Json.Linq;
 using RoSharp.API.Assets;
 using RoSharp.Enums;
+using RoSharp.Interfaces;
+using static System.Runtime.InteropServices.JavaScript.JSType;
 
 namespace RoSharp.API
 {
     // TODO: The API in this class needs converted to use the new system (SessionVerify.ThrowIfNecessary)
     // The API should also all be obtained in a ctor or refresh method instead of each access.
-    public class SessionAPI : APIMain
+    public class SessionAPI : APIMain, IRefreshable
     {
-        public SessionAPI(Session session) : base(session) { }
+        public DateTime RefreshedAt { get; set; }
+
+        private SessionAPI(Session session) : base(session) { }
+
+        public static async Task<SessionAPI> FromSession(Session session)
+        {
+            if (!SessionVerify.Verify(session))
+                throw new ArgumentException("Session cannot be null and must be authenticated.", nameof(session));
+
+            SessionAPI api = new(session);
+            await api.RefreshAsync();
+
+            return api;
+        }
+
+        public async Task RefreshAsync()
+        {
+            user = await User.FromId(session.userid, session);
+
+            dynamic genderData = JObject.Parse(await GetStringAsync("/v1/gender"));
+            gender = (Gender)Convert.ToInt32(genderData.gender);
+
+            dynamic countryCodeData = JObject.Parse(await GetStringAsync("/v1/users/authenticated/country-code"));
+            countryCode = countryCodeData.countryCode;
+
+            dynamic birthdateData = JObject.Parse(await GetStringAsync("/v1/birthdate"));
+            birthDate = new DateOnly((int)birthdateData.birthYear, (int)birthdateData.birthMonth, (int)birthdateData.birthDay);
+
+            dynamic robuxData = JObject.Parse(await GetStringAsync("/v1/user/currency", Constants.URL("economy")));
+            robux = robuxData.robux;
+        }
 
         /// <inheritdoc/>
         public override string BaseUrl => Constants.URL("users");
@@ -19,74 +51,38 @@ namespace RoSharp.API
         /// Gets a <see cref="API.User"/> representing the currently authenticated user.
         /// </summary>
         [UsesSession]
-        public User User
-        {
-            get
-            {
-                if (user is null)
-                {
-                    SessionVerify.ThrowIfNecessary(session, "SessionAPI.User");
-                    user = User.FromId(session.userid, session).Result;
-                }
-                return user;
-            }
-        }
+        public User User => user;
+
+        private Gender gender;
 
         /// <summary>
         /// Gets the gender of the authenticated user.
         /// </summary>
-        [UsesSession]
-        public Gender Gender
-        {
-            get
-            {
-                string rawData = GetString("/v1/gender");
-                dynamic data = JObject.Parse(rawData);
-                return ((Gender[])Enum.GetValues(typeof(Enums.Gender)))[data.gender];
-            }
-        }
+        public Gender Gender => gender;
+
+
+        private string countryCode;
 
         /// <summary>
         /// Gets the country code of the authenticated user.
         /// </summary>
-        [UsesSession]
-        public string CountryCode
-        {
-            get
-            {
-                string rawData = GetString("/v1/users/authenticated/country-code");
-                dynamic data = JObject.Parse(rawData);
-                return data.countryCode;
-            }
-        }
+        public string CountryCode => countryCode;
+
+
+        private DateOnly birthDate;
 
         /// <summary>
-        /// Gets a <see cref="DateTime"/> representing the set birth date of the user.
+        /// Gets a <see cref="DateOnly"/> representing the set birth date of the user.
         /// </summary>
-        [UsesSession]
-        public DateTime BirthDate
-        {
-            get
-            {
-                string rawData = GetString("/v1/birthdate");
-                dynamic data = JObject.Parse(rawData);
-                return new DateTime((int)data.birthYear, (int)data.birthMonth, (int)data.birthDay);
-            }
-        }
+        public DateOnly BirthDate => birthDate;
+
+
+        private int robux;
 
         /// <summary>
         /// Gets the amount of Robux the authenticated user has.
         /// </summary>
-        [UsesSession]
-        public int Robux
-        {
-            get
-            {
-                string rawData = GetString("/v1/user/currency", Constants.URL("economy"));
-                dynamic data = JObject.Parse(rawData);
-                return data.robux;
-            }
-        }
+        public int Robux => robux;
 
         /// <summary>
         /// Sends a friend request to the given target.
