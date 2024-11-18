@@ -168,6 +168,15 @@ namespace RoSharp.API.Assets
             throw new UnreachableException($"Unexpected genre type: {genreName}. Please report this error to developer.");
         }
 
+        /// <summary>
+        /// Returns a <see cref="Experience"/> given the Id of a place within the experience.
+        /// </summary>
+        /// <param name="placeId">The place Id.</param>
+        /// <param name="session">The session, optional.</param>
+        /// <returns></returns>
+        /// <exception cref="ArgumentException">If the place Id is invalid or is a UniverseId (see <see cref="FromId(ulong, Session?)"/>.</exception>
+        /// <exception cref="RobloxAPIException">Roblox API failure.</exception>
+        /// <remarks>This is the most common method as the Place ID is present in the URL when going to any general experience page.</remarks>
         public static async Task<Experience> FromPlaceId(ulong placeId, Session? session = null)
         {
             ulong universeId = 0;
@@ -187,6 +196,15 @@ namespace RoSharp.API.Assets
             return await FromId(universeId, session);
         }
 
+        /// <summary>
+        /// Returns a <see cref="Experience"/> given the Id of the universe.
+        /// </summary>
+        /// <param name="universeId">The universe Id.</param>
+        /// <param name="session">The session, optional.</param>
+        /// <returns></returns>
+        /// <exception cref="ArgumentException">If the universe Id is invalid or is a PlaceId (see <see cref="FromPlaceId(ulong, Session?)"/>.</exception>
+        /// <exception cref="RobloxAPIException">Roblox API failure.</exception>
+        /// <remarks>If you have a Place Id, which is most common, see <see cref="FromPlaceId(ulong, Session?)"/>.</remarks>
         public static async Task<Experience> FromId(ulong universeId, Session? session = null)
         {
             if (RoPool<Experience>.Contains(universeId))
