@@ -27,11 +27,10 @@ namespace RoSharp
                 return;
 
             string? userMessage = null;
-            //string rawData = message.Content.ReadAsStringAsync().Result;
-            //dynamic data = JObject.Parse(rawData);
-            //if (data.errors != null)
-            //    userMessage =  data.errors[0].message ?? data.errors[0].userFacingMessage;
-            userMessage = message.ReasonPhrase;
+            string rawData = message.Content.ReadAsStringAsync().Result;
+            dynamic data = JObject.Parse(rawData);
+            if (data.errors != null)
+                userMessage =  data.errors[0].message ?? data.errors[0].userFacingMessage;
 
             if (userMessage != null)
                 userMessage = $"(HTTP {message.StatusCode}) Roblox API error: {userMessage}. Request url: {message.RequestMessage?.RequestUri} Request method: {message.RequestMessage?.Method}";
