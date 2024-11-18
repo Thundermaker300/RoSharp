@@ -725,6 +725,11 @@ namespace RoSharp.API.Assets
         public string? BloodLevel { get; init; }
         public string? Intensity { get; init; }
         public string? Presence { get; init; }
+
+        public override string ToString()
+        {
+            return $"{DescriptorType} [{DisplayText}] IconUrl: <{IconUrl}> Type: <{Type}> Frequency: <{Frequency}> Realism: <{Realism}> BloodLevel: <{BloodLevel}> Intensity: <{Intensity}> Presence: <{Presence}>";
+        }
     }
 
     public struct ExperienceActivityHistory
