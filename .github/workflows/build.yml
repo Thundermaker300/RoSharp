@@ -1,0 +1,36 @@
+name: ScriptedEvents Build
+on:
+  push:
+    branches:
+    - main
+  pull_request:
+    branches:
+    - main
+  workflow_dispatch:
+jobs:
+  build:
+    runs-on: windows-latest
+
+    steps:
+      - name: Setup .NET Core SDK
+        uses: actions/setup-dotnet@v3
+
+      - uses: actions/checkout@v3.3.0
+
+      - name: Restore Packages
+        run: nuget restore
+
+      - name: Setup MSBuild.exe
+        uses: microsoft/Setup-MSBuild@v1
+        env:
+          ACTIONS_ALLOW_UNSECURE_COMMANDS: 'true'
+
+      - name: Build
+        run: | 
+          msbuild RoSharp.csproj -t:rebuild -property:Configuration=Release
+
+      - name: Upload artifacts
+        uses: actions/upload-artifact@v3
+        with:
+          name: RoSharp
+          path: "RoSharp/bin/Release/net8.0/RoSharp.dll"
