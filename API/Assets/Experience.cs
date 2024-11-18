@@ -164,6 +164,7 @@ namespace RoSharp.API.Assets
             playabilityStatus = null;
             socialChannels = null;
             icon = null;
+            history = null;
 
             HttpResponseMessage response = await GetAsync($"/v1/games?universeIds={UniverseId}");
             if (response.IsSuccessStatusCode)
@@ -622,6 +623,33 @@ namespace RoSharp.API.Assets
                 throw new RobloxAPIException($"Failed to post update. Error code {response.StatusCode}. {response.Content.ReadAsStringAsync().Result}");
         }
 
+        private ReadOnlyCollection<ExperienceActivityHistory>? history;
+        public async Task<ReadOnlyCollection<ExperienceActivityHistory>> GetActivityHistoryAsync()
+        {
+            if (history == null)
+            {
+                string rawData = await GetStringAsync("/activity-feed-api/v1/history?clientType=1&universeId=3744484651", "https://apis.roblox.com", "Experience.GetActivityHistoryAsync");
+                dynamic data = JObject.Parse(rawData);
+
+                List<ExperienceActivityHistory> list = new();
+                foreach (dynamic ev in data.events)
+                {
+                    list.Add(new()
+                    {
+                        Id = ev.id,
+                        Type = (ExperienceActivityHistoryType)ev.eventType,
+                        UniverseId = new GenericId<Experience>(Convert.ToUInt64(ev.universeId)),
+                        PlaceId = ev.placeId,
+                        UserId = new GenericId<User>(Convert.ToUInt64(ev.userId)),
+                        Time = DateTime.UnixEpoch.AddMilliseconds(Convert.ToInt64(ev.createdUnixTimeMs)),
+                    });
+                }
+
+                history = list.AsReadOnly();
+            }
+            return history;
+        }
+
         /// <inheritdoc/>
         public override string ToString()
         {
@@ -638,7 +666,7 @@ namespace RoSharp.API.Assets
         }
     }
 
-    public class ExperienceDescriptor
+    public struct ExperienceDescriptor
     {
         public ExperienceDescriptorType DescriptorType { get; init; }
         public string IconUrl { get; init; }
@@ -650,6 +678,21 @@ namespace RoSharp.API.Assets
         public string? BloodLevel { get; init; }
         public string? Intensity { get; init; }
         public string? Presence { get; init; }
+    }
+
+    public struct ExperienceActivityHistory
+    {
+        public ExperienceActivityHistoryType Type { get; init; }
+        public DateTime Time { get; init; }
+        public string Id { get; init; }
+        public GenericId<Experience> UniverseId { get; init; }
+        public ulong? PlaceId { get; init; }
+        public GenericId<User> UserId { get; init; }
+
+        public override string ToString()
+        {
+            return $"{Type} [{Time}] {{{Id}}} ExpID: {UniverseId.Id} UserID: {UserId.Id}";
+        }
     }
 
     public class ExperienceModifyOptions
