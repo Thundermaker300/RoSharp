@@ -5,6 +5,7 @@ using RoSharp.Enums;
 using RoSharp.Exceptions;
 using RoSharp.Extensions;
 using RoSharp.Interfaces;
+using RoSharp.Utility;
 using System.Collections.ObjectModel;
 using System.Diagnostics;
 using System.Net;
@@ -146,28 +147,6 @@ namespace RoSharp.API.Assets
                 RoPool<Experience>.Add(this);
         }
 
-        private static Genre GetGenre(string genreName)
-        {
-            if (genreName != null)
-            {
-                if (genreName == string.Empty)
-                    return Genre.None;
-
-                if (genreName == "1 vs All")
-                    return Genre.OneVsAll;
-
-                string newGenreName = genreName
-                    .Replace(" ", string.Empty)
-                    .Replace("-", string.Empty)
-                    .Replace("&", "And");
-
-                if (Enum.TryParse(newGenreName, true, out Genre genre))
-                    return genre;
-            }
-
-            throw new UnreachableException($"Unexpected genre type: {genreName}. Please report this error to developer.");
-        }
-
         /// <summary>
         /// Returns a <see cref="Experience"/> given the Id of a place within the experience.
         /// </summary>
@@ -244,8 +223,8 @@ namespace RoSharp.API.Assets
                 playingNow = data.playing;
                 visits = data.visits;
                 favorites = data.favoritedCount;
-                genre = GetGenre(Convert.ToString(data.genre_l1));
-                subgenre = GetGenre(Convert.ToString(data.genre_l2));
+                genre = ExperienceUtility.GetGenre(Convert.ToString(data.genre_l1));
+                subgenre = ExperienceUtility.GetGenre(Convert.ToString(data.genre_l2));
 
                 favoritedByUser = data.isFavoritedByUser;
 
