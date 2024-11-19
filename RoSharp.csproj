@@ -6,7 +6,7 @@
     <Nullable>enable</Nullable>
     <PackageId>RoSharp</PackageId>
     <Title>RoSharp</Title>
-    <Version>1.0.0-alpha</Version>
+    <Version>0.1.0-prerelease</Version>
     <Authors>Thunder300</Authors>
     <Company>None</Company>
     <Description>Lightweight wrapper API for Roblox's API system.</Description>

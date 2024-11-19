@@ -36,3 +36,4 @@ jobs:
           path: |
             ${{ github.workspace }}/bin/Release/net8.0/RoSharp.dll
             ${{ github.workspace }}/bin/Release/net8.0/RoSharp.xml
+            ${{ github.workspace }}/bin/Release/*.nupkg
