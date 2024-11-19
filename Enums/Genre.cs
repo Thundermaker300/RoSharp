@@ -95,9 +95,7 @@ namespace RoSharp.Enums
         VehicleSim,
 
         // Social
-        Communication,
-        ContentSharing,
-        Hangout,
+        // <void>
         
         // Sports & Racing
         Racing,
