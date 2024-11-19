@@ -89,6 +89,7 @@ namespace RoSharp.API
         /// </summary>
         /// <param name="userId">The user's Id.</param>
         /// <returns>A task containing a bool upon completion.</returns>
+        /// <remarks>This API method does not cache and will make a request each time it is called.</remarks>
         public async Task<bool> IsInGroupAsync(ulong userId)
         {
             string rawData = await group.GetStringAsync($"/v1/users/{userId}/groups/roles?includeLocked=true");
@@ -108,6 +109,7 @@ namespace RoSharp.API
         /// </summary>
         /// <param name="username">The user's username.</param>
         /// <returns>A task containing a bool upon completion.</returns>
+        /// <remarks>This API method does not cache and will make a request each time it is called.</remarks>
         public async Task<bool> IsInGroupAsync(string username) => await IsInGroupAsync(await User.FromUsername(username));
 
         /// <summary>
@@ -115,6 +117,7 @@ namespace RoSharp.API
         /// </summary>
         /// <param name="user">The user.</param>
         /// <returns>A task containing a bool upon completion.</returns>
+        /// <remarks>This API method does not cache and will make a request each time it is called.</remarks>
         public async Task<bool> IsInGroupAsync(User user) => await IsInGroupAsync(user.Id);
 
         /// <summary>
@@ -122,6 +125,7 @@ namespace RoSharp.API
         /// </summary>
         /// <param name="userId">The user's Id.</param>
         /// <returns>A task containing the <see cref="Role"/> upon completion. Will be <see langword="null"/> if the user is not in the group.</returns>
+        /// <remarks>This API method does not cache and will make a request each time it is called.</remarks>
         public async Task<Role?> GetRoleInGroupAsync(ulong userId)
         {
             string rawData = await group.GetStringAsync($"/v1/users/{userId}/groups/roles?includeLocked=true");
@@ -141,6 +145,7 @@ namespace RoSharp.API
         /// </summary>
         /// <param name="username">The user's username.</param>
         /// <returns>A task containing the <see cref="Role"/> upon completion. Will be <see langword="null"/> if the user is not in the group.</returns>
+        /// <remarks>This API method does not cache and will make a request each time it is called.</remarks>
         public async Task<Role?> GetRoleInGroupAsync(string username) => await GetRoleInGroupAsync(await User.FromUsername(username));
 
         /// <summary>
@@ -148,6 +153,7 @@ namespace RoSharp.API
         /// </summary>
         /// <param name="user">The user.</param>
         /// <returns>A task containing the <see cref="Role"/> upon completion. Will be <see langword="null"/> if the user is not in the group.</returns>
+        /// <remarks>This API method does not cache and will make a request each time it is called.</remarks>
         public async Task<Role?> GetRoleInGroupAsync(User user) => await GetRoleInGroupAsync(user.Id);
 
         /// <summary>

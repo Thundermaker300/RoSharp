@@ -98,6 +98,13 @@ namespace RoSharp.API.Assets
             RefreshedAt = DateTime.Now;
         }
 
+        /// <summary>
+        /// Retrieves a thumbnail URL for this badge.
+        /// </summary>
+        /// <returns>A task containing a thumbnail URL.</returns>
+        /// <exception cref="ArgumentException">Invalid asset to get thumbnail for.</exception>
+        /// <exception cref="RobloxAPIException">Roblox API failure.</exception>
+        /// <remarks>This API method does not cache and will make a request each time it is called.</remarks>
         public async Task<string> GetThumbnailAsync()
         {
             string url = $"/v1/badges/icons?badgeIds={Id}&size=150x150&format=Png&isCircular=false";
@@ -131,6 +138,7 @@ namespace RoSharp.API.Assets
         /// </summary>
         /// <param name="target">The user to check.</param>
         /// <returns>A task which contains a boolean when completed.</returns>
+        /// <remarks>This API method does not cache and will make a request each time it is called.</remarks>
         /// <seealso cref="User.HasBadgeAsync(Badge)"/>
         /// <seealso cref="User.HasBadgeAsync(ulong)"/>
         public async Task<bool> IsOwnedByAsync(User target) => await target.HasBadgeAsync(this);
@@ -140,6 +148,7 @@ namespace RoSharp.API.Assets
         /// </summary>
         /// <param name="targetId">The user ID to check.</param>
         /// <returns>A task which contains a boolean when completed.</returns>
+        /// <remarks>This API method does not cache and will make a request each time it is called.</remarks>
         /// <seealso cref="User.HasBadgeAsync(Badge)"/>
         /// <seealso cref="User.HasBadgeAsync(ulong)"/>
         public async Task<bool> IsOwnedByAsync(ulong targetId) => await IsOwnedByAsync(await User.FromId(targetId, session));
@@ -149,6 +158,7 @@ namespace RoSharp.API.Assets
         /// </summary>
         /// <param name="targetUsername">The username to check.</param>
         /// <returns>A task which contains a boolean when completed.</returns>
+        /// <remarks>This API method does not cache and will make a request each time it is called.</remarks>
         /// <seealso cref="User.HasBadgeAsync(Badge)"/>
         /// <seealso cref="User.HasBadgeAsync(ulong)"/>
         public async Task<bool> IsOwnedByAsync(string targetUsername) => await IsOwnedByAsync(await User.FromUsername(targetUsername, session));

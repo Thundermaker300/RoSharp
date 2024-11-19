@@ -400,6 +400,7 @@ namespace RoSharp.API
         /// <param name="type">The type of thumbnail.</param>
         /// <param name="size">The size of the thumbnail.</param>
         /// <returns>A task containing a string URL to the thumbnail upon completion.</returns>
+        /// <remarks>This API method does not cache and will make a request each time it is called.</remarks>
         /// <exception cref="ArgumentException">Invalid user to get thumbnail for.</exception>
         public async Task<string> GetThumbnailAsync(ThumbnailType type = ThumbnailType.Full, ThumbnailSize size = ThumbnailSize.S420x420)
         {
@@ -422,6 +423,7 @@ namespace RoSharp.API
         /// <param name="assetId">The asset Id.</param>
         /// <param name="assetItemType">The assetItemType. For most assets this value should be <c>0</c>.</param>
         /// <returns>A task containing a bool upon completion.</returns>
+        /// <remarks>This API method does not cache and will make a request each time it is called.</remarks>
         public async Task<bool> OwnsAssetAsync(ulong assetId, int assetItemType = 0)
         {
             string result = await GetStringAsync($"/v1/users/{Id}/items/{assetItemType}/{assetId}/is-owned", Constants.URL("inventory"));
@@ -433,6 +435,7 @@ namespace RoSharp.API
         /// </summary>
         /// <param name="asset">The asset.</param>
         /// <returns>A task containing a bool upon completion.</returns>
+        /// <remarks>This API method does not cache and will make a request each time it is called.</remarks>
         public async Task<bool> OwnsAssetAsync(Asset asset)
             => await OwnsAssetAsync(asset.Id);
 
@@ -441,6 +444,7 @@ namespace RoSharp.API
         /// </summary>
         /// <param name="badgeId">The badge Id.</param>
         /// <returns>A task containing a bool upon completion.</returns>
+        /// <remarks>This API method does not cache and will make a request each time it is called.</remarks>
         public async Task<bool> HasBadgeAsync(ulong badgeId)
         {
             string rawData = await GetStringAsync($"/v1/users/{Id}/badges/awarded-dates?badgeIds={badgeId}", Constants.URL("badges"));
@@ -454,6 +458,7 @@ namespace RoSharp.API
         /// </summary>
         /// <param name="badge">The badge.</param>
         /// <returns>A task containing a bool upon completion.</returns>
+        /// <remarks>This API method does not cache and will make a request each time it is called.</remarks>
         public async Task<bool> HasBadgeAsync(Badge badge)
             => await HasBadgeAsync(badge.Id);
 
@@ -495,7 +500,7 @@ namespace RoSharp.API
         /// <param name="sortOrder">The sort order.</param>
         /// <param name="cursor">The cursor for the next page. Obtained by calling this API previously.</param>
         /// <returns>A task containing a <see cref="PageResponse{T}"/> of <see cref="GenericId{T}"/> upon completion.</returns>
-        /// <remarks>See <see cref="GetBadgesAsync(FixedLimit, RequestSortOrder, string?)"/> for badges.</remarks>
+        /// <remarks>This API method does not cache and will make a request each time it is called. This API also does not work for Badges, Bundles, and GamePasses -- see their respective APIs.</remarks>
         /// <seealso cref="PrivateInventory"/>
         /// <seealso cref="GetBadgesAsync(FixedLimit, RequestSortOrder, string?)"/>
         public async Task<PageResponse<GenericId<Asset>>> GetInventoryAsync(AssetType assetType, FixedLimit limit = FixedLimit.Limit100, RequestSortOrder sortOrder = RequestSortOrder.Desc, string? cursor = null)

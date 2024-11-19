@@ -232,6 +232,7 @@ namespace RoSharp.API
         /// <param name="size"></param>
         /// <returns>Task that contains a URL to the icon, upon completion.</returns>
         /// <exception cref="RobloxAPIException">Roblox API failure.</exception>
+        /// <remarks>This API method does not cache and will make a request each time it is called.</remarks>
         public async Task<string> GetIconAsync(ThumbnailSize size = ThumbnailSize.S420x420)
         {
             string url = $"/v1/groups/icons?groupIds={Id}&size={size.ToString().Substring(1)}&format=Png&isCircular=false";
@@ -274,6 +275,7 @@ namespace RoSharp.API
         /// <param name="cursor">The cursor for the next page. Obtained by calling this API previously.</param>
         /// <returns>A task containing a <see cref="PageResponse{T}"/> of <see cref="GroupPost"/> upon completion.</returns>
         /// <exception cref="RobloxAPIException">Roblox API failure or lack of permissions to see the group wall.</exception>
+        /// <remarks>This API method does not cache and will make a request each time it is called.</remarks>
         [UsesSession]
         public async Task<PageResponse<GroupPost>> GetGroupPostsAsync(FixedLimit limit = FixedLimit.Limit100, RequestSortOrder sortOrder = RequestSortOrder.Desc, string? cursor = null)
         {
@@ -311,6 +313,7 @@ namespace RoSharp.API
         /// </summary>
         /// <param name="timeLength">The length of time to use for the breakdown.</param>
         /// <returns>A task containing a <see cref="EconomyBreakdown"/> upon completion.</returns>
+        /// <remarks>This API method does not cache and will make a request each time it is called.</remarks>
         public async Task<EconomyBreakdown> GetIncomeAsync(AnalyticTimeLength timeLength = AnalyticTimeLength.Day)
         {
             var url = $"/v1/groups/2531730/revenue/summary/{timeLength.ToString().ToLower()}";

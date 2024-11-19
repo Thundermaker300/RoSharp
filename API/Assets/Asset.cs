@@ -267,6 +267,14 @@ namespace RoSharp.API.Assets
         /// </summary>
         public string ThumbnailUrl => thumbnailUrl;
 
+        /// <summary>
+        /// Retrieves a thumbnail URL for this asset.
+        /// </summary>
+        /// <param name="size">The size of the thumbnail.</param>
+        /// <returns>A task containing a thumbnail URL.</returns>
+        /// <exception cref="ArgumentException">Invalid asset to get thumbnail for.</exception>
+        /// <exception cref="RobloxAPIException">Roblox API failure.</exception>
+        /// <remarks>This API method does not cache and will make a request each time it is called.</remarks>
         public async Task<string> GetThumbnailAsync(ThumbnailSize size = ThumbnailSize.S420x420)
         {
             string url = $"/v1/assets?assetIds={Id}&returnPolicy=PlaceHolder&size={size.ToString().Substring(1)}&format=Png&isCircular=false";
@@ -325,6 +333,7 @@ namespace RoSharp.API.Assets
         /// </summary>
         /// <param name="target">The user to target.</param>
         /// <returns>A task containing a bool upon completion.</returns>
+        /// <remarks>This API method does not cache and will make a request each time it is called.</remarks>
         public async Task<bool> IsOwnedByAsync(User target) => await target.OwnsAssetAsync(this);
 
         /// <summary>
@@ -332,6 +341,7 @@ namespace RoSharp.API.Assets
         /// </summary>
         /// <param name="targetId">The user Id.</param>
         /// <returns>A task containing a bool upon completion.</returns>
+        /// <remarks>This API method does not cache and will make a request each time it is called.</remarks>
         public async Task<bool> IsOwnedByAsync(ulong targetId) => await IsOwnedByAsync(await User.FromId(targetId, session));
 
         /// <summary>
@@ -339,15 +349,15 @@ namespace RoSharp.API.Assets
         /// </summary>
         /// <param name="targetUsername">The username.</param>
         /// <returns>A task containing a bool upon completion.</returns>
+        /// <remarks>This API method does not cache and will make a request each time it is called.</remarks>
         public async Task<bool> IsOwnedByAsync(string targetUsername) => await IsOwnedByAsync(await User.FromUsername(targetUsername, session));
 
         /// <summary>
         /// Returns a list of assets that are shown under the "Recommended" section based on this asset.
-        /// This method makes an API call for each asset, and as such is very time consuming the more assets are requested.
         /// </summary>
         /// <param name="limit">The limit of assets to return. Maximum: 45.</param>
         /// <returns>A task representing a list of assets shown as recommended.</returns>
-        /// <remarks>Occasionally, Roblox's API will produce a 'bad recommendation' that leads to an asset that doesn't exist (either deleted or hidden). If this is the case, RoSharp will skip over it automatically. However, if the limit is set to Roblox's maximum of 45, this will result in less than 45 assets being returned.</remarks>
+        /// <remarks>This API method does not cache and will make a request each time it is called. Occasionally, Roblox's API will produce a 'bad recommendation' that leads to an asset that doesn't exist (either deleted or hidden). If this is the case, RoSharp will skip over it automatically. However, if the limit is set to Roblox's maximum of 45, this will result in less than 45 assets being returned.</remarks>
         public async Task<ReadOnlyCollection<GenericId<Asset>>> GetRecommendedAsync(int limit = 7)
         {
             string rawData = await GetStringAsync($"/v2/recommendations/assets?assetId={Id}&assetTypeId={(int)AssetType}&numItems=45");

@@ -596,6 +596,7 @@ namespace RoSharp.API.Assets
         /// <param name="defaultRobloxThumbnailIfNecessary">If the experience has no thumbnails, return the default Roblox thumbnail?</param>
         /// <returns>A <see cref="ReadOnlyCollection{T}"/> of <see cref="Asset"/>s that are the experience's thumbnails.</returns>
         /// <exception cref="ArgumentException">Invalid experience to get thumbnails for.</exception>
+        /// <remarks>This API method does not cache and will make a request each time it is called.</remarks>
         public async Task<ReadOnlyCollection<Asset>> GetThumbnailsAsync(ExperienceThumbnailSize size = ExperienceThumbnailSize.S768x432, bool defaultRobloxThumbnailIfNecessary = true)
         {
             string url = $"/v1/games/multiget/thumbnails?universeIds={UniverseId}&countPerUniverse=25&defaults={defaultRobloxThumbnailIfNecessary.ToString().ToLower()}&size={size.ToString().Substring(1)}&format=Png&isCircular=false";
