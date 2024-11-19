@@ -233,6 +233,10 @@ namespace RoSharp.API.Assets
             RefreshedAt = DateTime.Now;
         }
 
+        /// <summary>
+        /// Returns the owner of this asset.
+        /// </summary>
+        /// <returns>A task containing the owner of this asset.</returns>
         public async Task<IAssetOwner> GetOwnerAsync()
         {
             if (IsGroupOwned)
@@ -309,8 +313,25 @@ namespace RoSharp.API.Assets
             HttpResponseMessage response = await PostAsync("/v1/assets/3307894526/release", body, Constants.URL("itemconfiguration"), "Asset.SetSaleStatusAsync");
         }
 
+        /// <summary>
+        /// Gets whether or not the <paramref name="target"/> owns this asset.
+        /// </summary>
+        /// <param name="target">The user to target.</param>
+        /// <returns>A task containing a bool upon completion.</returns>
         public async Task<bool> IsOwnedByAsync(User target) => await target.OwnsAssetAsync(this);
+
+        /// <summary>
+        /// Gets whether or not the user with the provided Id owns this asset.
+        /// </summary>
+        /// <param name="targetId">The user Id.</param>
+        /// <returns>A task containing a bool upon completion.</returns>
         public async Task<bool> IsOwnedByAsync(ulong targetId) => await IsOwnedByAsync(await User.FromId(targetId, session));
+
+        /// <summary>
+        /// Gets whether or not the user with the provided name owns this asset.
+        /// </summary>
+        /// <param name="targetUsername">The username.</param>
+        /// <returns>A task containing a bool upon completion.</returns>
         public async Task<bool> IsOwnedByAsync(string targetUsername) => await IsOwnedByAsync(await User.FromUsername(targetUsername, session));
 
         /// <summary>
@@ -320,18 +341,17 @@ namespace RoSharp.API.Assets
         /// <param name="limit">The limit of assets to return. Maximum: 45.</param>
         /// <returns>A task representing a list of assets shown as recommended.</returns>
         /// <remarks>Occasionally, Roblox's API will produce a 'bad recommendation' that leads to an asset that doesn't exist (either deleted or hidden). If this is the case, RoSharp will skip over it automatically. However, if the limit is set to Roblox's maximum of 45, this will result in less than 45 assets being returned.</remarks>
-        public async Task<ReadOnlyCollection<Asset>> GetRecommendedAsync(int limit = 7)
+        public async Task<ReadOnlyCollection<GenericId<Asset>>> GetRecommendedAsync(int limit = 7)
         {
             string rawData = await GetStringAsync($"/v2/recommendations/assets?assetId={Id}&assetTypeId={(int)AssetType}&numItems=45");
             dynamic data = JObject.Parse(rawData);
-            List<Asset> list = new();
+            List<GenericId<Asset>> list = new();
             foreach (dynamic item in data.data)
             {
                 try
                 {
                     ulong itemId = Convert.ToUInt64(item);
-                    Asset asset = await FromId(itemId, session);
-                    list.Add(asset);
+                    list.Add(new GenericId<Asset>(itemId, session));
                 }
                 catch { }
 
@@ -347,6 +367,7 @@ namespace RoSharp.API.Assets
             return $"{Name} [{Id}] ({AssetType}) {{{(!IsGroupOwned ? "@" : string.Empty)}{OwnerName}}} <R${(OnSale == true ? Price : "0")}>";
         }
 
+        /// <inheritdoc/>
         public Asset AttachSessionAndReturn(Session? session)
         {
             if (session is null || !session.LoggedIn)

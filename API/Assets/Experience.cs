@@ -252,6 +252,10 @@ namespace RoSharp.API.Assets
             RefreshedAt = DateTime.Now;
         }
 
+        /// <summary>
+        /// Returns the owner of this experience.
+        /// </summary>
+        /// <returns>A task containing the owner of this experience.</returns>
         public async Task<IAssetOwner> GetOwnerAsync()
         {
             if (IsGroupOwned)
@@ -276,8 +280,14 @@ namespace RoSharp.API.Assets
             videoEnabled = data.isUniverseEnabledForAvatarVideo;
         }
 
+        /// <summary>
+        /// Gets whether or not voice chat is enabled.
+        /// </summary>
         public bool VoiceEnabled => voiceEnabled.Value;
 
+        /// <summary>
+        /// Gets whether or not facial tracking is enabled.
+        /// </summary>
         public bool VideoEnabled => videoEnabled.Value;
 
 
@@ -528,6 +538,11 @@ namespace RoSharp.API.Assets
         }
 
         private Asset? icon;
+        
+        /// <summary>
+        /// Gets this experience's icon.
+        /// </summary>
+        /// <returns>A task containing the <see cref="Asset"/> upon completion. Can be <see langword="null"/>.</returns>
         public async Task<Asset?> GetIconAsync()
         {
             if (icon == null)
@@ -574,6 +589,13 @@ namespace RoSharp.API.Assets
             return new PageResponse<GenericId<Badge>>(list, nextPage, previousPage);
         }
 
+        /// <summary>
+        /// Gets this experience's thumbnails.
+        /// </summary>
+        /// <param name="size">The thumbnail size to use.</param>
+        /// <param name="defaultRobloxThumbnailIfNecessary">If the experience has no thumbnails, return the default Roblox thumbnail?</param>
+        /// <returns>A <see cref="ReadOnlyCollection{T}"/> of <see cref="Asset"/>s that are the experience's thumbnails.</returns>
+        /// <exception cref="ArgumentException">Invalid experience to get thumbnails for.</exception>
         public async Task<ReadOnlyCollection<Asset>> GetThumbnailsAsync(ExperienceThumbnailSize size = ExperienceThumbnailSize.S768x432, bool defaultRobloxThumbnailIfNecessary = true)
         {
             string url = $"/v1/games/multiget/thumbnails?universeIds={UniverseId}&countPerUniverse=25&defaults={defaultRobloxThumbnailIfNecessary.ToString().ToLower()}&size={size.ToString().Substring(1)}&format=Png&isCircular=false";
@@ -596,12 +618,22 @@ namespace RoSharp.API.Assets
             return thumbnails.AsReadOnly();
         }
 
+        /// <summary>
+        /// Sets the privacy of the experience.
+        /// </summary>
+        /// <param name="isPublic">Whether or not the experience is open to the public.</param>
+        /// <returns>A task that completes when the operation is finished.</returns>
         public async Task SetPrivacyAsync(bool isPublic)
         {
             string url = $"/v1/universes/{Id}/{(isPublic == false ? "de" : string.Empty)}activate";
             HttpResponseMessage response = await PostAsync(url, new { }, Constants.URL("develop"), "Experience.SetPrivacyAsync");
         }
 
+        /// <summary>
+        /// Modifies the experience.
+        /// </summary>
+        /// <param name="options">The options to use.</param>
+        /// <returns>A task that completes when the operation is finished.</returns>
         public async Task ModifyAsync(ExperienceModifyOptions options)
         {
             object body = new
@@ -620,6 +652,17 @@ namespace RoSharp.API.Assets
             HttpResponseMessage response = await PatchAsync($"/v2/universes/{UniverseId}/configuration", body, Constants.URL("develop"), "Experience.ModifyAsync");
         }
 
+        /// <summary>
+        /// Bans a user from the experience.
+        /// </summary>
+        /// <param name="userId">The user Id to ban.</param>
+        /// <param name="displayReason">The public reason to display to the user.</param>
+        /// <param name="privateReason">The private ban reason.</param>
+        /// <param name="permanent">True for a permanent ban.</param>
+        /// <param name="length">If <paramref name="permanent"/> is <see langword="false"/>, the length of time to use for the ban.</param>
+        /// <param name="excludeAlts">If suspected alts should be included in the ban.</param>
+        /// <returns>A task that completes when the operation is finished.</returns>
+        /// <exception cref="InvalidOperationException">length cannot be null if permanent is false.</exception>
         public async Task BanUserAsync(ulong userId, string displayReason, string privateReason, bool permanent, TimeSpan? length = null, bool excludeAlts = true)
         {
             if (permanent == false && !length.HasValue)
@@ -726,6 +769,7 @@ namespace RoSharp.API.Assets
         public string? Intensity { get; init; }
         public string? Presence { get; init; }
 
+        /// <inheritdoc/>
         public override string ToString()
         {
             return $"{DescriptorType} [{DisplayText}] IconUrl: <{IconUrl}> Type: <{Type}> Frequency: <{Frequency}> Realism: <{Realism}> BloodLevel: <{BloodLevel}> Intensity: <{Intensity}> Presence: <{Presence}>";
