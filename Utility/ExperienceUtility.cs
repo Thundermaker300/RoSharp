@@ -42,5 +42,29 @@ namespace RoSharp.Utility
 
             throw new ArgumentException($"Unexpected genre type: {genreName}.");
         }
+
+        public static string ToInternalKey(Genre genre)
+        {
+            string str = string.Empty;
+
+            // this one is a pain in the ###
+            if (genre == Genre.TurnbasedRPG)
+                return "turn_based_rpg";
+
+            if (IsMainGenre(genre))
+                str += "other_";
+
+            foreach (char c in genre.ToString())
+            {
+                if (char.IsUpper(c) && str.Length != 0 && !str.EndsWith('_'))
+                {
+                    str += "_";
+                }
+                str += char.ToLower(c);
+            }
+            return str;
+        }
+
+        public static bool IsMainGenre(Genre g) => (int)g is > 0 and < 18;
     }
 }

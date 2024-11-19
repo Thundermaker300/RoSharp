@@ -653,6 +653,29 @@ namespace RoSharp.API.Assets
         }
 
         /// <summary>
+        /// Sets the experience's genre to the given <see cref="Enums.Genre"/>.
+        /// </summary>
+        /// <param name="newGenre">The genre to set. Will throw an exception for <see cref="Genre.Unknown"/> and <see cref="Genre.None"/>.</param>
+        /// <returns>A task that completes when the operation is finished.</returns>
+        /// <remarks>Genres can only be changed ONCE every three months.</remarks>
+        public async Task ModifyGenreAsync(Genre newGenre)
+        {
+            object body = new
+            {
+                universeId = UniverseId,
+                genreTaxonomyVersion = 1,
+                genre = ExperienceUtility.ToInternalKey(newGenre),
+                responseOptions = new
+                {
+                    includeUpdateLockExpirationTime = true,
+                }
+            };
+
+            HttpResponseMessage response = await PostAsync("/experience-genre-api/v1/Creator/ExperienceGenre", body, "https://apis.roblox.com", "Experience.ModifyGenreAsync");
+            
+        }
+
+        /// <summary>
         /// Bans a user from the experience.
         /// </summary>
         /// <param name="userId">The user Id to ban.</param>
