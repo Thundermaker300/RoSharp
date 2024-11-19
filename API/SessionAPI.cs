@@ -2,7 +2,7 @@
 using RoSharp.API.Assets;
 using RoSharp.Enums;
 using RoSharp.Interfaces;
-using static System.Runtime.InteropServices.JavaScript.JSType;
+using RoSharp.Structures;
 
 namespace RoSharp.API
 {

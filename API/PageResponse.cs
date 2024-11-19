@@ -1,7 +1,7 @@
 ﻿using System.Collections;
 using System.Collections.ObjectModel;
 
-namespace RoSharp.API.Misc
+namespace RoSharp.API
 {
     /// <summary>
     /// Represents a response from the Roblox API that can be paged (usually via a 'cursor' parameter).
@@ -24,7 +24,7 @@ namespace RoSharp.API.Misc
         /// Gets the cursor for the previous page. Can be <see langword="null"/>.
         /// </summary>
         public string? PreviousPageCursor { get; }
-
+        
         internal PageResponse(List<T> list, string? nextPageCursor, string? previousPageCursor)
         {
             List = list.AsReadOnly();

@@ -4,7 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace RoSharp
+namespace RoSharp.Utility
 {
     /// <summary>
     /// The GlobalSession class allows the program to define one <see cref="Session"/> instance to use for the entire duration of the program, eliminating the need to provide session instances to every API call.
@@ -33,19 +33,6 @@ namespace RoSharp
                 throw new ArgumentException("GlobalSession.AssignSession requires a non-null & authenticated session.");
 
             assigned = session;
-        }
-
-        internal static Session? Global(this Session? session, string? mustReturnSomethingString = null)
-        {
-            if (!SessionVerify.Verify(session))
-            {
-                if (assigned != null)
-                    return assigned;
-                else if (mustReturnSomethingString != null)
-                    SessionVerify.Throw(mustReturnSomethingString);
-            }
-
-            return session;
         }
 
         /// <summary>

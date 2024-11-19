@@ -1,5 +1,4 @@
 ﻿using Newtonsoft.Json.Linq;
-using RoSharp.API.Misc;
 using RoSharp.Enums;
 using RoSharp.Exceptions;
 using RoSharp.Extensions;
@@ -12,7 +11,7 @@ using System.Net.Http.Json;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace RoSharp.API
+namespace RoSharp.API.Groups
 {
     /// <summary>
     /// Class used for managing roles in a group.

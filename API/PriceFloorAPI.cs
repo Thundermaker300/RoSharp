@@ -1,9 +1,10 @@
 ﻿using Newtonsoft.Json.Linq;
 using RoSharp.Enums;
+using RoSharp.Extensions;
 using System.Collections.ObjectModel;
 using System.Net;
 
-namespace RoSharp.Utility
+namespace RoSharp.API
 {
     /// <summary>
     /// Static class that contains utility methods for accessing Roblox's price floor information.

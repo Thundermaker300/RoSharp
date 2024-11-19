@@ -1,12 +1,11 @@
 ﻿using Newtonsoft.Json.Linq;
-using RoSharp.API.Misc;
 using RoSharp.Enums;
 using RoSharp.Exceptions;
 using RoSharp.Extensions;
 using RoSharp.Utility;
 using System.Diagnostics;
 
-namespace RoSharp.API
+namespace RoSharp.API.Groups
 {
     /// <summary>
     /// Class used for managing members of a group.

@@ -1,16 +1,16 @@
 ﻿using Newtonsoft.Json.Linq;
 using RoSharp.API.Assets;
-using RoSharp.API.Misc;
 using RoSharp.API.Pooling;
 using RoSharp.Enums;
 using RoSharp.Exceptions;
 using RoSharp.Extensions;
 using RoSharp.Interfaces;
+using RoSharp.Structures;
 using RoSharp.Utility;
 using System.Collections.ObjectModel;
 using System.Diagnostics;
 
-namespace RoSharp.API
+namespace RoSharp.API.Groups
 {
     /// <summary>
     /// A class that represents a Roblox group.
@@ -176,13 +176,13 @@ namespace RoSharp.API
             RefreshedAt = DateTime.Now;
         }
 
-        private GroupShoutInfo? shout;
+        private GroupShout? shout;
 
         /// <summary>
         /// Gets the group's current shout.
         /// </summary>
         /// <returns>A task containing a <see cref="GroupShoutInfo"/> representing the shout upon completion. Can be <see langword="null"/> if there is no current shout.</returns>
-        public async Task<GroupShoutInfo?> GetShoutAsync()
+        public async Task<GroupShout?> GetShoutAsync()
         {
             if (shout == null)
             {
@@ -192,7 +192,7 @@ namespace RoSharp.API
                 {
                     ulong posterId = Convert.ToUInt64(data.shout.poster.userId);
 
-                    shout = new GroupShoutInfo
+                    shout = new GroupShout
                     {
                         Text = data.shout.body,
                         Poster = await User.FromId(posterId, session),
@@ -362,59 +362,5 @@ namespace RoSharp.API
                 AttachSession(session);
             return this;
         }
-    }
-
-    /// <summary>
-    /// Contains info regarding a group shout.
-    /// </summary>
-    public struct GroupShoutInfo
-    {
-        /// <summary>
-        /// Gets the text of the shout.
-        /// </summary>
-        public string Text { get; init; }
-
-        /// <summary>
-        /// Gets the poster of the shout.
-        /// </summary>
-        public User Poster { get; init; }
-
-        /// <summary>
-        /// Gets a <see cref="DateTime"/> representing the time the shout was posted.
-        /// </summary>
-        public DateTime PostedAt { get; init; }
-    }
-
-    /// <summary>
-    /// Represents a group post.
-    /// </summary>
-    public struct GroupPost
-    {
-        internal Group group;
-
-        /// <summary>
-        /// Gets the unique Id of the post.
-        /// </summary>
-        public ulong PostId { get; init; }
-
-        /// <summary>
-        /// Gets the unique Id of the poster. Can be <see langword="null"/>.
-        /// </summary>
-        public GenericId<User>? PosterId { get; init; }
-
-        /// <summary>
-        /// Gets the text of the post.
-        /// </summary>
-        public string Text { get; init; }
-
-        /// <summary>
-        /// Gets a <see cref="DateTime"/> representing the date the post was created.
-        /// </summary>
-        public DateTime PostedAt { get; init; }
-
-        /// <summary>
-        /// Gets the rank of the user that made the post. Can be <see langword="null"/>.
-        /// </summary>
-        public string? RankInGroup { get; init; }
     }
 }

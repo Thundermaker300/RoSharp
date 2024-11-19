@@ -1,11 +1,12 @@
 ﻿using Newtonsoft.Json.Linq;
 using RoSharp.API.Assets;
-using RoSharp.API.Misc;
+using RoSharp.API.Groups;
 using RoSharp.API.Pooling;
 using RoSharp.Enums;
 using RoSharp.Exceptions;
 using RoSharp.Extensions;
 using RoSharp.Interfaces;
+using RoSharp.Structures;
 using RoSharp.Utility;
 using System.Collections.ObjectModel;
 
@@ -561,21 +562,6 @@ namespace RoSharp.API
             else
                 AttachSession(session);
             return this;
-        }
-    }
-
-    public class UserPresence
-    {
-        public UserLocationType Location { get; }
-        public Experience? PresenceLocation { get; }
-        public DateTime LastOnline { get; }
-        public bool IsOnline => Location is not UserLocationType.Offline;
-
-        internal UserPresence(UserLocationType type, Experience? location, DateTime lastOnline)
-        {
-            Location = type;
-            PresenceLocation = location;
-            LastOnline = lastOnline;
         }
     }
 }

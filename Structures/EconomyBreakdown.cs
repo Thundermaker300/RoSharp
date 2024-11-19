@@ -7,7 +7,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace RoSharp.API
+namespace RoSharp.Structures
 {
     /// <summary>
     /// Represents a breakdown of group income.

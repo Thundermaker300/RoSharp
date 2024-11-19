@@ -1,7 +1,9 @@
 ﻿using Newtonsoft.Json.Linq;
+using RoSharp.API.Groups;
 using RoSharp.API.Pooling;
 using RoSharp.Enums;
 using RoSharp.Exceptions;
+using RoSharp.Extensions;
 using RoSharp.Interfaces;
 using System.Collections.ObjectModel;
 

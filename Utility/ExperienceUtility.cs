@@ -19,7 +19,7 @@ namespace RoSharp.Utility
         /// <param name="genreName">The name of the genre.</param>
         /// <returns>The <see cref="Genre"/>.</returns>
         /// <exception cref="ArgumentException">Invalid genre name provided.</exception>
-        /// <remarks>This method will automatically remove spaces and dashes (-), and will replace "&" symbols with the word "And".</remarks>
+        /// <remarks>This method will automatically remove spaces and dashes (-), and will replace ampersand symbols with the word "And".</remarks>
         public static Genre GetGenre(string genreName)
         {
             if (genreName != null)

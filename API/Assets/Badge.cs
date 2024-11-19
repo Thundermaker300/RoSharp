@@ -1,6 +1,7 @@
 ﻿using Newtonsoft.Json.Linq;
 using RoSharp.API.Pooling;
 using RoSharp.Exceptions;
+using RoSharp.Extensions;
 using RoSharp.Interfaces;
 
 namespace RoSharp.API.Assets

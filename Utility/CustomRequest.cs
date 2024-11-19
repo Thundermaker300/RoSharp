@@ -1,7 +1,8 @@
-﻿using System.Net;
+﻿using RoSharp.Extensions;
+using System.Net;
 using System.Net.Http.Json;
 
-namespace RoSharp.API
+namespace RoSharp.Utility
 {
     /// <summary>
     /// The CustomRequest class can be used to make custom requests to the Roblox API using RoSharp's authentication API.

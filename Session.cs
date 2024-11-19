@@ -1,5 +1,6 @@
 ﻿using RoSharp.API;
 using RoSharp.Structures;
+using RoSharp.Utility;
 using System.Net;
 using System.Net.Http.Json;
 
@@ -77,12 +78,12 @@ namespace RoSharp
             {
                 this.roblosecurity = roblosecurity;
 
-                RobloxLogin result = await authResponse.Content.ReadFromJsonAsync<RobloxLogin>();
-                if (result != null)
+                RobloxLogin? result = await authResponse.Content.ReadFromJsonAsync<RobloxLogin>();
+                if (result.HasValue)
                 {
-                    username = result.name;
-                    userid = result.id;
-                    displayname = result.displayName;
+                    username = result.Value.name;
+                    userid = result.Value.id;
+                    displayname = result.Value.displayName;
                     loggedIn = true;
                     loggedAt = DateTime.Now;
 
