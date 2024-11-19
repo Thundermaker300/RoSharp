@@ -225,7 +225,14 @@ namespace RoSharp.API.Assets
             isGroupOwned = data.Creator.CreatorType == "Group";
 
             // Update favorites
-            favorites = Convert.ToUInt64(await GetStringAsync($"/v1/favorites/assets/{Id}/count"));
+            try
+            {
+                favorites = Convert.ToUInt64(await GetStringAsync($"/v1/favorites/assets/{Id}/count"));
+            }
+            catch
+            {
+                favorites = 0;
+            }
 
             // Reset properties
             thumbnailUrl = await GetThumbnailAsync(ThumbnailSize.S420x420);
