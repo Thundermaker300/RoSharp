@@ -16,7 +16,7 @@ namespace RoSharp.API.Assets
     /// </summary>
     /// <remarks>This class consists of every Roblox item type except for Bundles, Game Passes, Experiences, and Badges. See their respective types.</remarks>
     /// <seealso cref="Badge"/>
-    /// <seealso cref="Experience"/>
+    /// <seealso cref="Experiences.Experience"/>
     /// <seealso cref="FromId(ulong, Session)"/>
     public class Asset : APIMain, IRefreshable, IIdApi<Asset>
     {
@@ -86,6 +86,13 @@ namespace RoSharp.API.Assets
         /// </summary>
         public int Price => price;
 
+        private double usdPrice;
+        
+        /// <summary>
+        /// Gets the USD price of this asset.
+        /// </summary>
+        public double UsdPrice => usdPrice;
+
         private bool onSale;
 
         /// <summary>
@@ -104,7 +111,7 @@ namespace RoSharp.API.Assets
         /// <summary>
         /// Gets whether or not this asset can be purchased for free.
         /// </summary>
-        public bool Free => OnSale && Price == 0;
+        public bool Free => OnSale && Price == 0 && UsdPrice == 0;
 
         private int remaining;
 
@@ -275,14 +282,20 @@ namespace RoSharp.API.Assets
                 
                 dynamic toolboxDataUseless = JObject.Parse(await catalogResponse.Content.ReadAsStringAsync());
                 dynamic toolboxData = toolboxDataUseless.data[0];
+                double usdPrice =
+                    Convert.ToUInt64(toolboxData.fiatProduct.purchasePrice.quantity.significand)
+                    * Math.Pow(10, Convert.ToInt32(toolboxData.fiatProduct.purchasePrice.quantity.exponent));
+
                 hasScripts = toolboxData.asset.hasScripts;
                 duration = toolboxData.asset.duration;
+                this.usdPrice = usdPrice;
             }
             else
             {
                 isCreatorHubAsset = false;
                 hasScripts = false;
                 duration = 0;
+                usdPrice = 0;
             }
 
             RefreshedAt = DateTime.Now;
