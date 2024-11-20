@@ -385,6 +385,9 @@ namespace RoSharp.API.Assets
         /// <remarks>This method will return an empty <see cref="PageResponse{T}"/> if <see cref="IsCreatorHubAsset"/> is <see langword="false"/>.</remarks>
         public async Task<PageResponse<AssetReview>> GetReviewsAsync(int limit = 50, string? cursor = null)
         {
+            if (!IsCreatorHubAsset)
+                return PageResponse<AssetReview>.Empty;
+
             string url = $"/asset-reviews-api/v1/assets/{Id}/comments?hideAuthenticatedUserComment=true&limit={limit}&sortByHelpfulCount=true";
             if (cursor != null)
                 url += $"&cursor={cursor}";
