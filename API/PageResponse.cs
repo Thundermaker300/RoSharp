@@ -11,6 +11,11 @@ namespace RoSharp.API
         where T: notnull
     {
         /// <summary>
+        /// Gets an empty <see cref="PageResponse{T}"/> with an empty list and no cursors.
+        /// </summary>
+        public static PageResponse<T> Empty => new(new List<T>(0), null, null);
+
+        /// <summary>
         /// Gets a list of <typeparamref name="T"/> instances that were apart of this API response.
         /// </summary>
         public ReadOnlyCollection<T> List { get; }
@@ -24,6 +29,11 @@ namespace RoSharp.API
         /// Gets the cursor for the previous page. Can be <see langword="null"/>.
         /// </summary>
         public string? PreviousPageCursor { get; }
+
+        /// <summary>
+        /// Indicates whether or not there is another page after this one.
+        /// </summary>
+        public bool IsAnotherPage => NextPageCursor != null;
         
         internal PageResponse(List<T> list, string? nextPageCursor, string? previousPageCursor)
         {
