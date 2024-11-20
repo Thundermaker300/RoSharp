@@ -25,6 +25,9 @@ namespace RoSharp.API.Groups
         /// </summary>
         public ulong Id { get; }
 
+        /// <inheritdoc/>
+        public string Url => $"{Constants.ROBLOX_URL}/groups/{Id}/";
+
         private string name;
 
         /// <summary>

@@ -19,6 +19,11 @@ namespace RoSharp.Interfaces
         public ulong Id { get; }
 
         /// <summary>
+        /// Gets the Web URL that points to the asset.
+        /// </summary>
+        public string Url { get; }
+
+        /// <summary>
         /// Gets the instance from the provided Id.
         /// </summary>
         /// <param name="id">The Id.</param>

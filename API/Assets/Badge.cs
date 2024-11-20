@@ -16,6 +16,9 @@ namespace RoSharp.API.Assets
 
         public ulong Id { get; }
 
+        /// <inheritdoc/>
+        public string Url => $"{Constants.ROBLOX_URL}/badges/{Id}/";
+
         private string name;
         public string Name => name;
 

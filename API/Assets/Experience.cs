@@ -33,6 +33,9 @@ namespace RoSharp.API.Assets
         /// </summary>
         public ulong Id => UniverseId;
 
+        /// <inheritdoc/>
+        public string Url => $"{Constants.ROBLOX_URL}/games/{RootPlaceId}/";
+
         private string name;
 
         /// <summary>
@@ -137,6 +140,9 @@ namespace RoSharp.API.Assets
         /// </summary>
         public Genre Subgenre => subgenre;
 
+        private ulong rootPlaceId;
+        public ulong RootPlaceId => rootPlaceId; // Todo: Convert to a Place type when those exist.
+
         internal bool favoritedByUser;
 
         /// <inheritdoc/>
@@ -227,6 +233,7 @@ namespace RoSharp.API.Assets
             playingNow = data.playing;
             visits = data.visits;
             favorites = data.favoritedCount;
+            rootPlaceId = data.rootPlaceId;
             genre = ExperienceUtility.GetGenre(Convert.ToString(data.genre_l1));
             subgenre = ExperienceUtility.GetGenre(Convert.ToString(data.genre_l2));
 

@@ -27,6 +27,9 @@ namespace RoSharp.API
         /// </summary>
         public ulong Id { get; }
 
+        /// <inheritdoc/>
+        public string Url => $"{Constants.ROBLOX_URL}/users/{Id}/profile";
+
         private string name;
 
         /// <summary>

@@ -26,6 +26,9 @@ namespace RoSharp.API.Assets
         /// </summary>
         public ulong Id { get; }
 
+        /// <inheritdoc/>
+        public string Url => $"{Constants.ROBLOX_URL}/catalog/{Id}/";
+
         private string name;
 
         /// <summary>
