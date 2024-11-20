@@ -33,7 +33,12 @@ namespace RoSharp.API
         /// <summary>
         /// Indicates whether or not there is another page after this one.
         /// </summary>
-        public bool IsAnotherPage => NextPageCursor != null;
+        public bool IsNextPage => NextPageCursor != null;
+
+        /// <summary>
+        /// Indicates whether or not there is a page before this one.
+        /// </summary>
+        public bool IsPreviousPage => PreviousPageCursor != null;
         
         internal PageResponse(List<T> list, string? nextPageCursor, string? previousPageCursor)
         {

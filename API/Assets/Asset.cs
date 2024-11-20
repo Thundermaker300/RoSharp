@@ -377,7 +377,7 @@ namespace RoSharp.API.Assets
         }
 
         /// <summary>
-        /// Returns asset reviews.
+        /// Returns asset reviews. The amount of time this API request takes scales up with a higher <paramref name="limit"/>.
         /// </summary>
         /// <param name="limit">The maximum amount of reviews to return.</param>
         /// <param name="cursor">The cursor for the next page. Obtained by calling this API previously.</param>
