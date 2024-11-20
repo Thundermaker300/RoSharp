@@ -14,7 +14,7 @@ namespace RoSharp.API.Assets
     /// <summary>
     /// A class that represents a Roblox asset.
     /// </summary>
-    /// <remarks>This class consists of every Roblox item type except for Bundles, Game Passes, Experiences, and Badges. See their respective types.</remarks>
+    /// <remarks>This class consists of every Roblox item type except for Bundles, Game Passes, and Badges. See their respective types. Places can be made through this API but will have much less data as opposed to <see cref="Experiences.Experience"/> classes.</remarks>
     /// <seealso cref="Badge"/>
     /// <seealso cref="Experiences.Experience"/>
     /// <seealso cref="FromId(ulong, Session)"/>
