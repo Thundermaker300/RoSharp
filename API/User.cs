@@ -97,6 +97,14 @@ namespace RoSharp.API
                 RoPool<User>.Add(this);
         }
 
+        /// <summary>
+        /// Returns a <see cref="User"/> given a user's unique Id.
+        /// </summary>
+        /// <param name="userId">The user Id.</param>
+        /// <param name="session">The session, optional.</param>
+        /// <returns>A task containing the <see cref="User"/> upon completion.</returns>
+        /// <exception cref="ArgumentException">If the asset Id invalid.</exception>
+        /// <exception cref="RobloxAPIException">Roblox API failure.</exception>
         public static async Task<User> FromId(ulong userId, Session? session = null)
         {
             if (RoPool<User>.Contains(userId))
@@ -108,6 +116,14 @@ namespace RoSharp.API
             return newUser;
         }
 
+        /// <summary>
+        /// Returns a <see cref="User"/> given a username.
+        /// </summary>
+        /// <param name="username">The username.</param>
+        /// <param name="session">The session, optional.</param>
+        /// <returns>A task containing the <see cref="User"/> upon completion.</returns>
+        /// <exception cref="ArgumentException">If the asset Id invalid.</exception>
+        /// <exception cref="RobloxAPIException">Roblox API failure.</exception>
         public static async Task<User> FromUsername(string username, Session? session = null)
             => await FromId(await UserUtility.GetUserIdAsync(username), session);
 
@@ -157,7 +173,7 @@ namespace RoSharp.API
             RefreshedAt = DateTime.Now;
         }
 
-        public async Task UpdateFollowingsAsync()
+        private async Task UpdateFollowingsAsync()
         {
             dynamic followingsData = JObject.Parse(await GetStringAsync($"/v1/users/{Id}/followings/count", Constants.URL("friends")));
             dynamic followersData = JObject.Parse(await GetStringAsync($"/v1/users/{Id}/followers/count", Constants.URL("friends")));
@@ -167,6 +183,12 @@ namespace RoSharp.API
         }
 
         private bool? isPremium;
+
+        /// <summary>
+        /// Gets whether or not this user has Roblox Premium.
+        /// </summary>
+        /// <remarks>This property is unavailable and will throw a <see cref="RobloxAPIException"/> if this user is not authenticated.</remarks>
+        /// <exception cref="RobloxAPIException"></exception>
         public bool IsPremium
         {
             get
@@ -180,12 +202,27 @@ namespace RoSharp.API
         }
 
         private int following = -1;
+
+        /// <summary>
+        /// Gets the amount of users this user is following.
+        /// </summary>
         public int Following => following;
 
         private int followers = -1;
+
+        /// <summary>
+        /// Gets the amount of users that are following this user.
+        /// </summary>
         public int Followers => followers;
 
+
+
         private ReadOnlyCollection<string>? robloxBadges;
+
+        /// <summary>
+        /// Gets a <see cref="ReadOnlyCollection{T}"/> of Roblox badges this user has.
+        /// </summary>
+        /// <returns>A task containing a <see cref="ReadOnlyCollection{T}"/> of <see cref="string"/>s upon completion, each being the name of a Roblox badge.</returns>
         public async Task<ReadOnlyCollection<string>> GetRobloxBadgesAsync()
         {
             if (robloxBadges == null)
@@ -229,6 +266,11 @@ namespace RoSharp.API
         }
 
         private Group? primaryGroup;
+
+        /// <summary>
+        /// Gets the user's primary group.
+        /// </summary>
+        /// <returns>A task containing a <see cref="Group"/> on completion. Will be <see langword="null"/> if the user does not have a primary group.</returns>
         public async Task<Group?> GetPrimaryGroupAsync()
         {
             if (primaryGroup == null)
@@ -245,6 +287,12 @@ namespace RoSharp.API
         }
 
         private ReadOnlyDictionary<Group, Role>? groups;
+
+        /// <summary>
+        /// Gets the groups this user is in as well as the role they are.
+        /// </summary>
+        /// <param name="limit">The limit of groups to return. Set to <c>-1</c> for all.</param>
+        /// <returns>A <see cref="ReadOnlyDictionary{TKey, TValue}"/> of groups and the role the user has in them.</returns>
         public async Task<ReadOnlyDictionary<Group, Role>> GetGroupsAsync(int limit = -1)
         {
             if (groups == null)
@@ -382,6 +430,62 @@ namespace RoSharp.API
             }
 
             return friends.AsReadOnly();
+        }
+
+        /// <summary>
+        /// Gets the Ids of the users this user is following.
+        /// </summary>
+        /// <param name="limit">The maximum amount of Ids to return.</param>
+        /// <param name="sortOrder">The sort order.</param>
+        /// <param name="cursor">The cursor for the next page. Obtained by calling this API previously.</param>
+        /// <returns>A task containing a <see cref="PageResponse{T}"/> of <see cref="GenericId{T}"/> upon completion.</returns>
+        public async Task<PageResponse<GenericId<User>>> GetFollowingAsync(FixedLimit limit = FixedLimit.Limit100, RequestSortOrder sortOrder = RequestSortOrder.Desc, string? cursor = null)
+        {
+            string url = $"/v1/users/{Id}/followings?limit={limit.Limit()}&sortOrder={sortOrder}";
+            if (cursor != null)
+                url += "&cursor=" + cursor;
+
+            var list = new List<GenericId<User>>();
+            HttpResponseMessage response = await GetAsync(url, Constants.URL("friends"));
+            dynamic data = JObject.Parse(await response.Content.ReadAsStringAsync());
+            string? nextPage = data.nextPageCursor;
+            string? previousPage = data.previousPageCursor;
+
+            foreach (dynamic item in data.data)
+            {
+                ulong id = item.id;
+                list.Add(new(id, session));
+            }
+
+            return new PageResponse<GenericId<User>>(list, nextPage, previousPage);
+        }
+
+        /// <summary>
+        /// Gets the Ids of the users this user is followed by.
+        /// </summary>
+        /// <param name="limit">The maximum amount of Ids to return.</param>
+        /// <param name="sortOrder">The sort order.</param>
+        /// <param name="cursor">The cursor for the next page. Obtained by calling this API previously.</param>
+        /// <returns>A task containing a <see cref="PageResponse{T}"/> of <see cref="GenericId{T}"/> upon completion.</returns>
+        public async Task<PageResponse<GenericId<User>>> GetFollowersAsync(FixedLimit limit = FixedLimit.Limit100, RequestSortOrder sortOrder = RequestSortOrder.Desc, string? cursor = null)
+        {
+            string url = $"/v1/users/{Id}/followers?limit={limit.Limit()}&sortOrder={sortOrder}";
+            if (cursor != null)
+                url += "&cursor=" + cursor;
+
+            var list = new List<GenericId<User>>();
+            HttpResponseMessage response = await GetAsync(url, Constants.URL("friends"));
+            dynamic data = JObject.Parse(await response.Content.ReadAsStringAsync());
+            string? nextPage = data.nextPageCursor;
+            string? previousPage = data.previousPageCursor;
+
+            foreach (dynamic item in data.data)
+            {
+                ulong id = item.id;
+                list.Add(new(id, session));
+            }
+
+            return new PageResponse<GenericId<User>>(list, nextPage, previousPage);
         }
 
         /// <summary>
@@ -559,6 +663,7 @@ namespace RoSharp.API
             return $"{DisplayName} (@{Name}) [{Id}]{(Verified ? " [V]" : string.Empty)}";
         }
 
+        /// <inheritdoc/>
         public User AttachSessionAndReturn(Session? session)
         {
             if (session is null || !session.LoggedIn)
