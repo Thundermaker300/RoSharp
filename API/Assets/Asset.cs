@@ -29,7 +29,15 @@ namespace RoSharp.API.Assets
         public ulong Id { get; }
 
         /// <inheritdoc/>
-        public string Url => $"{Constants.ROBLOX_URL}/catalog/{Id}/";
+        public string Url
+        {
+            get
+            {
+                if (AssetType is AssetType.Place)
+                    return $"{Constants.ROBLOX_URL}/games/{Id}";
+                return IsCreatorHubAsset ? $"{Constants.URL("create")}/store/asset/{Id}/" : $"{Constants.ROBLOX_URL}/catalog/{Id}/";
+            }
+        }
 
         private string name;
 
