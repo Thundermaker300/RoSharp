@@ -10,6 +10,8 @@ using System.Collections.ObjectModel;
 using System.Diagnostics;
 using System.Net;
 
+using Regex = System.Text.RegularExpressions.Regex;
+
 namespace RoSharp.API.Assets
 {
     /// <summary>
@@ -211,7 +213,6 @@ namespace RoSharp.API.Assets
         public async Task RefreshAsync()
         {
             // Reset properties
-            // TODO: These need to be updated within this method
             playabilityStatus = null;
             socialChannels = null;
             icon = null;
@@ -250,11 +251,22 @@ namespace RoSharp.API.Assets
             isGroupOwned = data.creator.type == "Group";
 
             // configs
-            await UpdateConfigurationAsync();
-
             await UpdateExperienceGuidelinesDataAsync();
-            await UpdateVoiceVideoAsync();
             await UpdateVotesAsync();
+
+            if (SessionVerify.Verify(session.Global()))
+            {
+                // All the below methods only return helpful data if the user is authenticated at minimum.
+                // So let's just skip it to save roughly 700ms.
+                await UpdateVoiceVideoAsync();
+                await UpdateConfigurationAsync();
+                await UpdatePrivateServerInfoAsync();
+            }
+            else
+            {
+                privateServers = false;
+                privateServerCost = 0;
+            }
 
             RefreshedAt = DateTime.Now;
         }
@@ -290,12 +302,12 @@ namespace RoSharp.API.Assets
         /// <summary>
         /// Gets whether or not voice chat is enabled.
         /// </summary>
-        public bool VoiceEnabled => voiceEnabled.Value;
+        public bool VoiceEnabled => voiceEnabled.GetValueOrDefault();
 
         /// <summary>
         /// Gets whether or not facial tracking is enabled.
         /// </summary>
-        public bool VideoEnabled => videoEnabled.Value;
+        public bool VideoEnabled => videoEnabled.GetValueOrDefault();
 
 
         private PlayabilityStatus? playabilityStatus;
@@ -474,18 +486,61 @@ namespace RoSharp.API.Assets
         /// <remarks>This list will be empty for experiences that the authenticated user does not have access to modify.</remarks>
         public ReadOnlyCollection<Device> Devices => devices.Select(Enum.Parse<Device>).ToList().AsReadOnly();
 
+        private const string VIPEnabledRegex = @"data-private-server-product-id=""([0-9]+)""";
+        private const string VIPPriceRegex = @"data-private-server-price=""([0-9]+)""";
+        private async Task UpdatePrivateServerInfoAsync()
+        {
+            // Not my proudest scrape
+            // Note: If anyone can find an API endpoint that gets Private Server cost, PLEASE PLEASE
+            // let me know!! Scraping seems to be the only way to get VIP Server price for now.
+            string rawData = await GetStringAsync($"/games/servers-section/{UniverseId}", Constants.ROBLOX_URL);
+
+            var matchEnabled = Regex.Match(rawData, VIPEnabledRegex);
+            if (matchEnabled.Success && matchEnabled.Groups.Count > 1)
+                privateServers = matchEnabled.Groups[1].Value != "0";
+
+            var matchPrice = Regex.Match(rawData, VIPPriceRegex);
+            if (matchPrice.Success && matchPrice.Groups.Count > 1)
+                privateServerCost = Convert.ToInt32(matchPrice.Groups[1].Value);
+        }
+
         private bool? privateServers;
+
+        /// <summary>
+        /// Gets whether or not private servers are enabled in this experience.
+        /// </summary>
+        /// <remarks>This value will always be <see langword="false"/> if this instance is not authenticated.</remarks>
+        /// <seealso cref="PrivateServerCost"/>
         public bool PrivateServers => privateServers.GetValueOrDefault();
 
         private int? privateServerCost;
+
+        /// <summary>
+        /// Gets the cost of private servers.
+        /// </summary>
+        /// <remarks>This value will always be <c>0</c> if this instance is not authenticated.</remarks>
+        /// <seealso cref="PrivateServers"/>
         public int PrivateServerCost => privateServerCost.GetValueOrDefault();
 
+        /// <summary>
+        /// Gets whether or not players must pay to play the experience.
+        /// </summary>
         public bool PurchaseRequired => Cost != 0;
 
         private bool? friendsOnly;
+
+        /// <summary>
+        /// Gets whether or not players have to befriend the owner to play the experience.
+        /// </summary>
+        /// <remarks>This value will always be <see langword="false"/> for experiences that the authenticated user does not have access to modify.</remarks>
         public bool FriendsOnly => friendsOnly.GetValueOrDefault();
 
         private bool studioAccessToAPIsAllowed;
+
+        /// <summary>
+        /// Gets whether or not Roblox Studio instances can access remote APIs such as HttpService and DataStoreService.
+        /// </summary>
+        /// <remarks>This value will always be <see langword="false"/> for experiences that the authenticated user does not have access to modify.</remarks>
         public bool StudioAccessToAPIsAllowed => studioAccessToAPIsAllowed;
 
         private async Task UpdateConfigurationAsync()
@@ -509,7 +564,6 @@ namespace RoSharp.API.Assets
                 this.devices = devices;
             }
 
-            privateServers = data.allowPrivateServers;
             privateServerCost = data.privateServerPrice;
             friendsOnly = data.isFriendsOnly;
             studioAccessToAPIsAllowed = Convert.ToBoolean(data.studioAccessToApisAllowed);
