@@ -43,11 +43,14 @@ namespace RoSharp.API
             return client;
         }
 
-        internal async Task<HttpResponseMessage> GetAsync(string url, string? baseOverride = null, string? verifyApiName = null)
+        internal async Task<HttpResponseMessage> GetAsync(string url, string? baseOverride = null, string? verifyApiName = null, bool doNotThrowException = false)
         {
             HttpClient client = MakeHttpClient(baseOverride, verifyApiName);
             HttpResponseMessage message = await client.GetAsync(url);
-            HttpVerify.ThrowIfNecessary(message, await message.Content.ReadAsStringAsync());
+
+            if (!doNotThrowException)
+                HttpVerify.ThrowIfNecessary(message, await message.Content.ReadAsStringAsync());
+
             return message;
         }
 

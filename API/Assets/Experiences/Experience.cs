@@ -12,7 +12,7 @@ using System.Net;
 
 using Regex = System.Text.RegularExpressions.Regex;
 
-namespace RoSharp.API.Assets
+namespace RoSharp.API.Assets.Experiences
 {
     /// <summary>
     /// A class that represents a collection of connected places, also known as a "universe".
@@ -145,6 +145,9 @@ namespace RoSharp.API.Assets
         private ulong rootPlaceId;
         public ulong RootPlaceId => rootPlaceId; // Todo: Convert to a Place type when those exist.
 
+        private DeveloperStats statistics;
+        public DeveloperStats Statistics => statistics;
+
         internal bool favoritedByUser;
 
         /// <inheritdoc/>
@@ -159,6 +162,8 @@ namespace RoSharp.API.Assets
 
             if (!RoPool<Experience>.Contains(UniverseId))
                 RoPool<Experience>.Add(this);
+
+            statistics = new(this);
         }
 
         /// <summary>
@@ -216,7 +221,6 @@ namespace RoSharp.API.Assets
             playabilityStatus = null;
             socialChannels = null;
             icon = null;
-            history = null;
 
             HttpResponseMessage response = await GetAsync($"/v1/games?universeIds={UniverseId}");
             dynamic whyaretheresomanywrappers = JObject.Parse(await response.Content.ReadAsStringAsync());
@@ -268,6 +272,7 @@ namespace RoSharp.API.Assets
                 privateServerCost = 0;
             }
 
+            await Statistics.RefreshAsync();
             RefreshedAt = DateTime.Now;
         }
 
@@ -796,33 +801,6 @@ namespace RoSharp.API.Assets
         public async Task PostUpdateAsync(string text)
         {
             HttpResponseMessage response = await PostAsync($"/game-update-notifications/v1/publish/{UniverseId}", text, Constants.URL("apis"), "Experience.PostUpdateAsync");
-        }
-
-        private ReadOnlyCollection<ExperienceActivityHistory>? history;
-        public async Task<ReadOnlyCollection<ExperienceActivityHistory>> GetActivityHistoryAsync()
-        {
-            if (history == null)
-            {
-                string rawData = await GetStringAsync("/activity-feed-api/v1/history?clientType=1&universeId=3744484651", "https://apis.roblox.com", "Experience.GetActivityHistoryAsync");
-                dynamic data = JObject.Parse(rawData);
-
-                List<ExperienceActivityHistory> list = new();
-                foreach (dynamic ev in data.events)
-                {
-                    list.Add(new()
-                    {
-                        Id = ev.id,
-                        Type = (ExperienceActivityHistoryType)ev.eventType,
-                        UniverseId = new GenericId<Experience>(Convert.ToUInt64(ev.universeId)),
-                        PlaceId = ev.placeId,
-                        UserId = new GenericId<User>(Convert.ToUInt64(ev.userId)),
-                        Time = DateTime.UnixEpoch.AddMilliseconds(Convert.ToInt64(ev.createdUnixTimeMs)),
-                    });
-                }
-
-                history = list.AsReadOnly();
-            }
-            return history;
         }
 
         /// <inheritdoc/>

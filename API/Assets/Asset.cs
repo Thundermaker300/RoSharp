@@ -5,7 +5,9 @@ using RoSharp.Enums;
 using RoSharp.Exceptions;
 using RoSharp.Extensions;
 using RoSharp.Interfaces;
+using RoSharp.Structures;
 using System.Collections.ObjectModel;
+using System.Net;
 
 namespace RoSharp.API.Assets
 {
@@ -153,6 +155,29 @@ namespace RoSharp.API.Assets
         /// </summary>
         public SaleLocationType SaleLocation => saleLocation;
 
+        private bool isCreatorHubAsset;
+
+        /// <summary>
+        /// Indicates whether or not this asset is a creator hub asset (Decals, Sounds, Models, etc).
+        /// </summary>
+        public bool IsCreatorHubAsset => isCreatorHubAsset;
+
+        private bool hasScripts;
+
+        /// <summary>
+        /// Indicates whether or not this asset has scripts in it.
+        /// </summary>
+        /// <remarks>This will always be <see langword="false"/> if <see cref="AssetType"/> is not equal to <see cref="AssetType.Model"/>.</remarks>
+        public bool HasScripts => hasScripts;
+
+        private int duration;
+
+        /// <summary>
+        /// Gets the length of this asset.
+        /// </summary>
+        /// <remarks>This will always be <see cref="TimeSpan.Zero"/> if <see cref="AssetType"/> is not equal to <see cref="AssetType.Audio"/>.</remarks>
+        public TimeSpan Duration => TimeSpan.FromSeconds(duration);
+
         /// <inheritdoc/>
         public DateTime RefreshedAt { get; set; }
 
@@ -241,6 +266,24 @@ namespace RoSharp.API.Assets
 
             // Reset properties
             thumbnailUrl = await GetThumbnailAsync(ThumbnailSize.S420x420);
+
+            // Check if creator hub asset
+            HttpResponseMessage catalogResponse = await GetAsync($"/toolbox-service/v1/items/details?assetIds={Id}", Constants.URL("apis"), doNotThrowException: true);
+            if (catalogResponse.StatusCode == HttpStatusCode.OK)
+            {
+                isCreatorHubAsset = true;
+                
+                dynamic toolboxDataUseless = JObject.Parse(await catalogResponse.Content.ReadAsStringAsync());
+                dynamic toolboxData = toolboxDataUseless.data[0];
+                hasScripts = toolboxData.asset.hasScripts;
+                duration = toolboxData.asset.duration;
+            }
+            else
+            {
+                isCreatorHubAsset = false;
+                hasScripts = false;
+                duration = 0;
+            }
 
             RefreshedAt = DateTime.Now;
         }
@@ -331,6 +374,44 @@ namespace RoSharp.API.Assets
                 }
             };
             HttpResponseMessage response = await PostAsync("/v1/assets/3307894526/release", body, Constants.URL("itemconfiguration"), "Asset.SetSaleStatusAsync");
+        }
+
+        /// <summary>
+        /// Returns asset reviews.
+        /// </summary>
+        /// <param name="limit">The maximum amount of reviews to return.</param>
+        /// <param name="cursor">The cursor for the next page. Obtained by calling this API previously.</param>
+        /// <returns>A task containing a <see cref="PageResponse{T}"/> of <see cref="AssetReview"/> upon completion.</returns>
+        /// <remarks>This method will return an empty <see cref="PageResponse{T}"/> if <see cref="IsCreatorHubAsset"/> is <see langword="false"/>.</remarks>
+        public async Task<PageResponse<AssetReview>> GetReviewsAsync(int limit = 50, string? cursor = null)
+        {
+            string url = $"/asset-reviews-api/v1/assets/{Id}/comments?hideAuthenticatedUserComment=true&limit={limit}&sortByHelpfulCount=true";
+            if (cursor != null)
+                url += $"&cursor={cursor}";
+
+            string rawData = await GetStringAsync(url, Constants.URL("apis"));
+            dynamic data = JObject.Parse(rawData);
+            string? nextPage = data.nextCursor;
+
+            if (data.hasMore == false)
+                nextPage = null;
+
+            List<AssetReview> reviews = new();
+            foreach (dynamic comment in data.commentResponses)
+            {
+                bool? isRecommended = comment.isRecommended;
+
+                AssetReview yes = new()
+                {
+                    ReviewId = comment.id,
+                    Text = comment.text,
+                    IsRecommended = isRecommended,
+                    Poster = new GenericId<User>(Convert.ToUInt64(comment.commentingUserId), session),
+                };
+                reviews.Add(yes);
+            }
+
+            return new PageResponse<AssetReview>(reviews, nextPage, null);
         }
 
         /// <summary>

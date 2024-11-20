@@ -1,5 +1,6 @@
 ﻿using Newtonsoft.Json.Linq;
 using RoSharp.API.Assets;
+using RoSharp.API.Assets.Experiences;
 using RoSharp.API.Groups;
 using RoSharp.API.Pooling;
 using RoSharp.Enums;

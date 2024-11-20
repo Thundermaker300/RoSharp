@@ -1,4 +1,5 @@
 ﻿using RoSharp.API.Assets;
+using RoSharp.API.Assets.Experiences;
 using RoSharp.Enums;
 
 namespace RoSharp.Structures

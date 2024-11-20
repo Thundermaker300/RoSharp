@@ -1,5 +1,6 @@
 ﻿using Newtonsoft.Json.Linq;
 using RoSharp.API.Assets;
+using RoSharp.API.Assets.Experiences;
 using RoSharp.Exceptions;
 using RoSharp.Extensions;
 using RoSharp.Structures;
