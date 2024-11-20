@@ -682,6 +682,37 @@ namespace RoSharp.API
         }
 
         /// <summary>
+        /// Returns items that the user owns. This method WILL throw an exception if the authenticated user cannot see this user's inventory.
+        /// </summary>
+        /// <param name="assetType">The <see cref="AssetType"/> to use for this request.</param>
+        /// <param name="limit">The limit of assets to return.</param>
+        /// <param name="sortOrder">The sort order.</param>
+        /// <param name="cursor">The cursor for the next page. Obtained by calling this API previously.</param>
+        /// <returns>A task containing a <see cref="PageResponse{T}"/> of <see cref="GenericId{T}"/> upon completion.</returns>
+        /// <remarks>This API method does not cache and will make a request each time it is called. This API also does not work for Badges, Bundles, and GamePasses -- see their respective APIs.</remarks>
+        public async Task<PageResponse<GenericId<Asset>>> GetFavoritesAsync(AssetType assetType, FixedLimit limit = FixedLimit.Limit100, RequestSortOrder sortOrder = RequestSortOrder.Desc, string? cursor = null)
+        {
+            string url = $"/users/favorites/list-json?userId={Id}&assetTypeId={(int)assetType}&itemsPerPage={limit.Limit()}";
+            if (cursor != null)
+                url += "&cursor=" + cursor;
+
+            string rawData = await GetStringAsync(url, Constants.ROBLOX_URL_WWW);
+            dynamic data = JObject.Parse(rawData);
+
+            List<GenericId<Asset>> list = new();
+            string? nextPage = data.nextPageCursor;
+            string? previousPage = data.previousPageCursor;
+
+            foreach (dynamic item in data.Data.Items)
+            {
+                ulong id = Convert.ToUInt64(item.Item.AssetId);
+                list.Add(new(id, session));
+            }
+
+            return new PageResponse<GenericId<Asset>>(list, nextPage, previousPage);
+        }
+
+        /// <summary>
         /// Gets this user's current presence status, including their location and last online.
         /// </summary>
         /// <returns>A task containing a <see cref="UserPresence"/>, when completed.</returns>

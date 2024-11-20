@@ -14,9 +14,19 @@ namespace RoSharp
         public const string ROBLOX_URL = "https://roblox.com";
 
         /// <summary>
-        /// Contains a formatting URL used in <see cref="URL(string)"/>.
+        /// Contains the current Roblox URL with WWW.
+        /// </summary>
+        public const string ROBLOX_URL_WWW = "https://www.roblox.com";
+
+        /// <summary>
+        /// Contains a formatting URL used in <see cref="URL(string, bool)"/>.
         /// </summary>
         public const string FORMAT_URL = "https://{0}.roblox.com";
+
+        /// <summary>
+        /// Contains a formatting URL used in <see cref="URL(string, bool)"/> with WWW.
+        /// </summary>
+        public const string FORMAT_URL_WWW = "https://www.{0}.roblox.com";
 
         /// <summary>
         /// Contains a mapping of strings returned by the experience age recommendation API, mapped to the matching <see cref="ExperienceDescriptorType"/>.
@@ -40,7 +50,9 @@ namespace RoSharp
         /// Returns the Roblox API URL for the <paramref name="key"/>.
         /// </summary>
         /// <param name="key">The subdomain of the url, eg. 'catalog' for 'catalog.roblox.com'.</param>
+        /// <param name="includeWWW">Include 'www.' before the URL.</param>
         /// <returns>String URL</returns>
-        public static string URL(string key) => string.Format(FORMAT_URL, key);
+        public static string URL(string key, bool includeWWW = false)
+            => includeWWW ? string.Format(FORMAT_URL_WWW, key) : string.Format(FORMAT_URL, key);
     }
 }
