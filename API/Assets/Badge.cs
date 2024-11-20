@@ -66,6 +66,14 @@ namespace RoSharp.API.Assets
                 RoPool<Badge>.Add(this);
         }
 
+        /// <summary>
+        /// Returns a <see cref="Badge"/> given its unique Id.
+        /// </summary>
+        /// <param name="badgeId">The badge Id.</param>
+        /// <param name="session">The session, optional.</param>
+        /// <returns>A task containing the <see cref="Badge"/> upon completion.</returns>
+        /// <exception cref="ArgumentException">If the asset Id invalid.</exception>
+        /// <exception cref="RobloxAPIException">Roblox API failure.</exception>
         public static async Task<Badge> FromId(ulong badgeId, Session? session = null)
         {
             if (RoPool<Badge>.Contains(badgeId))

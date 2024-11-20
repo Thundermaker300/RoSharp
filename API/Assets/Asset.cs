@@ -188,22 +188,32 @@ namespace RoSharp.API.Assets
         /// <inheritdoc/>
         public DateTime RefreshedAt { get; set; }
 
-        private Asset(ulong assetId, Session session)
+        private Asset(ulong assetId, Session? session = null)
         {
             Id = assetId;
 
-            AttachSession(session);
+            if (session != null)
+                AttachSession(session);
 
             if (!RoPool<Asset>.Contains(Id))
                 RoPool<Asset>.Add(this);
         }
 
+        /// <summary>
+        /// Returns a <see cref="Asset"/> given its unique Id.
+        /// </summary>
+        /// <param name="assetId">The asset Id.</param>
+        /// <param name="session">The session, optional.</param>
+        /// <returns>A task containing the <see cref="Asset"/> upon completion.</returns>
+        /// <exception cref="ArgumentException">If the asset Id invalid.</exception>
+        /// <exception cref="RobloxAPIException">Roblox API failure.</exception>
+        /// <remarks>Authentication is not required but suggested as the Economy API hits ratelimits fast without user authentication.</remarks>
         public static async Task<Asset> FromId(ulong assetId, Session? session = null)
         {
             if (RoPool<Asset>.Contains(assetId))
-                return RoPool<Asset>.Get(assetId, session.Global("Asset.FromId"));
+                return RoPool<Asset>.Get(assetId, session.Global());
 
-            Asset newUser = new(assetId, session.Global("Asset.FromId"));
+            Asset newUser = new(assetId, session.Global());
             await newUser.RefreshAsync();
 
             return newUser;
@@ -212,7 +222,7 @@ namespace RoSharp.API.Assets
         /// <inheritdoc/>
         public async Task RefreshAsync()
         {
-            HttpResponseMessage response = await GetAsync($"/v2/assets/{Id}/details", Constants.URL("economy"), "Asset.RefreshAsync");
+            HttpResponseMessage response = await GetAsync($"/v2/assets/{Id}/details", Constants.URL("economy"));
             string raw = await response.Content.ReadAsStringAsync();
             dynamic data = JObject.Parse(raw);
 
