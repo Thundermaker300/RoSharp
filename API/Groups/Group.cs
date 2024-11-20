@@ -176,6 +176,9 @@ namespace RoSharp.API.Groups
             shout = null;
             socialChannels = null;
 
+            if (roleManager != null)
+                await roleManager.RefreshAsync();
+
             RefreshedAt = DateTime.Now;
         }
 
