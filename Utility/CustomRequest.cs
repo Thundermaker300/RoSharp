@@ -9,7 +9,14 @@ namespace RoSharp.Utility
     /// </summary>
     public sealed class CustomRequest
     {
+        /// <summary>
+        /// Gets the <see cref="System.Net.Http.HttpClient"/> used in this custom request.
+        /// </summary>
         public HttpClient HttpClient { get; }
+
+        /// <summary>
+        /// Gets the <see cref="System.Net.Http.HttpClientHandler"/> used in this custom request.
+        /// </summary>
         public HttpClientHandler Handler { get; }
         private Session? session;
 
@@ -27,6 +34,10 @@ namespace RoSharp.Utility
                 SetUrl(url);
         }
 
+        /// <summary>
+        /// Sets the new URL to use in this custom request.
+        /// </summary>
+        /// <param name="url">The new URL to use.</param>
         public void SetUrl(string url)
         {
             ArgumentNullException.ThrowIfNullOrWhiteSpace(url, nameof(url));
@@ -40,7 +51,7 @@ namespace RoSharp.Utility
         }
 
         /// <summary>
-        /// Performs a GET request to the provided URL.
+        /// Performs a GET request to the set URL.
         /// </summary>
         /// <returns>A task containing the <see cref="HttpResponseMessage"/> upon completion.</returns>
         public async Task<HttpResponseMessage> GetAsync()
@@ -50,7 +61,7 @@ namespace RoSharp.Utility
         }
 
         /// <summary>
-        /// Performs a POST request to the provided URL.
+        /// Performs a POST request to the set URL.
         /// </summary>
         /// <param name="body">The body to send. RoSharp will convert it to JSON automatically.</param>
         /// <returns>A task containing the <see cref="HttpResponseMessage"/> upon completion.</returns>
@@ -62,7 +73,7 @@ namespace RoSharp.Utility
         }
 
         /// <summary>
-        /// Performs a PATCH request to the provided URL.
+        /// Performs a PATCH request to the set URL.
         /// </summary>
         /// <param name="body">The body to send. RoSharp will convert it to JSON automatically.</param>
         /// <returns>A task containing the <see cref="HttpResponseMessage"/> upon completion.</returns>
@@ -74,7 +85,7 @@ namespace RoSharp.Utility
         }
 
         /// <summary>
-        /// Performs a PUT request to the provided URL.
+        /// Performs a PUT request to the set URL.
         /// </summary>
         /// <param name="body">The body to send. RoSharp will convert it to JSON automatically.</param>
         /// <returns>A task containing the <see cref="HttpResponseMessage"/> upon completion.</returns>
@@ -86,7 +97,7 @@ namespace RoSharp.Utility
         }
 
         /// <summary>
-        /// Performs a DELETE request to the provided URL.
+        /// Performs a DELETE request to the set URL.
         /// </summary>
         /// <returns>A task containing the <see cref="HttpResponseMessage"/> upon completion.</returns>
         public async Task<HttpResponseMessage> DeleteAsync(string url)

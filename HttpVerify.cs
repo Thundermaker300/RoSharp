@@ -20,6 +20,7 @@ namespace RoSharp
         /// Throws a <see cref="RobloxAPIException"/> if the provided <see cref="HttpResponseMessage"/> failed.
         /// </summary>
         /// <param name="message">The message.</param>
+        /// <param name="body">The body of the request. Optional but avoids an extra <see langword="await"/> if available already.</param>
         /// <exception cref="RobloxAPIException">Will always throw if <see cref="HttpResponseMessage.IsSuccessStatusCode"/> is <see langword="false"/>.</exception>
         public static void ThrowIfNecessary(HttpResponseMessage message, string? body = null)
         {

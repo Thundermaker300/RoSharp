@@ -43,7 +43,7 @@
         /// <summary>
         /// Indicates that strong language is present in an experience.
         /// </summary>
-        /// <remarks>This indicates that strong language is present; this does not necessarily mean that users can use strong language. See <see cref="API.Assets.Experience.ProfanityAllowed"/> instead.</remarks>
+        /// <remarks>This indicates that strong language is present; this does not necessarily mean that users can use strong language. See <see cref="API.Assets.Experiences.Experience.ProfanityAllowed"/> instead.</remarks>
         StrongLanguage,
 
         /// <summary>

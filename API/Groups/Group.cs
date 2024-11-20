@@ -187,7 +187,7 @@ namespace RoSharp.API.Groups
         /// <summary>
         /// Gets the group's current shout.
         /// </summary>
-        /// <returns>A task containing a <see cref="GroupShoutInfo"/> representing the shout upon completion. Can be <see langword="null"/> if there is no current shout.</returns>
+        /// <returns>A task containing a <see cref="GroupShout"/> representing the shout upon completion. Can be <see langword="null"/> if there is no current shout.</returns>
         public async Task<GroupShout?> GetShoutAsync()
         {
             if (shout == null)

@@ -4,10 +4,24 @@ using RoSharp.Enums;
 
 namespace RoSharp.Structures
 {
+    /// <summary>
+    /// Represents a user's current state.
+    /// </summary>
     public class UserPresence
     {
+        /// <summary>
+        /// Gets their current location.
+        /// </summary>
         public UserLocationType Location { get; }
+
+        /// <summary>
+        /// If <see cref="Location"/> is <see cref="UserLocationType.Experience"/>, gets the Experience they are playing.
+        /// </summary>
         public Experience? PresenceLocation { get; }
+        
+        /// <summary>
+        /// Gets when they were last seen online.
+        /// </summary>
         public DateTime LastOnline { get; }
         public bool IsOnline => Location is not UserLocationType.Offline;
 

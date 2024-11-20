@@ -9,12 +9,23 @@ namespace RoSharp.API
 {
     // TODO: The API in this class needs converted to use the new system (SessionVerify.ThrowIfNecessary)
     // The API should also all be obtained in a ctor or refresh method instead of each access.
+
+    /// <summary>
+    /// Some API that only the authenticated user can see and perform (such as their Robux amount).
+    /// </summary>
     public class SessionAPI : APIMain, IRefreshable
     {
+        /// <inheritdoc/>
         public DateTime RefreshedAt { get; set; }
 
         private SessionAPI(Session session) : base(session) { }
 
+        /// <summary>
+        /// Gets a <see cref="SessionAPI"/> from the given <see cref="Session"/>.
+        /// </summary>
+        /// <param name="session">The session to use. Must be authenticated.</param>
+        /// <returns>A task containing a <see cref="SessionAPI"/> upon completion.</returns>
+        /// <exception cref="ArgumentException">Session cannot be null and must be authenticated.</exception>
         public static async Task<SessionAPI> FromSession(Session session)
         {
             if (!SessionVerify.Verify(session))
@@ -26,6 +37,7 @@ namespace RoSharp.API
             return api;
         }
 
+        /// <inheritdoc/>
         public async Task RefreshAsync()
         {
             user = await User.FromId(session.userid, session);

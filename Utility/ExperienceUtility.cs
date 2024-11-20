@@ -43,7 +43,7 @@ namespace RoSharp.Utility
             throw new ArgumentException($"Unexpected genre type: {genreName}.");
         }
 
-        public static string ToInternalKey(Genre genre)
+        internal static string ToInternalKey(Genre genre)
         {
             string str = string.Empty;
 
@@ -65,6 +65,11 @@ namespace RoSharp.Utility
             return str;
         }
 
+        /// <summary>
+        /// Gets whether or not the provided genre is not a subgenre.
+        /// </summary>
+        /// <param name="g">The genre.</param>
+        /// <returns>True if it is a main genre, false if it is a subgenre.</returns>
         public static bool IsMainGenre(Genre g) => (int)g is > 0 and < 18;
     }
 }
