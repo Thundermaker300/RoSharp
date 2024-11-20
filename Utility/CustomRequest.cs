@@ -9,81 +9,99 @@ namespace RoSharp.Utility
     /// </summary>
     public sealed class CustomRequest
     {
+        public HttpClient HttpClient { get; }
+        public HttpClientHandler Handler { get; }
         private Session? session;
 
-        internal CustomRequest(Session? session) { this.session = session.Global(); }
+        internal CustomRequest(Session? session, string? url)
+        {
+            this.session = session.Global();
+
+            Handler = new HttpClientHandler();
+            HttpClient = new HttpClient(Handler);
+
+            CookieContainer cookies = new CookieContainer();
+            Handler.CookieContainer = cookies;
+
+            if (url != null)
+                SetUrl(url);
+        }
+
+        public void SetUrl(string url)
+        {
+            ArgumentNullException.ThrowIfNullOrWhiteSpace(url, nameof(url));
+
+            Uri uri = new(url);
+
+            HttpClient.BaseAddress = uri;
+
+            if (session != null)
+                Handler.CookieContainer.Add(uri, new Cookie(".ROBLOSECURITY", session.RobloSecurity));
+        }
 
         /// <summary>
         /// Performs a GET request to the provided URL.
         /// </summary>
-        /// <param name="url">The URL to send the request to.</param>
         /// <returns>A task containing the <see cref="HttpResponseMessage"/> upon completion.</returns>
-        public async Task<HttpResponseMessage> GetAsync(string url)
+        public async Task<HttpResponseMessage> GetAsync()
         {
-            return await MakeClient(url).GetAsync(url);
+            string? filler = null;
+            return await HttpClient.GetAsync(filler);
         }
 
         /// <summary>
         /// Performs a POST request to the provided URL.
         /// </summary>
-        /// <param name="url">The URL to send the request to.</param>
         /// <param name="body">The body to send. RoSharp will convert it to JSON automatically.</param>
         /// <returns>A task containing the <see cref="HttpResponseMessage"/> upon completion.</returns>
-        public async Task<HttpResponseMessage> PostAsync(string url, object? body)
+        public async Task<HttpResponseMessage> PostAsync(object? body)
         {
+            string? filler = null;
             JsonContent content = JsonContent.Create(body);
-            return await MakeClient(url).PostAsync(url, content);
+            return await HttpClient.PostAsync(filler, content);
         }
 
         /// <summary>
         /// Performs a PATCH request to the provided URL.
         /// </summary>
-        /// <param name="url">The URL to send the request to.</param>
         /// <param name="body">The body to send. RoSharp will convert it to JSON automatically.</param>
         /// <returns>A task containing the <see cref="HttpResponseMessage"/> upon completion.</returns>
-        public async Task<HttpResponseMessage> PatchAsync(string url, object? body)
+        public async Task<HttpResponseMessage> PatchAsync(object? body)
         {
+            string? filler = null;
             JsonContent content = JsonContent.Create(body);
-            return await MakeClient(url).PatchAsync(url, content);
+            return await HttpClient.PatchAsync(filler, content);
         }
 
         /// <summary>
         /// Performs a PUT request to the provided URL.
         /// </summary>
-        /// <param name="url">The URL to send the request to.</param>
         /// <param name="body">The body to send. RoSharp will convert it to JSON automatically.</param>
         /// <returns>A task containing the <see cref="HttpResponseMessage"/> upon completion.</returns>
-        public async Task<HttpResponseMessage> PutAsync(string url, object? body)
+        public async Task<HttpResponseMessage> PutAsync(object? body)
         {
+            string? filler = null;
             JsonContent content = JsonContent.Create(body);
-            return await MakeClient(url).PutAsync(url, content);
+            return await HttpClient.PutAsync(filler, content);
         }
 
         /// <summary>
         /// Performs a DELETE request to the provided URL.
         /// </summary>
-        /// <param name="url">The URL to send the request to.</param>
         /// <returns>A task containing the <see cref="HttpResponseMessage"/> upon completion.</returns>
         public async Task<HttpResponseMessage> DeleteAsync(string url)
         {
-            return await MakeClient(url).DeleteAsync(url);
+            string? filler = null;
+            return await HttpClient.DeleteAsync(filler);
         }
 
         private HttpClient MakeClient(string url)
         {
             Uri uri = new(url);
 
-            CookieContainer cookies = new CookieContainer();
-            HttpClientHandler handler = new HttpClientHandler();
-            handler.CookieContainer = cookies;
+            HttpClient.BaseAddress = uri;
 
-            if (session != null)
-                cookies.Add(uri, new Cookie(".ROBLOSECURITY", session.RobloSecurity));
-
-            HttpClient client = new HttpClient(handler);
-            client.BaseAddress = uri;
-
-            return client;
+            return HttpClient;
         }
     }
 }

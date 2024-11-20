@@ -96,16 +96,16 @@ namespace RoSharp
         /// Creates a <see cref="CustomRequest"/> using this Session.
         /// </summary>
         /// <returns>The <see cref="CustomRequest"/>.</returns>
-        public CustomRequest MakeCustomRequest()
+        public CustomRequest MakeCustomRequest(string? url = null)
         {
             CustomRequest custom;
             if (LoggedIn)
             {
-                custom = new CustomRequest(this);
+                custom = new CustomRequest(this, url);
             }
             else
             {
-                custom = new CustomRequest(null);
+                custom = new CustomRequest(null, url);
             }
             return custom;
         }
