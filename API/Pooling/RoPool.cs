@@ -12,8 +12,6 @@ namespace RoSharp.API.Pooling
         internal static void Add(T asset) => Pool.TryAdd(asset.Id, asset);
         internal static T? Get(ulong id, Session? session = null)
         {
-            if (session == null && typeof(T) == typeof(Asset))
-                throw new InvalidOperationException("Session cannot be null for Asset types in RoPool.");
             if (Pool.TryGetValue(id, out T result) && result != null)
             {
                 return result.AttachSessionAndReturn(session);
