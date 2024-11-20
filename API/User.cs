@@ -148,6 +148,7 @@ namespace RoSharp.API
             currentlyWearing = null;
             collections = null;
             groups = null;
+            customName = null;
 
             // Update premium
             if (SessionVerify.Verify(session))
@@ -439,6 +440,7 @@ namespace RoSharp.API
         /// <param name="sortOrder">The sort order.</param>
         /// <param name="cursor">The cursor for the next page. Obtained by calling this API previously.</param>
         /// <returns>A task containing a <see cref="PageResponse{T}"/> of <see cref="GenericId{T}"/> upon completion.</returns>
+        /// <exception cref="RobloxAPIException">Roblox API failure or lack of permissions.</exception>
         public async Task<PageResponse<GenericId<User>>> GetFollowingAsync(FixedLimit limit = FixedLimit.Limit100, RequestSortOrder sortOrder = RequestSortOrder.Desc, string? cursor = null)
         {
             string url = $"/v1/users/{Id}/followings?limit={limit.Limit()}&sortOrder={sortOrder}";
@@ -467,6 +469,7 @@ namespace RoSharp.API
         /// <param name="sortOrder">The sort order.</param>
         /// <param name="cursor">The cursor for the next page. Obtained by calling this API previously.</param>
         /// <returns>A task containing a <see cref="PageResponse{T}"/> of <see cref="GenericId{T}"/> upon completion.</returns>
+        /// <exception cref="RobloxAPIException">Roblox API failure or lack of permissions.</exception>
         public async Task<PageResponse<GenericId<User>>> GetFollowersAsync(FixedLimit limit = FixedLimit.Limit100, RequestSortOrder sortOrder = RequestSortOrder.Desc, string? cursor = null)
         {
             string url = $"/v1/users/{Id}/followers?limit={limit.Limit()}&sortOrder={sortOrder}";
@@ -486,6 +489,50 @@ namespace RoSharp.API
             }
 
             return new PageResponse<GenericId<User>>(list, nextPage, previousPage);
+        }
+
+        private string? customName;
+
+        /// <summary>
+        /// Gets the user's custom name for the authenticated user.
+        /// </summary>
+        /// <returns>A task containing the custom name, or <see langword="null"/> if there is not a custom name for this user.</returns>
+        public async Task<string?> GetCustomNameAsync()
+        {
+            if (customName == null)
+            {
+                object body = new
+                {
+                    targetUserIds = new[] { Id }
+                };
+                HttpResponseMessage response = await PostAsync("/v1/user/get-tags", body, Constants.URL("contacts"));
+                JArray data = JArray.Parse(await response.Content.ReadAsStringAsync());
+                if (data.Count != 0)
+                {
+                    JToken wanted = data[0];
+                    customName = Convert.ToString(wanted["targetUserTag"]);
+                }
+            }
+            return customName;
+        }
+
+        /// <summary>
+        /// Sets this user's custom name for the authenticated user. Set to <see cref="string.Empty"/> to clear custom name.
+        /// </summary>
+        /// <param name="name"></param>
+        /// <returns></returns>
+        /// <exception cref="RobloxAPIException">Roblox API failure or lack of permissions.</exception>
+        public async Task SetCustomName(string name)
+        {
+            ArgumentNullException.ThrowIfNull(name, nameof(name));
+
+            object body = new
+            {
+                targetUserId = Id,
+                userTag = name,
+            };
+
+            HttpResponseMessage response = await PostAsync("/v1/user/tag", body, Constants.URL("contacts"), "User.SetCustomName");
         }
 
         /// <summary>
