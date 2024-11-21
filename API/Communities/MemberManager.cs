@@ -120,7 +120,7 @@ namespace RoSharp.API.Communities
         /// <param name="userId">The user's Id.</param>
         /// <returns>A task containing a bool upon completion.</returns>
         /// <remarks>This API method does not cache and will make a request each time it is called.</remarks>
-        public async Task<bool> IsInGroupAsync(ulong userId)
+        public async Task<bool> IsInCommunityAsync(ulong userId)
         {
             string rawData = await community.GetStringAsync($"/v1/users/{userId}/groups/roles?includeLocked=true");
             dynamic data = JObject.Parse(rawData);
@@ -140,7 +140,7 @@ namespace RoSharp.API.Communities
         /// <param name="username">The user's username.</param>
         /// <returns>A task containing a bool upon completion.</returns>
         /// <remarks>This API method does not cache and will make a request each time it is called.</remarks>
-        public async Task<bool> IsInGroupAsync(string username) => await IsInGroupAsync(await User.FromUsername(username));
+        public async Task<bool> IsInCommunityAsync(string username) => await IsInCommunityAsync(await User.FromUsername(username));
 
         /// <summary>
         /// Gets whether or not the <see cref="User"/> is in the community.
@@ -148,7 +148,7 @@ namespace RoSharp.API.Communities
         /// <param name="user">The user.</param>
         /// <returns>A task containing a bool upon completion.</returns>
         /// <remarks>This API method does not cache and will make a request each time it is called.</remarks>
-        public async Task<bool> IsInGroupAsync(User user) => await IsInGroupAsync(user.Id);
+        public async Task<bool> IsInCommunityAsync(User user) => await IsInCommunityAsync(user.Id);
 
         /// <summary>
         /// Gets the role of the user with the given Id.
@@ -156,7 +156,7 @@ namespace RoSharp.API.Communities
         /// <param name="userId">The user's Id.</param>
         /// <returns>A task containing the <see cref="Role"/> upon completion. Will be <see langword="null"/> if the user is not in the community.</returns>
         /// <remarks>This API method does not cache and will make a request each time it is called.</remarks>
-        public async Task<Role?> GetRoleInGroupAsync(ulong userId)
+        public async Task<Role?> GetRoleInCommunityAsync(ulong userId)
         {
             string rawData = await community.GetStringAsync($"/v1/users/{userId}/groups/roles?includeLocked=true");
             dynamic data = JObject.Parse(rawData);
@@ -176,7 +176,7 @@ namespace RoSharp.API.Communities
         /// <param name="username">The user's username.</param>
         /// <returns>A task containing the <see cref="Role"/> upon completion. Will be <see langword="null"/> if the user is not in the community.</returns>
         /// <remarks>This API method does not cache and will make a request each time it is called.</remarks>
-        public async Task<Role?> GetRoleInGroupAsync(string username) => await GetRoleInGroupAsync(await User.FromUsername(username));
+        public async Task<Role?> GetRoleInCommunityAsync(string username) => await GetRoleInCommunityAsync(await User.FromUsername(username));
 
         /// <summary>
         /// Gets the role of the <see cref="User"/>.
@@ -184,7 +184,7 @@ namespace RoSharp.API.Communities
         /// <param name="user">The user.</param>
         /// <returns>A task containing the <see cref="Role"/> upon completion. Will be <see langword="null"/> if the user is not in the community.</returns>
         /// <remarks>This API method does not cache and will make a request each time it is called.</remarks>
-        public async Task<Role?> GetRoleInGroupAsync(User user) => await GetRoleInGroupAsync(user.Id);
+        public async Task<Role?> GetRoleInCommunityAsync(User user) => await GetRoleInCommunityAsync(user.Id);
 
         /// <summary>
         /// Modifies the user's join request.
