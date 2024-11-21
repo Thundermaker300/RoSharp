@@ -314,6 +314,38 @@ namespace RoSharp.API.Groups
             return new(list, nextPage, previousPage);
         }
 
+        public async Task<PageResponse<GroupAuditLog>> GetAuditLogsAsync(FixedLimit limit = FixedLimit.Limit100, RequestSortOrder sortOrder = RequestSortOrder.Desc, string? cursor = null)
+        {
+            string url = $"/v1/groups/{Id}/audit-log?limit={limit.Limit()}&sortOrder={sortOrder}";
+            if (cursor != null)
+                url += "&cursor=" + cursor;
+
+            string rawData = await GetStringAsync(url);
+            dynamic data = JObject.Parse(rawData);
+
+            List<GroupAuditLog> list = new();
+            string? nextPage = data.nextPageCursor;
+            string? previousPage = data.previousPageCursor;
+
+            foreach (dynamic item in data.data)
+            {
+                GroupAuditLog log = new GroupAuditLog()
+                {
+                    Type = Enum.Parse<GroupAuditLogType>(Convert.ToString(item.actionType).Replace(" ", string.Empty)),
+                    Time = item.created,
+                    GroupId = new(Id, session),
+                    UserId = new(Convert.ToUInt64(item.actor.user.userId), session),
+                    RankId = item.actor.role.rank,
+
+                    TargetUserId = item.description?.TargetId != null ? new(Convert.ToUInt64(item.description.TargetId), session) : null,
+                    TargetGroupId = item.description?.TargetGroupId != null ? new(Convert.ToUInt64(item.description.TargetGroupId), session) : null,
+                };
+                list.Add(log);
+            }
+
+            return new PageResponse<GroupAuditLog>(list, nextPage, previousPage);
+        }
+
         /// <summary>
         /// Gets this group's income statistics for the given <paramref name="timeLength"/>.
         /// </summary>
@@ -322,7 +354,7 @@ namespace RoSharp.API.Groups
         /// <remarks>This API method does not cache and will make a request each time it is called.</remarks>
         public async Task<EconomyBreakdown> GetIncomeAsync(AnalyticTimeLength timeLength = AnalyticTimeLength.Day)
         {
-            var url = $"/v1/groups/2531730/revenue/summary/{timeLength.ToString().ToLower()}";
+            var url = $"/v1/groups/{Id}/revenue/summary/{timeLength.ToString().ToLower()}";
             string rawData = await GetStringAsync(url, Constants.URL("economy"), verifyApiName: "Group.GetIncomeAsync");
             dynamic data = JObject.Parse(rawData);
 
