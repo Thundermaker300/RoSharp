@@ -3,7 +3,7 @@
     /// <summary>
     /// Contains info regarding a group shout.
     /// </summary>
-    public struct GroupShout
+    public readonly struct GroupShout
     {
         /// <summary>
         /// Gets the text of the shout.

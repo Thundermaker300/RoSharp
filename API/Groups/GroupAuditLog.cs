@@ -1,17 +1,11 @@
-﻿using RoSharp.API.Assets.Experiences;
-using RoSharp.Enums;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿using RoSharp.Enums;
 
 namespace RoSharp.API.Groups
 {
     /// <summary>
     /// Represents a single group log.
     /// </summary>
-    public struct GroupAuditLog
+    public readonly struct GroupAuditLog
     {
 
         /// <summary>

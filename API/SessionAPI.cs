@@ -1,5 +1,4 @@
 ﻿using Newtonsoft.Json.Linq;
-using RoSharp.API.Assets;
 using RoSharp.API.Assets.Experiences;
 using RoSharp.Enums;
 using RoSharp.Interfaces;
@@ -154,7 +153,7 @@ namespace RoSharp.API
         public async Task<EconomyBreakdown> GetIncomeAsync(AnalyticTimeLength timeLength = AnalyticTimeLength.Day)
         {
             if (session == null)
-                throw new ArgumentNullException(nameof(session), "Session cannot be null.");
+                throw new InvalidOperationException("Session cannot be null.");
 
             var url = $"/v2/users/{session.userid}/transaction-totals?timeFrame={timeLength}&transactionType=summary";
             string rawData = await GetStringAsync(url, Constants.URL("economy"), verifyApiName: "SessionAPI.GetIncomeAsync");
@@ -162,7 +161,7 @@ namespace RoSharp.API
 
             int amount = 0;
             int pending = 0;
-            Dictionary<IncomeType, int> breakdown = new();
+            Dictionary<IncomeType, int> breakdown = [];
 
             foreach (dynamic cat in data)
             {

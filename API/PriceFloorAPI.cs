@@ -57,16 +57,20 @@ namespace RoSharp.API
         {
             SessionVerify.ThrowIfNecessary(session, "PriceFloorAPI");
 
-            Uri uri = new Uri(Constants.URL("itemconfiguration"));
+            Uri uri = new(Constants.URL("itemconfiguration"));
 
-            CookieContainer cookies = new CookieContainer();
-            HttpClientHandler handler = new HttpClientHandler();
-            handler.CookieContainer = cookies;
+            CookieContainer cookies = new();
+            HttpClientHandler handler = new()
+            {
+                CookieContainer = cookies
+            };
 
             cookies.Add(uri, new Cookie(".ROBLOSECURITY", session.RobloSecurity));
 
-            HttpClient client = new HttpClient(handler);
-            client.BaseAddress = uri;
+            HttpClient client = new(handler)
+            {
+                BaseAddress = uri
+            };
 
             return client;
         }

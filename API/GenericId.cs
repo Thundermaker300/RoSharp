@@ -1,12 +1,5 @@
-﻿using RoSharp.API.Assets;
-using RoSharp.Interfaces;
+﻿using RoSharp.Interfaces;
 using RoSharp.Utility;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Reflection;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace RoSharp.API
 {
@@ -44,10 +37,7 @@ namespace RoSharp.API
         public async Task<T> GetInstanceAsync(Session? session = null)
         {
             Session? sessionToUse = session ?? storedSession ?? GlobalSession.Assigned;
-            if (stored == null)
-            {
-                stored = await T.FromId(Id, sessionToUse);
-            }
+            stored ??= await T.FromId(Id, sessionToUse);
             return stored;
         }
 

@@ -13,7 +13,7 @@ namespace RoSharp.API
         /// <summary>
         /// Gets an empty <see cref="PageResponse{T}"/> with an empty list and no cursors.
         /// </summary>
-        public static PageResponse<T> Empty => new(new List<T>(0), null, null);
+        public static PageResponse<T> Empty => new([], null, null);
 
         /// <summary>
         /// Gets a list of <typeparamref name="T"/> instances that were apart of this API response.

@@ -1,10 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
-namespace RoSharp.Enums
+﻿namespace RoSharp.Enums
 {
     /// <summary>
     /// Indicates an experience activity history type. Used in <see cref="API.Assets.Experiences.DeveloperStats.GetAuditLogsAsync"/>.

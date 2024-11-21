@@ -1,5 +1,4 @@
-﻿using RoSharp.API.Assets;
-using RoSharp.Interfaces;
+﻿using RoSharp.Interfaces;
 using System.Collections.Concurrent;
 
 namespace RoSharp.API.Pooling

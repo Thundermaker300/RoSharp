@@ -159,7 +159,7 @@ namespace RoSharp.API
 
                 // Private Inventory
                 HttpResponseMessage inventoryResponse = await GetAsync($"/v1/users/{Id}/can-view-inventory", Constants.URL("inventory"), "User.PrivateInventory [RefreshAsync]");
-                dynamic inventoryData = JObject.Parse(await response.Content.ReadAsStringAsync());
+                dynamic inventoryData = JObject.Parse(await inventoryResponse.Content.ReadAsStringAsync());
                 privateInventory = !Convert.ToBoolean(inventoryData.canView);
             }
             else
@@ -228,7 +228,7 @@ namespace RoSharp.API
         {
             if (robloxBadges == null)
             {
-                List<string> badges = new();
+                List<string> badges = [];
                 string rawData = await GetStringAsync($"/v1/users/{Id}/roblox-badges", Constants.URL("accountinformation"));
                 JArray data = JArray.Parse(rawData);
                 foreach (dynamic badgeData in data.Children<JObject>())
@@ -255,7 +255,7 @@ namespace RoSharp.API
             if (cursor != null)
                 url += "&cursor=" + cursor;
 
-            List<string> history = new();
+            List<string> history = [];
             string rawData = await GetStringAsync(url);
             dynamic data = JObject.Parse(rawData);
             foreach (dynamic historyData in data.data)
@@ -301,7 +301,7 @@ namespace RoSharp.API
                 string rawData = await GetStringAsync($"/v1/users/{Id}/groups/roles", Constants.URL("groups"));
                 dynamic data = JObject.Parse(rawData);
 
-                Dictionary<Group, Role> dict = new();
+                Dictionary<Group, Role> dict = [];
                 int count = 0;
                 foreach (dynamic groupData in data.data)
                 {
@@ -340,7 +340,7 @@ namespace RoSharp.API
         {
             if (socialChannels == null)
             {
-                Dictionary<string, string> dict = new();
+                Dictionary<string, string> dict = [];
                 string rawData = await GetStringAsync($"/v1/users/{Id}/promotion-channels?alwaysReturnUrls=true", Constants.URL("accountinformation"));
                 dynamic data = JObject.Parse(rawData);
                 foreach (dynamic media in data)
@@ -369,7 +369,7 @@ namespace RoSharp.API
                 string rawData = await GetStringAsync($"/v1/users/{Id}/currently-wearing", Constants.URL("avatar"));
                 dynamic data = JObject.Parse(rawData);
 
-                List<Asset> list = new List<Asset>();
+                List<Asset> list = [];
                 foreach (dynamic item in data.assetIds)
                 {
                     ulong assetId = Convert.ToUInt64(item);
@@ -395,7 +395,7 @@ namespace RoSharp.API
                 string rawData = await GetStringAsync($"/users/profile/robloxcollections-json?userId={Id}", Constants.ROBLOX_URL);
                 dynamic data = JObject.Parse(rawData);
 
-                List<Asset> list = new List<Asset>();
+                List<Asset> list = [];
                 foreach (dynamic item in data.CollectionsItems)
                 {
                     ulong assetId = Convert.ToUInt64(item.Id);
@@ -417,7 +417,7 @@ namespace RoSharp.API
         {
             string rawData = await GetStringAsync($"/v1/users/{Id}/friends", Constants.URL("friends"));
             dynamic data = JObject.Parse(rawData);
-            List<GenericId<User>> friends = new List<GenericId<User>>();
+            List<GenericId<User>> friends = [];
             int count = 0;
             foreach (dynamic friendData in data.data)
             {
@@ -635,7 +635,7 @@ namespace RoSharp.API
             string rawData = await GetStringAsync(url, Constants.URL("badges"));
             dynamic data = JObject.Parse(rawData);
 
-            List<GenericId<Badge>> list = new();
+            List<GenericId<Badge>> list = [];
             string? nextPage = data.nextPageCursor;
             string? previousPage = data.previousPageCursor;
 
@@ -668,7 +668,7 @@ namespace RoSharp.API
             string rawData = await GetStringAsync(url, Constants.URL("inventory"));
             dynamic data = JObject.Parse(rawData);
 
-            List<GenericId<Asset>> list = new();
+            List<GenericId<Asset>> list = [];
             string? nextPage = data.nextPageCursor;
             string? previousPage = data.previousPageCursor;
 
@@ -699,7 +699,7 @@ namespace RoSharp.API
             string rawData = await GetStringAsync(url, Constants.ROBLOX_URL_WWW);
             dynamic data = JObject.Parse(rawData);
 
-            List<GenericId<Asset>> list = new();
+            List<GenericId<Asset>> list = [];
             string? nextPage = data.nextPageCursor;
             string? previousPage = data.previousPageCursor;
 

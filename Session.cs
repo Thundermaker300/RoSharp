@@ -61,13 +61,17 @@ namespace RoSharp
         {
             Uri uri = new(Constants.URL("users"));
 
-            CookieContainer cookies = new CookieContainer();
-            HttpClientHandler handler = new HttpClientHandler();
-            handler.CookieContainer = cookies;
+            CookieContainer cookies = new();
+            HttpClientHandler handler = new()
+            {
+                CookieContainer = cookies
+            };
             cookies.Add(uri, new Cookie(".ROBLOSECURITY", roblosecurity));
 
-            HttpClient client = new HttpClient(handler);
-            client.BaseAddress = uri;
+            HttpClient client = new(handler)
+            {
+                BaseAddress = uri
+            };
 
             HttpResponseMessage authResponse = await client.GetAsync("/v1/users/authenticated");
             if (authResponse.StatusCode == HttpStatusCode.Unauthorized)

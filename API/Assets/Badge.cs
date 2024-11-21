@@ -175,7 +175,7 @@ namespace RoSharp.API.Assets
                 enabled = options.IsEnabled ?? IsEnabled,
             };
 
-            HttpResponseMessage response = await PatchAsync($"/v1/badges/{Id}", body, verifyApiName: "Badge.ModifyAsync");
+            await PatchAsync($"/v1/badges/{Id}", body, verifyApiName: "Badge.ModifyAsync");
         }
 
         /// <summary>

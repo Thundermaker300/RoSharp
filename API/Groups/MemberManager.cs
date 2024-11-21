@@ -67,8 +67,8 @@ namespace RoSharp.API.Groups
                 url += "&cursor=" + cursor;
 
             var list = new List<GenericId<User>>();
-            string? nextPage = null;
-            string? previousPage = null;
+            string? nextPage;
+            string? previousPage;
             HttpResponseMessage response = await group.GetAsync(url, verifyApiName: "Group.GetMembersAsync");
 
             dynamic data = JObject.Parse(await response.Content.ReadAsStringAsync());
@@ -200,7 +200,7 @@ namespace RoSharp.API.Groups
         internal async Task SetRankAsyncInternal(ulong userId, ulong newRoleId)
         {
             object body = new { roleId = newRoleId };
-            HttpResponseMessage response = await group.PatchAsync($"/v1/groups/{group.Id}/users/{userId}", body, verifyApiName: "MemberManager.SetRankAsync");
+            await group.PatchAsync($"/v1/groups/{group.Id}/users/{userId}", body, verifyApiName: "MemberManager.SetRankAsync");
         }
 
         /// <summary>
@@ -230,9 +230,8 @@ namespace RoSharp.API.Groups
         /// <exception cref="RobloxAPIException">Roblox API failure or lack of permissions.</exception>
         public async Task SetRankAsync(ulong userId, byte rankId)
         {
-            Role? role = (await group.GetRoleManagerAsync()).Roles.FirstOrDefault(r => r.Rank == rankId);
-            if (role == null)
-                throw new ArgumentException("Invalid rank Id provided.", nameof(rankId));
+            Role? role = (await group.GetRoleManagerAsync()).Roles.FirstOrDefault(r => r.Rank == rankId)
+                ?? throw new ArgumentException("Invalid rank Id provided.", nameof(rankId));
             await SetRankAsync(userId, role);
         }
 
@@ -246,9 +245,8 @@ namespace RoSharp.API.Groups
         /// <exception cref="RobloxAPIException">Roblox API failure or lack of permissions.</exception>
         public async Task SetRankAsync(ulong userId, string roleName)
         {
-            Role? role = (await group.GetRoleManagerAsync()).Roles.FirstOrDefault(r => r.Name == roleName);
-            if (role == null)
-                throw new ArgumentException("Invalid role name provided.", nameof(roleName));
+            Role? role = (await group.GetRoleManagerAsync()).Roles.FirstOrDefault(r => r.Name == roleName)
+                ?? throw new ArgumentException("Invalid role name provided.", nameof(roleName));
             await SetRankAsync(userId, role);
         }
 

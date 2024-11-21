@@ -3,13 +3,8 @@ using RoSharp.Enums;
 using RoSharp.Exceptions;
 using RoSharp.Extensions;
 using RoSharp.Interfaces;
-using System;
-using System.Collections.Generic;
 using System.Collections.ObjectModel;
-using System.Linq;
 using System.Net.Http.Json;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace RoSharp.API.Groups
 {
@@ -106,15 +101,13 @@ namespace RoSharp.API.Groups
         internal async Task RequestUpdateRole(Role roleId, string newName)
         {
             object body = new { name = newName, rank = roleId.Rank };
-            JsonContent content = JsonContent.Create(body);
-            HttpResponseMessage response = await group.PatchAsync($"/v1/groups/{group.Id}/rolesets/{roleId.Id}", body, verifyApiName: "Role.UpdateAsync");
+            await group.PatchAsync($"/v1/groups/{group.Id}/rolesets/{roleId.Id}", body, verifyApiName: "Role.UpdateAsync");
         }
 
         internal async Task RequestUpdateRole(Role roleId, int newRank)
         {
             object body = new { name = roleId.Name, rank = newRank };
-            JsonContent content = JsonContent.Create(body);
-            HttpResponseMessage response = await group.PatchAsync($"/v1/groups/{group.Id}/rolesets/{roleId.Id}", body, verifyApiName: "Role.UpdateAsync");
+            await group.PatchAsync($"/v1/groups/{group.Id}/rolesets/{roleId.Id}", body, verifyApiName: "Role.UpdateAsync");
         }
 
         /// <inheritdoc/>
@@ -189,17 +182,19 @@ namespace RoSharp.API.Groups
 
         internal async static Task<Role> MakeNew(RoleManager manager, ulong id, string name, string description, byte rank, ulong memberCount)
         {
-            Role r = new();
-            r.roleManager = manager;
+            Role r = new()
+            {
+                roleManager = manager,
 
-            r.id = id;
-            r.name = name;
-            r.description = description;
-            r.rank = rank;
-            r.memberCount = memberCount;
-            r.canAccessPermissions = false;
+                id = id,
+                name = name,
+                description = description,
+                rank = rank,
+                memberCount = memberCount,
+                canAccessPermissions = false
+            };
 
-            List<GroupPermission> perms = new();
+            List<GroupPermission> perms = [];
 
             if (manager.areConfigurationsAccessible)
             {
@@ -255,8 +250,8 @@ namespace RoSharp.API.Groups
                 url += "&cursor=" + cursor;
 
             var list = new List<GenericId<User>>();
-            string? nextPage = null;
-            string? previousPage = null;
+            string? nextPage;
+            string? previousPage;
             HttpResponseMessage response = await roleManager.group.GetAsync(url, verifyApiName: "Role.GetMembersAsync");
 
             dynamic data = JObject.Parse(await response.Content.ReadAsStringAsync());

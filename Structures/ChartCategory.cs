@@ -1,12 +1,6 @@
-﻿using RoSharp.API.Assets;
-using RoSharp.API;
+﻿using RoSharp.API;
 using RoSharp.Exceptions;
-using System;
-using System.Collections.Generic;
 using System.Collections.ObjectModel;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using RoSharp.API.Assets.Experiences;
 
 namespace RoSharp.Structures
@@ -46,7 +40,7 @@ namespace RoSharp.Structures
         /// <exception cref="RobloxAPIException">Roblox API failure.</exception>
         public async Task<ReadOnlyCollection<Experience>> ToExperienceListAsync(int limit = -1, int startAt = 0)
         {
-            List<Experience> experiences = new List<Experience>();
+            List<Experience> experiences = [];
             foreach (GenericId<Experience> id in ExperienceIds.Skip(startAt))
             {
                 experiences.Add(await id.GetInstanceAsync());

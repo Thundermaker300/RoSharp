@@ -1,11 +1,8 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
-namespace RoSharp.Enums
+﻿namespace RoSharp.Enums
 {
+    /// <summary>
+    /// Indicates a type of income for groups and users.
+    /// </summary>
     public enum IncomeType
     {
         // Groups

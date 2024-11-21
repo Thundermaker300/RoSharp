@@ -1,18 +1,13 @@
 ﻿using RoSharp.Enums;
-using System;
-using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Diagnostics;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace RoSharp.Structures
 {
     /// <summary>
     /// Represents a breakdown of group income.
     /// </summary>
-    public struct EconomyBreakdown
+    public readonly struct EconomyBreakdown
     {
         /// <summary>
         /// The time-length that was used to retrieve the data.

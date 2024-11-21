@@ -1,10 +1,8 @@
 ﻿using Newtonsoft.Json.Linq;
-using RoSharp.API.Assets;
 using RoSharp.API.Assets.Experiences;
 using RoSharp.Exceptions;
 using RoSharp.Extensions;
 using RoSharp.Structures;
-using System.Collections.ObjectModel;
 using System.Net;
 
 namespace RoSharp.API
@@ -33,14 +31,14 @@ namespace RoSharp.API
             string body = await response.Content.ReadAsStringAsync();
             HttpVerify.ThrowIfNecessary(response, body);
 
-            List<ChartCategory> categories = new();
+            List<ChartCategory> categories = [];
             dynamic data = JObject.Parse(body);
             foreach (dynamic sort in data.sorts)
             {
                 if (sort.contentType != "Games")
                     continue;
 
-                List<GenericId<Experience>> list = new();
+                List<GenericId<Experience>> list = [];
 
                 foreach (dynamic game in sort.games)
                 {
@@ -68,17 +66,21 @@ namespace RoSharp.API
 
         private static HttpClient MakeClient(Session? session = null)
         {
-            Uri uri = new Uri(Constants.URL("apis"));
+            Uri uri = new(Constants.URL("apis"));
 
-            CookieContainer cookies = new CookieContainer();
-            HttpClientHandler handler = new HttpClientHandler();
-            handler.CookieContainer = cookies;
+            CookieContainer cookies = new();
+            HttpClientHandler handler = new()
+            {
+                CookieContainer = cookies
+            };
 
             if (session != null && session.RobloSecurity != string.Empty)
                 cookies.Add(uri, new Cookie(".ROBLOSECURITY", session?.RobloSecurity));
 
-            HttpClient client = new HttpClient(handler);
-            client.BaseAddress = uri;
+            HttpClient client = new(handler)
+            {
+                BaseAddress = uri
+            };
 
             return client;
         }

@@ -1,11 +1,4 @@
-﻿using RoSharp.API.Pooling;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
-namespace RoSharp.Interfaces
+﻿namespace RoSharp.Interfaces
 {
     /// <summary>
     /// Interface for classes that have an Id parameter.

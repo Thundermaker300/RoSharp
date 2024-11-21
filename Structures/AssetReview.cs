@@ -1,16 +1,11 @@
 ﻿using RoSharp.API;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace RoSharp.Structures
 {
     /// <summary>
     /// Gets a user's review on an asset.
     /// </summary>
-    public struct AssetReview
+    public readonly struct AssetReview
     {
         /// <summary>
         /// Gets the unique Id of the review.

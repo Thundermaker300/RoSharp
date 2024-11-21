@@ -1,10 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
-namespace RoSharp.Utility
+﻿namespace RoSharp.Utility
 {
     /// <summary>
     /// The GlobalSession class allows the program to define one <see cref="Session"/> instance to use for the entire duration of the program, eliminating the need to provide session instances to every API call.

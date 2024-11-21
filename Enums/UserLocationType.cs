@@ -1,10 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
-namespace RoSharp.Enums
+﻿namespace RoSharp.Enums
 {
     /// <summary>
     /// Indicates where a user is located, mainly for <see cref="Structures.UserPresence"/>.

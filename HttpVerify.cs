@@ -1,13 +1,6 @@
 ﻿using Newtonsoft.Json.Linq;
 using RoSharp.Exceptions;
-using System;
-using System.Collections.Generic;
-using System.Diagnostics;
-using System.Linq;
 using System.Net;
-using System.Text;
-using System.Threading.Tasks;
-using static System.Net.WebRequestMethods;
 
 namespace RoSharp
 {
@@ -30,8 +23,7 @@ namespace RoSharp
             if (message.StatusCode == HttpStatusCode.TooManyRequests)
                 throw new RobloxAPIException($"Too many requests to the Roblox API. Request url: {message.RequestMessage?.RequestUri} Request method: {message.RequestMessage?.Method}", HttpStatusCode.TooManyRequests);
 
-            if (body == null)
-                body = message.Content.ReadAsStringAsync().Result;
+            body ??= message.Content.ReadAsStringAsync().Result;
 
             string? userMessage = null;
             dynamic data = JObject.Parse(body);

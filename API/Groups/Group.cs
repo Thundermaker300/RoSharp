@@ -1,12 +1,10 @@
 ﻿using Newtonsoft.Json.Linq;
-using RoSharp.API.Assets;
 using RoSharp.API.Pooling;
 using RoSharp.Enums;
 using RoSharp.Exceptions;
 using RoSharp.Extensions;
 using RoSharp.Interfaces;
 using RoSharp.Structures;
-using RoSharp.Utility;
 using System.Collections.ObjectModel;
 using System.Diagnostics;
 
@@ -133,10 +131,7 @@ namespace RoSharp.API.Groups
         /// </summary>
         public async Task<MemberManager> GetMemberManagerAsync()
         {
-            if (memberManager == null)
-            {
-                memberManager = new MemberManager(this);
-            }
+            memberManager ??= new MemberManager(this);
             return memberManager;
         }
 
@@ -219,7 +214,7 @@ namespace RoSharp.API.Groups
         {
             if (socialChannels == null)
             {
-                Dictionary<string, string> dict = new();
+                Dictionary<string, string> dict = [];
                 string rawData = await GetStringAsync($"/v1/groups/{Id}/social-links");
                 dynamic data = JObject.Parse(rawData);
                 foreach (dynamic media in data.data)
@@ -258,7 +253,7 @@ namespace RoSharp.API.Groups
         public async Task ModifyDescriptionAsync(string text)
         {
             object body = new { description = text };
-            HttpResponseMessage response = await PatchAsync($"/v1/groups/{Id}/description", body, verifyApiName: "Group.ModifyDescriptionAsync");
+            await PatchAsync($"/v1/groups/{Id}/description", body, verifyApiName: "Group.ModifyDescriptionAsync");
         }
 
         /// <summary>
@@ -270,7 +265,7 @@ namespace RoSharp.API.Groups
         public async Task ShoutAsync(string text)
         {
             object body = new { message = text };
-            HttpResponseMessage response = await PatchAsync($"/v1/groups/{Id}/status", body, verifyApiName: "Group.ShoutAsync");
+            await PatchAsync($"/v1/groups/{Id}/status", body, verifyApiName: "Group.ShoutAsync");
         }
 
         /// <summary>
@@ -289,8 +284,8 @@ namespace RoSharp.API.Groups
                 url += "&cursor=" + cursor;
 
             var list = new List<GroupPost>();
-            string? nextPage = null;
-            string? previousPage = null;
+            string? nextPage;
+            string? previousPage;
             HttpResponseMessage response = await GetAsync(url, verifyApiName: "Group.GetGroupPostsAsync");
 
             dynamic data = JObject.Parse(await response.Content.ReadAsStringAsync());
@@ -331,13 +326,13 @@ namespace RoSharp.API.Groups
             string rawData = await GetStringAsync(url, verifyApiName: "Group.GetAuditLogsAsync");
             dynamic data = JObject.Parse(rawData);
 
-            List<GroupAuditLog> list = new();
+            List<GroupAuditLog> list = [];
             string? nextPage = data.nextPageCursor;
             string? previousPage = data.previousPageCursor;
 
             foreach (dynamic item in data.data)
             {
-                GroupAuditLog log = new GroupAuditLog()
+                GroupAuditLog log = new()
                 {
                     Type = Enum.Parse<GroupAuditLogType>(Convert.ToString(item.actionType).Replace(" ", string.Empty)),
                     Time = item.created,
@@ -368,7 +363,7 @@ namespace RoSharp.API.Groups
             string rawData = await GetStringAsync(url);
             dynamic data = JObject.Parse(rawData);
 
-            List<GenericId<Group>> list = new();
+            List<GenericId<Group>> list = [];
             string? nextPage = Convert.ToString(data.nextRowIndex);
 
             foreach (dynamic item in data.relatedGroups)
@@ -392,7 +387,7 @@ namespace RoSharp.API.Groups
             string rawData = await GetStringAsync(url);
             dynamic data = JObject.Parse(rawData);
 
-            List<GenericId<Group>> list = new();
+            List<GenericId<Group>> list = [];
             string? nextPage = Convert.ToString(data.nextRowIndex);
 
             foreach (dynamic item in data.relatedGroups)
@@ -417,7 +412,7 @@ namespace RoSharp.API.Groups
 
             int amount = 0;
             int pending = 0;
-            Dictionary<IncomeType, int> breakdown = new();
+            Dictionary<IncomeType, int> breakdown = [];
 
             foreach (dynamic cat in data)
             {

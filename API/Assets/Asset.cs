@@ -378,7 +378,7 @@ namespace RoSharp.API.Assets
                 description = options.Description ?? Description,
             };
 
-            HttpResponseMessage response = await PatchAsync($"/v1/assets/{Id}", body, Constants.URL("develop"), "Asset.ModifyAsync");
+            await PatchAsync($"/v1/assets/{Id}", body, Constants.URL("develop"), "Asset.ModifyAsync");
         }
 
         /// <summary>
@@ -404,7 +404,7 @@ namespace RoSharp.API.Assets
                     saleAvailabilityLocations = saleAvailabilityLocations
                 }
             };
-            HttpResponseMessage response = await PostAsync("/v1/assets/3307894526/release", body, Constants.URL("itemconfiguration"), "Asset.SetSaleStatusAsync");
+            await PostAsync("/v1/assets/3307894526/release", body, Constants.URL("itemconfiguration"), "Asset.SetSaleStatusAsync");
         }
 
         /// <summary>
@@ -430,7 +430,7 @@ namespace RoSharp.API.Assets
             if (data.hasMore == false)
                 nextPage = null;
 
-            List<AssetReview> reviews = new();
+            List<AssetReview> reviews = [];
             foreach (dynamic comment in data.commentResponses)
             {
                 bool? isRecommended = comment.isRecommended;
@@ -482,7 +482,7 @@ namespace RoSharp.API.Assets
         {
             string rawData = await GetStringAsync($"/v2/recommendations/assets?assetId={Id}&assetTypeId={(int)AssetType}&numItems=45");
             dynamic data = JObject.Parse(rawData);
-            List<GenericId<Asset>> list = new();
+            List<GenericId<Asset>> list = [];
             foreach (dynamic item in data.data)
             {
                 try

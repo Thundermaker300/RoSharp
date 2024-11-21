@@ -1,5 +1,4 @@
-﻿using RoSharp.Exceptions;
-using RoSharp.Interfaces;
+﻿using RoSharp.Interfaces;
 using System.Net;
 using System.Net.Http.Json;
 
@@ -38,17 +37,21 @@ namespace RoSharp.API
             if (verifyApiName != null)
                 SessionVerify.ThrowIfNecessary(session, verifyApiName);
 
-            Uri uri = new Uri(baseOverride != null ? baseOverride : BaseUrl);
+            Uri uri = new(baseOverride ?? BaseUrl);
 
-            CookieContainer cookies = new CookieContainer();
-            HttpClientHandler handler = new HttpClientHandler();
-            handler.CookieContainer = cookies;
+            CookieContainer cookies = new();
+            HttpClientHandler handler = new()
+            {
+                CookieContainer = cookies
+            };
 
             if (session?.RobloSecurity != string.Empty)
                 cookies.Add(uri, new Cookie(".ROBLOSECURITY", session?.RobloSecurity));
 
-            HttpClient client = new HttpClient(handler);
-            client.BaseAddress = uri;
+            HttpClient client = new(handler)
+            {
+                BaseAddress = uri
+            };
 
             return client;
         }

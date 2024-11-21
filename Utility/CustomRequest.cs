@@ -24,11 +24,13 @@ namespace RoSharp.Utility
         {
             this.session = session.Global();
 
-            Handler = new HttpClientHandler();
-            HttpClient = new HttpClient(Handler);
+            CookieContainer cookies = new();
+            Handler = new HttpClientHandler()
+            {
+                CookieContainer = cookies,
+            };
 
-            CookieContainer cookies = new CookieContainer();
-            Handler.CookieContainer = cookies;
+            HttpClient = new HttpClient(Handler);
 
             if (url != null)
                 SetUrl(url);
@@ -100,19 +102,10 @@ namespace RoSharp.Utility
         /// Performs a DELETE request to the set URL.
         /// </summary>
         /// <returns>A task containing the <see cref="HttpResponseMessage"/> upon completion.</returns>
-        public async Task<HttpResponseMessage> DeleteAsync(string url)
+        public async Task<HttpResponseMessage> DeleteAsync()
         {
             string? filler = null;
             return await HttpClient.DeleteAsync(filler);
-        }
-
-        private HttpClient MakeClient(string url)
-        {
-            Uri uri = new(url);
-
-            HttpClient.BaseAddress = uri;
-
-            return HttpClient;
         }
     }
 }

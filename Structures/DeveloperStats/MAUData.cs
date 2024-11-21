@@ -1,17 +1,12 @@
 ﻿using RoSharp.Enums;
-using System;
-using System.Collections.Generic;
 using System.Collections.ObjectModel;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace RoSharp.Structures.DeveloperStats
 {
     /// <summary>
     /// Represents data regarding an experience's Monthly Active Users (MAU).
     /// </summary>
-    public struct MAUData
+    public readonly struct MAUData
     {
         /// <summary>
         /// Total amount of monthly active users.

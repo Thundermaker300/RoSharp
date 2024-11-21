@@ -7,8 +7,6 @@ using RoSharp.Extensions;
 using RoSharp.Interfaces;
 using RoSharp.Utility;
 using System.Collections.ObjectModel;
-using System.Diagnostics;
-using System.Net;
 
 using Regex = System.Text.RegularExpressions.Regex;
 
@@ -185,7 +183,7 @@ namespace RoSharp.API.Assets.Experiences
         /// <remarks>This is the most common method as the Place ID is present in the URL when going to any general experience page.</remarks>
         public static async Task<Experience> FromPlaceId(ulong placeId, Session? session = null)
         {
-            ulong universeId = 0;
+            ulong universeId;
 
             HttpResponseMessage response = await genericClient.GetAsync($"{Constants.URL("apis")}/universes/v1/places/{placeId}/universe");
             string raw = await response.Content.ReadAsStringAsync();
@@ -366,7 +364,7 @@ namespace RoSharp.API.Assets.Experiences
         {
             if (socialChannels == null)
             {
-                Dictionary<string, string> dict = new();
+                Dictionary<string, string> dict = [];
                 string rawData = await GetStringAsync($"/v1/games/{UniverseId}/social-links/list", verifyApiName: "Experience.SocialChannels");
                 dynamic data = JObject.Parse(rawData);
                 foreach (dynamic media in data.data)
@@ -430,7 +428,7 @@ namespace RoSharp.API.Assets.Experiences
                 minimumAge = 0;
             }
 
-            List<ExperienceDescriptor> list = new();
+            List<ExperienceDescriptor> list = [];
             if (data.descriptorUsages.Count != 0)
             {
                 foreach (dynamic item in data.descriptorUsages)
@@ -492,7 +490,7 @@ namespace RoSharp.API.Assets.Experiences
         }
 
         // Configuration related properties
-        private List<string> devices = new List<string>(0);
+        private List<string> devices = [];
 
         /// <summary>
         /// Gets the devices that this experience is playable on.
@@ -593,7 +591,7 @@ namespace RoSharp.API.Assets.Experiences
         {
             string rawData = await GetStringAsync($"/v1/games/recommendations/game/{UniverseId}?maxRows={limit}");
             dynamic data = JObject.Parse(rawData);
-            List<Experience> list = new();
+            List<Experience> list = [];
             foreach (dynamic item in data.games)
             {
                 try
@@ -649,7 +647,7 @@ namespace RoSharp.API.Assets.Experiences
             string rawData = await GetStringAsync(url, Constants.URL("badges"));
             dynamic data = JObject.Parse(rawData);
 
-            List<GenericId<Badge>> list = new();
+            List<GenericId<Badge>> list = [];
             string? nextPage = data.nextPageCursor;
             string? previousPage = data.previousPageCursor;
 
@@ -678,7 +676,7 @@ namespace RoSharp.API.Assets.Experiences
             if (data.data.Count == 0)
                 throw new ArgumentException("Invalid asset to get thumbnail for.");
 
-            List<Asset> thumbnails = new List<Asset>();
+            List<Asset> thumbnails = [];
             foreach (dynamic thumbnail in data.data[0].thumbnails)
             {
                 if (thumbnail.state != "Completed")
@@ -701,7 +699,7 @@ namespace RoSharp.API.Assets.Experiences
         public async Task SetPrivacyAsync(bool isPublic)
         {
             string url = $"/v1/universes/{Id}/{(isPublic == false ? "de" : string.Empty)}activate";
-            HttpResponseMessage response = await PostAsync(url, new { }, Constants.URL("develop"), "Experience.SetPrivacyAsync");
+            await PostAsync(url, new { }, Constants.URL("develop"), "Experience.SetPrivacyAsync");
         }
 
         /// <summary>
@@ -725,7 +723,7 @@ namespace RoSharp.API.Assets.Experiences
                 studioAccessToApisAllowed = options.StudioAccessToAPIsAllowed ?? StudioAccessToAPIsAllowed
             };
 
-            HttpResponseMessage response = await PatchAsync($"/v2/universes/{UniverseId}/configuration", body, Constants.URL("develop"), "Experience.ModifyAsync");
+            await PatchAsync($"/v2/universes/{UniverseId}/configuration", body, Constants.URL("develop"), "Experience.ModifyAsync");
         }
 
         /// <summary>
@@ -747,7 +745,7 @@ namespace RoSharp.API.Assets.Experiences
                 }
             };
 
-            HttpResponseMessage response = await PostAsync("/experience-genre-api/v1/Creator/ExperienceGenre", body, "https://apis.roblox.com", "Experience.ModifyGenreAsync");
+            await PostAsync("/experience-genre-api/v1/Creator/ExperienceGenre", body, "https://apis.roblox.com", "Experience.ModifyGenreAsync");
             
         }
 
@@ -780,7 +778,7 @@ namespace RoSharp.API.Assets.Experiences
                 }
             };
 
-            HttpResponseMessage response = await PatchAsync($"/user/cloud/v2/universes/{UniverseId}/user-restrictions/{userId}", body, Constants.URL("apis"), "Experience.BanUserAsync");
+            await PatchAsync($"/user/cloud/v2/universes/{UniverseId}/user-restrictions/{userId}", body, Constants.URL("apis"), "Experience.BanUserAsync");
         }
 
         /// <summary>
@@ -828,7 +826,7 @@ namespace RoSharp.API.Assets.Experiences
                 }
             };
 
-            HttpResponseMessage response = await PatchAsync($"/user/cloud/v2/universes/{UniverseId}/user-restrictions/{userId}?", body, Constants.URL("apis"), "Experience.UnbanUserAsync");
+            await PatchAsync($"/user/cloud/v2/universes/{UniverseId}/user-restrictions/{userId}?", body, Constants.URL("apis"), "Experience.UnbanUserAsync");
         }
 
         /// <summary>
@@ -855,7 +853,7 @@ namespace RoSharp.API.Assets.Experiences
         /// <exception cref="RobloxAPIException">Roblox API failure or lack of permissions.</exception>
         public async Task PostUpdateAsync(string text)
         {
-            HttpResponseMessage response = await PostAsync($"/game-update-notifications/v1/publish/{UniverseId}", text, Constants.URL("apis"), "Experience.PostUpdateAsync");
+            await PostAsync($"/game-update-notifications/v1/publish/{UniverseId}", text, Constants.URL("apis"), "Experience.PostUpdateAsync");
         }
 
         /// <inheritdoc/>
@@ -878,7 +876,7 @@ namespace RoSharp.API.Assets.Experiences
     /// <summary>
     /// Represents an experience descriptor that determines an experience's minimum age and Maturity level.
     /// </summary>
-    public struct ExperienceDescriptor
+    public readonly struct ExperienceDescriptor
     {
         /// <summary>
         /// The type of descriptor.
@@ -942,7 +940,7 @@ namespace RoSharp.API.Assets.Experiences
     /// <summary>
     /// Represents an action log within an experience's activity history.
     /// </summary>
-    public struct ExperienceAuditLog
+    public readonly struct ExperienceAuditLog
     {
         /// <summary>
         /// The type of experience log.

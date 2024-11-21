@@ -2,14 +2,7 @@
 using RoSharp.Enums;
 using RoSharp.Interfaces;
 using RoSharp.Structures.DeveloperStats;
-using System;
-using System.Collections.Generic;
 using System.Collections.ObjectModel;
-using System.Linq;
-using System.Net.Http.Json;
-using System.Text;
-using System.Threading.Tasks;
-using static System.Runtime.InteropServices.JavaScript.JSType;
 
 namespace RoSharp.API.Assets.Experiences
 {
@@ -79,7 +72,7 @@ namespace RoSharp.API.Assets.Experiences
             message = await experience.PostAsync(AnalyticUrl, body, Constants.URL("apis"), "DeveloperStats.GetMAUData");
             data = JObject.Parse(await message.Content.ReadAsStringAsync());
 
-            Dictionary<string, int> byCountry = new();
+            Dictionary<string, int> byCountry = [];
             foreach (var item in data.operation.queryResult.values)
             {
                 string key = item.breakdownValue[0].value;
@@ -92,7 +85,7 @@ namespace RoSharp.API.Assets.Experiences
             message = await experience.PostAsync(AnalyticUrl, body, Constants.URL("apis"), "DeveloperStats.GetMAUData");
             data = JObject.Parse(await message.Content.ReadAsStringAsync());
 
-            Dictionary<Gender, int> byGender = new();
+            Dictionary<Gender, int> byGender = [];
             foreach (var item in data.operation.queryResult.values)
             {
                 string genderValue = item.breakdownValue[0].value;
@@ -106,7 +99,7 @@ namespace RoSharp.API.Assets.Experiences
             message = await experience.PostAsync(AnalyticUrl, body, Constants.URL("apis"), "DeveloperStats.GetMAUData");
             data = JObject.Parse(await message.Content.ReadAsStringAsync());
 
-            Dictionary<string, int> byAgeGroup = new();
+            Dictionary<string, int> byAgeGroup = [];
             foreach (var item in data.operation.queryResult.values)
             {
                 string key = item.breakdownValue[0].value;
@@ -119,7 +112,7 @@ namespace RoSharp.API.Assets.Experiences
             message = await experience.PostAsync(AnalyticUrl, body, Constants.URL("apis"), "DeveloperStats.GetMAUData");
             data = JObject.Parse(await message.Content.ReadAsStringAsync());
 
-            Dictionary<string, int> byLocale = new();
+            Dictionary<string, int> byLocale = [];
             foreach (var item in data.operation.queryResult.values)
             {
                 string key = item.breakdownValue[0].value;
@@ -151,7 +144,7 @@ namespace RoSharp.API.Assets.Experiences
                 string rawData = await experience.GetStringAsync("/activity-feed-api/v1/history?clientType=1&universeId=3744484651", "https://apis.roblox.com", "DeveloperStats.GetAuditLogsAsync");
                 dynamic data = JObject.Parse(rawData);
 
-                List<ExperienceAuditLog> list = new();
+                List<ExperienceAuditLog> list = [];
                 foreach (dynamic ev in data.events)
                 {
                     list.Add(new()
