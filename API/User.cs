@@ -540,14 +540,14 @@ namespace RoSharp.API
         /// </summary>
         /// <param name="community">The community.</param>
         /// <returns>A task containing a bool.</returns>
-        public async Task<bool> IsInGroupAsync(Community community) => await (await community.GetMemberManagerAsync()).IsInGroupAsync(Id);
+        public async Task<bool> IsInGroupAsync(Community community) => await (await community.GetMemberManagerAsync()).IsInCommunityAsync(Id);
 
         /// <summary>
         /// Gets whether or not this user is in the community with the given Id.
         /// </summary>
         /// <param name="communityId">The communityId.</param>
         /// <returns>A task containing a bool.</returns>
-        public async Task<bool> IsInGroupAsync(ulong communityId) => await (await (await Community.FromId(communityId)).GetMemberManagerAsync()).IsInGroupAsync(Id);
+        public async Task<bool> IsInGroupAsync(ulong communityId) => await (await (await Community.FromId(communityId)).GetMemberManagerAsync()).IsInCommunityAsync(Id);
         
         // Thumbnails
         /// <summary>
