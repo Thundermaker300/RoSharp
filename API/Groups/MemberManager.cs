@@ -335,6 +335,69 @@ namespace RoSharp.API.Groups
         /// <exception cref="RobloxAPIException">Roblox API failure or lack of permissions.</exception>
         public async Task KickMemberAsync(User user) => await KickMemberAsync(user.Id);
 
+        /// <summary>
+        /// Delete all wall posts from the given user.
+        /// </summary>
+        /// <param name="userId">The user Id of the posts to delete.</param>
+        /// <returns>A task that completes when the operation is finished.</returns>
+        /// <exception cref="RobloxAPIException">Roblox API failure or lack of permissions.</exception>
+        public async Task DeletePostsFromMemberAsync(ulong userId)
+        {
+            await group.DeleteAsync($"https://groups.roblox.com/v1/groups/{group.Id}/wall/users/{userId}/posts");
+        }
+
+        /// <summary>
+        /// Delete all wall posts from the given user.
+        /// </summary>
+        /// <param name="user">The user whose posts to delete.</param>
+        /// <returns>A task that completes when the operation is finished.</returns>
+        /// <exception cref="RobloxAPIException">Roblox API failure or lack of permissions.</exception>
+        public async Task DeletePostsFromMemberAsync(User user)
+            => await DeletePostsFromMemberAsync(user.Id);
+
+        /// <summary>
+        /// Bans a user from the group.
+        /// </summary>
+        /// <param name="userId">The unique Id of the user to ban.</param>
+        /// <param name="deletePosts">If true, will also delete their wall posts.</param>
+        /// <returns>A task that completes when the operation has finished.</returns>
+        /// <exception cref="RobloxAPIException">Roblox API failure or lack of permissions.</exception>
+        public async Task BanMemberAsync(ulong userId, bool deletePosts = false)
+        {
+            if (deletePosts)
+                await DeletePostsFromMemberAsync(userId);
+
+            await group.PostAsync($"/v1/groups/{group.Id}/bans/{userId}", new { }, verifyApiName: "MemberManager.BanMemberAsync");
+        }
+
+        /// <summary>
+        /// Bans a user from the group.
+        /// </summary>
+        /// <param name="user">The user to ban.</param>
+        /// <param name="deletePosts">If true, will also delete their wall posts.</param>
+        /// <returns>A task that completes when the operation has finished.</returns>
+        /// <exception cref="RobloxAPIException">Roblox API failure or lack of permissions.</exception>
+        public async Task BanMemberAsync(User user, bool deletePosts = false)
+            => await BanMemberAsync(user.Id, deletePosts);
+
+        /// <summary>
+        /// Unbans a previously-banned user from the group.
+        /// </summary>
+        /// <param name="userId">The unique Id of the user to unban.</param>
+        /// <returns></returns>
+        public async Task UnbanMemberAsync(ulong userId)
+        {
+            await group.DeleteAsync($"https://groups.roblox.com/v1/groups/{group.Id}/bans/{userId}");
+        }
+
+        /// <summary>
+        /// Unbans a previously-banned user from the group.
+        /// </summary>
+        /// <param name="user">The user to unban.</param>
+        /// <returns></returns>
+        public async Task UnbanMemberAsync(User user)
+            => await UnbanMemberAsync(user.Id);
+
         /// <inheritdoc/>
         public override string ToString()
         {
