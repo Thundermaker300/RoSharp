@@ -355,6 +355,55 @@ namespace RoSharp.API.Groups
         }
 
         /// <summary>
+        /// Gets this group's allies.
+        /// </summary>
+        /// <param name="limit">The maximum amount of groups to return.</param>
+        /// <param name="sortOrder">The sort order.</param>
+        /// <param name="startRowIndex">The amount of items to skip before returning data, or <c>0</c> to skip none.</param>
+        /// <returns>A task containing a <see cref="PageResponse{T}"/> of <see cref="GenericId{T}"/> upon completion.</returns>
+        public async Task<PageResponse<GenericId<Group>>> GetAlliesAsync(int limit = 50, RequestSortOrder sortOrder = RequestSortOrder.Desc, int startRowIndex = 0)
+        {
+            string url = $"/v1/groups/{Id}/relationships/allies?maxRows={limit}&sortOrder={sortOrder}&startRowIndex={startRowIndex}";
+
+            string rawData = await GetStringAsync(url);
+            dynamic data = JObject.Parse(rawData);
+
+            List<GenericId<Group>> list = new();
+            string? nextPage = Convert.ToString(data.nextRowIndex);
+
+            foreach (dynamic item in data.relatedGroups)
+            {
+                list.Add(new(Convert.ToUInt64(item.id), session));
+            }
+
+            return new PageResponse<GenericId<Group>>(list, nextPage, null);
+        }
+        /// <summary>
+        /// Gets this group's allies.
+        /// </summary>
+        /// <param name="limit">The maximum amount of groups to return.</param>
+        /// <param name="sortOrder">The sort order.</param>
+        /// <param name="startRowIndex">The amount of items to skip before returning data, or <c>0</c> to skip none.</param>
+        /// <returns>A task containing a <see cref="PageResponse{T}"/> of <see cref="GenericId{T}"/> upon completion.</returns>
+        public async Task<PageResponse<GenericId<Group>>> GetEnemiesAsync(int limit = 50, RequestSortOrder sortOrder = RequestSortOrder.Desc, int startRowIndex = 0)
+        {
+            string url = $"/v1/groups/{Id}/relationships/enemies?maxRows={limit}&sortOrder={sortOrder}&startRowIndex={startRowIndex}";
+
+            string rawData = await GetStringAsync(url);
+            dynamic data = JObject.Parse(rawData);
+
+            List<GenericId<Group>> list = new();
+            string? nextPage = Convert.ToString(data.nextRowIndex);
+
+            foreach (dynamic item in data.relatedGroups)
+            {
+                list.Add(new(Convert.ToUInt64(item.id), session));
+            }
+
+            return new PageResponse<GenericId<Group>>(list, nextPage, null);
+        }
+
+        /// <summary>
         /// Gets this group's income statistics for the given <paramref name="timeLength"/>.
         /// </summary>
         /// <param name="timeLength">The length of time to use for the breakdown.</param>
