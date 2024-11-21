@@ -577,7 +577,6 @@ namespace RoSharp.API.Assets.Experiences
                 this.devices = devices;
             }
 
-            privateServerCost = data.privateServerPrice;
             friendsOnly = data.isFriendsOnly;
             studioAccessToAPIsAllowed = Convert.ToBoolean(data.studioAccessToApisAllowed);
 
