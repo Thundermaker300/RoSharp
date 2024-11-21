@@ -46,6 +46,11 @@
         RemoveMembers,
 
         /// <summary>
+        /// Ban/Unban members from the group.
+        /// </summary>
+        BanMembers,
+
+        /// <summary>
         /// Manage group relationships (allies and enemies).
         /// </summary>
         ManageRelationships,

@@ -226,6 +226,16 @@
         RemoveMember,
 
         /// <summary>
+        /// A member has been banned.
+        /// </summary>
+        BanMember,
+
+        /// <summary>
+        /// A member has been unbanned.
+        /// </summary>
+        UnbanMember,
+
+        /// <summary>
         /// A member's rank has changed.
         /// </summary>
         ChangeRank,
