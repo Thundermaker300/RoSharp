@@ -23,6 +23,10 @@ namespace RoSharp.Structures
         /// Gets when they were last seen online.
         /// </summary>
         public DateTime LastOnline { get; }
+
+        /// <summary>
+        /// Gets whether or not they are currently online (Website, Experience or Studio).
+        /// </summary>
         public bool IsOnline => Location is not UserLocationType.Offline;
 
         internal UserPresence(UserLocationType type, Experience? location, DateTime lastOnline)

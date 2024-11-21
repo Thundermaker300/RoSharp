@@ -906,12 +906,12 @@ namespace RoSharp.API.Assets.Experiences
     /// <summary>
     /// Represents an action log within an experience's activity history.
     /// </summary>
-    public struct ExperienceActivityHistory
+    public struct ExperienceAuditLog
     {
         /// <summary>
         /// The type of experience log.
         /// </summary>
-        public ExperienceActivityHistoryType Type { get; init; }
+        public ExperienceAuditLogType Type { get; init; }
 
         /// <summary>
         /// The time the action occurred.

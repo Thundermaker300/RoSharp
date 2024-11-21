@@ -136,21 +136,21 @@ namespace RoSharp.API.Assets.Experiences
             };
         }
 
-        private ReadOnlyCollection<ExperienceActivityHistory>? history;
-        public async Task<ReadOnlyCollection<ExperienceActivityHistory>> GetActivityHistoryAsync()
+        private ReadOnlyCollection<ExperienceAuditLog>? history;
+        public async Task<ReadOnlyCollection<ExperienceAuditLog>> GetAuditLogsAsync()
         {
             if (history == null)
             {
-                string rawData = await experience.GetStringAsync("/activity-feed-api/v1/history?clientType=1&universeId=3744484651", "https://apis.roblox.com", "DeveloperStats.GetActivityHistoryAsync");
+                string rawData = await experience.GetStringAsync("/activity-feed-api/v1/history?clientType=1&universeId=3744484651", "https://apis.roblox.com", "DeveloperStats.GetAuditLogsAsync");
                 dynamic data = JObject.Parse(rawData);
 
-                List<ExperienceActivityHistory> list = new();
+                List<ExperienceAuditLog> list = new();
                 foreach (dynamic ev in data.events)
                 {
                     list.Add(new()
                     {
                         Id = ev.id,
-                        Type = (ExperienceActivityHistoryType)ev.eventType,
+                        Type = (ExperienceAuditLogType)ev.eventType,
                         UniverseId = new GenericId<Experience>(Convert.ToUInt64(ev.universeId)),
                         PlaceId = ev.placeId,
                         UserId = new GenericId<User>(Convert.ToUInt64(ev.userId)),
