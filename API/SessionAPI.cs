@@ -42,8 +42,6 @@ namespace RoSharp.API
             if (session == null)
                 throw new InvalidOperationException("SessionAPI must have a session.");
 
-            user = await User.FromId(session.userid, session);
-
             dynamic genderData = JObject.Parse(await GetStringAsync("/v1/gender"));
             gender = (Gender)Convert.ToInt32(genderData.gender);
 
@@ -59,13 +57,6 @@ namespace RoSharp.API
 
         /// <inheritdoc/>
         public override string BaseUrl => Constants.URL("users");
-
-        internal User user;
-
-        /// <summary>
-        /// Gets a <see cref="API.User"/> representing the currently authenticated user.
-        /// </summary>
-        public User User => user;
 
         private Gender gender;
 

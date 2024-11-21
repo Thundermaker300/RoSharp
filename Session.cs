@@ -1,4 +1,5 @@
 ﻿using RoSharp.API;
+using RoSharp.Exceptions;
 using RoSharp.Structures;
 using RoSharp.Utility;
 using System.Net;
@@ -34,20 +35,48 @@ namespace RoSharp
         /// <summary>
         /// If <see cref="LoggedIn"/> is true, this contains a <see cref="TimeSpan"/> representing the length of time this session has been authenticated for.
         /// </summary>
-        public TimeSpan Elapsed => DateTime.Now - LoggedInAt;
+        /// <exception cref="InvalidOperationException">Session is not authenticated. Did you call LoginAsync?</exception>
+        public TimeSpan Elapsed
+        {
+            get
+            {
+                if (!LoggedIn)
+                    throw new InvalidOperationException("Session is not authenticated. Did you call LoginAsync?");
+                return DateTime.Now - LoggedInAt;
+            }
+        }
 
         /// <summary>
         /// Gets a <see cref="SessionAPI"/> which contains some API about the current authenticated user.
         /// </summary>
+        /// <exception cref="InvalidOperationException">No API associated with this session. Did you call LoginAsync?</exception>
         public SessionAPI? API
         {
             get
             {
                 if (sessionAPI is null)
                 {
-                    throw new InvalidOperationException("No user associated with this session. Did you call LoginAsync?");
+                    throw new InvalidOperationException("No API associated with this session. Did you call LoginAsync?");
                 }
                 return sessionAPI;
+            }
+        }
+
+        private User? authUser;
+
+        /// <summary>
+        /// Gets a <see cref="User"/> representing the currently authenticated user.
+        /// </summary>
+        /// <exception cref="InvalidOperationException">No user associated with this session. Did you call LoginAsync?</exception>
+        public User? AuthUser
+        {
+            get
+            {
+                if (authUser is null)
+                {
+                    throw new InvalidOperationException("No user associated with this session. Did you call LoginAsync?");
+                }
+                return authUser;
             }
         }
 
@@ -56,7 +85,7 @@ namespace RoSharp
         /// </summary>
         /// <param name="roblosecurity">The .ROBLOSECURITY token to use for authentication.</param>
         /// <returns>A Task that completes when the operation is finished.</returns>
-        /// <exception cref="AccessViolationException">Thrown if the authentication fails.</exception>
+        /// <exception cref="RobloxAPIException">Thrown if the authentication fails.</exception>
         public async Task LoginAsync(string roblosecurity)
         {
             Uri uri = new(Constants.URL("users"));
@@ -76,7 +105,7 @@ namespace RoSharp
             HttpResponseMessage authResponse = await client.GetAsync("/v1/users/authenticated");
             if (authResponse.StatusCode == HttpStatusCode.Unauthorized)
             {
-                throw new AccessViolationException("Login failed.");
+                throw new RobloxAPIException("Login failed.");
             }
             else if (authResponse.IsSuccessStatusCode)
             {
@@ -92,8 +121,23 @@ namespace RoSharp
                     loggedAt = DateTime.Now;
 
                     sessionAPI = await SessionAPI.FromSession(this);
+                    authUser = await User.FromId(userid);
                 }
             }
+        }
+
+        public async Task LogoutAsync()
+        {
+            username = string.Empty;
+            userid = 0;
+            displayname = string.Empty;
+            loggedIn = false;
+            loggedAt = null;
+
+            sessionAPI = null;
+            authUser = null;
+
+            roblosecurity = string.Empty;
         }
 
         /// <summary>
