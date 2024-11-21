@@ -65,6 +65,7 @@ namespace RoSharp.API.Assets.Experiences
         /// </summary>
         /// <param name="date">The date.</param>
         /// <returns>A <see cref="MAUData"/> containing data about that day's monthly active users (MAU) amount.</returns>
+        /// <remarks>This API method does not cache and will make a request each time it is called.</remarks>
         public async Task<MAUData> GetMAUData(DateTime date)
         {
             // Total MAU
