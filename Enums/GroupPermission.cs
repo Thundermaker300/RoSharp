@@ -1,32 +1,32 @@
 ﻿namespace RoSharp.Enums
 {
     /// <summary>
-    /// Represents the permissions a group role can have.
+    /// Represents the permissions a community role can have.
     /// </summary>
     public enum GroupPermission
     {
         /// <summary>
-        /// View the group wall.
+        /// View the community wall.
         /// </summary>
         ViewWall,
 
         /// <summary>
-        /// Post on the group wall.
+        /// Post on the community wall.
         /// </summary>
         PostToWall,
 
         /// <summary>
-        /// Delete posts from other users off the group wall.
+        /// Delete posts from other users off the community wall.
         /// </summary>
         DeleteFromWall,
 
         /// <summary>
-        /// View the group's status (shout).
+        /// View the community's status (shout).
         /// </summary>
         ViewStatus,
 
         /// <summary>
-        /// Post to the group's status (shout).
+        /// Post to the community's status (shout).
         /// </summary>
         PostToStatus,
 
@@ -36,72 +36,72 @@
         ChangeRank,
 
         /// <summary>
-        /// Accept/decline join requests to the group.
+        /// Accept/decline join requests to the community.
         /// </summary>
         InviteMembers,
 
         /// <summary>
-        /// Remove (kick) members from the group.
+        /// Remove (kick) members from the community.
         /// </summary>
         RemoveMembers,
 
         /// <summary>
-        /// Ban/Unban members from the group.
+        /// Ban/Unban members from the community.
         /// </summary>
         BanMembers,
 
         /// <summary>
-        /// Manage group relationships (allies and enemies).
+        /// Manage community relationships (allies and enemies).
         /// </summary>
         ManageRelationships,
 
         /// <summary>
-        /// Manage the group's clan (no longer possible).
+        /// Manage the community's clan (no longer possible).
         /// </summary>
         ManageClan,
 
         /// <summary>
-        /// View the group's audit logs.
+        /// View the community's audit logs.
         /// </summary>
         ViewAuditLogs,
 
         /// <summary>
-        /// Spend group funds (badges, ads, etc).
+        /// Spend community funds (badges, ads, etc).
         /// </summary>
         SpendGroupFunds,
 
         /// <summary>
-        /// Advertise the group.
+        /// Advertise the community.
         /// </summary>
         AdvertiseGroup,
 
         /// <summary>
-        /// Create group items (such as shirts).
+        /// Create community items (such as shirts).
         /// </summary>
         CreateItems,
 
         /// <summary>
-        /// Manage and modify group items (such as shirts).
+        /// Manage and modify community items (such as shirts).
         /// </summary>
         ManageItems,
 
         /// <summary>
-        /// Add group places.
+        /// Add community places.
         /// </summary>
         AddGroupPlaces,
 
         /// <summary>
-        /// Manage and modify group experiences.
+        /// Manage and modify community experiences.
         /// </summary>
         ManageGroupGames,
 
         /// <summary>
-        /// View group payouts.
+        /// View community payouts.
         /// </summary>
         ViewGroupPayouts,
 
         /// <summary>
-        /// View group analytics.
+        /// View community analytics.
         /// </summary>
         ViewAnalytics,
 

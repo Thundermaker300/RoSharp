@@ -5,7 +5,7 @@
     /// </summary>
     public enum IncomeType
     {
-        // Groups
+        // Communities
         RecurringRobuxStipend,
         ItemSaleRobux,
         PurchasedRobux,
