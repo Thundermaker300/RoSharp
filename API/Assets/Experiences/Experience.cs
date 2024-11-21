@@ -143,9 +143,17 @@ namespace RoSharp.API.Assets.Experiences
         public Genre Subgenre => subgenre;
 
         private ulong rootPlaceId;
+
+        /// <summary>
+        /// Gets the Id of the game's root place.
+        /// </summary>
         public ulong RootPlaceId => rootPlaceId; // Todo: Convert to a Place type when those exist.
 
         private DeveloperStats statistics;
+
+        /// <summary>
+        /// Gets the experience's <see cref="DeveloperStats"/> object, which has experience data and analytics info.
+        /// </summary>
         public DeveloperStats Statistics => statistics;
 
         internal bool favoritedByUser;
@@ -345,7 +353,7 @@ namespace RoSharp.API.Assets.Experiences
         /// <summary>
         /// Indicates whether or not profane language is allowed in the chat in this experience.
         /// </summary>
-        public bool ProfanityAllowed => profanityAllowed.Value;
+        public bool ProfanityAllowed => profanityAllowed.GetValueOrDefault();
 
         private ReadOnlyDictionary<string, string>? socialChannels;
 
@@ -376,7 +384,7 @@ namespace RoSharp.API.Assets.Experiences
         /// <summary>
         /// The minimum age required to play this experience.
         /// </summary>
-        public int MinimumAge => minimumAge.Value;
+        public int MinimumAge => minimumAge.GetValueOrDefault();
 
         private ExperienceMaturityLevel maturityLevel;
 
@@ -385,7 +393,8 @@ namespace RoSharp.API.Assets.Experiences
         /// </summary>
         public ExperienceMaturityLevel MaturityLevel => maturityLevel;
 
-        private ReadOnlyCollection<ExperienceDescriptor>? experienceDescriptors;
+        private ReadOnlyCollection<ExperienceDescriptor> experienceDescriptors
+            = new List<ExperienceDescriptor>(0).AsReadOnly();
 
         /// <summary>
         /// Gets a read-only collection of defined descriptors that contribute to this experience's <see cref="MinimumAge"/>.
@@ -465,14 +474,14 @@ namespace RoSharp.API.Assets.Experiences
         /// <summary>
         /// Gets the amount of thumb's up this experience has.
         /// </summary>
-        public int Upvotes => upvotes.Value;
+        public int Upvotes => upvotes.GetValueOrDefault();
 
         private int? downvotes;
 
         /// <summary>
         /// Gets the amount of thumb's down this experience has.
         /// </summary>
-        public int Downvotes => downvotes.Value;
+        public int Downvotes => downvotes.GetValueOrDefault();
 
         private async Task UpdateVotesAsync()
         {
@@ -483,7 +492,7 @@ namespace RoSharp.API.Assets.Experiences
         }
 
         // Configuration related properties
-        private List<string>? devices = new List<string>(0);
+        private List<string> devices = new List<string>(0);
 
         /// <summary>
         /// Gets the devices that this experience is playable on.
@@ -555,8 +564,7 @@ namespace RoSharp.API.Assets.Experiences
             {
                 response = await PatchAsync($"/v2/universes/{UniverseId}/configuration", new { }, Constants.URL("develop"), "Experience.UpdateConfigurationAsync");
             }
-            catch (Exception ex)
-            {}
+            catch {}
 
             if (response == null)
                 return;
@@ -768,7 +776,7 @@ namespace RoSharp.API.Assets.Experiences
                     active = true,
                     displayReason = displayReason,
                     privateReason = privateReason,
-                    duration = (permanent ? null : $"{length.Value.TotalSeconds}s"),
+                    duration = (permanent ? null : $"{length.GetValueOrDefault().TotalSeconds}s"),
                     excludeAltAccounts = excludeAlts,
                 }
             };
@@ -888,12 +896,41 @@ namespace RoSharp.API.Assets.Experiences
         /// </summary>
         public string DisplayText { get; init; }
 
-        // Todo: Document the below properties and what descriptors have what.
+
+        /// <summary>
+        /// The type of the content described in this descriptor.
+        /// </summary>
+        /// <remarks>Valid for the following types: CrudeHumor, Romance, Gambling</remarks>
         public string? Type { get; init; }
+
+        /// <summary>
+        /// The frequency of the content described in this descriptor.
+        /// </summary>
+        /// <remarks>Valid for the following types: Violence, Fear</remarks>
         public string? Frequency { get; init; }
+
+        /// <summary>
+        /// The realism of the content described in this descriptor.
+        /// </summary>
+        /// <remarks>Valid for the following types: Blood</remarks>
         public string? Realism { get; init; }
+
+        /// <summary>
+        /// The blood level of the content described in this descriptor.
+        /// </summary>
+        /// <remarks>Valid for the following types: Blood</remarks>
         public string? BloodLevel { get; init; }
+
+        /// <summary>
+        /// The intensity of the content described in this descriptor.
+        /// </summary>
+        /// <remarks>Valid for the following types: Violence, Fear</remarks>
         public string? Intensity { get; init; }
+
+        /// <summary>
+        /// The presence of the content described in this descriptor.
+        /// </summary>
+        /// <remarks>Valid for the following types: Alcohol, StrongLanguage, SocialHangout, FreeFormUserCreation</remarks>
         public string? Presence { get; init; }
 
         /// <inheritdoc/>

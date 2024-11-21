@@ -282,7 +282,6 @@ namespace RoSharp.API.Groups
         /// <returns>A task containing a <see cref="PageResponse{T}"/> of <see cref="GroupPost"/> upon completion.</returns>
         /// <exception cref="RobloxAPIException">Roblox API failure or lack of permissions to see the group wall.</exception>
         /// <remarks>This API method does not cache and will make a request each time it is called.</remarks>
-        [UsesSession]
         public async Task<PageResponse<GroupPost>> GetGroupPostsAsync(FixedLimit limit = FixedLimit.Limit100, RequestSortOrder sortOrder = RequestSortOrder.Desc, string? cursor = null)
         {
             string url = $"v2/groups/{Id}/wall/posts?limit={limit.Limit()}&sortOrder={sortOrder}";

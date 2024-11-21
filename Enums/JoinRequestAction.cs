@@ -1,7 +1,7 @@
 ﻿namespace RoSharp.Enums
 {
     /// <summary>
-    /// Indicates the action to perform for a join request. Used in <see cref="API.MemberManager.ModifyJoinRequestAsync(API.User, JoinRequestAction)"/>.
+    /// Indicates the action to perform for a join request. Used in <see cref="API.Groups.MemberManager.ModifyJoinRequestAsync(API.User, JoinRequestAction)"/>.
     /// </summary>
     public enum JoinRequestAction
     {

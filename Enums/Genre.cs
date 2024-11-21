@@ -6,6 +6,9 @@ using System.Threading.Tasks;
 
 namespace RoSharp.Enums
 {
+    /// <summary>
+    /// Indicates the genre of an experience.
+    /// </summary>
     public enum Genre
     {
         Unknown = -1,

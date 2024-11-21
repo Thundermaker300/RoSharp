@@ -5,6 +5,9 @@ using System.Net.Http.Json;
 
 namespace RoSharp.API
 {
+    /// <summary>
+    /// The base class for all API members that use <see cref="Session"/> instances for authentication.
+    /// </summary>
     public class APIMain
     {
         /// <summary>
@@ -12,6 +15,10 @@ namespace RoSharp.API
         /// </summary>
         public virtual string BaseUrl { get; } = "";
 
+        /// <summary>
+        /// Instantiates a new <see cref="APIMain"/> with the given session.
+        /// </summary>
+        /// <param name="session">The session to instantiate with.</param>
         public APIMain(Session session)
         {
             try
@@ -21,6 +28,9 @@ namespace RoSharp.API
             catch { }
         }
 
+        /// <summary>
+        /// Instantiates a new <see cref="APIMain"/> without a session.
+        /// </summary>
         public APIMain() { }
 
         internal HttpClient MakeHttpClient(string? baseOverride = null, string? verifyApiName = null)

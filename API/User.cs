@@ -198,7 +198,7 @@ namespace RoSharp.API
                 {
                     SessionVerify.ThrowRefresh("User.IsPremium");
                 }
-                return isPremium.Value;
+                return isPremium.GetValueOrDefault();
             }
         }
 

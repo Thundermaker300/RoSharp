@@ -8,6 +8,9 @@ using System.Threading.Tasks;
 
 namespace RoSharp.API.Groups
 {
+    /// <summary>
+    /// Represents a single group log.
+    /// </summary>
     public struct GroupAuditLog
     {
 

@@ -138,6 +138,12 @@ namespace RoSharp.API.Assets.Experiences
         }
 
         private ReadOnlyCollection<ExperienceAuditLog>? history;
+
+        /// <summary>
+        /// Gets recent audit logs for an experience.
+        /// </summary>
+        /// <returns>A task containing a <see cref="ReadOnlyCollection{T}"/> of <see cref="ExperienceAuditLog"/> upon completion.</returns>
+        /// <remarks>This API method does not cache and will make a request each time it is called.</remarks>
         public async Task<ReadOnlyCollection<ExperienceAuditLog>> GetAuditLogsAsync()
         {
             if (history == null)

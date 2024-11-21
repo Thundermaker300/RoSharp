@@ -203,60 +203,120 @@ namespace RoSharp.API.Groups
             HttpResponseMessage response = await group.PatchAsync($"/v1/groups/{group.Id}/users/{userId}", body, verifyApiName: "MemberManager.SetRankAsync");
         }
 
-        [UsesSession]
+        /// <summary>
+        /// Sets the rank of a user in this group.
+        /// </summary>
+        /// <param name="userId">The Id of the user.</param>
+        /// <param name="role">The new role to set them as.</param>
+        /// <returns>A task that completes when the operation is completed.</returns>
+        /// <exception cref="ArgumentException">Invalid role provided.</exception>
+        /// <exception cref="RobloxAPIException">Roblox API failure or lack of permissions.</exception>
         public async Task SetRankAsync(ulong userId, Role role)
         {
-            if (role == null)
+            if (role == null || role.roleManager.group.Id != group.Id)
             {
-                throw new ArgumentNullException(nameof(role), "Invalid role provided.");
+                throw new ArgumentException("Invalid role provided.", nameof(role));
             }
             await SetRankAsyncInternal(userId, role.Id);
         }
 
-        [UsesSession]
-        public async Task SetRankAsync(ulong userId, int rankId)
-            => await SetRankAsync(userId, (await group.GetRoleManagerAsync()).Roles.FirstOrDefault(r => r.Rank == rankId));
+        /// <summary>
+        /// Sets the rank of a user in this group.
+        /// </summary>
+        /// <param name="userId">The Id of the user.</param>
+        /// <param name="rankId">The rank Id (<c>0-255</c>) to set them as.</param>
+        /// <returns>A task that completes when the operation is completed.</returns>
+        /// <exception cref="ArgumentException">Invalid role provided.</exception>
+        /// <exception cref="RobloxAPIException">Roblox API failure or lack of permissions.</exception>
+        public async Task SetRankAsync(ulong userId, byte rankId)
+        {
+            Role? role = (await group.GetRoleManagerAsync()).Roles.FirstOrDefault(r => r.Rank == rankId);
+            if (role == null)
+                throw new ArgumentException("Invalid rank Id provided.", nameof(rankId));
+            await SetRankAsync(userId, role);
+        }
 
-        [UsesSession]
+        /// <summary>
+        /// Sets the rank of a user in this group.
+        /// </summary>
+        /// <param name="userId">The Id of the user.</param>
+        /// <param name="roleName">The name of the role to set them as.</param>
+        /// <returns>A task that completes when the operation is completed.</returns>
+        /// <exception cref="ArgumentException">Invalid role provided.</exception>
+        /// <exception cref="RobloxAPIException">Roblox API failure or lack of permissions.</exception>
         public async Task SetRankAsync(ulong userId, string roleName)
-            => await SetRankAsync(userId, (await group.GetRoleManagerAsync()).Roles.FirstOrDefault(r => r.Name == roleName));
+        {
+            Role? role = (await group.GetRoleManagerAsync()).Roles.FirstOrDefault(r => r.Name == roleName);
+            if (role == null)
+                throw new ArgumentException("Invalid role name provided.", nameof(roleName));
+            await SetRankAsync(userId, role);
+        }
 
-        [UsesSession]
+        /// <summary>
+        /// Sets the rank of a user in this group.
+        /// </summary>
+        /// <param name="user">The user.</param>
+        /// <param name="role">The new role to set them as.</param>
+        /// <returns>A task that completes when the operation is completed.</returns>
+        /// <exception cref="ArgumentException">Invalid role provided.</exception>
+        /// <exception cref="RobloxAPIException">Roblox API failure or lack of permissions.</exception>
         public async Task SetRankAsync(User user, Role role)
             => await SetRankAsync(user.Id, role);
 
-        [UsesSession]
-        public async Task SetRankAsync(User user, int rankId)
+        /// <summary>
+        /// Sets the rank of a user in this group.
+        /// </summary>
+        /// <param name="user">The user.</param>
+        /// <param name="rankId">The rank Id (<c>0-255</c>) to set them as.</param>
+        /// <returns>A task that completes when the operation is completed.</returns>
+        /// <exception cref="ArgumentException">Invalid role provided.</exception>
+        /// <exception cref="RobloxAPIException">Roblox API failure or lack of permissions.</exception>
+        public async Task SetRankAsync(User user, byte rankId)
             => await SetRankAsync(user.Id, rankId);
 
-        [UsesSession]
+        /// <summary>
+        /// Sets the rank of a user in this group.
+        /// </summary>
+        /// <param name="user">The user.</param>
+        /// <param name="roleName">The name of the role to set them as.</param>
+        /// <returns>A task that completes when the operation is completed.</returns>
+        /// <exception cref="ArgumentException">Invalid role provided.</exception>
+        /// <exception cref="RobloxAPIException">Roblox API failure or lack of permissions.</exception>
         public async Task SetRankAsync(User user, string roleName)
             => await SetRankAsync(user.Id, roleName);
 
-        [UsesSession]
+        /// <summary>
+        /// Sets the rank of a user in this group.
+        /// </summary>
+        /// <param name="username">The username of the user.</param>
+        /// <param name="role">The new role to set them as.</param>
+        /// <returns>A task that completes when the operation is completed.</returns>
+        /// <exception cref="ArgumentException">Invalid role provided.</exception>
+        /// <exception cref="RobloxAPIException">Roblox API failure or lack of permissions.</exception>
         public async Task SetRankAsync(string username, Role role)
             => await SetRankAsync(await UserUtility.GetUserIdAsync(username), role);
 
-        [UsesSession]
-        public async Task SetRankAsync(string username, int rankId)
+        /// <summary>
+        /// Sets the rank of a user in this group.
+        /// </summary>
+        /// <param name="username">The username of the user.</param>
+        /// <param name="rankId">The rank Id (<c>0-255</c>) to set them as.</param>
+        /// <returns>A task that completes when the operation is completed.</returns>
+        /// <exception cref="ArgumentException">Invalid role provided.</exception>
+        /// <exception cref="RobloxAPIException">Roblox API failure or lack of permissions.</exception>
+        public async Task SetRankAsync(string username, byte rankId)
             => await SetRankAsync(await UserUtility.GetUserIdAsync(username), rankId);
 
-        [UsesSession]
+        /// <summary>
+        /// Sets the rank of a user in this group.
+        /// </summary>
+        /// <param name="username">The username of the user.</param>
+        /// <param name="roleName">The name of the role to set them as.</param>
+        /// <returns>A task that completes when the operation is completed.</returns>
+        /// <exception cref="ArgumentException">Invalid role provided.</exception>
+        /// <exception cref="RobloxAPIException">Roblox API failure or lack of permissions.</exception>
         public async Task SetRankAsync(string username, string roleName)
             => await SetRankAsync(await UserUtility.GetUserIdAsync(username), roleName);
-        
-
-        [UsesSession]
-        public async Task SetRankAsync(GenericId<User> userId, Role role)
-            => await SetRankAsync(userId.Id, role);
-
-        [UsesSession]
-        public async Task SetRankAsync(GenericId<User> userId, int rankId)
-            => await SetRankAsync(userId.Id, rankId);
-
-        [UsesSession]
-        public async Task SetRankAsync(GenericId<User> userId, string roleName)
-            => await SetRankAsync(userId.Id, roleName);
 
         /// <summary>
         /// Kicks the user with the given Id.

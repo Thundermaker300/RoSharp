@@ -40,6 +40,9 @@ namespace RoSharp.API
         /// <inheritdoc/>
         public async Task RefreshAsync()
         {
+            if (session == null)
+                throw new InvalidOperationException("SessionAPI must have a session.");
+
             user = await User.FromId(session.userid, session);
 
             dynamic genderData = JObject.Parse(await GetStringAsync("/v1/gender"));
@@ -58,12 +61,11 @@ namespace RoSharp.API
         /// <inheritdoc/>
         public override string BaseUrl => Constants.URL("users");
 
-        internal User? user;
+        internal User user;
 
         /// <summary>
         /// Gets a <see cref="API.User"/> representing the currently authenticated user.
         /// </summary>
-        [UsesSession]
         public User User => user;
 
         private Gender gender;
@@ -143,8 +145,17 @@ namespace RoSharp.API
         public async Task<bool> FavoritedExperienceAsync(ulong experienceId) => await FavoritedExperienceAsync(await Experience.FromId(experienceId, session));
 
         private string[] incomeSkipList = ["incomingRobuxTotal", "outgoingRobuxTotal"];
+
+        /// <summary>
+        /// Returns the authenticated user's incoming Robux for the specified time length.
+        /// </summary>
+        /// <param name="timeLength">The time length of the data.</param>
+        /// <returns>The data in the form of an <see cref="EconomyBreakdown"/> struct.</returns>
         public async Task<EconomyBreakdown> GetIncomeAsync(AnalyticTimeLength timeLength = AnalyticTimeLength.Day)
         {
+            if (session == null)
+                throw new ArgumentNullException(nameof(session), "Session cannot be null.");
+
             var url = $"/v2/users/{session.userid}/transaction-totals?timeFrame={timeLength}&transactionType=summary";
             string rawData = await GetStringAsync(url, Constants.URL("economy"), verifyApiName: "SessionAPI.GetIncomeAsync");
             dynamic data = JObject.Parse(rawData);

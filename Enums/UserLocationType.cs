@@ -7,7 +7,7 @@ using System.Threading.Tasks;
 namespace RoSharp.Enums
 {
     /// <summary>
-    /// Indicates where a user is located, mainly for <see cref="API.UserPresence"/>.
+    /// Indicates where a user is located, mainly for <see cref="Structures.UserPresence"/>.
     /// </summary>
     public enum UserLocationType
     {

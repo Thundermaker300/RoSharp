@@ -16,7 +16,7 @@
         ShopAndAllExperiences = 5,
 
         /// <summary>
-        /// Can only be purchased in certain <see cref="API.Assets.Experience"/>s.
+        /// Can only be purchased in certain <see cref="API.Assets.Experiences.Experience"/>s.
         /// </summary>
         AllowedGames = 6,
     }

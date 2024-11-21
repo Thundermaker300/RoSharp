@@ -23,7 +23,7 @@ namespace RoSharp.API.Groups
         /// <inheritdoc/>
         public DateTime RefreshedAt { get; set; }
 
-        private ReadOnlyCollection<Role>? roles;
+        private ReadOnlyCollection<Role> roles = new List<Role>(0).AsReadOnly();
 
         /// <summary>
         /// Gets all roles in the group.
