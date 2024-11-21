@@ -1,17 +1,17 @@
 ﻿using RoSharp.Enums;
 
-namespace RoSharp.API.Groups
+namespace RoSharp.API.Communities
 {
     /// <summary>
-    /// Represents a single group log.
+    /// Represents a single community log.
     /// </summary>
-    public readonly struct GroupAuditLog
+    public readonly struct CommunityAuditLog
     {
 
         /// <summary>
-        /// The type of group log.
+        /// The type of community log.
         /// </summary>
-        public GroupAuditLogType Type { get; init; }
+        public CommunityAuditLogType Type { get; init; }
 
         /// <summary>
         /// The time the action occurred.
@@ -19,9 +19,9 @@ namespace RoSharp.API.Groups
         public DateTime Time { get; init; }
 
         /// <summary>
-        /// The group Id the action occurred in.
+        /// The community Id the action occurred in.
         /// </summary>
-        public GenericId<Group> GroupId { get; init; }
+        public GenericId<Community> CommunityId { get; init; }
 
         /// <summary>
         /// The user Id of the user that performed the action.
@@ -39,14 +39,14 @@ namespace RoSharp.API.Groups
         public GenericId<User>? TargetUserId { get; init; }
 
         /// <summary>
-        /// Gets the targeted group in this log. Will be <see langword="null"/> if the action isn't targeting a group.
+        /// Gets the targeted community in this log. Will be <see langword="null"/> if the action isn't targeting a community.
         /// </summary>
-        public GenericId<Group>? TargetGroupId { get; init; }
+        public GenericId<Community>? TargetCommunityId { get; init; }
 
         /// <inheritdoc/>
         public override string ToString()
         {
-            return $"{Type} [{Time}] UserID: {UserId.Id}";
+            return $"{Type} [{Time}] CommunityId: {CommunityId.Id} UserID: {UserId.Id}";
         }
     }
 }

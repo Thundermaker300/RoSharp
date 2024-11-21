@@ -1,11 +1,11 @@
-﻿namespace RoSharp.API.Groups
+﻿namespace RoSharp.API.Communities
 {
     /// <summary>
-    /// Represents a group post.
+    /// Represents a community post.
     /// </summary>
-    public struct GroupPost
+    public struct CommunityPost
     {
-        internal Group group;
+        internal Community group;
 
         /// <summary>
         /// Gets the unique Id of the post.
@@ -30,6 +30,6 @@
         /// <summary>
         /// Gets the rank of the user that made the post. Can be <see langword="null"/>.
         /// </summary>
-        public string? RankInGroup { get; init; }
+        public string? RankInCommunity { get; init; }
     }
 }

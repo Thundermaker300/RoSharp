@@ -1,5 +1,5 @@
 ﻿using Newtonsoft.Json.Linq;
-using RoSharp.API.Groups;
+using RoSharp.API.Communities;
 using RoSharp.API.Pooling;
 using RoSharp.Enums;
 using RoSharp.Exceptions;
@@ -52,23 +52,23 @@ namespace RoSharp.API.Assets.Experiences
 
         private ulong ownerId;
         private string ownerName;
-        private bool isGroupOwned;
+        private bool isCommunityOwned;
 
         /// <summary>
-        /// Gets the unique Id (group or user) of the owner of this experience.
+        /// Gets the unique Id (community or user) of the owner of this experience.
         /// </summary>
         public ulong OwnerId => ownerId;
 
         /// <summary>
-        /// Gets the name (group or user) of the owner of this experience.
+        /// Gets the name (community or user) of the owner of this experience.
         /// </summary>
         public string OwnerName => ownerName;
 
         /// <summary>
-        /// Gets whether or not this experience is owned by a group.
+        /// Gets whether or not this experience is owned by a community.
         /// </summary>
         /// <seealso cref="GetOwnerAsync"/>
-        public bool IsGroupOwned => isGroupOwned;
+        public bool IsCommunityOwned => isCommunityOwned;
 
         private DateTime created;
 
@@ -258,7 +258,7 @@ namespace RoSharp.API.Assets.Experiences
             ulong creatorId = Convert.ToUInt64(data.creator.id);
             ownerId = creatorId;
             ownerName = data.creator.name;
-            isGroupOwned = data.creator.type == "Group";
+            isCommunityOwned = data.creator.type == "Group";
 
             // configs
             await UpdateExperienceGuidelinesDataAsync();
@@ -288,9 +288,9 @@ namespace RoSharp.API.Assets.Experiences
         /// <returns>A task containing the owner of this experience.</returns>
         public async Task<IAssetOwner> GetOwnerAsync()
         {
-            if (IsGroupOwned)
+            if (IsCommunityOwned)
             {
-                return await Group.FromId(OwnerId);
+                return await Community.FromId(OwnerId);
             }
             return await User.FromId(OwnerId);
         }
@@ -859,7 +859,7 @@ namespace RoSharp.API.Assets.Experiences
         /// <inheritdoc/>
         public override string ToString()
         {
-            return $"{Name} [{UniverseId}] {{{(!IsGroupOwned ? "@" : string.Empty)}{OwnerName}}} <R${Cost}>";
+            return $"{Name} [{UniverseId}] {{{(!IsCommunityOwned ? "@" : string.Empty)}{OwnerName}}} <R${Cost}>";
         }
 
         /// <inheritdoc/>

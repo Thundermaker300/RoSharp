@@ -11,8 +11,8 @@
         User,
 
         /// <summary>
-        /// Asset is owned by a group.
+        /// Asset is owned by a community.
         /// </summary>
-        Group,
+        Community,
     }
 }

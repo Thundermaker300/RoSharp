@@ -5,7 +5,7 @@ using System.Diagnostics;
 namespace RoSharp.Structures
 {
     /// <summary>
-    /// Represents a breakdown of group income.
+    /// Represents a breakdown of community or user income.
     /// </summary>
     public readonly struct EconomyBreakdown
     {

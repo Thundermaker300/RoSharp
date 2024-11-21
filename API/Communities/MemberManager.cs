@@ -5,24 +5,24 @@ using RoSharp.Extensions;
 using RoSharp.Utility;
 using System.Diagnostics;
 
-namespace RoSharp.API.Groups
+namespace RoSharp.API.Communities
 {
     /// <summary>
-    /// Class used for managing members of a group.
+    /// Class used for managing members of a community.
     /// </summary>
     public class MemberManager
     {
-        private Group group;
+        private Community community;
 
-        internal MemberManager(Group group) { this.group = group; }
+        internal MemberManager(Community community) { this.community = community; }
 
         /// <summary>
-        /// Gets the total amount of members in the group.
+        /// Gets the total amount of members in the community.
         /// </summary>
-        public ulong Members => group.members;
+        public ulong Members => community.members;
 
         /// <summary>
-        /// Gets a <see cref="PageResponse{T}"/> containing IDs of users that are requesting to join the group.
+        /// Gets a <see cref="PageResponse{T}"/> containing IDs of users that are requesting to join the community.
         /// </summary>
         /// <param name="limit">The limit of users to return.</param>
         /// <param name="sortOrder">The sort order.</param>
@@ -31,11 +31,11 @@ namespace RoSharp.API.Groups
         /// <exception cref="RobloxAPIException">Roblox API failure or lack of permissions.</exception>
         public async Task<PageResponse<GenericId<User>>> GetPendingRequestsAsync(FixedLimit limit = FixedLimit.Limit100, RequestSortOrder sortOrder = RequestSortOrder.Desc, string? cursor = null)
         {
-            string url = $"/v1/groups/{group.Id}/join-requests?limit={limit.Limit()}&sortOrder={sortOrder}";
+            string url = $"/v1/groups/{community.Id}/join-requests?limit={limit.Limit()}&sortOrder={sortOrder}";
             if (cursor != null)
                 url += "&cursor=" + cursor;
 
-            HttpResponseMessage response = await group.GetAsync(url, verifyApiName: "Group.GetPendingRequestsAsync");
+            HttpResponseMessage response = await community.GetAsync(url, verifyApiName: "community.GetPendingRequestsAsync");
             string rawData = await response.Content.ReadAsStringAsync();
             dynamic data = JObject.Parse(rawData);
 
@@ -45,7 +45,7 @@ namespace RoSharp.API.Groups
             foreach (dynamic user in data.data)
             {
                 ulong userId = Convert.ToUInt64(user.requester.userId);
-                list.Add(new GenericId<User>(userId, group.session));
+                list.Add(new GenericId<User>(userId, community.session));
             }
 
             return new(list, nextPage, previousPage);
@@ -53,7 +53,7 @@ namespace RoSharp.API.Groups
 
 
         /// <summary>
-        /// Gets a <see cref="PageResponse{T}"/> containing IDs of users that are currently in the group.
+        /// Gets a <see cref="PageResponse{T}"/> containing IDs of users that are currently in the community.
         /// </summary>
         /// <param name="limit">The limit of users to return.</param>
         /// <param name="sortOrder">The sort order.</param>
@@ -62,20 +62,20 @@ namespace RoSharp.API.Groups
         /// <exception cref="RobloxAPIException">Roblox API failure or lack of permissions.</exception>
         public async Task<PageResponse<GenericId<User>>> GetMembersAsync(FixedLimit limit = FixedLimit.Limit100, RequestSortOrder sortOrder = RequestSortOrder.Asc, string? cursor = null)
         {
-            string url = $"/v1/groups/{group.Id}/users?limit={limit.Limit()}&sortOrder={sortOrder}";
+            string url = $"/v1/groups/{community.Id}/users?limit={limit.Limit()}&sortOrder={sortOrder}";
             if (cursor != null)
                 url += "&cursor=" + cursor;
 
             var list = new List<GenericId<User>>();
             string? nextPage;
             string? previousPage;
-            HttpResponseMessage response = await group.GetAsync(url, verifyApiName: "Group.GetMembersAsync");
+            HttpResponseMessage response = await community.GetAsync(url, verifyApiName: "community.GetMembersAsync");
 
             dynamic data = JObject.Parse(await response.Content.ReadAsStringAsync());
             foreach (dynamic user in data.data)
             {
                 ulong userId = Convert.ToUInt64(user.user.userId);
-                list.Add(new GenericId<User>(userId, group.session));
+                list.Add(new GenericId<User>(userId, community.session));
             }
             nextPage = data.nextPageCursor;
             previousPage = data.previousPageCursor;
@@ -84,7 +84,7 @@ namespace RoSharp.API.Groups
         }
 
         /// <summary>
-        /// Gets a <see cref="PageResponse{T}"/> containing IDs of users that are currently banned from the group.
+        /// Gets a <see cref="PageResponse{T}"/> containing IDs of users that are currently banned from the community.
         /// </summary>
         /// <param name="limit">The limit of users to return.</param>
         /// <param name="sortOrder">The sort order.</param>
@@ -93,20 +93,20 @@ namespace RoSharp.API.Groups
         /// <exception cref="RobloxAPIException">Roblox API failure or lack of permissions.</exception>
         public async Task<PageResponse<GenericId<User>>> GetBannedMembersAsync(FixedLimit limit = FixedLimit.Limit100, RequestSortOrder sortOrder = RequestSortOrder.Asc, string? cursor = null)
         {
-            string url = $"/v1/groups/{group.Id}/bans?limit={limit.Limit()}&sortOrder={sortOrder}";
+            string url = $"/v1/groups/{community.Id}/bans?limit={limit.Limit()}&sortOrder={sortOrder}";
             if (cursor != null)
                 url += "&cursor=" + cursor;
 
             var list = new List<GenericId<User>>();
             string? nextPage;
             string? previousPage;
-            HttpResponseMessage response = await group.GetAsync(url, verifyApiName: "Group.GetBannedMembersAsync");
+            HttpResponseMessage response = await community.GetAsync(url, verifyApiName: "community.GetBannedMembersAsync");
 
             dynamic data = JObject.Parse(await response.Content.ReadAsStringAsync());
             foreach (dynamic user in data.data)
             {
                 ulong userId = Convert.ToUInt64(user.user.userId);
-                list.Add(new GenericId<User>(userId, group.session));
+                list.Add(new GenericId<User>(userId, community.session));
             }
             nextPage = data.nextPageCursor;
             previousPage = data.previousPageCursor;
@@ -115,18 +115,18 @@ namespace RoSharp.API.Groups
         }
 
         /// <summary>
-        /// Gets whether or not the user with the given Id is in the group.
+        /// Gets whether or not the user with the given Id is in the community.
         /// </summary>
         /// <param name="userId">The user's Id.</param>
         /// <returns>A task containing a bool upon completion.</returns>
         /// <remarks>This API method does not cache and will make a request each time it is called.</remarks>
         public async Task<bool> IsInGroupAsync(ulong userId)
         {
-            string rawData = await group.GetStringAsync($"/v1/users/{userId}/groups/roles?includeLocked=true");
+            string rawData = await community.GetStringAsync($"/v1/users/{userId}/groups/roles?includeLocked=true");
             dynamic data = JObject.Parse(rawData);
-            foreach (dynamic group in data.data)
+            foreach (dynamic community in data.data)
             {
-                if (Convert.ToUInt64(group.group.id) == this.group.Id)
+                if (Convert.ToUInt64(community.community.id) == this.community.Id)
                 {
                     return true;
                 }
@@ -135,7 +135,7 @@ namespace RoSharp.API.Groups
         }
 
         /// <summary>
-        /// Gets whether or not the user with the given username is in the group.
+        /// Gets whether or not the user with the given username is in the community.
         /// </summary>
         /// <param name="username">The user's username.</param>
         /// <returns>A task containing a bool upon completion.</returns>
@@ -143,7 +143,7 @@ namespace RoSharp.API.Groups
         public async Task<bool> IsInGroupAsync(string username) => await IsInGroupAsync(await User.FromUsername(username));
 
         /// <summary>
-        /// Gets whether or not the <see cref="User"/> is in the group.
+        /// Gets whether or not the <see cref="User"/> is in the community.
         /// </summary>
         /// <param name="user">The user.</param>
         /// <returns>A task containing a bool upon completion.</returns>
@@ -154,17 +154,17 @@ namespace RoSharp.API.Groups
         /// Gets the role of the user with the given Id.
         /// </summary>
         /// <param name="userId">The user's Id.</param>
-        /// <returns>A task containing the <see cref="Role"/> upon completion. Will be <see langword="null"/> if the user is not in the group.</returns>
+        /// <returns>A task containing the <see cref="Role"/> upon completion. Will be <see langword="null"/> if the user is not in the community.</returns>
         /// <remarks>This API method does not cache and will make a request each time it is called.</remarks>
         public async Task<Role?> GetRoleInGroupAsync(ulong userId)
         {
-            string rawData = await group.GetStringAsync($"/v1/users/{userId}/groups/roles?includeLocked=true");
+            string rawData = await community.GetStringAsync($"/v1/users/{userId}/groups/roles?includeLocked=true");
             dynamic data = JObject.Parse(rawData);
-            foreach (dynamic group in data.data)
+            foreach (dynamic community in data.data)
             {
-                if (Convert.ToUInt64(group.group.id) == this.group.Id)
+                if (Convert.ToUInt64(community.community.id) == this.community.Id)
                 {
-                    return (await this.group.GetRoleManagerAsync()).Roles.FirstOrDefault(r => r.Id == Convert.ToUInt64(group.role.id));
+                    return (await this.community.GetRoleManagerAsync()).Roles.FirstOrDefault(r => r.Id == Convert.ToUInt64(community.role.id));
                 }
             }
             return null;
@@ -174,7 +174,7 @@ namespace RoSharp.API.Groups
         /// Gets the role of the user with the given username.
         /// </summary>
         /// <param name="username">The user's username.</param>
-        /// <returns>A task containing the <see cref="Role"/> upon completion. Will be <see langword="null"/> if the user is not in the group.</returns>
+        /// <returns>A task containing the <see cref="Role"/> upon completion. Will be <see langword="null"/> if the user is not in the community.</returns>
         /// <remarks>This API method does not cache and will make a request each time it is called.</remarks>
         public async Task<Role?> GetRoleInGroupAsync(string username) => await GetRoleInGroupAsync(await User.FromUsername(username));
 
@@ -182,7 +182,7 @@ namespace RoSharp.API.Groups
         /// Gets the role of the <see cref="User"/>.
         /// </summary>
         /// <param name="user">The user.</param>
-        /// <returns>A task containing the <see cref="Role"/> upon completion. Will be <see langword="null"/> if the user is not in the group.</returns>
+        /// <returns>A task containing the <see cref="Role"/> upon completion. Will be <see langword="null"/> if the user is not in the community.</returns>
         /// <remarks>This API method does not cache and will make a request each time it is called.</remarks>
         public async Task<Role?> GetRoleInGroupAsync(User user) => await GetRoleInGroupAsync(user.Id);
 
@@ -192,14 +192,14 @@ namespace RoSharp.API.Groups
         /// <param name="userId">The user's Id.</param>
         /// <param name="action">Whether to accept or deny the request.</param>
         /// <returns>A task that completes when the operation is finished.</returns>
-        /// <exception cref="RobloxAPIException">Roblox API failure, lack of permissions, or an invalid request (eg. the provided user is not trying to join the group).</exception>
+        /// <exception cref="RobloxAPIException">Roblox API failure, lack of permissions, or an invalid request (eg. the provided user is not trying to join the community).</exception>
         public async Task ModifyJoinRequestAsync(ulong userId, JoinRequestAction action)
         {
-            string url = $"/v1/groups/{group.Id}/join-requests/users/{userId}";
+            string url = $"/v1/groups/{community.Id}/join-requests/users/{userId}";
             HttpResponseMessage response = action switch
             {
-                JoinRequestAction.Accept => await group.PostAsync(url, new { }, verifyApiName: "MemberManager.ModifyJoinRequestAsync"),
-                JoinRequestAction.Decline => await group.DeleteAsync(url, "MemberManager.ModifyJoinRequestAsync"),
+                JoinRequestAction.Accept => await community.PostAsync(url, new { }, verifyApiName: "MemberManager.ModifyJoinRequestAsync"),
+                JoinRequestAction.Decline => await community.DeleteAsync(url, "MemberManager.ModifyJoinRequestAsync"),
                 _ => throw new UnreachableException("JoinRequestAction must be Accept or Decline."),
             };
             if (!response.IsSuccessStatusCode)
@@ -214,7 +214,7 @@ namespace RoSharp.API.Groups
         /// <param name="user">The user.</param>
         /// <param name="action">Whether to accept or deny the request.</param>
         /// <returns>A task that completes when the operation is finished.</returns>
-        /// <exception cref="RobloxAPIException">Roblox API failure, lack of permissions, or an invalid request (eg. the provided user is not trying to join the group).</exception>
+        /// <exception cref="RobloxAPIException">Roblox API failure, lack of permissions, or an invalid request (eg. the provided user is not trying to join the community).</exception>
         public async Task ModifyJoinRequestAsync(User user, JoinRequestAction action)
             => await ModifyJoinRequestAsync(user.Id, action);
 
@@ -224,18 +224,18 @@ namespace RoSharp.API.Groups
         /// <param name="username">The user's username.</param>
         /// <param name="action">Whether to accept or deny the request.</param>
         /// <returns>A task that completes when the operation is finished.</returns>
-        /// <exception cref="RobloxAPIException">Roblox API failure, lack of permissions, or an invalid request (eg. the provided user is not trying to join the group).</exception>
+        /// <exception cref="RobloxAPIException">Roblox API failure, lack of permissions, or an invalid request (eg. the provided user is not trying to join the community).</exception>
         public async Task ModifyJoinRequestAsync(string username, JoinRequestAction action)
             => await ModifyJoinRequestAsync(await UserUtility.GetUserIdAsync(username), action);
 
         internal async Task SetRankAsyncInternal(ulong userId, ulong newRoleId)
         {
             object body = new { roleId = newRoleId };
-            await group.PatchAsync($"/v1/groups/{group.Id}/users/{userId}", body, verifyApiName: "MemberManager.SetRankAsync");
+            await community.PatchAsync($"/v1/groups/{community.Id}/users/{userId}", body, verifyApiName: "MemberManager.SetRankAsync");
         }
 
         /// <summary>
-        /// Sets the rank of a user in this group.
+        /// Sets the rank of a user in this community.
         /// </summary>
         /// <param name="userId">The Id of the user.</param>
         /// <param name="role">The new role to set them as.</param>
@@ -244,7 +244,7 @@ namespace RoSharp.API.Groups
         /// <exception cref="RobloxAPIException">Roblox API failure or lack of permissions.</exception>
         public async Task SetRankAsync(ulong userId, Role role)
         {
-            if (role == null || role.roleManager.group.Id != group.Id)
+            if (role == null || role.roleManager.group.Id != community.Id)
             {
                 throw new ArgumentException("Invalid role provided.", nameof(role));
             }
@@ -252,7 +252,7 @@ namespace RoSharp.API.Groups
         }
 
         /// <summary>
-        /// Sets the rank of a user in this group.
+        /// Sets the rank of a user in this community.
         /// </summary>
         /// <param name="userId">The Id of the user.</param>
         /// <param name="rankId">The rank Id (<c>0-255</c>) to set them as.</param>
@@ -261,13 +261,13 @@ namespace RoSharp.API.Groups
         /// <exception cref="RobloxAPIException">Roblox API failure or lack of permissions.</exception>
         public async Task SetRankAsync(ulong userId, byte rankId)
         {
-            Role? role = (await group.GetRoleManagerAsync()).Roles.FirstOrDefault(r => r.Rank == rankId)
+            Role? role = (await community.GetRoleManagerAsync()).Roles.FirstOrDefault(r => r.Rank == rankId)
                 ?? throw new ArgumentException("Invalid rank Id provided.", nameof(rankId));
             await SetRankAsync(userId, role);
         }
 
         /// <summary>
-        /// Sets the rank of a user in this group.
+        /// Sets the rank of a user in this community.
         /// </summary>
         /// <param name="userId">The Id of the user.</param>
         /// <param name="roleName">The name of the role to set them as.</param>
@@ -276,13 +276,13 @@ namespace RoSharp.API.Groups
         /// <exception cref="RobloxAPIException">Roblox API failure or lack of permissions.</exception>
         public async Task SetRankAsync(ulong userId, string roleName)
         {
-            Role? role = (await group.GetRoleManagerAsync()).Roles.FirstOrDefault(r => r.Name == roleName)
+            Role? role = (await community.GetRoleManagerAsync()).Roles.FirstOrDefault(r => r.Name == roleName)
                 ?? throw new ArgumentException("Invalid role name provided.", nameof(roleName));
             await SetRankAsync(userId, role);
         }
 
         /// <summary>
-        /// Sets the rank of a user in this group.
+        /// Sets the rank of a user in this community.
         /// </summary>
         /// <param name="user">The user.</param>
         /// <param name="role">The new role to set them as.</param>
@@ -293,7 +293,7 @@ namespace RoSharp.API.Groups
             => await SetRankAsync(user.Id, role);
 
         /// <summary>
-        /// Sets the rank of a user in this group.
+        /// Sets the rank of a user in this community.
         /// </summary>
         /// <param name="user">The user.</param>
         /// <param name="rankId">The rank Id (<c>0-255</c>) to set them as.</param>
@@ -304,7 +304,7 @@ namespace RoSharp.API.Groups
             => await SetRankAsync(user.Id, rankId);
 
         /// <summary>
-        /// Sets the rank of a user in this group.
+        /// Sets the rank of a user in this community.
         /// </summary>
         /// <param name="user">The user.</param>
         /// <param name="roleName">The name of the role to set them as.</param>
@@ -315,7 +315,7 @@ namespace RoSharp.API.Groups
             => await SetRankAsync(user.Id, roleName);
 
         /// <summary>
-        /// Sets the rank of a user in this group.
+        /// Sets the rank of a user in this community.
         /// </summary>
         /// <param name="username">The username of the user.</param>
         /// <param name="role">The new role to set them as.</param>
@@ -326,7 +326,7 @@ namespace RoSharp.API.Groups
             => await SetRankAsync(await UserUtility.GetUserIdAsync(username), role);
 
         /// <summary>
-        /// Sets the rank of a user in this group.
+        /// Sets the rank of a user in this community.
         /// </summary>
         /// <param name="username">The username of the user.</param>
         /// <param name="rankId">The rank Id (<c>0-255</c>) to set them as.</param>
@@ -337,7 +337,7 @@ namespace RoSharp.API.Groups
             => await SetRankAsync(await UserUtility.GetUserIdAsync(username), rankId);
 
         /// <summary>
-        /// Sets the rank of a user in this group.
+        /// Sets the rank of a user in this community.
         /// </summary>
         /// <param name="username">The username of the user.</param>
         /// <param name="roleName">The name of the role to set them as.</param>
@@ -355,7 +355,7 @@ namespace RoSharp.API.Groups
         /// <exception cref="RobloxAPIException">Roblox API failure or lack of permissions.</exception>
         public async Task KickMemberAsync(ulong userId)
         {
-            await group.DeleteAsync($"/v1/groups/{group.Id}/users/{userId}", verifyApiName: "MemberManager.KickMemberAsync");
+            await community.DeleteAsync($"/v1/groups/{community.Id}/users/{userId}", verifyApiName: "MemberManager.KickMemberAsync");
         }
 
         /// <summary>
@@ -374,7 +374,7 @@ namespace RoSharp.API.Groups
         /// <exception cref="RobloxAPIException">Roblox API failure or lack of permissions.</exception>
         public async Task DeletePostsFromMemberAsync(ulong userId)
         {
-            await group.DeleteAsync($"https://groups.roblox.com/v1/groups/{group.Id}/wall/users/{userId}/posts");
+            await community.DeleteAsync($"https://groups.roblox.com/v1/groups/{community.Id}/wall/users/{userId}/posts");
         }
 
         /// <summary>
@@ -387,7 +387,7 @@ namespace RoSharp.API.Groups
             => await DeletePostsFromMemberAsync(user.Id);
 
         /// <summary>
-        /// Bans a user from the group.
+        /// Bans a user from the community.
         /// </summary>
         /// <param name="userId">The unique Id of the user to ban.</param>
         /// <param name="deletePosts">If true, will also delete their wall posts.</param>
@@ -398,11 +398,11 @@ namespace RoSharp.API.Groups
             if (deletePosts)
                 await DeletePostsFromMemberAsync(userId);
 
-            await group.PostAsync($"/v1/groups/{group.Id}/bans/{userId}", new { }, verifyApiName: "MemberManager.BanMemberAsync");
+            await community.PostAsync($"/v1/groups/{community.Id}/bans/{userId}", new { }, verifyApiName: "MemberManager.BanMemberAsync");
         }
 
         /// <summary>
-        /// Bans a user from the group.
+        /// Bans a user from the community.
         /// </summary>
         /// <param name="user">The user to ban.</param>
         /// <param name="deletePosts">If true, will also delete their wall posts.</param>
@@ -412,17 +412,17 @@ namespace RoSharp.API.Groups
             => await BanMemberAsync(user.Id, deletePosts);
 
         /// <summary>
-        /// Unbans a previously-banned user from the group.
+        /// Unbans a previously-banned user from the community.
         /// </summary>
         /// <param name="userId">The unique Id of the user to unban.</param>
         /// <returns></returns>
         public async Task UnbanMemberAsync(ulong userId)
         {
-            await group.DeleteAsync($"https://groups.roblox.com/v1/groups/{group.Id}/bans/{userId}");
+            await community.DeleteAsync($"https://groups.roblox.com/v1/groups/{community.Id}/bans/{userId}");
         }
 
         /// <summary>
-        /// Unbans a previously-banned user from the group.
+        /// Unbans a previously-banned user from the community.
         /// </summary>
         /// <param name="user">The user to unban.</param>
         /// <returns></returns>

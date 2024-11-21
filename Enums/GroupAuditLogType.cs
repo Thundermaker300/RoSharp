@@ -1,139 +1,139 @@
 ﻿namespace RoSharp.Enums
 {
     /// <summary>
-    /// Indicates a group audit log type. Used in <see cref="API.Groups.Group.GetAuditLogsAsync"/>.
+    /// Indicates a community audit log type. Used in <see cref="API.Communities.Community.GetAuditLogsAsync"/>.
     /// </summary>
-    public enum GroupAuditLogType
+    public enum CommunityAuditLogType
     {
-        // Group
+        // Community
 
         /// <summary>
-        /// The group's description is changed.
+        /// The community's description is changed.
         /// </summary>
         ChangeDescription,
 
         /// <summary>
-        /// The group's status is changed.
+        /// The community's status is changed.
         /// </summary>
         PostStatus,
 
         /// <summary>
-        /// The group is abandoned by its owner.
+        /// The community is abandoned by its owner.
         /// </summary>
         /// <seealso cref="Claim"/>
         /// <seealso cref="ChangeOwner"/>
         Abandon,
 
         /// <summary>
-        /// The group is claimed after being abandoned.
+        /// The community is claimed after being abandoned.
         /// </summary>
         /// <seealso cref="Abandon"/>
         /// <seealso cref="ChangeOwner"/>
         Claim,
 
         /// <summary>
-        /// The group is renamed.
+        /// The community is renamed.
         /// </summary>
         Rename,
 
         /// <summary>
-        /// The group is deleted by Roblox.
+        /// The community is deleted by Roblox.
         /// </summary>
         Delete,
 
         /// <summary>
-        /// The group is locked by Roblox.
+        /// The community is locked by Roblox.
         /// </summary>
         Lock,
 
         /// <summary>
-        /// The group is unlocked by Roblox.
+        /// The community is unlocked by Roblox.
         /// </summary>
         Unlock,
 
         /// <summary>
-        /// The group's owner is changed from one person to another without being abandoned.
+        /// The community's owner is changed from one person to another without being abandoned.
         /// </summary>
         /// <seealso cref="Abandon"/>
         /// <seealso cref="Claim"/>
         ChangeOwner,
 
-        // Group Assets/Funds
+        // community Assets/Funds
 
         /// <summary>
-        /// A group place is added.
+        /// A community place is added.
         /// </summary>
-        AddGroupPlace,
+        AddcommunityPlace,
 
         /// <summary>
-        /// A group place is removed.
+        /// A community place is removed.
         /// </summary>
-        RemoveGroupPlace,
+        RemovecommunityPlace,
 
         /// <summary>
-        /// A group item (such as a shirt) is created.
+        /// A community item (such as a shirt) is created.
         /// </summary>
         CreateItems,
 
         /// <summary>
-        /// A group asset (such as a model) is created.
+        /// A community asset (such as a model) is created.
         /// </summary>
-        CreateGroupAsset,
+        CreatecommunityAsset,
 
         /// <summary>
-        /// A group developer product is created.
+        /// A community developer product is created.
         /// </summary>
-        CreateGroupDeveloperProduct,
+        CreatecommunityDeveloperProduct,
 
         /// <summary>
-        /// A group Game Pass is created.
+        /// A community Game Pass is created.
         /// </summary>
         CreateGamePass,
 
         /// <summary>
-        /// A group developer subscription is created.
+        /// A community developer subscription is created.
         /// </summary>
-        CreateGroupDeveloperSubscriptionProduct,
+        CreatecommunityDeveloperSubscriptionProduct,
 
         /// <summary>
-        /// A group asset (such as a model) is modified.
+        /// A community asset (such as a model) is modified.
         /// </summary>
-        ConfigureGroupAsset,
+        ConfigurecommunityAsset,
 
         /// <summary>
-        /// A group experience is modified.
+        /// A community experience is modified.
         /// </summary>
-        ConfigureGroupGame,
+        ConfigurecommunityGame,
 
         /// <summary>
-        /// A group badge is modified.
+        /// A community badge is modified.
         /// </summary>
         ConfigureBadge,
 
         /// <summary>
-        /// A group item (such as a shirt) is modified.
+        /// A community item (such as a shirt) is modified.
         /// </summary>
         ConfigureItems,
 
         /// <summary>
-        /// A group asset is updated.
+        /// A community asset is updated.
         /// </summary>
-        UpdateGroupAsset,
+        UpdatecommunityAsset,
 
         /// <summary>
-        /// A group place is saved.
+        /// A community place is saved.
         /// </summary>
         SavePlace,
 
         /// <summary>
-        /// A new version of a group place is published.
+        /// A new version of a community place is published.
         /// </summary>
         PublishPlace,
 
         /// <summary>
-        /// Group funds are spent.
+        /// community funds are spent.
         /// </summary>
-        SpendGroupFunds,
+        SpendcommunityFunds,
 
         /// <summary>
         /// Currency amounts are adjusted by Roblox.
@@ -141,12 +141,12 @@
         AdjustCurrencyAmounts,
 
         /// <summary>
-        /// A group asset's version has been reverted.
+        /// A community asset's version has been reverted.
         /// </summary>
-        RevertGroupAsset,
+        RevertcommunityAsset,
 
         /// <summary>
-        /// An ad for the group has been purchased.
+        /// An ad for the community has been purchased.
         /// </summary>
         BuyAd,
 
@@ -157,49 +157,49 @@
         DeletePost,
 
         /// <summary>
-        /// A user has been invited to the group's clan.
+        /// A user has been invited to the community's clan.
         /// </summary>
         InviteToClan,
 
         /// <summary>
-        /// A user has been kicked from the group's clan.
+        /// A user has been kicked from the community's clan.
         /// </summary>
         KickFromClan,
 
         /// <summary>
-        /// A user's invite to the group's clan has been revoked.
+        /// A user's invite to the community's clan has been revoked.
         /// </summary>
         CancelClanInvite,
 
         /// <summary>
-        /// A clan was purchased for the group.
+        /// A clan was purchased for the community.
         /// </summary>
         BuyClan,
 
         // Alliances
 
         /// <summary>
-        /// An ally request to a different group has been sent.
+        /// An ally request to a different community has been sent.
         /// </summary>
         SendAllyRequest,
 
         /// <summary>
-        /// An ally request to this group has been accepted.
+        /// An ally request to this community has been accepted.
         /// </summary>
         AcceptAllyRequest,
 
         /// <summary>
-        /// An ally request to this group has been declined.
+        /// An ally request to this community has been declined.
         /// </summary>
         DeclineAllyRequest,
 
         /// <summary>
-        /// An ally has been removed from this group.
+        /// An ally has been removed from this community.
         /// </summary>
         DeleteAlly,
 
         /// <summary>
-        /// An enemy has been declared from this group.
+        /// An enemy has been declared from this community.
         /// </summary>
         CreateEnemy,
 

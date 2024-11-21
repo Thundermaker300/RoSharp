@@ -8,18 +8,18 @@ using RoSharp.Structures;
 using System.Collections.ObjectModel;
 using System.Diagnostics;
 
-namespace RoSharp.API.Groups
+namespace RoSharp.API.Communities
 {
     /// <summary>
-    /// A class that represents a Roblox group.
+    /// A class that represents a Roblox community (formerly group).
     /// </summary>
-    public class Group : APIMain, IRefreshable, IAssetOwner, IIdApi<Group>
+    public class Community : APIMain, IRefreshable, IAssetOwner, IIdApi<Community>
     {
         /// <inheritdoc/>
         public override string BaseUrl => Constants.URL("groups");
 
         /// <summary>
-        /// Gets the unique Id of the group.
+        /// Gets the unique Id of the community.
         /// </summary>
         public ulong Id { get; }
 
@@ -29,47 +29,47 @@ namespace RoSharp.API.Groups
         private string name;
 
         /// <summary>
-        /// Gets the group's name.
+        /// Gets the community's name.
         /// </summary>
         public string Name => name;
 
         private string description;
 
         /// <summary>
-        /// Gets the group's description.
+        /// Gets the community's description.
         /// </summary>
         public string Description => description;
 
         private User? owner;
 
         /// <summary>
-        /// Gets the group's owner. Can be <see langword="null"/> if the group does not have an owner (abandoned).
+        /// Gets the community's owner. Can be <see langword="null"/> if the community does not have an owner (abandoned).
         /// </summary>
         public User? Owner => owner;
 
         /// <summary>
-        /// Indicates whether or not the group has an owner. Equivalent to checking if <see cref="Owner"/> is <see langword="null"/>.
+        /// Indicates whether or not the community has an owner. Equivalent to checking if <see cref="Owner"/> is <see langword="null"/>.
         /// </summary>
         public bool HasOwner => Owner != null;
 
         private bool isPublic;
 
         /// <summary>
-        /// Gets whether or not the group is publicly joinable.
+        /// Gets whether or not the community is publicly joinable.
         /// </summary>
         public bool IsPublic => isPublic;
 
         private bool verified;
 
         /// <summary>
-        /// Gets whether or not the group is verified (blue checkmark).
+        /// Gets whether or not the community is verified (blue checkmark).
         /// </summary>
         public bool Verified => verified;
 
-        private int robux;
+        private int robux = -1;
 
         /// <summary>
-        /// Gets the amount of Robux this group has. Will be <c>-1</c> if the authenticated user cannot view funds.
+        /// Gets the amount of Robux this community has. Will be <c>-1</c> if the authenticated user cannot view funds.
         /// </summary>
         public int Robux => robux;
 
@@ -83,38 +83,38 @@ namespace RoSharp.API.Groups
 
         internal ulong members;
 
-        private Group(ulong groupId, Session? session = null)
+        private Community(ulong communityId, Session? session = null)
         {
-            Id = groupId;
+            Id = communityId;
             
             if (session != null)
                 AttachSession(session);
 
-            if (!RoPool<Group>.Contains(Id))
-                RoPool<Group>.Add(this);
+            if (!RoPool<Community>.Contains(Id))
+                RoPool<Community>.Add(this);
         }
 
         /// <summary>
-        /// Returns a <see cref="Group"/> given its Id.
+        /// Returns a <see cref="Community"/> given its Id.
         /// </summary>
-        /// <param name="groupId">The group Id.</param>
+        /// <param name="communityId">The community Id.</param>
         /// <param name="session">The session, optional.</param>
-        /// <returns>A task containing the <see cref="Group"/> upon completion.</returns>
-        /// <exception cref="ArgumentException">If the group Id is invalid.</exception>
+        /// <returns>A task containing the <see cref="Community"/> upon completion.</returns>
+        /// <exception cref="ArgumentException">If the community Id is invalid.</exception>
         /// <exception cref="RobloxAPIException">Roblox API failure.</exception>
-        public static async Task<Group> FromId(ulong groupId, Session? session = null)
+        public static async Task<Community> FromId(ulong communityId, Session? session = null)
         {
-            if (RoPool<Group>.Contains(groupId))
-                return RoPool<Group>.Get(groupId, session.Global());
+            if (RoPool<Community>.Contains(communityId))
+                return RoPool<Community>.Get(communityId, session.Global());
 
-            Group newGroup = new(groupId, session.Global());
+            Community newGroup = new(communityId, session.Global());
             await newGroup.RefreshAsync();
 
             return newGroup;
         }
 
         /// <summary>
-        /// Gets a <see cref="RoleManager"/> class that has additional API to manage group roles.
+        /// Gets a <see cref="RoleManager"/> class that has additional API to manage community roles.
         /// </summary>
         public async Task<RoleManager> GetRoleManagerAsync()
         {
@@ -127,7 +127,7 @@ namespace RoSharp.API.Groups
         }
 
         /// <summary>
-        /// Gets a <see cref="MemberManager"/> class that has additional API to manage group members.
+        /// Gets a <see cref="MemberManager"/> class that has additional API to manage community members.
         /// </summary>
         public async Task<MemberManager> GetMemberManagerAsync()
         {
@@ -177,13 +177,13 @@ namespace RoSharp.API.Groups
             RefreshedAt = DateTime.Now;
         }
 
-        private GroupShout? shout;
+        private CommunityShout? shout;
 
         /// <summary>
-        /// Gets the group's current shout.
+        /// Gets the community's current shout.
         /// </summary>
-        /// <returns>A task containing a <see cref="GroupShout"/> representing the shout upon completion. Can be <see langword="null"/> if there is no current shout.</returns>
-        public async Task<GroupShout?> GetShoutAsync()
+        /// <returns>A task containing a <see cref="CommunityShout"/> representing the shout upon completion. Can be <see langword="null"/> if there is no current shout.</returns>
+        public async Task<CommunityShout?> GetShoutAsync()
         {
             if (shout == null)
             {
@@ -193,7 +193,7 @@ namespace RoSharp.API.Groups
                 {
                     ulong posterId = Convert.ToUInt64(data.shout.poster.userId);
 
-                    shout = new GroupShout
+                    shout = new CommunityShout
                     {
                         Text = data.shout.body,
                         Poster = await User.FromId(posterId, session),
@@ -207,7 +207,7 @@ namespace RoSharp.API.Groups
         private ReadOnlyDictionary<string, string>? socialChannels;
 
         /// <summary>
-        /// Gets this group's social channels.
+        /// Gets this community's social channels.
         /// </summary>
         /// <returns>A task containing a <see cref="ReadOnlyDictionary{TKey, TValue}"/> upon completion. The key is the name of the social media platform, and the value is its URL.</returns>
         public async Task<ReadOnlyDictionary<string, string>> GetSocialChannelsAsync()
@@ -228,7 +228,7 @@ namespace RoSharp.API.Groups
         }
 
         /// <summary>
-        /// Gets the group's icon.
+        /// Gets the community's icon.
         /// </summary>
         /// <param name="size"></param>
         /// <returns>Task that contains a URL to the icon, upon completion.</returns>
@@ -236,7 +236,7 @@ namespace RoSharp.API.Groups
         /// <remarks>This API method does not cache and will make a request each time it is called.</remarks>
         public async Task<string> GetIconAsync(ThumbnailSize size = ThumbnailSize.S420x420)
         {
-            string url = $"/v1/groups/icons?groupIds={Id}&size={size.ToString().Substring(1)}&format=Png&isCircular=false";
+            string url = $"/v1/groups/icons?communityIds={Id}&size={size.ToString().Substring(1)}&format=Png&isCircular=false";
             string rawData = await GetStringAsync(url, Constants.URL("thumbnails"));
             dynamic data = JObject.Parse(rawData);
             if (data.data.Count == 0)
@@ -245,9 +245,9 @@ namespace RoSharp.API.Groups
         }
 
         /// <summary>
-        /// Modifies the group description.
+        /// Modifies the community's description.
         /// </summary>
-        /// <param name="text">The new group description.</param>
+        /// <param name="text">The new community's description.</param>
         /// <returns>Task that completes when the operation is finished.</returns>
         /// <exception cref="RobloxAPIException">Roblox API failure or lack of permissions.</exception>
         public async Task ModifyDescriptionAsync(string text)
@@ -257,7 +257,7 @@ namespace RoSharp.API.Groups
         }
 
         /// <summary>
-        /// Creates a group shout.
+        /// Creates a community shout.
         /// </summary>
         /// <param name="text">The text for the shout.</param>
         /// <returns>Task that completes when the operation is finished.</returns>
@@ -269,21 +269,21 @@ namespace RoSharp.API.Groups
         }
 
         /// <summary>
-        /// Gets this group's wall posts.
+        /// Gets this community's wall posts.
         /// </summary>
         /// <param name="limit">The limit of posts to return.</param>
         /// <param name="sortOrder">The sort order.</param>
         /// <param name="cursor">The cursor for the next page. Obtained by calling this API previously.</param>
-        /// <returns>A task containing a <see cref="PageResponse{T}"/> of <see cref="GroupPost"/> upon completion.</returns>
-        /// <exception cref="RobloxAPIException">Roblox API failure or lack of permissions to see the group wall.</exception>
+        /// <returns>A task containing a <see cref="PageResponse{T}"/> of <see cref="CommunityPost"/> upon completion.</returns>
+        /// <exception cref="RobloxAPIException">Roblox API failure or lack of permissions to see the community wall.</exception>
         /// <remarks>This API method does not cache and will make a request each time it is called.</remarks>
-        public async Task<PageResponse<GroupPost>> GetGroupPostsAsync(FixedLimit limit = FixedLimit.Limit100, RequestSortOrder sortOrder = RequestSortOrder.Desc, string? cursor = null)
+        public async Task<PageResponse<CommunityPost>> GetGroupPostsAsync(FixedLimit limit = FixedLimit.Limit100, RequestSortOrder sortOrder = RequestSortOrder.Desc, string? cursor = null)
         {
             string url = $"v2/groups/{Id}/wall/posts?limit={limit.Limit()}&sortOrder={sortOrder}";
             if (cursor != null)
                 url += "&cursor=" + cursor;
 
-            var list = new List<GroupPost>();
+            var list = new List<CommunityPost>();
             string? nextPage;
             string? previousPage;
             HttpResponseMessage response = await GetAsync(url, verifyApiName: "Group.GetGroupPostsAsync");
@@ -291,12 +291,12 @@ namespace RoSharp.API.Groups
             dynamic data = JObject.Parse(await response.Content.ReadAsStringAsync());
             foreach (dynamic post in data.data)
             {
-                list.Add(new GroupPost()
+                list.Add(new CommunityPost()
                 {
                     PostId = post.id,
                     PostedAt = post.updated,
                     Text = post.body,
-                    RankInGroup = post.poster == null ? null : post.poster.role.name,
+                    RankInCommunity = post.poster == null ? null : post.poster.role.name,
                     PosterId = post.poster == null ? null : new GenericId<User>(Convert.ToUInt64(post.poster.userId)),
 
                     group = this,
@@ -309,15 +309,15 @@ namespace RoSharp.API.Groups
         }
 
         /// <summary>
-        /// Returns this group's audit logs.
+        /// Returns this community's audit logs.
         /// </summary>
         /// <param name="limit">The maximum amount of logs to return.</param>
         /// <param name="sortOrder">The sort order.</param>
         /// <param name="cursor">The cursor for the next page. Obtained by calling this API previously.</param>
-        /// <returns>A task containing a <see cref="PageResponse{T}"/> of <see cref="GroupAuditLog"/> upon completion.</returns>
+        /// <returns>A task containing a <see cref="PageResponse{T}"/> of <see cref="CommunityAuditLog"/> upon completion.</returns>
         /// <exception cref="RobloxAPIException">Roblox API failure or lack of permissions.</exception>
         /// <remarks>This API method does not cache and will make a request each time it is called.</remarks>
-        public async Task<PageResponse<GroupAuditLog>> GetAuditLogsAsync(FixedLimit limit = FixedLimit.Limit100, RequestSortOrder sortOrder = RequestSortOrder.Desc, string? cursor = null)
+        public async Task<PageResponse<CommunityAuditLog>> GetAuditLogsAsync(FixedLimit limit = FixedLimit.Limit100, RequestSortOrder sortOrder = RequestSortOrder.Desc, string? cursor = null)
         {
             string url = $"/v1/groups/{Id}/audit-log?limit={limit.Limit()}&sortOrder={sortOrder}";
             if (cursor != null)
@@ -326,44 +326,44 @@ namespace RoSharp.API.Groups
             string rawData = await GetStringAsync(url, verifyApiName: "Group.GetAuditLogsAsync");
             dynamic data = JObject.Parse(rawData);
 
-            List<GroupAuditLog> list = [];
+            List<CommunityAuditLog> list = [];
             string? nextPage = data.nextPageCursor;
             string? previousPage = data.previousPageCursor;
 
             foreach (dynamic item in data.data)
             {
-                GroupAuditLog log = new()
+                CommunityAuditLog log = new()
                 {
-                    Type = Enum.Parse<GroupAuditLogType>(Convert.ToString(item.actionType).Replace(" ", string.Empty)),
+                    Type = Enum.Parse<CommunityAuditLogType>(Convert.ToString(item.actionType).Replace(" ", string.Empty)),
                     Time = item.created,
-                    GroupId = new(Id, session),
+                    CommunityId = new(Id, session),
                     UserId = new(Convert.ToUInt64(item.actor.user.userId), session),
                     RankId = item.actor.role.rank,
 
                     TargetUserId = item.description?.TargetId != null ? new(Convert.ToUInt64(item.description.TargetId), session) : null,
-                    TargetGroupId = item.description?.TargetGroupId != null ? new(Convert.ToUInt64(item.description.TargetGroupId), session) : null,
+                    TargetCommunityId = item.description?.TargetGroupId != null ? new(Convert.ToUInt64(item.description.TargetGroupId), session) : null,
                 };
                 list.Add(log);
             }
 
-            return new PageResponse<GroupAuditLog>(list, nextPage, previousPage);
+            return new PageResponse<CommunityAuditLog>(list, nextPage, previousPage);
         }
 
         /// <summary>
-        /// Gets this group's allies.
+        /// Gets this community's allies.
         /// </summary>
-        /// <param name="limit">The maximum amount of groups to return.</param>
+        /// <param name="limit">The maximum amount of communities to return.</param>
         /// <param name="sortOrder">The sort order.</param>
         /// <param name="startRowIndex">The amount of items to skip before returning data, or <c>0</c> to skip none.</param>
         /// <returns>A task containing a <see cref="PageResponse{T}"/> of <see cref="GenericId{T}"/> upon completion.</returns>
-        public async Task<PageResponse<GenericId<Group>>> GetAlliesAsync(int limit = 50, RequestSortOrder sortOrder = RequestSortOrder.Desc, int startRowIndex = 0)
+        public async Task<PageResponse<GenericId<Community>>> GetAlliesAsync(int limit = 50, RequestSortOrder sortOrder = RequestSortOrder.Desc, int startRowIndex = 0)
         {
             string url = $"/v1/groups/{Id}/relationships/allies?maxRows={limit}&sortOrder={sortOrder}&startRowIndex={startRowIndex}";
 
             string rawData = await GetStringAsync(url);
             dynamic data = JObject.Parse(rawData);
 
-            List<GenericId<Group>> list = [];
+            List<GenericId<Community>> list = [];
             string? nextPage = Convert.ToString(data.nextRowIndex);
 
             foreach (dynamic item in data.relatedGroups)
@@ -371,23 +371,23 @@ namespace RoSharp.API.Groups
                 list.Add(new(Convert.ToUInt64(item.id), session));
             }
 
-            return new PageResponse<GenericId<Group>>(list, nextPage, null);
+            return new PageResponse<GenericId<Community>>(list, nextPage, null);
         }
         /// <summary>
-        /// Gets this group's allies.
+        /// Gets this community's allies.
         /// </summary>
-        /// <param name="limit">The maximum amount of groups to return.</param>
+        /// <param name="limit">The maximum amount of communities to return.</param>
         /// <param name="sortOrder">The sort order.</param>
         /// <param name="startRowIndex">The amount of items to skip before returning data, or <c>0</c> to skip none.</param>
         /// <returns>A task containing a <see cref="PageResponse{T}"/> of <see cref="GenericId{T}"/> upon completion.</returns>
-        public async Task<PageResponse<GenericId<Group>>> GetEnemiesAsync(int limit = 50, RequestSortOrder sortOrder = RequestSortOrder.Desc, int startRowIndex = 0)
+        public async Task<PageResponse<GenericId<Community>>> GetEnemiesAsync(int limit = 50, RequestSortOrder sortOrder = RequestSortOrder.Desc, int startRowIndex = 0)
         {
             string url = $"/v1/groups/{Id}/relationships/enemies?maxRows={limit}&sortOrder={sortOrder}&startRowIndex={startRowIndex}";
 
             string rawData = await GetStringAsync(url);
             dynamic data = JObject.Parse(rawData);
 
-            List<GenericId<Group>> list = [];
+            List<GenericId<Community>> list = [];
             string? nextPage = Convert.ToString(data.nextRowIndex);
 
             foreach (dynamic item in data.relatedGroups)
@@ -395,11 +395,11 @@ namespace RoSharp.API.Groups
                 list.Add(new(Convert.ToUInt64(item.id), session));
             }
 
-            return new PageResponse<GenericId<Group>>(list, nextPage, null);
+            return new PageResponse<GenericId<Community>>(list, nextPage, null);
         }
 
         /// <summary>
-        /// Gets this group's income statistics for the given <paramref name="timeLength"/>.
+        /// Gets this community's income statistics for the given <paramref name="timeLength"/>.
         /// </summary>
         /// <param name="timeLength">The length of time to use for the breakdown.</param>
         /// <returns>A task containing a <see cref="EconomyBreakdown"/> upon completion.</returns>
@@ -444,7 +444,7 @@ namespace RoSharp.API.Groups
         }
 
         /// <inheritdoc/>
-        public Group AttachSessionAndReturn(Session? session)
+        public Community AttachSessionAndReturn(Session? session)
         {
             if (session is null || !session.LoggedIn)
                 DetachSession();

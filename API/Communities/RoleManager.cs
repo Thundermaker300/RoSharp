@@ -6,14 +6,14 @@ using RoSharp.Interfaces;
 using System.Collections.ObjectModel;
 using System.Net.Http.Json;
 
-namespace RoSharp.API.Groups
+namespace RoSharp.API.Communities
 {
     /// <summary>
-    /// Class used for managing roles in a group.
+    /// Class used for managing roles in a community.
     /// </summary>
     public class RoleManager : IRefreshable
     {
-        internal Group group;
+        internal Community group;
 
         /// <inheritdoc/>
         public DateTime RefreshedAt { get; set; }
@@ -21,7 +21,7 @@ namespace RoSharp.API.Groups
         private ReadOnlyCollection<Role> roles = new List<Role>(0).AsReadOnly();
 
         /// <summary>
-        /// Gets all roles in the group.
+        /// Gets all roles in the community.
         /// </summary>
         public ReadOnlyCollection<Role> Roles => roles;
 
@@ -49,7 +49,7 @@ namespace RoSharp.API.Groups
             RefreshedAt = DateTime.Now;
         }
 
-        internal RoleManager(Group group) { this.group = group; }
+        internal RoleManager(Community group) { this.group = group; }
 
         /// <summary>
         /// Gets a role with the given rank, from <c>0-255</c>.
@@ -68,23 +68,23 @@ namespace RoSharp.API.Groups
             => Roles.FirstOrDefault(role => role.Name == roleName);
 
         /// <summary>
-        /// Purchases and creates a new role in this group.
+        /// Purchases and creates a new role in this community.
         /// </summary>
         /// <param name="name">The name of the role.</param>
         /// <param name="description">The private description of the role.</param>
         /// <param name="rank">The rank of the role.</param>
-        /// <param name="purchaseWithGroupFunds">Purchase with group funds if <see langword="true"/>. Purchase with the authenticated user's funds if <see langword="false"/>.</param>
+        /// <param name="purchaseWithCommunityFunds">Purchase with community funds if <see langword="true"/>. Purchase with the authenticated user's funds if <see langword="false"/>.</param>
         /// <returns></returns>
         /// <exception cref="RobloxAPIException">Roblox API failure or lack of permissions.</exception>
         /// <remarks>This method will call <see cref="RefreshAsync"/> upon completion, forcing <see cref="Roles"/> to be updated automatically. As of November 16th, 2024, roles cost R$25 to make. This method will bypass a confirmation prompt and purchase the role immediately. Use caution in order to not accidentally create roles and burn through money!</remarks>
-        public async Task<Role> CreateRoleAsync(string name, string description, byte rank, bool purchaseWithGroupFunds)
+        public async Task<Role> CreateRoleAsync(string name, string description, byte rank, bool purchaseWithCommunityFunds)
         {
             object body = new
             {
                 name = name,
                 description = description,
                 rank = rank,
-                usingGroupFunds = purchaseWithGroupFunds,
+                usingGroupFunds = purchaseWithCommunityFunds,
             };
 
             HttpResponseMessage response = await group.PostAsync($"/v1/groups/{group.Id}/rolesets/create", body, verifyApiName: "RoleManager.CreateRoleAsync");
@@ -118,7 +118,7 @@ namespace RoSharp.API.Groups
     }
 
     /// <summary>
-    /// Represents a role within a group.
+    /// Represents a role within a community.
     /// </summary>
     public class Role
     {
@@ -235,7 +235,7 @@ namespace RoSharp.API.Groups
         }
 
         /// <summary>
-        /// Gets a <see cref="PageResponse{T}"/> containing IDs of users that are currently in the group under this role.
+        /// Gets a <see cref="PageResponse{T}"/> containing IDs of users that are currently in the community under this role.
         /// </summary>
         /// <param name="limit">The limit of users to return.</param>
         /// <param name="sortOrder">The sort order.</param>

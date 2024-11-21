@@ -1,7 +1,7 @@
 ﻿using Newtonsoft.Json.Linq;
 using RoSharp.API.Assets;
 using RoSharp.API.Assets.Experiences;
-using RoSharp.API.Groups;
+using RoSharp.API.Communities;
 using RoSharp.API.Pooling;
 using RoSharp.Enums;
 using RoSharp.Exceptions;
@@ -266,13 +266,13 @@ namespace RoSharp.API
             return history.AsReadOnly();
         }
 
-        private Group? primaryGroup;
+        private Community? primaryGroup;
 
         /// <summary>
-        /// Gets the user's primary group.
+        /// Gets the user's primary community.
         /// </summary>
-        /// <returns>A task containing a <see cref="Group"/> on completion. Will be <see langword="null"/> if the user does not have a primary group.</returns>
-        public async Task<Group?> GetPrimaryGroupAsync()
+        /// <returns>A task containing a <see cref="Community"/> on completion. Will be <see langword="null"/> if the user does not have a primary community.</returns>
+        public async Task<Community?> GetPrimaryGroupAsync()
         {
             if (primaryGroup == null)
             {
@@ -281,35 +281,35 @@ namespace RoSharp.API
                     return null;
 
                 dynamic data = JObject.Parse(rawData);
-                ulong groupId = Convert.ToUInt64(data.group.id);
-                primaryGroup = await Group.FromId(groupId, session);
+                ulong communityId = Convert.ToUInt64(data.group.id);
+                primaryGroup = await Community.FromId(communityId, session);
             }
             return primaryGroup;
         }
 
-        private ReadOnlyDictionary<Group, Role>? groups;
+        private ReadOnlyDictionary<Community, Role>? groups;
 
         /// <summary>
-        /// Gets the groups this user is in as well as the role they are.
+        /// Gets the communities this user is in as well as the role they are.
         /// </summary>
-        /// <param name="limit">The limit of groups to return. Set to <c>-1</c> for all.</param>
-        /// <returns>A <see cref="ReadOnlyDictionary{TKey, TValue}"/> of groups and the role the user has in them.</returns>
-        public async Task<ReadOnlyDictionary<Group, Role>> GetGroupsAsync(int limit = -1)
+        /// <param name="limit">The limit of communities to return. Set to <c>-1</c> for all.</param>
+        /// <returns>A task containing a <see cref="ReadOnlyDictionary{TKey, TValue}"/> of communities and the role the user has in them.</returns>
+        public async Task<ReadOnlyDictionary<Community, Role>> GetGroupsAsync(int limit = -1)
         {
             if (groups == null)
             {
                 string rawData = await GetStringAsync($"/v1/users/{Id}/groups/roles", Constants.URL("groups"));
                 dynamic data = JObject.Parse(rawData);
 
-                Dictionary<Group, Role> dict = [];
+                Dictionary<Community, Role> dict = [];
                 int count = 0;
                 foreach (dynamic groupData in data.data)
                 {
                     if (limit > 0 && count >= limit)
                         break;
 
-                    ulong groupId = Convert.ToUInt64(groupData.group.id);
-                    Group group = await Group.FromId(groupId, session);
+                    ulong communityId = Convert.ToUInt64(groupData.group.id);
+                    Community group = await Community.FromId(communityId, session);
                     dict.Add(group, (await group.GetRoleManagerAsync()).GetRole(Convert.ToByte(groupData.role.rank)));
                     count++;
                 }
@@ -536,19 +536,19 @@ namespace RoSharp.API
         }
 
         /// <summary>
-        /// Gets whether or not this user is in the given <paramref name="group"/>.
+        /// Gets whether or not this user is in the given community.
         /// </summary>
-        /// <param name="group">The group.</param>
+        /// <param name="community">The community.</param>
         /// <returns>A task containing a bool.</returns>
-        public async Task<bool> IsInGroupAsync(Group group) => await (await group.GetMemberManagerAsync()).IsInGroupAsync(Id);
+        public async Task<bool> IsInGroupAsync(Community community) => await (await community.GetMemberManagerAsync()).IsInGroupAsync(Id);
 
         /// <summary>
-        /// Gets whether or not this user is in the group with the given Id.
+        /// Gets whether or not this user is in the community with the given Id.
         /// </summary>
-        /// <param name="groupId">The groupId.</param>
+        /// <param name="communityId">The communityId.</param>
         /// <returns>A task containing a bool.</returns>
-        public async Task<bool> IsInGroupAsync(ulong groupId) => await (await (await Group.FromId(groupId)).GetMemberManagerAsync()).IsInGroupAsync(Id);
-
+        public async Task<bool> IsInGroupAsync(ulong communityId) => await (await (await Community.FromId(communityId)).GetMemberManagerAsync()).IsInGroupAsync(Id);
+        
         // Thumbnails
         /// <summary>
         /// Returns a thumbnail of the given user.

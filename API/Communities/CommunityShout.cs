@@ -1,9 +1,9 @@
-﻿namespace RoSharp.API.Groups
+﻿namespace RoSharp.API.Communities
 {
     /// <summary>
-    /// Contains info regarding a group shout.
+    /// Contains info regarding a community shout.
     /// </summary>
-    public readonly struct GroupShout
+    public readonly struct CommunityShout
     {
         /// <summary>
         /// Gets the text of the shout.

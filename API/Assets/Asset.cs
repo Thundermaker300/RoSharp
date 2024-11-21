@@ -1,5 +1,5 @@
 ﻿using Newtonsoft.Json.Linq;
-using RoSharp.API.Groups;
+using RoSharp.API.Communities;
 using RoSharp.API.Pooling;
 using RoSharp.Enums;
 using RoSharp.Exceptions;
@@ -55,23 +55,23 @@ namespace RoSharp.API.Assets
 
         private ulong ownerId;
         private string ownerName;
-        private bool isGroupOwned;
+        private bool isCommunityOwned;
 
         /// <summary>
-        /// Gets the unique Id (group or user) of the owner of this asset.
+        /// Gets the unique Id (community or user) of the owner of this asset.
         /// </summary>
         public ulong OwnerId => ownerId;
 
         /// <summary>
-        /// Gets the name (group or user) of the owner of this asset.
+        /// Gets the name (community or user) of the owner of this asset.
         /// </summary>
         public string OwnerName => ownerName;
 
         /// <summary>
-        /// Gets whether or not this asset is owned by a group.
+        /// Gets whether or not this asset is owned by a community.
         /// </summary>
         /// <seealso cref="GetOwnerAsync"/>
-        public bool IsGroupOwned => isGroupOwned;
+        public bool IsCommunityOwned => isCommunityOwned;
 
         private DateTime created;
         
@@ -277,7 +277,7 @@ namespace RoSharp.API.Assets
             ulong creatorId = Convert.ToUInt64(data.Creator.CreatorTargetId);
             ownerId = creatorId;
             ownerName = data.Creator.Name;
-            isGroupOwned = data.Creator.CreatorType == "Group";
+            isCommunityOwned = data.Creator.CreatorType == "Group";
 
             // Update favorites
             try
@@ -325,9 +325,9 @@ namespace RoSharp.API.Assets
         /// <returns>A task containing the owner of this asset.</returns>
         public async Task<IAssetOwner> GetOwnerAsync()
         {
-            if (IsGroupOwned)
+            if (IsCommunityOwned)
             {
-                return await Group.FromId(OwnerId);
+                return await Community.FromId(OwnerId);
             }
             return await User.FromId(OwnerId);
         }
@@ -501,7 +501,7 @@ namespace RoSharp.API.Assets
         /// <inheritdoc/>
         public override string ToString()
         {
-            return $"{Name} [{Id}] ({AssetType}) {{{(!IsGroupOwned ? "@" : string.Empty)}{OwnerName}}} <R${(OnSale == true ? Price : "0")}>";
+            return $"{Name} [{Id}] ({AssetType}) {{{(!IsCommunityOwned ? "@" : string.Empty)}{OwnerName}}} <R${(OnSale == true ? Price : "0")}>";
         }
 
         /// <inheritdoc/>

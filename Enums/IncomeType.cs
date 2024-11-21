@@ -1,7 +1,7 @@
 ﻿namespace RoSharp.Enums
 {
     /// <summary>
-    /// Indicates a type of income for groups and users.
+    /// Indicates a type of income for communities and users.
     /// </summary>
     public enum IncomeType
     {
