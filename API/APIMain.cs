@@ -32,6 +32,8 @@ namespace RoSharp.API
         /// </summary>
         public APIMain() { }
 
+        private List<HttpClient> auth = [];
+
         internal HttpClient MakeHttpClient(string? baseOverride = null, string? verifyApiName = null)
         {
             if (verifyApiName != null)
@@ -46,20 +48,49 @@ namespace RoSharp.API
             };
 
             if (session?.RobloSecurity != string.Empty)
+            {
                 cookies.Add(uri, new Cookie(".ROBLOSECURITY", session?.RobloSecurity));
+            }
 
             HttpClient client = new(handler)
             {
                 BaseAddress = uri
             };
 
+            if (session?.RobloSecurity != string.Empty)
+            {
+                auth.Add(client);
+                Task.Factory.StartNew(async () =>
+                {
+                    await Task.Delay(10000);
+                    auth.Remove(client);
+                });
+            }
+
             return client;
+        }
+
+        private void Log(HttpResponseMessage message, HttpClient client)
+        {
+#if DEBUG
+            ConsoleColor color = (message.StatusCode != HttpStatusCode.OK ? ConsoleColor.Red : ConsoleColor.Cyan);
+            RoLogger.Debug($"----- BEGIN REQUEST -----", color);
+            RoLogger.Debug($"{message.RequestMessage?.Method} {(message.RequestMessage?.RequestUri?.ToString() ?? "UNKNOWN")}", color);
+            RoLogger.Debug($"CODE: HTTP {message.StatusCode} ({(int)message.StatusCode})", color);
+            RoLogger.Debug($"AUTH: {auth.Contains(client)}", color);
+            RoLogger.Debug($"BODY: {message.RequestMessage?.Content?.ReadAsStringAsync().Result ?? "NONE"}", color);
+            RoLogger.Debug($"REASON PHRASE: HTTP {message.ReasonPhrase}", color);
+            RoLogger.Debug($"RESPONSE BODY: {message.Content.ReadAsStringAsync().Result}", color);
+            RoLogger.Debug($"----- END REQUEST -----", color);
+#endif
         }
 
         internal async Task<HttpResponseMessage> GetAsync(string url, string? baseOverride = null, string? verifyApiName = null, bool doNotThrowException = false)
         {
             HttpClient client = MakeHttpClient(baseOverride, verifyApiName);
             HttpResponseMessage message = await client.GetAsync(url);
+
+            Log(message, client);
 
             if (!doNotThrowException)
                 HttpVerify.ThrowIfNecessary(message, await message.Content.ReadAsStringAsync());
@@ -71,6 +102,9 @@ namespace RoSharp.API
         {
             HttpClient client = MakeHttpClient(baseOverride, verifyApiName);
             HttpResponseMessage message = await client.GetAsync(url);
+
+            Log(message, client);
+
             string body = await message.Content.ReadAsStringAsync();
             HttpVerify.ThrowIfNecessary(message, body);
             return body;
@@ -87,6 +121,9 @@ namespace RoSharp.API
                 client.DefaultRequestHeaders.Add("x-csrf-token", headers.First());
 
             HttpResponseMessage response = await client.PostAsync(url, content);
+
+            Log(response, client);
+
             HttpVerify.ThrowIfNecessary(response, await response.Content.ReadAsStringAsync());
             return response;
         }
@@ -101,6 +138,9 @@ namespace RoSharp.API
                 client.DefaultRequestHeaders.Add("x-csrf-token", headers.First());
 
             HttpResponseMessage response = await client.PatchAsync(url, content);
+
+            Log(response, client);
+
             HttpVerify.ThrowIfNecessary(response, await response.Content.ReadAsStringAsync());
             return response;
         }
@@ -115,6 +155,9 @@ namespace RoSharp.API
                 client.DefaultRequestHeaders.Add("x-csrf-token", headers.First());
 
             HttpResponseMessage response = await client.DeleteAsync(url);
+
+            Log(response, client);
+
             HttpVerify.ThrowIfNecessary(response, await response.Content.ReadAsStringAsync());
             return response;
         }
