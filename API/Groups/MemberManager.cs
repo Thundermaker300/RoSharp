@@ -84,6 +84,37 @@ namespace RoSharp.API.Groups
         }
 
         /// <summary>
+        /// Gets a <see cref="PageResponse{T}"/> containing IDs of users that are currently banned from the group.
+        /// </summary>
+        /// <param name="limit">The limit of users to return.</param>
+        /// <param name="sortOrder">The sort order.</param>
+        /// <param name="cursor">The cursor for the next page. Obtained by calling this API previously.</param>
+        /// <returns>A task containing a <see cref="PageResponse{T}"/> of <see cref="GenericId{T}"/> upon completion.</returns>
+        /// <exception cref="RobloxAPIException">Roblox API failure or lack of permissions.</exception>
+        public async Task<PageResponse<GenericId<User>>> GetBannedMembersAsync(FixedLimit limit = FixedLimit.Limit100, RequestSortOrder sortOrder = RequestSortOrder.Asc, string? cursor = null)
+        {
+            string url = $"/v1/groups/{group.Id}/bans?limit={limit.Limit()}&sortOrder={sortOrder}";
+            if (cursor != null)
+                url += "&cursor=" + cursor;
+
+            var list = new List<GenericId<User>>();
+            string? nextPage;
+            string? previousPage;
+            HttpResponseMessage response = await group.GetAsync(url, verifyApiName: "Group.GetBannedMembersAsync");
+
+            dynamic data = JObject.Parse(await response.Content.ReadAsStringAsync());
+            foreach (dynamic user in data.data)
+            {
+                ulong userId = Convert.ToUInt64(user.user.userId);
+                list.Add(new GenericId<User>(userId, group.session));
+            }
+            nextPage = data.nextPageCursor;
+            previousPage = data.previousPageCursor;
+
+            return new(list, nextPage, previousPage);
+        }
+
+        /// <summary>
         /// Gets whether or not the user with the given Id is in the group.
         /// </summary>
         /// <param name="userId">The user's Id.</param>
