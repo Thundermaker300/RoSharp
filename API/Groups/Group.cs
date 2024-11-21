@@ -314,13 +314,21 @@ namespace RoSharp.API.Groups
             return new(list, nextPage, previousPage);
         }
 
+        /// <summary>
+        /// Returns this group's audit logs.
+        /// </summary>
+        /// <param name="limit">The maximum amount of logs to return.</param>
+        /// <param name="sortOrder">The sort order.</param>
+        /// <param name="cursor">The cursor for the next page. Obtained by calling this API previously.</param>
+        /// <returns>A task containing a <see cref="PageResponse{T}"/> of <see cref="GroupAuditLog"/> upon completion.</returns>
+        /// <exception cref="RobloxAPIException">Roblox API failure or lack of permissions.</exception>
         public async Task<PageResponse<GroupAuditLog>> GetAuditLogsAsync(FixedLimit limit = FixedLimit.Limit100, RequestSortOrder sortOrder = RequestSortOrder.Desc, string? cursor = null)
         {
             string url = $"/v1/groups/{Id}/audit-log?limit={limit.Limit()}&sortOrder={sortOrder}";
             if (cursor != null)
                 url += "&cursor=" + cursor;
 
-            string rawData = await GetStringAsync(url);
+            string rawData = await GetStringAsync(url, verifyApiName: "Group.GetAuditLogsAsync");
             dynamic data = JObject.Parse(rawData);
 
             List<GroupAuditLog> list = new();
