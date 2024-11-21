@@ -15,42 +15,77 @@ namespace RoSharp.API.Assets
         /// <inheritdoc/>
         public override string BaseUrl => Constants.URL("badges");
 
+        /// <summary>
+        /// Gets the unique Id of the badge.
+        /// </summary>
         public ulong Id { get; }
 
         /// <inheritdoc/>
         public string Url => $"{Constants.ROBLOX_URL}/badges/{Id}/";
 
         private string name;
+
+        /// <summary>
+        /// Gets the name of the badge.
+        /// </summary>
         public string Name => name;
 
         private string description;
+
+        /// <summary>
+        /// Gets the description of the badge.
+        /// </summary>
         public string Description => description;
 
-        private Experience experience;
-        public Experience Experience => experience;
+        private GenericId<Experience> experience;
+
+        /// <summary>
+        /// Gets a <see cref="GenericId{T}"/> of the experience that owns this badge.
+        /// </summary>
+        public GenericId<Experience> Experience => experience;
 
         private DateTime created;
+
+        /// <summary>
+        /// Gets a <see cref="DateTime"/> representing the creation date of the badge.
+        /// </summary>
         public DateTime Created => created;
 
         private DateTime lastUpdated;
+
+        /// <summary>
+        /// Gets a <see cref="DateTime"/> representing the time the badge was updated last.
+        /// </summary>
         public DateTime LastUpdated => lastUpdated;
 
         private bool isEnabled;
+
+        /// <summary>
+        /// Gets whether or not the badge is enabled and can be awarded.
+        /// </summary>
         public bool IsEnabled => isEnabled;
 
         private int awardedCount;
+
+        /// <summary>
+        /// Gets the total amount of times this badge has been awarded.
+        /// </summary>
         public int AwardedCount => awardedCount;
 
         private int yesterdayAwardedCount;
-        public int YesterdayAwardedCount => yesterdayAwardedCount;
-
-        private Asset thumbnailAsset;
 
         /// <summary>
-        /// Gets an <see cref="Asset"/> that is used for this badge.
+        /// Gets the amount of times this badge was awarded yesterday.
+        /// </summary>
+        public int YesterdayAwardedCount => yesterdayAwardedCount;
+
+        private GenericId<Asset> thumbnailAsset;
+
+        /// <summary>
+        /// Gets a <see cref="GenericId{T}"/> representing the asset that is used for this badge.
         /// </summary>
         /// <remarks>This value will be <see langword="null"/> if this <see cref="Badge"/> is created without an authenticated <see cref="Session"/> as Asset instances require an authenticated session.</remarks>
-        public Asset ThumbnailAsset => thumbnailAsset;
+        public GenericId<Asset> ThumbnailAsset => thumbnailAsset;
 
         /// <inheritdoc/>
         public DateTime RefreshedAt { get; set; }
@@ -98,15 +133,12 @@ namespace RoSharp.API.Assets
             description = (data.displayDescription == null ? string.Empty : data.displayDescription);
             created = data.created;
             lastUpdated = data.updated;
-            experience = await Experience.FromId(experienceId);
+            experience = new GenericId<Experience>(experienceId);
             awardedCount = Convert.ToInt32(data.statistics.awardedCount);
             yesterdayAwardedCount = Convert.ToInt32(data.statistics.pastDayAwardedCount);
             isEnabled = data.enabled;
 
-            if (SessionVerify.Verify(session))
-            {
-                thumbnailAsset = await Asset.FromId(Convert.ToUInt64(data.displayIconImageId), session);
-            }
+            thumbnailAsset = new GenericId<Asset>(Convert.ToUInt64(data.displayIconImageId), session);
 
             RefreshedAt = DateTime.Now;
         }
@@ -179,7 +211,7 @@ namespace RoSharp.API.Assets
         /// <inheritdoc/>
         public override string ToString()
         {
-            return $"{Name} [{Id}] {{{experience.Name}}} <{AwardedCount}>";
+            return $"{Name} [{Id}] {{EXP:{experience.Id}}} <{AwardedCount}>";
         }
         
         /// <inheritdoc/>
@@ -193,10 +225,25 @@ namespace RoSharp.API.Assets
         }
     }
 
+    /// <summary>
+    /// Specifies the options to use for badge modification.
+    /// </summary>
+    /// <remarks>Any property in this class that is not changed will not modify the website.</remarks>
     public class BadgeModifyOptions
     {
+        /// <summary>
+        /// The new name for the badge.
+        /// </summary>
         public string? Name { get; set; }
+
+        /// <summary>
+        /// The new description for the badge.
+        /// </summary>
         public string? Description { get; set; }
+
+        /// <summary>
+        /// The new enabled state for the badge.
+        /// </summary>
         public bool? IsEnabled { get; set; }
     }
 }

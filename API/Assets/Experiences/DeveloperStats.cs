@@ -13,10 +13,16 @@ using static System.Runtime.InteropServices.JavaScript.JSType;
 
 namespace RoSharp.API.Assets.Experiences
 {
+    /// <summary>
+    /// An API class that holds experience analytics-related API.
+    /// </summary>
     public class DeveloperStats : IRefreshable
     {
         private Experience experience;
 
+        /// <summary>
+        /// Gets the primary URL to use for analytics for this experience.
+        /// </summary>
         public string AnalyticUrl => $"/analytics-query-gateway/v1/metrics/resource/RESOURCE_TYPE_UNIVERSE/id/{experience.UniverseId}";
 
         /// <inheritdoc/>
@@ -54,6 +60,11 @@ namespace RoSharp.API.Assets.Experiences
             };
         }
 
+        /// <summary>
+        /// Returns Monthly Active User (MAU) data for the given date.
+        /// </summary>
+        /// <param name="date">The date.</param>
+        /// <returns>A <see cref="MAUData"/> containing data about that day's monthly active users (MAU) amount.</returns>
         public async Task<MAUData> GetMAUData(DateTime date)
         {
             // Total MAU

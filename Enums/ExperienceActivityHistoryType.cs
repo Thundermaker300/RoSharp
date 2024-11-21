@@ -37,6 +37,36 @@ namespace RoSharp.Enums
         DescriptionUpdated = 17,
 
         /// <summary>
+        /// The experience's "Studio Access to API" setting was modified.
+        /// </summary>
+        StudioAccessToAPIModified = 20,
+
+        /// <summary>
+        /// The experience's game servers were shut down.
+        /// </summary>
+        ServersShutdown = 23,
+
+        /// <summary>
+        /// The experience's paid-access setting was modified.
+        /// </summary>
+        PaidAccessModified = 68,
+
+        /// <summary>
+        /// The experience's playable devices was modified.
+        /// </summary>
+        PlayableDevicesModified = 70,
+
+        /// <summary>
+        /// The experience's private servers enabled setting was modified.
+        /// </summary>
+        PrivateServersModified = 71,
+
+        /// <summary>
+        /// The experience's private server price was modified.
+        /// </summary>
+        PrivateServerPriceModified = 72,
+
+        /// <summary>
         /// A place had a new version published.
         /// </summary>
         PublishPlace = 120,
@@ -45,6 +75,11 @@ namespace RoSharp.Enums
         /// The experience's age guidelines was modified.
         /// </summary>
         ModifyExperienceAgeGuidelines = 121,
+
+        /// <summary>
+        /// The experience's private server price was changed from free to robux or vice versa.
+        /// </summary>
+        PrivateServersPriceSettingModified = 122,
 
         /// <summary>
         /// The experience's EditableMesh/EditableImage setting was modified.

@@ -515,9 +515,20 @@ namespace RoSharp.API.Assets
         }
     }
 
+    /// <summary>
+    /// Specifies the options to use for asset modification.
+    /// </summary>
+    /// <remarks>Any property in this class that is not changed will not modify the website.</remarks>
     public class AssetModifyOptions
     {
+        /// <summary>
+        /// The new name of the asset.
+        /// </summary>
         public string? Name { get; set; }
+
+        /// <summary>
+        /// The new description of the asset.
+        /// </summary>
         public string? Description { get; set; }
     }
 }

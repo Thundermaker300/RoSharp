@@ -690,6 +690,7 @@ namespace RoSharp.API.Assets.Experiences
         /// </summary>
         /// <param name="isPublic">Whether or not the experience is open to the public.</param>
         /// <returns>A task that completes when the operation is finished.</returns>
+        /// <seealso cref="ModifyAsync(ExperienceModifyOptions)"/>
         public async Task SetPrivacyAsync(bool isPublic)
         {
             string url = $"/v1/universes/{Id}/{(isPublic == false ? "de" : string.Empty)}activate";
@@ -697,10 +698,11 @@ namespace RoSharp.API.Assets.Experiences
         }
 
         /// <summary>
-        /// Modifies the experience.
+        /// Modifies the experience. See <see cref="SetPrivacyAsync(bool)"/> for modifying the privacy of the experience.
         /// </summary>
         /// <param name="options">The options to use.</param>
         /// <returns>A task that completes when the operation is finished.</returns>
+        /// <seealso cref="SetPrivacyAsync(bool)"/>
         public async Task ModifyAsync(ExperienceModifyOptions options)
         {
             object body = new
@@ -745,7 +747,7 @@ namespace RoSharp.API.Assets.Experiences
         /// <summary>
         /// Bans a user from the experience.
         /// </summary>
-        /// <param name="userId">The user Id to ban.</param>
+        /// <param name="userId">The user Id of the user to ban.</param>
         /// <param name="displayReason">The public reason to display to the user.</param>
         /// <param name="privateReason">The private ban reason.</param>
         /// <param name="permanent">True for a permanent ban.</param>
@@ -753,6 +755,7 @@ namespace RoSharp.API.Assets.Experiences
         /// <param name="excludeAlts">If suspected alts should be included in the ban.</param>
         /// <returns>A task that completes when the operation is finished.</returns>
         /// <exception cref="InvalidOperationException">length cannot be null if permanent is false.</exception>
+        /// <exception cref="RobloxAPIException">Roblox API failure or lack of permissions.</exception>
         public async Task BanUserAsync(ulong userId, string displayReason, string privateReason, bool permanent, TimeSpan? length = null, bool excludeAlts = true)
         {
             if (permanent == false && !length.HasValue)
@@ -773,12 +776,41 @@ namespace RoSharp.API.Assets.Experiences
             HttpResponseMessage response = await PatchAsync($"/user/cloud/v2/universes/{UniverseId}/user-restrictions/{userId}", body, Constants.URL("apis"), "Experience.BanUserAsync");
         }
 
+        /// <summary>
+        /// Bans a user from the experience.
+        /// </summary>
+        /// <param name="user">The user to ban.</param>
+        /// <param name="displayReason">The public reason to display to the user.</param>
+        /// <param name="privateReason">The private ban reason.</param>
+        /// <param name="permanent">True for a permanent ban.</param>
+        /// <param name="length">If <paramref name="permanent"/> is <see langword="false"/>, the length of time to use for the ban.</param>
+        /// <param name="excludeAlts">If suspected alts should be included in the ban.</param>
+        /// <returns>A task that completes when the operation is finished.</returns>
+        /// <exception cref="InvalidOperationException">length cannot be null if permanent is false.</exception>
+        /// <exception cref="RobloxAPIException">Roblox API failure or lack of permissions.</exception>
         public async Task BanUserAsync(User user, string displayReason, string privateReason, bool permanent, TimeSpan? length = null, bool excludeAlts = true)
             => await BanUserAsync(user.Id, displayReason, privateReason, permanent, length, excludeAlts);
 
+        /// <summary>
+        /// Bans a user from the experience.
+        /// </summary>
+        /// <param name="username">The username of the user to ban.</param>
+        /// <param name="displayReason">The public reason to display to the user.</param>
+        /// <param name="privateReason">The private ban reason.</param>
+        /// <param name="permanent">True for a permanent ban.</param>
+        /// <param name="length">If <paramref name="permanent"/> is <see langword="false"/>, the length of time to use for the ban.</param>
+        /// <param name="excludeAlts">If suspected alts should be included in the ban.</param>
+        /// <returns>A task that completes when the operation is finished.</returns>
+        /// <exception cref="InvalidOperationException">length cannot be null if permanent is false.</exception>
+        /// <exception cref="RobloxAPIException">Roblox API failure or lack of permissions.</exception>
         public async Task BanUserAsync(string username, string displayReason, string privateReason, bool permanent, TimeSpan? length = null, bool excludeAlts = true)
             => await BanUserAsync(await User.FromUsername(username, session), displayReason, privateReason, permanent, length, excludeAlts);
 
+        /// <summary>
+        /// Unbans a user from the experience.
+        /// </summary>
+        /// <param name="userId">The user Id to unban.</param>
+        /// <returns>A task that completes when the task is finished.</returns>
         public async Task UnbanUserAsync(ulong userId)
         {
             var body = new
@@ -792,12 +824,28 @@ namespace RoSharp.API.Assets.Experiences
             HttpResponseMessage response = await PatchAsync($"/user/cloud/v2/universes/{UniverseId}/user-restrictions/{userId}?", body, Constants.URL("apis"), "Experience.UnbanUserAsync");
         }
 
+        /// <summary>
+        /// Unbans a user from the experience.
+        /// </summary>
+        /// <param name="user">The user to unban.</param>
+        /// <returns>A task that completes when the task is finished.</returns>
         public async Task UnbanUserAsync(User user)
             => await UnbanUserAsync(user.Id);
 
+        /// <summary>
+        /// Unbans a user from the experience.
+        /// </summary>
+        /// <param name="username">The username of the user to unban.</param>
+        /// <returns>A task that completes when the task is finished.</returns>
         public async Task UnbanUserAsync(string username)
             => await UnbanUserAsync(await User.FromUsername(username, session));
 
+        /// <summary>
+        /// Posts an experience update that followers will receive in their notification stream.
+        /// </summary>
+        /// <param name="text">The text of the post.</param>
+        /// <returns>A task that completes when the operation is finished.</returns>
+        /// <exception cref="RobloxAPIException">Roblox API failure or lack of permissions.</exception>
         public async Task PostUpdateAsync(string text)
         {
             HttpResponseMessage response = await PostAsync($"/game-update-notifications/v1/publish/{UniverseId}", text, Constants.URL("apis"), "Experience.PostUpdateAsync");
@@ -809,6 +857,7 @@ namespace RoSharp.API.Assets.Experiences
             return $"{Name} [{UniverseId}] {{{(!IsGroupOwned ? "@" : string.Empty)}{OwnerName}}} <R${Cost}>";
         }
 
+        /// <inheritdoc/>
         public Experience AttachSessionAndReturn(Session? session)
         {
             if (session is null || !session.LoggedIn)
@@ -819,12 +868,27 @@ namespace RoSharp.API.Assets.Experiences
         }
     }
 
+    /// <summary>
+    /// Represents an experience descriptor that determines an experience's minimum age and Maturity level.
+    /// </summary>
     public struct ExperienceDescriptor
     {
+        /// <summary>
+        /// The type of descriptor.
+        /// </summary>
         public ExperienceDescriptorType DescriptorType { get; init; }
+
+        /// <summary>
+        /// The icon url of the descriptor's icon.
+        /// </summary>
         public string IconUrl { get; init; }
+
+        /// <summary>
+        /// The display text of the descriptor.
+        /// </summary>
         public string DisplayText { get; init; }
 
+        // Todo: Document the below properties and what descriptors have what.
         public string? Type { get; init; }
         public string? Frequency { get; init; }
         public string? Realism { get; init; }
@@ -839,31 +903,97 @@ namespace RoSharp.API.Assets.Experiences
         }
     }
 
+    /// <summary>
+    /// Represents an action log within an experience's activity history.
+    /// </summary>
     public struct ExperienceActivityHistory
     {
+        /// <summary>
+        /// The type of experience log.
+        /// </summary>
         public ExperienceActivityHistoryType Type { get; init; }
+
+        /// <summary>
+        /// The time the action occurred.
+        /// </summary>
         public DateTime Time { get; init; }
+
+        /// <summary>
+        /// The unique Id of the action.
+        /// </summary>
         public string Id { get; init; }
+
+        /// <summary>
+        /// The universe Id the action occurred in.
+        /// </summary>
         public GenericId<Experience> UniverseId { get; init; }
+
+        /// <summary>
+        /// The place Id that is targeted by the action. Can be <see langword="null"/> for non-place actions.
+        /// </summary>
         public ulong? PlaceId { get; init; }
+
+        /// <summary>
+        /// The user Id of the user that performed the action.
+        /// </summary>
         public GenericId<User> UserId { get; init; }
 
+        /// <inheritdoc/>
         public override string ToString()
         {
             return $"{Type} [{Time}] {{{Id}}} ExpID: {UniverseId.Id} UserID: {UserId.Id}";
         }
     }
 
+    /// <summary>
+    /// Specifies the options to use for experience modification.
+    /// </summary>
+    /// <remarks>Any property in this class that is not changed will not modify the website.</remarks>
     public class ExperienceModifyOptions
     {
+        /// <summary>
+        /// The new name of the experience.
+        /// </summary>
         public string? Name { get; set; }
+
+        /// <summary>
+        /// The new description of the experience.
+        /// </summary>
         public string? Description { get; set; }
+
+        /// <summary>
+        /// Whether or not to enable or disable private servers.
+        /// </summary>
         public bool? EnablePrivateServers { get; set; }
+
+        /// <summary>
+        /// The new price for private servers.
+        /// </summary>
         public int? PrivateServerPrice { get; set; }
+
+        /// <summary>
+        /// Whether or not the experience is paid access.
+        /// </summary>
         public bool? PurchaseRequired { get; set; }
+
+        /// <summary>
+        /// The cost to purchase the game.
+        /// </summary>
         public int? Cost { get; set; }
+
+        /// <summary>
+        /// Whether or not the experience is friends-only.
+        /// </summary>
         public bool? FriendsOnly { get; set; }
+
+        /// <summary>
+        /// The new list of devices that can play.
+        /// </summary>
         public List<Device>? PlayableDevices { get; set; }
+
+        /// <summary>
+        /// Whether or not studio access to APIs is allowed.
+        /// </summary>
         public bool? StudioAccessToAPIsAllowed { get; set; }
     }
 }
