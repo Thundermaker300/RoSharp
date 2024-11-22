@@ -14,5 +14,10 @@
         /// The Id of the asset owner.
         /// </summary>
         public ulong Id { get; }
+
+        /// <summary>
+        /// Indicates whether or not this user/community has the blue verified checkmark badge.
+        /// </summary>
+        public bool Verified { get; }
     }
 }

@@ -37,7 +37,7 @@ namespace RoSharp.API.Assets.Experiences
         private Experience experience;
 
         /// <summary>
-        /// Gets the governing <see cref="Experiences.Experience"/>'s Id.
+        /// Gets the governing <see cref="Experiences.Experience"/> that this place is apart of.
         /// </summary>
         public Experience Experience => experience;
 
