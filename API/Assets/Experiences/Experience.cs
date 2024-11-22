@@ -226,7 +226,6 @@ namespace RoSharp.API.Assets.Experiences
             // Reset properties
             playabilityStatus = null;
             socialChannels = null;
-            icon = null;
 
             HttpResponseMessage response = await GetAsync($"/v1/games?universeIds={UniverseId}");
             dynamic whyaretheresomanywrappers = JObject.Parse(await response.Content.ReadAsStringAsync());
@@ -638,27 +637,13 @@ namespace RoSharp.API.Assets.Experiences
             return list.AsReadOnly();
         }
 
-        private Asset? icon;
-        
         /// <summary>
         /// Gets this experience's icon.
         /// </summary>
-        /// <returns>A task containing the <see cref="Asset"/> upon completion. Can be <see langword="null"/>.</returns>
-        public async Task<Asset?> GetIconAsync()
-        {
-            if (icon == null)
-            {
-                string rawData = await GetStringAsync($"/v1/games/{UniverseId}/icon");
-                dynamic data = JObject.Parse(rawData);
-                if (data.imageId != null)
-                {
-                    ulong assetId = Convert.ToUInt64(data.imageId);
-                    icon = await Asset.FromId(assetId, session);
-                }
-            }
-
-            return icon;
-        }
+        /// <param name="size">The size to use for the icon.</param>
+        /// <returns>A task containing the string URL for the icon upon completion.</returns>
+        public async Task<string> GetIconAsync(IconSize size = IconSize.S512x512)
+            => await (await RootPlaceId.GetInstanceAsync()).GetIconAsync(size);
 
         /// <summary>
         /// Gets this experience's badges.

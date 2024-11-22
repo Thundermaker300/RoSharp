@@ -116,7 +116,7 @@ namespace RoSharp.API.Assets.Experiences
                 experience = await Experiences.Experience.FromId(Convert.ToUInt64(data.universeId), session);
                 ownerId = experience.OwnerId;
                 ownerName = experience.OwnerName;
-                isCommunityOwned = data.creator.type == "Group";
+                isCommunityOwned = experience.IsCommunityOwned;
             }
         }
 
@@ -131,6 +131,21 @@ namespace RoSharp.API.Assets.Experiences
                 return await Community.FromId(OwnerId);
             }
             return await User.FromId(OwnerId);
+        }
+
+        /// <summary>
+        /// Gets this experience's icon.
+        /// </summary>
+        /// <returns>A task containing the string URL for the icon upon completion.</returns>
+        /// <exception cref="ArgumentException">Invalid asset to get thumbnail for.</exception>
+        public async Task<string> GetIconAsync(IconSize size = IconSize.S420x420)
+        {
+            string rawData = await GetStringAsync($"/v1/places/gameicons?placeIds={Id}&returnPolicy=PlaceHolder&size={size.ToString().Substring(1)}&format=Png&isCircular=false", Constants.URL("thumbnails"));
+            dynamic data = JObject.Parse(rawData);
+
+            if (data.data.Count == 0)
+                throw new ArgumentException("Invalid asset to get thumbnail for.");
+            return data.data[0].imageUrl;
         }
 
         /// <summary>
