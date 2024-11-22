@@ -68,7 +68,7 @@ namespace RoSharp.API
 #if DEBUG
             string body = message.Content.ReadAsStringAsync().Result;
 
-            ConsoleColor color = (message.StatusCode != HttpStatusCode.OK ? ConsoleColor.Red : ConsoleColor.Cyan);
+            ConsoleColor color = (message.IsSuccessStatusCode ? ConsoleColor.Cyan : ConsoleColor.Red);
             RoLogger.Debug($"----- BEGIN REQUEST -----", color);
             if (retrying)
                 RoLogger.Debug($"<<RETRY REQUEST>>", color);
