@@ -1,4 +1,5 @@
 ﻿using Newtonsoft.Json.Linq;
+using RoSharp.API.Assets.Experiences;
 using RoSharp.API.Pooling;
 using RoSharp.Enums;
 using RoSharp.Exceptions;
@@ -279,7 +280,7 @@ namespace RoSharp.API.Communities
         /// <remarks>This API method does not cache and will make a request each time it is called.</remarks>
         public async Task<PageResponse<CommunityPost>> GetGroupPostsAsync(FixedLimit limit = FixedLimit.Limit100, RequestSortOrder sortOrder = RequestSortOrder.Desc, string? cursor = null)
         {
-            string url = $"v2/groups/{Id}/wall/posts?limit={limit.Limit()}&sortOrder={sortOrder}";
+            string url = $"/v2/groups/{Id}/wall/posts?limit={limit.Limit()}&sortOrder={sortOrder}";
             if (cursor != null)
                 url += "&cursor=" + cursor;
 
@@ -301,6 +302,37 @@ namespace RoSharp.API.Communities
 
                     group = this,
                 });
+            }
+            nextPage = data.nextPageCursor;
+            previousPage = data.previousPageCursor;
+
+            return new(list, nextPage, previousPage);
+        }
+
+        /// <summary>
+        /// Gets this community's public experiences.
+        /// </summary>
+        /// <param name="limit">The limit of experiences to return.</param>
+        /// <param name="sortOrder">The sort order.</param>
+        /// <param name="cursor">The cursor for the next page. Obtained by calling this API previously.</param>
+        /// <returns>A task containing a <see cref="PageResponse{T}"/> of <see cref="GenericId{T}"/> upon completion.</returns>
+        /// <exception cref="RobloxAPIException">Roblox API failure or lack of permissions to see experiences.</exception>
+        /// <remarks>This API method does not cache and will make a request each time it is called.</remarks>
+        public async Task<PageResponse<GenericId<Experience>>> GetExperiencesAsync(FixedLimit limit = FixedLimit.Limit100, RequestSortOrder sortOrder = RequestSortOrder.Desc, string? cursor = null)
+        {
+            string url = $"/v2/groups/{Id}/games?accessFilter=Public&limit={limit.Limit()}&sortOrder={sortOrder}";
+            if (cursor != null)
+                url += "&cursor=" + cursor;
+
+            var list = new List<GenericId<Experience>>();
+            string? nextPage;
+            string? previousPage;
+            HttpResponseMessage response = await GetAsync(url, Constants.URL("games"));
+
+            dynamic data = JObject.Parse(await response.Content.ReadAsStringAsync());
+            foreach (dynamic exp in data.data)
+            {
+                list.Add(new GenericId<Experience>(Convert.ToUInt64(exp.id), session));
             }
             nextPage = data.nextPageCursor;
             previousPage = data.previousPageCursor;

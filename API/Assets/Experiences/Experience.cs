@@ -331,7 +331,7 @@ namespace RoSharp.API.Assets.Experiences
         {
             if (!playabilityStatus.HasValue)
             {
-                string raw = await GetStringAsync($"v1/games/multiget-playability-status?universeIds={UniverseId}");
+                string raw = await GetStringAsync($"/v1/games/multiget-playability-status?universeIds={UniverseId}");
                 dynamic data = JArray.Parse(raw);
                 if (Enum.TryParse<PlayabilityStatus>(Convert.ToString(data[0].playabilityStatus), out PlayabilityStatus result))
                 {
@@ -502,7 +502,7 @@ namespace RoSharp.API.Assets.Experiences
         private const string VIPPriceRegex = @"data-private-server-price=""([0-9]+)""";
         private async Task UpdatePrivateServerInfoAsync()
         {
-            // Not my proudest scrape
+            // Not my proudest scrape ☹️
             // Note: If anyone can find an API endpoint that gets Private Server cost, PLEASE PLEASE
             // let me know!! Scraping seems to be the only way to get VIP Server price for now.
             string rawData = await GetStringAsync($"/games/servers-section/{UniverseId}", Constants.ROBLOX_URL);
