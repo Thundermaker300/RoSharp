@@ -202,10 +202,6 @@ namespace RoSharp.API.Communities
                 JoinRequestAction.Decline => await community.DeleteAsync(url, "MemberManager.ModifyJoinRequestAsync"),
                 _ => throw new UnreachableException("JoinRequestAction must be Accept or Decline."),
             };
-            if (!response.IsSuccessStatusCode)
-            {
-                throw new RobloxAPIException($"Join request modify failed (HTTP {response.StatusCode}). Do you have permission to accept/decline join requests?");
-            }
         }
 
         /// <summary>
