@@ -735,6 +735,21 @@ namespace RoSharp.API
             return new UserPresence(type, exp, lastOnline);
         }
 
+        /// <summary>
+        /// Sends a friend request to the user.
+        /// </summary>
+        /// <returns>A task that completes when the operation is finished.</returns>
+        public async Task SendFriendRequestAsync()
+            => await PostAsync($"/v1/contacts/{Id}/request-friendship", new { });
+
+        /// <summary>
+        /// Unfriends the user.
+        /// </summary>
+        /// <returns>A task that completes when the operation is finished.</returns>
+        public async Task UnfriendAsync() =>
+            await PostAsync($"/v1/users/{Id}/unfriend", new { });
+
+
         /// <inheritdoc/>
         public override string ToString()
         {

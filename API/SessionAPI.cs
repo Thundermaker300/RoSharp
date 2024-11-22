@@ -90,37 +90,6 @@ namespace RoSharp.API
         public int Robux => robux;
 
         /// <summary>
-        /// Sends a friend request to the given target.
-        /// </summary>
-        /// <param name="targetId">The target user Id.</param>
-        /// <returns>A task that completes when the operation is finished.</returns>
-        public async Task SendFriendRequestAsync(ulong targetId)
-        {
-            await PostAsync($"/v1/contacts/{targetId}/request-friendship", new { });
-        }
-
-        /// <summary>
-        /// Sends a friend request to the given target.
-        /// </summary>
-        /// <param name="user">The target user.</param>
-        /// <returns>A task that completes when the operation is finished.</returns>
-        public async Task SendFriendRequestAsync(User user) => await SendFriendRequestAsync(user.Id);
-
-        /// <summary>
-        /// Unfriends the given target.
-        /// </summary>
-        /// <param name="targetId">The target user Id.</param>
-        /// <returns>A task that completes when the operation is finished.</returns>
-        public async Task UnfriendAsync(ulong targetId) => await PostAsync($"/v1/users/{targetId}/unfriend", new { });
-
-        /// <summary>
-        /// Unfriends the given target.
-        /// </summary>
-        /// <param name="user">The target user.</param>
-        /// <returns>A task that completes when the operation is finished.</returns>
-        public async Task UnfriendAsync(User user) => await UnfriendAsync(user.Id);
-
-        /// <summary>
         /// Gets a value indicating whether or not the specified experience is favorited by the authenticated user.
         /// </summary>
         /// <param name="experience">The target experience.</param>
