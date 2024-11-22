@@ -140,12 +140,12 @@ namespace RoSharp.API.Assets.Experiences
         /// </summary>
         public Genre Subgenre => subgenre;
 
-        private ulong rootPlaceId;
+        private Id<Place> rootPlaceId;
 
         /// <summary>
-        /// Gets the Id of the game's root place.
+        /// Gets the Id of the game's root place, also known as the starting place.
         /// </summary>
-        public ulong RootPlaceId => rootPlaceId; // Todo: Convert to a Place type when those exist.
+        public Id<Place> RootPlaceId => rootPlaceId;
 
         private DeveloperStats statistics;
 
@@ -244,7 +244,7 @@ namespace RoSharp.API.Assets.Experiences
             playingNow = data.playing;
             visits = data.visits;
             favorites = data.favoritedCount;
-            rootPlaceId = data.rootPlaceId;
+            rootPlaceId = new Id<Place>(Convert.ToUInt64(data.rootPlaceId), session);
             genre = ExperienceUtility.GetGenre(Convert.ToString(data.genre_l1));
             subgenre = ExperienceUtility.GetGenre(Convert.ToString(data.genre_l2));
 
@@ -581,6 +581,36 @@ namespace RoSharp.API.Assets.Experiences
         }
 
         /// <summary>
+        /// Gets this experience's places.
+        /// </summary>
+        /// <param name="limit">The maximum amount of places to get at one time.</param>
+        /// <param name="sortOrder">The sort order.</param>
+        /// <param name="cursor">The cursor for the next page. Obtained by calling this API previously.</param>
+        /// <returns>A task containing a <see cref="PageResponse{T}"/> of <see cref="Id{T}"/> upon completion.</returns>
+        /// <remarks>This API method does not cache and will make a request each time it is called.</remarks>
+        public async Task<PageResponse<Id<Place>>> GetPlacesAsync(FixedLimit limit = FixedLimit.Limit100, RequestSortOrder sortOrder = RequestSortOrder.Asc, string? cursor = null)
+        {
+            string url = $"/v1/universes/{Id}/places?sortOrder={sortOrder}&limit={limit.Limit()}&isUniverseCreation=false";
+            if (cursor != null)
+                url += "&cursor=" + cursor;
+
+            string rawData = await GetStringAsync(url, Constants.URL("develop"));
+            dynamic data = JObject.Parse(rawData);
+
+            List<Id<Place>> list = [];
+            string? nextPage = data.nextPageCursor;
+            string? previousPage = data.previousPageCursor;
+
+            foreach (dynamic item in data.data)
+            {
+                ulong id = Convert.ToUInt64(item.id);
+                list.Add(new(id, session));
+            }
+
+            return new PageResponse<Id<Place>>(list, nextPage, previousPage);
+        }
+
+        /// <summary>
         /// Returns a list of assets that are shown under the "Recommended" section based on this asset.
         /// This method makes an API call for each asset, and as such is very time consuming the more assets are requested.
         /// </summary>
@@ -640,7 +670,7 @@ namespace RoSharp.API.Assets.Experiences
         /// <remarks>This API method does not cache and will make a request each time it is called.</remarks>
         public async Task<PageResponse<Id<Badge>>> GetBadgesAsync(FixedLimit limit = FixedLimit.Limit100, RequestSortOrder sortOrder = RequestSortOrder.Asc, string? cursor = null)
         {
-            string url = $"v1/universes/{UniverseId}/badges?limit={limit.Limit()}&sortOrder={sortOrder}";
+            string url = $"/v1/universes/{UniverseId}/badges?limit={limit.Limit()}&sortOrder={sortOrder}";
             if (cursor != null)
                 url += "&cursor=" + cursor;
 
