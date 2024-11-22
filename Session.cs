@@ -127,7 +127,10 @@ namespace RoSharp
             }
         }
 
-        public async Task LogoutAsync()
+        /// <summary>
+        /// Clears the stored security token and de-authenticates this session.
+        /// </summary>
+        public void LogoutAsync()
         {
             username = string.Empty;
             userid = 0;

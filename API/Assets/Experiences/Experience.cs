@@ -570,8 +570,8 @@ namespace RoSharp.API.Assets.Experiences
             dynamic data = JObject.Parse(rawData);
 
             if (data.playableDevices != null) {
-                List<string> devices = ((JArray)data.playableDevices).ToObject<List<string>>();
-                this.devices = devices;
+                List<string>? devices = ((JArray)data.playableDevices).ToObject<List<string>>();
+                this.devices = devices ?? [];
             }
 
             friendsOnly = data.isFriendsOnly;
