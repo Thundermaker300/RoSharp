@@ -19,6 +19,7 @@ namespace RoSharp
         internal string displayname = "";
         internal ulong userid = 0;
         internal DateTime? loggedAt;
+        internal string xcsrfToken = "";
 
         internal string RobloSecurity => roblosecurity;
 

@@ -32,8 +32,6 @@ namespace RoSharp.API
         /// </summary>
         public APIMain() { }
 
-        private List<HttpClient> auth = [];
-
         internal HttpClient MakeHttpClient(string? baseOverride = null, string? verifyApiName = null)
         {
             if (verifyApiName != null)
@@ -57,29 +55,27 @@ namespace RoSharp.API
                 BaseAddress = uri
             };
 
-            if (session?.RobloSecurity != string.Empty)
+            if (!string.IsNullOrWhiteSpace(session?.xcsrfToken))
             {
-                auth.Add(client);
-                Task.Factory.StartNew(async () =>
-                {
-                    await Task.Delay(10000);
-                    auth.Remove(client);
-                });
+                client.DefaultRequestHeaders.Add("x-csrf-token", session?.xcsrfToken);
             }
 
             return client;
         }
 
-        private void Log(HttpResponseMessage message, HttpClient client)
+        private void Log(HttpResponseMessage message, HttpClient client, bool retrying = false)
         {
 #if DEBUG
             string body = message.Content.ReadAsStringAsync().Result;
 
             ConsoleColor color = (message.StatusCode != HttpStatusCode.OK ? ConsoleColor.Red : ConsoleColor.Cyan);
             RoLogger.Debug($"----- BEGIN REQUEST -----", color);
+            if (retrying)
+                RoLogger.Debug($"<<RETRY REQUEST>>", color);
             RoLogger.Debug($"{message.RequestMessage?.Method} {(message.RequestMessage?.RequestUri?.ToString() ?? "UNKNOWN")}", color);
             RoLogger.Debug($"CODE: HTTP {message.StatusCode} ({(int)message.StatusCode})", color);
-            RoLogger.Debug($"AUTH: {auth.Contains(client)}", color);
+            RoLogger.Debug($"AUTH: {session?.RobloSecurity != string.Empty}", color);
+            RoLogger.Debug($"XCSRF: {!string.IsNullOrWhiteSpace(session?.xcsrfToken)} ({(string.IsNullOrWhiteSpace(session?.xcsrfToken) ? "NONE" : session?.xcsrfToken)})", color);
             RoLogger.Debug($"BODY: {message.RequestMessage?.Content?.ReadAsStringAsync().Result ?? "NONE"}", color);
             RoLogger.Debug($"REASON PHRASE: HTTP {message.ReasonPhrase}", color);
             RoLogger.Debug($"RESPONSE BODY: {body.Substring(0, Math.Min(body.Length, 200))}", color);
@@ -112,51 +108,61 @@ namespace RoSharp.API
             return body;
         }
 
-        internal async Task<HttpResponseMessage> PostAsync(string url, object data, string? baseOverride = null, string? verifyApiName = null)
+        internal async Task<HttpResponseMessage> PostAsync(string url, object data, string? baseOverride = null, string? verifyApiName = null, bool retrying = false)
         {
             HttpClient client = MakeHttpClient(baseOverride, verifyApiName);
             JsonContent content = JsonContent.Create(data);
-
-            HttpResponseMessage initialResponse = await client.PostAsync(url, JsonContent.Create(new { }));
-
-            if (initialResponse.Headers.TryGetValues("x-csrf-token", out IEnumerable<string>? headers))
-                client.DefaultRequestHeaders.Add("x-csrf-token", headers.First());
 
             HttpResponseMessage response = await client.PostAsync(url, content);
+            Log(response, client, retrying);
 
-            Log(response, client);
+            if (response.StatusCode == HttpStatusCode.Forbidden && !retrying && session != null)
+            {
+                if (response.Headers.TryGetValues("x-csrf-token", out IEnumerable<string>? headers))
+                {
+                    session.xcsrfToken = headers.First();
+                    return await PostAsync(url, data, baseOverride, verifyApiName, true);
+                }
+            }
 
             HttpVerify.ThrowIfNecessary(response, await response.Content.ReadAsStringAsync());
             return response;
         }
-        internal async Task<HttpResponseMessage> PatchAsync(string url, object data, string? baseOverride = null, string? verifyApiName = null)
+        internal async Task<HttpResponseMessage> PatchAsync(string url, object data, string? baseOverride = null, string? verifyApiName = null, bool retrying = false)
         {
             HttpClient client = MakeHttpClient(baseOverride, verifyApiName);
             JsonContent content = JsonContent.Create(data);
 
-            HttpResponseMessage initialResponse = await client.PatchAsync(url, JsonContent.Create(new { }));
-
-            if (initialResponse.Headers.TryGetValues("x-csrf-token", out IEnumerable<string>? headers))
-                client.DefaultRequestHeaders.Add("x-csrf-token", headers.First());
-
             HttpResponseMessage response = await client.PatchAsync(url, content);
+            Log(response, client, retrying);
 
-            Log(response, client);
+            if (response.StatusCode == HttpStatusCode.Forbidden && !retrying && session != null)
+            {
+                if (response.Headers.TryGetValues("x-csrf-token", out IEnumerable<string>? headers))
+                {
+                    session.xcsrfToken = headers.First();
+                    return await PatchAsync(url, data, baseOverride, verifyApiName, true);
+                }
+            }
 
             HttpVerify.ThrowIfNecessary(response, await response.Content.ReadAsStringAsync());
             return response;
         }
-        internal async Task<HttpResponseMessage> DeleteAsync(string url, string? baseOverride = null, string? verifyApiName = null)
+        internal async Task<HttpResponseMessage> DeleteAsync(string url, string? baseOverride = null, string? verifyApiName = null, bool retrying = false)
         {
             HttpClient client = MakeHttpClient(baseOverride, verifyApiName);
 
-            HttpResponseMessage initialResponse = await client.DeleteAsync(url);
-            //HttpVerify.ThrowIfNecessary(initialResponse);
-
-            if (initialResponse.Headers.TryGetValues("x-csrf-token", out IEnumerable<string>? headers))
-                client.DefaultRequestHeaders.Add("x-csrf-token", headers.First());
-
             HttpResponseMessage response = await client.DeleteAsync(url);
+            Log(response, client, retrying);
+
+            if (response.StatusCode == HttpStatusCode.Forbidden && !retrying && session != null)
+            {
+                if (response.Headers.TryGetValues("x-csrf-token", out IEnumerable<string>? headers))
+                {
+                    session.xcsrfToken = headers.First();
+                    return await DeleteAsync(url, baseOverride, verifyApiName, true);
+                }
+            }
 
             Log(response, client);
 
