@@ -3,6 +3,8 @@
     /// <summary>
     /// Indicates an experience activity history type. Used in <see cref="API.Assets.Experiences.DeveloperStats.GetAuditLogsAsync"/>.
     /// </summary>
+    // [TODO] Note: I'm sure there's some missing in here. I can only add what I can actually see.
+    // if more are discovered please let me know.
     public enum ExperienceAuditLogType
     {
         /// <summary>
