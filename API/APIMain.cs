@@ -73,6 +73,8 @@ namespace RoSharp.API
         private void Log(HttpResponseMessage message, HttpClient client)
         {
 #if DEBUG
+            string body = message.Content.ReadAsStringAsync().Result;
+
             ConsoleColor color = (message.StatusCode != HttpStatusCode.OK ? ConsoleColor.Red : ConsoleColor.Cyan);
             RoLogger.Debug($"----- BEGIN REQUEST -----", color);
             RoLogger.Debug($"{message.RequestMessage?.Method} {(message.RequestMessage?.RequestUri?.ToString() ?? "UNKNOWN")}", color);
@@ -80,7 +82,7 @@ namespace RoSharp.API
             RoLogger.Debug($"AUTH: {auth.Contains(client)}", color);
             RoLogger.Debug($"BODY: {message.RequestMessage?.Content?.ReadAsStringAsync().Result ?? "NONE"}", color);
             RoLogger.Debug($"REASON PHRASE: HTTP {message.ReasonPhrase}", color);
-            RoLogger.Debug($"RESPONSE BODY: {message.Content.ReadAsStringAsync().Result}", color);
+            RoLogger.Debug($"RESPONSE BODY: {body.Substring(0, Math.Min(body.Length, 200))}", color);
             RoLogger.Debug($"----- END REQUEST -----", color);
 #endif
         }
