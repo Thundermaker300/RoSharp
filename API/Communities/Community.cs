@@ -298,7 +298,7 @@ namespace RoSharp.API.Communities
                     PostedAt = post.updated,
                     Text = post.body,
                     RankInCommunity = post.poster == null ? null : post.poster.role.name,
-                    PosterId = post.poster == null ? null : new GenericId<User>(Convert.ToUInt64(post.poster.userId)),
+                    PosterId = post.poster == null ? null : new Id<User>(Convert.ToUInt64(post.poster.userId)),
 
                     group = this,
                 });
@@ -315,16 +315,16 @@ namespace RoSharp.API.Communities
         /// <param name="limit">The limit of experiences to return.</param>
         /// <param name="sortOrder">The sort order.</param>
         /// <param name="cursor">The cursor for the next page. Obtained by calling this API previously.</param>
-        /// <returns>A task containing a <see cref="PageResponse{T}"/> of <see cref="GenericId{T}"/> upon completion.</returns>
+        /// <returns>A task containing a <see cref="PageResponse{T}"/> of <see cref="Id{T}"/> upon completion.</returns>
         /// <exception cref="RobloxAPIException">Roblox API failure or lack of permissions to see experiences.</exception>
         /// <remarks>This API method does not cache and will make a request each time it is called.</remarks>
-        public async Task<PageResponse<GenericId<Experience>>> GetExperiencesAsync(FixedLimit limit = FixedLimit.Limit100, RequestSortOrder sortOrder = RequestSortOrder.Desc, string? cursor = null)
+        public async Task<PageResponse<Id<Experience>>> GetExperiencesAsync(FixedLimit limit = FixedLimit.Limit100, RequestSortOrder sortOrder = RequestSortOrder.Desc, string? cursor = null)
         {
             string url = $"/v2/groups/{Id}/games?accessFilter=Public&limit={limit.Limit()}&sortOrder={sortOrder}";
             if (cursor != null)
                 url += "&cursor=" + cursor;
 
-            var list = new List<GenericId<Experience>>();
+            var list = new List<Id<Experience>>();
             string? nextPage;
             string? previousPage;
             HttpResponseMessage response = await GetAsync(url, Constants.URL("games"));
@@ -332,7 +332,7 @@ namespace RoSharp.API.Communities
             dynamic data = JObject.Parse(await response.Content.ReadAsStringAsync());
             foreach (dynamic exp in data.data)
             {
-                list.Add(new GenericId<Experience>(Convert.ToUInt64(exp.id), session));
+                list.Add(new Id<Experience>(Convert.ToUInt64(exp.id), session));
             }
             nextPage = data.nextPageCursor;
             previousPage = data.previousPageCursor;
@@ -387,15 +387,15 @@ namespace RoSharp.API.Communities
         /// <param name="limit">The maximum amount of communities to return.</param>
         /// <param name="sortOrder">The sort order.</param>
         /// <param name="startRowIndex">The amount of items to skip before returning data, or <c>0</c> to skip none.</param>
-        /// <returns>A task containing a <see cref="PageResponse{T}"/> of <see cref="GenericId{T}"/> upon completion.</returns>
-        public async Task<PageResponse<GenericId<Community>>> GetAlliesAsync(int limit = 50, RequestSortOrder sortOrder = RequestSortOrder.Desc, int startRowIndex = 0)
+        /// <returns>A task containing a <see cref="PageResponse{T}"/> of <see cref="Id{T}"/> upon completion.</returns>
+        public async Task<PageResponse<Id<Community>>> GetAlliesAsync(int limit = 50, RequestSortOrder sortOrder = RequestSortOrder.Desc, int startRowIndex = 0)
         {
             string url = $"/v1/groups/{Id}/relationships/allies?maxRows={limit}&sortOrder={sortOrder}&startRowIndex={startRowIndex}";
 
             string rawData = await GetStringAsync(url);
             dynamic data = JObject.Parse(rawData);
 
-            List<GenericId<Community>> list = [];
+            List<Id<Community>> list = [];
             string? nextPage = Convert.ToString(data.nextRowIndex);
 
             foreach (dynamic item in data.relatedGroups)
@@ -403,7 +403,7 @@ namespace RoSharp.API.Communities
                 list.Add(new(Convert.ToUInt64(item.id), session));
             }
 
-            return new PageResponse<GenericId<Community>>(list, nextPage, null);
+            return new PageResponse<Id<Community>>(list, nextPage, null);
         }
         /// <summary>
         /// Gets this community's allies.
@@ -411,15 +411,15 @@ namespace RoSharp.API.Communities
         /// <param name="limit">The maximum amount of communities to return.</param>
         /// <param name="sortOrder">The sort order.</param>
         /// <param name="startRowIndex">The amount of items to skip before returning data, or <c>0</c> to skip none.</param>
-        /// <returns>A task containing a <see cref="PageResponse{T}"/> of <see cref="GenericId{T}"/> upon completion.</returns>
-        public async Task<PageResponse<GenericId<Community>>> GetEnemiesAsync(int limit = 50, RequestSortOrder sortOrder = RequestSortOrder.Desc, int startRowIndex = 0)
+        /// <returns>A task containing a <see cref="PageResponse{T}"/> of <see cref="Id{T}"/> upon completion.</returns>
+        public async Task<PageResponse<Id<Community>>> GetEnemiesAsync(int limit = 50, RequestSortOrder sortOrder = RequestSortOrder.Desc, int startRowIndex = 0)
         {
             string url = $"/v1/groups/{Id}/relationships/enemies?maxRows={limit}&sortOrder={sortOrder}&startRowIndex={startRowIndex}";
 
             string rawData = await GetStringAsync(url);
             dynamic data = JObject.Parse(rawData);
 
-            List<GenericId<Community>> list = [];
+            List<Id<Community>> list = [];
             string? nextPage = Convert.ToString(data.nextRowIndex);
 
             foreach (dynamic item in data.relatedGroups)
@@ -427,7 +427,7 @@ namespace RoSharp.API.Communities
                 list.Add(new(Convert.ToUInt64(item.id), session));
             }
 
-            return new PageResponse<GenericId<Community>>(list, nextPage, null);
+            return new PageResponse<Id<Community>>(list, nextPage, null);
         }
 
         /// <summary>

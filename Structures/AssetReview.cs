@@ -13,9 +13,9 @@ namespace RoSharp.Structures
         public string ReviewId { get; init; }
 
         /// <summary>
-        /// Gets a <see cref="GenericId{T}"/> representing the poster of the review.
+        /// Gets a <see cref="Id{T}"/> representing the poster of the review.
         /// </summary>
-        public GenericId<User> Poster { get; init; }
+        public Id<User> Poster { get; init; }
 
         /// <summary>
         /// Gets the text of the review.

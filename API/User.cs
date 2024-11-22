@@ -413,18 +413,18 @@ namespace RoSharp.API
         /// <returns><see cref="ReadOnlyCollection{T}"/></returns>
         /// <exception cref="RobloxAPIException">Roblox API failure.</exception>
         /// <remarks>This API method does not cache and will make a request each time it is called.</remarks>
-        public async Task<ReadOnlyCollection<GenericId<User>>> GetFriendsAsync(int limit = 50)
+        public async Task<ReadOnlyCollection<Id<User>>> GetFriendsAsync(int limit = 50)
         {
             string rawData = await GetStringAsync($"/v1/users/{Id}/friends", Constants.URL("friends"));
             dynamic data = JObject.Parse(rawData);
-            List<GenericId<User>> friends = [];
+            List<Id<User>> friends = [];
             int count = 0;
             foreach (dynamic friendData in data.data)
             {
                 count++;
 
                 ulong friendId = Convert.ToUInt64(friendData.id);
-                friends.Add(new GenericId<User>(friendId, session));
+                friends.Add(new Id<User>(friendId, session));
 
                 if (count >= limit)
                     break;
@@ -439,15 +439,15 @@ namespace RoSharp.API
         /// <param name="limit">The maximum amount of Ids to return.</param>
         /// <param name="sortOrder">The sort order.</param>
         /// <param name="cursor">The cursor for the next page. Obtained by calling this API previously.</param>
-        /// <returns>A task containing a <see cref="PageResponse{T}"/> of <see cref="GenericId{T}"/> upon completion.</returns>
+        /// <returns>A task containing a <see cref="PageResponse{T}"/> of <see cref="Id{T}"/> upon completion.</returns>
         /// <exception cref="RobloxAPIException">Roblox API failure or lack of permissions.</exception>
-        public async Task<PageResponse<GenericId<User>>> GetFollowingAsync(FixedLimit limit = FixedLimit.Limit100, RequestSortOrder sortOrder = RequestSortOrder.Desc, string? cursor = null)
+        public async Task<PageResponse<Id<User>>> GetFollowingAsync(FixedLimit limit = FixedLimit.Limit100, RequestSortOrder sortOrder = RequestSortOrder.Desc, string? cursor = null)
         {
             string url = $"/v1/users/{Id}/followings?limit={limit.Limit()}&sortOrder={sortOrder}";
             if (cursor != null)
                 url += "&cursor=" + cursor;
 
-            var list = new List<GenericId<User>>();
+            var list = new List<Id<User>>();
             HttpResponseMessage response = await GetAsync(url, Constants.URL("friends"));
             dynamic data = JObject.Parse(await response.Content.ReadAsStringAsync());
             string? nextPage = data.nextPageCursor;
@@ -459,7 +459,7 @@ namespace RoSharp.API
                 list.Add(new(id, session));
             }
 
-            return new PageResponse<GenericId<User>>(list, nextPage, previousPage);
+            return new PageResponse<Id<User>>(list, nextPage, previousPage);
         }
 
         /// <summary>
@@ -468,15 +468,15 @@ namespace RoSharp.API
         /// <param name="limit">The maximum amount of Ids to return.</param>
         /// <param name="sortOrder">The sort order.</param>
         /// <param name="cursor">The cursor for the next page. Obtained by calling this API previously.</param>
-        /// <returns>A task containing a <see cref="PageResponse{T}"/> of <see cref="GenericId{T}"/> upon completion.</returns>
+        /// <returns>A task containing a <see cref="PageResponse{T}"/> of <see cref="Id{T}"/> upon completion.</returns>
         /// <exception cref="RobloxAPIException">Roblox API failure or lack of permissions.</exception>
-        public async Task<PageResponse<GenericId<User>>> GetFollowersAsync(FixedLimit limit = FixedLimit.Limit100, RequestSortOrder sortOrder = RequestSortOrder.Desc, string? cursor = null)
+        public async Task<PageResponse<Id<User>>> GetFollowersAsync(FixedLimit limit = FixedLimit.Limit100, RequestSortOrder sortOrder = RequestSortOrder.Desc, string? cursor = null)
         {
             string url = $"/v1/users/{Id}/followers?limit={limit.Limit()}&sortOrder={sortOrder}";
             if (cursor != null)
                 url += "&cursor=" + cursor;
 
-            var list = new List<GenericId<User>>();
+            var list = new List<Id<User>>();
             HttpResponseMessage response = await GetAsync(url, Constants.URL("friends"));
             dynamic data = JObject.Parse(await response.Content.ReadAsStringAsync());
             string? nextPage = data.nextPageCursor;
@@ -488,7 +488,7 @@ namespace RoSharp.API
                 list.Add(new(id, session));
             }
 
-            return new PageResponse<GenericId<User>>(list, nextPage, previousPage);
+            return new PageResponse<Id<User>>(list, nextPage, previousPage);
         }
 
         private string? customName;
@@ -624,9 +624,9 @@ namespace RoSharp.API
         /// <param name="limit">The amount to get at one time.</param>
         /// <param name="sortOrder">Sort order.</param>
         /// <param name="cursor">The cursor for the next page. Obtained by calling this API previously.</param>
-        /// <returns>A task containing a <see cref="PageResponse{T}"/> of <see cref="GenericId{T}"/> upon completion.</returns>
+        /// <returns>A task containing a <see cref="PageResponse{T}"/> of <see cref="Id{T}"/> upon completion.</returns>
         /// <remarks>This API method does not cache and will make a request each time it is called.</remarks>
-        public async Task<PageResponse<GenericId<Badge>>> GetBadgesAsync(FixedLimit limit = FixedLimit.Limit100, RequestSortOrder sortOrder = RequestSortOrder.Desc, string? cursor = null)
+        public async Task<PageResponse<Id<Badge>>> GetBadgesAsync(FixedLimit limit = FixedLimit.Limit100, RequestSortOrder sortOrder = RequestSortOrder.Desc, string? cursor = null)
         {
             string url = $"/v1/users/{Id}/badges?sortOrder={sortOrder}&limit={limit.Limit()}";
             if (cursor != null)
@@ -635,7 +635,7 @@ namespace RoSharp.API
             string rawData = await GetStringAsync(url, Constants.URL("badges"));
             dynamic data = JObject.Parse(rawData);
 
-            List<GenericId<Badge>> list = [];
+            List<Id<Badge>> list = [];
             string? nextPage = data.nextPageCursor;
             string? previousPage = data.previousPageCursor;
 
@@ -645,7 +645,7 @@ namespace RoSharp.API
                 list.Add(new(id, session));
             }
 
-            return new PageResponse<GenericId<Badge>>(list, nextPage, previousPage);
+            return new PageResponse<Id<Badge>>(list, nextPage, previousPage);
         }
 
         /// <summary>
@@ -655,11 +655,11 @@ namespace RoSharp.API
         /// <param name="limit">The limit of assets to return.</param>
         /// <param name="sortOrder">The sort order.</param>
         /// <param name="cursor">The cursor for the next page. Obtained by calling this API previously.</param>
-        /// <returns>A task containing a <see cref="PageResponse{T}"/> of <see cref="GenericId{T}"/> upon completion.</returns>
+        /// <returns>A task containing a <see cref="PageResponse{T}"/> of <see cref="Id{T}"/> upon completion.</returns>
         /// <remarks>This API method does not cache and will make a request each time it is called. This API also does not work for Badges, Bundles, and GamePasses -- see their respective APIs.</remarks>
         /// <seealso cref="PrivateInventory"/>
         /// <seealso cref="GetBadgesAsync(FixedLimit, RequestSortOrder, string?)"/>
-        public async Task<PageResponse<GenericId<Asset>>> GetInventoryAsync(AssetType assetType, FixedLimit limit = FixedLimit.Limit100, RequestSortOrder sortOrder = RequestSortOrder.Desc, string? cursor = null)
+        public async Task<PageResponse<Id<Asset>>> GetInventoryAsync(AssetType assetType, FixedLimit limit = FixedLimit.Limit100, RequestSortOrder sortOrder = RequestSortOrder.Desc, string? cursor = null)
         {
             string url = $"/v2/users/{Id}/inventory/{(int)assetType}?limit={limit.Limit()}&sortOrder={sortOrder}";
             if (cursor != null)
@@ -668,7 +668,7 @@ namespace RoSharp.API
             string rawData = await GetStringAsync(url, Constants.URL("inventory"));
             dynamic data = JObject.Parse(rawData);
 
-            List<GenericId<Asset>> list = [];
+            List<Id<Asset>> list = [];
             string? nextPage = data.nextPageCursor;
             string? previousPage = data.previousPageCursor;
 
@@ -678,7 +678,7 @@ namespace RoSharp.API
                 list.Add(new(id, session));
             }
 
-            return new PageResponse<GenericId<Asset>>(list, nextPage, previousPage);
+            return new PageResponse<Id<Asset>>(list, nextPage, previousPage);
         }
 
         /// <summary>
@@ -688,9 +688,9 @@ namespace RoSharp.API
         /// <param name="limit">The limit of assets to return.</param>
         /// <param name="sortOrder">The sort order.</param>
         /// <param name="cursor">The cursor for the next page. Obtained by calling this API previously.</param>
-        /// <returns>A task containing a <see cref="PageResponse{T}"/> of <see cref="GenericId{T}"/> upon completion.</returns>
+        /// <returns>A task containing a <see cref="PageResponse{T}"/> of <see cref="Id{T}"/> upon completion.</returns>
         /// <remarks>This API method does not cache and will make a request each time it is called. This API also does not work for Badges, Bundles, and GamePasses -- see their respective APIs.</remarks>
-        public async Task<PageResponse<GenericId<Asset>>> GetFavoritesAsync(AssetType assetType, FixedLimit limit = FixedLimit.Limit100, RequestSortOrder sortOrder = RequestSortOrder.Desc, string? cursor = null)
+        public async Task<PageResponse<Id<Asset>>> GetFavoritesAsync(AssetType assetType, FixedLimit limit = FixedLimit.Limit100, RequestSortOrder sortOrder = RequestSortOrder.Desc, string? cursor = null)
         {
             string url = $"/users/favorites/list-json?userId={Id}&assetTypeId={(int)assetType}&itemsPerPage={limit.Limit()}";
             if (cursor != null)
@@ -699,7 +699,7 @@ namespace RoSharp.API
             string rawData = await GetStringAsync(url, Constants.ROBLOX_URL_WWW);
             dynamic data = JObject.Parse(rawData);
 
-            List<GenericId<Asset>> list = [];
+            List<Id<Asset>> list = [];
             string? nextPage = data.nextPageCursor;
             string? previousPage = data.previousPageCursor;
 
@@ -709,7 +709,7 @@ namespace RoSharp.API
                 list.Add(new(id, session));
             }
 
-            return new PageResponse<GenericId<Asset>>(list, nextPage, previousPage);
+            return new PageResponse<Id<Asset>>(list, nextPage, previousPage);
         }
 
         /// <summary>

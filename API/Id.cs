@@ -1,0 +1,65 @@
+﻿using RoSharp.Interfaces;
+using RoSharp.Utility;
+
+namespace RoSharp.API
+{
+    /// <summary>
+    /// Represents an Id corresponding to the given <typeparamref name="T"/>.
+    /// <para>
+    /// This class is created instead of <typeparamref name="T"/> directly in large API requests to avoid Roblox ratelimits where the program does not need all of the associated item's data.
+    /// To return the associated item with all of its data, see <see cref="GetInstanceAsync(Session?)"/>.
+    /// </para>
+    /// <para>
+    /// If a <see cref="Session"/> is provided in the API that returns this method (either directly in the method or indirectly in the class), that session will also be associated with the instance returned by <see cref="GetInstanceAsync(Session?)"/>.
+    /// A session can be provided to this method directly to override the session for the returned instance.
+    /// Otherwise, the global session from <see cref="GlobalSession"/> will be used if it is assigned.
+    /// </para>
+    /// </summary>
+    public sealed class Id<T>
+        where T: IIdApi<T>
+    {
+        private T? stored;
+        private Session? storedSession;
+
+        /// <summary>
+        /// Creates a new <see cref="Id{T}"/> with the given Id.
+        /// </summary>
+        /// <param name="id">The user Id.</param>
+        /// <param name="session">The session. Optional.</param>
+        public Id(ulong id, Session? session = null)
+        {
+            ItemId = id;
+
+            storedSession = session;
+        }
+
+        /// <summary>
+        /// Gets the Id of the <typeparamref name="T"/>.
+        /// </summary>
+        public ulong ItemId { get; }
+
+        /// <summary>
+        /// Returns the <typeparamref name="T"/> associated with this Id. Makes an API call to obtain information.
+        /// </summary>
+        /// <returns>A task that contains the <typeparamref name="T"/> instance upon completion.</returns>
+        /// <remarks>Roblox's API is only invoked once. Any subsequent calls to this method will return a cached value. If the returned <typeparamref name="T"/> is a <see cref="IRefreshable"/>, take advantage of <see cref="IRefreshable.RefreshAsync"/> if you are expecting data to change.</remarks>
+        public async Task<T> GetInstanceAsync(Session? session = null)
+        {
+            Session? sessionToUse = session ?? storedSession ?? GlobalSession.Assigned;
+            stored ??= await T.FromId(ItemId, sessionToUse);
+            return stored;
+        }
+
+        /// <inheritdoc/>
+        public override string ToString()
+        {
+            return ItemId.ToString();
+        }
+
+        /// <summary>
+        /// Converts the <see cref="Id{T}"/> to its Id. Equivalent to accessing <see cref="Id{T}.ItemId"/>.
+        /// </summary>
+        /// <param name="id">The <see cref="Id{T}"/> to convert.</param>
+        public static implicit operator ulong(Id<T> id) => id.ItemId;
+    }
+}

@@ -15,7 +15,7 @@
         /// <summary>
         /// Gets the unique Id of the poster. Can be <see langword="null"/>.
         /// </summary>
-        public GenericId<User>? PosterId { get; init; }
+        public Id<User>? PosterId { get; init; }
 
         /// <summary>
         /// Gets the text of the post.

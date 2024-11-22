@@ -38,7 +38,7 @@ namespace RoSharp.API
                 if (sort.contentType != "Games")
                     continue;
 
-                List<GenericId<Experience>> list = [];
+                List<Id<Experience>> list = [];
 
                 foreach (dynamic game in sort.games)
                 {

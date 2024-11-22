@@ -151,9 +151,9 @@ namespace RoSharp.API.Assets.Experiences
                     {
                         Id = ev.id,
                         Type = (ExperienceAuditLogType)ev.eventType,
-                        UniverseId = new GenericId<Experience>(Convert.ToUInt64(ev.universeId)),
+                        UniverseId = new Id<Experience>(Convert.ToUInt64(ev.universeId)),
                         PlaceId = ev.placeId,
-                        UserId = new GenericId<User>(Convert.ToUInt64(ev.userId)),
+                        UserId = new Id<User>(Convert.ToUInt64(ev.userId)),
                         Time = DateTime.UnixEpoch.AddMilliseconds(Convert.ToInt64(ev.createdUnixTimeMs)),
                     });
                 }

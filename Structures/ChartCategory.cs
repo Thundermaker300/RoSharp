@@ -28,7 +28,7 @@ namespace RoSharp.Structures
         /// <summary>
         /// Gets a list of experience Ids within this category.
         /// </summary>
-        public ReadOnlyCollection<GenericId<Experience>> ExperienceIds { get; init; }
+        public ReadOnlyCollection<Id<Experience>> ExperienceIds { get; init; }
 
         /// <summary>
         /// Converts <see cref="ExperienceIds"/> to a read-only <see cref="Experience"/> collection.
@@ -41,7 +41,7 @@ namespace RoSharp.Structures
         public async Task<ReadOnlyCollection<Experience>> ToExperienceListAsync(int limit = -1, int startAt = 0)
         {
             List<Experience> experiences = [];
-            foreach (GenericId<Experience> id in ExperienceIds.Skip(startAt))
+            foreach (Id<Experience> id in ExperienceIds.Skip(startAt))
             {
                 experiences.Add(await id.GetInstanceAsync());
 
@@ -63,7 +63,7 @@ namespace RoSharp.Structures
         public async Task ForEachExperienceAsync(Func<Experience, Task> func, int limit = -1, int startAt = 0)
         {
             int count = 0;
-            foreach (GenericId<Experience> id in ExperienceIds.Skip(startAt))
+            foreach (Id<Experience> id in ExperienceIds.Skip(startAt))
             {
                 await func(await id.GetInstanceAsync());
                 count++;
@@ -85,7 +85,7 @@ namespace RoSharp.Structures
         public async Task ForEachExperienceAsync(Action<Experience> action, int limit = -1, int startAt = 0)
         {
             int count = 0;
-            foreach (GenericId<Experience> id in ExperienceIds.Skip(startAt))
+            foreach (Id<Experience> id in ExperienceIds.Skip(startAt))
             {
                 action(await id.GetInstanceAsync());
                 count++;

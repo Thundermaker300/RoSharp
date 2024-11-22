@@ -636,9 +636,9 @@ namespace RoSharp.API.Assets.Experiences
         /// <param name="limit">The amount of badges to get at one time.</param>
         /// <param name="sortOrder">The sort order.</param>
         /// <param name="cursor">The cursor for the next page. Obtained by calling this API previously.</param>
-        /// <returns>A task containing a <see cref="PageResponse{T}"/> of <see cref="GenericId{T}"/> upon completion.</returns>
+        /// <returns>A task containing a <see cref="PageResponse{T}"/> of <see cref="Id{T}"/> upon completion.</returns>
         /// <remarks>This API method does not cache and will make a request each time it is called.</remarks>
-        public async Task<PageResponse<GenericId<Badge>>> GetBadgesAsync(FixedLimit limit = FixedLimit.Limit100, RequestSortOrder sortOrder = RequestSortOrder.Asc, string? cursor = null)
+        public async Task<PageResponse<Id<Badge>>> GetBadgesAsync(FixedLimit limit = FixedLimit.Limit100, RequestSortOrder sortOrder = RequestSortOrder.Asc, string? cursor = null)
         {
             string url = $"v1/universes/{UniverseId}/badges?limit={limit.Limit()}&sortOrder={sortOrder}";
             if (cursor != null)
@@ -647,7 +647,7 @@ namespace RoSharp.API.Assets.Experiences
             string rawData = await GetStringAsync(url, Constants.URL("badges"));
             dynamic data = JObject.Parse(rawData);
 
-            List<GenericId<Badge>> list = [];
+            List<Id<Badge>> list = [];
             string? nextPage = data.nextPageCursor;
             string? previousPage = data.previousPageCursor;
 
@@ -657,7 +657,7 @@ namespace RoSharp.API.Assets.Experiences
                 list.Add(new(id, session));
             }
 
-            return new PageResponse<GenericId<Badge>>(list, nextPage, previousPage);
+            return new PageResponse<Id<Badge>>(list, nextPage, previousPage);
         }
 
         /// <summary>
@@ -960,7 +960,7 @@ namespace RoSharp.API.Assets.Experiences
         /// <summary>
         /// The universe Id the action occurred in.
         /// </summary>
-        public GenericId<Experience> UniverseId { get; init; }
+        public Id<Experience> UniverseId { get; init; }
 
         /// <summary>
         /// The place Id that is targeted by the action. Can be <see langword="null"/> for non-place actions.
@@ -970,12 +970,12 @@ namespace RoSharp.API.Assets.Experiences
         /// <summary>
         /// The user Id of the user that performed the action.
         /// </summary>
-        public GenericId<User> UserId { get; init; }
+        public Id<User> UserId { get; init; }
 
         /// <inheritdoc/>
         public override string ToString()
         {
-            return $"{Type} [{Time}] {{{Id}}} ExpID: {UniverseId.Id} UserID: {UserId.Id}";
+            return $"{Type} [{Time}] {{{Id}}} ExpID: {UniverseId.ItemId} UserID: {UserId.ItemId}";
         }
     }
 

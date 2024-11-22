@@ -37,12 +37,12 @@ namespace RoSharp.API.Assets
         /// </summary>
         public string Description => description;
 
-        private GenericId<Experience> experience;
+        private Id<Experience> experience;
 
         /// <summary>
-        /// Gets a <see cref="GenericId{T}"/> of the experience that owns this badge.
+        /// Gets a <see cref="Id{T}"/> of the experience that owns this badge.
         /// </summary>
-        public GenericId<Experience> Experience => experience;
+        public Id<Experience> Experience => experience;
 
         private DateTime created;
 
@@ -79,13 +79,13 @@ namespace RoSharp.API.Assets
         /// </summary>
         public int YesterdayAwardedCount => yesterdayAwardedCount;
 
-        private GenericId<Asset> thumbnailAsset;
+        private Id<Asset> thumbnailAsset;
 
         /// <summary>
-        /// Gets a <see cref="GenericId{T}"/> representing the asset that is used for this badge.
+        /// Gets a <see cref="Id{T}"/> representing the asset that is used for this badge.
         /// </summary>
         /// <remarks>This value will be <see langword="null"/> if this <see cref="Badge"/> is created without an authenticated <see cref="Session"/> as Asset instances require an authenticated session.</remarks>
-        public GenericId<Asset> ThumbnailAsset => thumbnailAsset;
+        public Id<Asset> ThumbnailAsset => thumbnailAsset;
 
         /// <inheritdoc/>
         public DateTime RefreshedAt { get; set; }
@@ -133,12 +133,12 @@ namespace RoSharp.API.Assets
             description = (data.displayDescription == null ? string.Empty : data.displayDescription);
             created = data.created;
             lastUpdated = data.updated;
-            experience = new GenericId<Experience>(experienceId);
+            experience = new Id<Experience>(experienceId);
             awardedCount = Convert.ToInt32(data.statistics.awardedCount);
             yesterdayAwardedCount = Convert.ToInt32(data.statistics.pastDayAwardedCount);
             isEnabled = data.enabled;
 
-            thumbnailAsset = new GenericId<Asset>(Convert.ToUInt64(data.displayIconImageId), session);
+            thumbnailAsset = new Id<Asset>(Convert.ToUInt64(data.displayIconImageId), session);
 
             RefreshedAt = DateTime.Now;
         }
@@ -211,7 +211,7 @@ namespace RoSharp.API.Assets
         /// <inheritdoc/>
         public override string ToString()
         {
-            return $"{Name} [{Id}] {{EXP:{experience.Id}}} <{AwardedCount}>";
+            return $"{Name} [{Id}] {{EXP:{experience.ItemId}}} <{AwardedCount}>";
         }
         
         /// <inheritdoc/>

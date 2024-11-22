@@ -27,9 +27,9 @@ namespace RoSharp.API.Communities
         /// <param name="limit">The limit of users to return.</param>
         /// <param name="sortOrder">The sort order.</param>
         /// <param name="cursor">The cursor for the next page. Obtained by calling this API previously.</param>
-        /// <returns>A task containing a <see cref="PageResponse{T}"/> of <see cref="GenericId{T}"/> upon completion.</returns>
+        /// <returns>A task containing a <see cref="PageResponse{T}"/> of <see cref="Id{T}"/> upon completion.</returns>
         /// <exception cref="RobloxAPIException">Roblox API failure or lack of permissions.</exception>
-        public async Task<PageResponse<GenericId<User>>> GetPendingRequestsAsync(FixedLimit limit = FixedLimit.Limit100, RequestSortOrder sortOrder = RequestSortOrder.Desc, string? cursor = null)
+        public async Task<PageResponse<Id<User>>> GetPendingRequestsAsync(FixedLimit limit = FixedLimit.Limit100, RequestSortOrder sortOrder = RequestSortOrder.Desc, string? cursor = null)
         {
             string url = $"/v1/groups/{community.Id}/join-requests?limit={limit.Limit()}&sortOrder={sortOrder}";
             if (cursor != null)
@@ -39,13 +39,13 @@ namespace RoSharp.API.Communities
             string rawData = await response.Content.ReadAsStringAsync();
             dynamic data = JObject.Parse(rawData);
 
-            var list = new List<GenericId<User>>();
+            var list = new List<Id<User>>();
             string? nextPage = data.nextPageCursor;
             string? previousPage = data.previousPageCursor;
             foreach (dynamic user in data.data)
             {
                 ulong userId = Convert.ToUInt64(user.requester.userId);
-                list.Add(new GenericId<User>(userId, community.session));
+                list.Add(new Id<User>(userId, community.session));
             }
 
             return new(list, nextPage, previousPage);
@@ -58,15 +58,15 @@ namespace RoSharp.API.Communities
         /// <param name="limit">The limit of users to return.</param>
         /// <param name="sortOrder">The sort order.</param>
         /// <param name="cursor">The cursor for the next page. Obtained by calling this API previously.</param>
-        /// <returns>A task containing a <see cref="PageResponse{T}"/> of <see cref="GenericId{T}"/> upon completion.</returns>
+        /// <returns>A task containing a <see cref="PageResponse{T}"/> of <see cref="Id{T}"/> upon completion.</returns>
         /// <exception cref="RobloxAPIException">Roblox API failure or lack of permissions.</exception>
-        public async Task<PageResponse<GenericId<User>>> GetMembersAsync(FixedLimit limit = FixedLimit.Limit100, RequestSortOrder sortOrder = RequestSortOrder.Asc, string? cursor = null)
+        public async Task<PageResponse<Id<User>>> GetMembersAsync(FixedLimit limit = FixedLimit.Limit100, RequestSortOrder sortOrder = RequestSortOrder.Asc, string? cursor = null)
         {
             string url = $"/v1/groups/{community.Id}/users?limit={limit.Limit()}&sortOrder={sortOrder}";
             if (cursor != null)
                 url += "&cursor=" + cursor;
 
-            var list = new List<GenericId<User>>();
+            var list = new List<Id<User>>();
             string? nextPage;
             string? previousPage;
             HttpResponseMessage response = await community.GetAsync(url, verifyApiName: "community.GetMembersAsync");
@@ -75,7 +75,7 @@ namespace RoSharp.API.Communities
             foreach (dynamic user in data.data)
             {
                 ulong userId = Convert.ToUInt64(user.user.userId);
-                list.Add(new GenericId<User>(userId, community.session));
+                list.Add(new Id<User>(userId, community.session));
             }
             nextPage = data.nextPageCursor;
             previousPage = data.previousPageCursor;
@@ -89,15 +89,15 @@ namespace RoSharp.API.Communities
         /// <param name="limit">The limit of users to return.</param>
         /// <param name="sortOrder">The sort order.</param>
         /// <param name="cursor">The cursor for the next page. Obtained by calling this API previously.</param>
-        /// <returns>A task containing a <see cref="PageResponse{T}"/> of <see cref="GenericId{T}"/> upon completion.</returns>
+        /// <returns>A task containing a <see cref="PageResponse{T}"/> of <see cref="Id{T}"/> upon completion.</returns>
         /// <exception cref="RobloxAPIException">Roblox API failure or lack of permissions.</exception>
-        public async Task<PageResponse<GenericId<User>>> GetBannedMembersAsync(FixedLimit limit = FixedLimit.Limit100, RequestSortOrder sortOrder = RequestSortOrder.Asc, string? cursor = null)
+        public async Task<PageResponse<Id<User>>> GetBannedMembersAsync(FixedLimit limit = FixedLimit.Limit100, RequestSortOrder sortOrder = RequestSortOrder.Asc, string? cursor = null)
         {
             string url = $"/v1/groups/{community.Id}/bans?limit={limit.Limit()}&sortOrder={sortOrder}";
             if (cursor != null)
                 url += "&cursor=" + cursor;
 
-            var list = new List<GenericId<User>>();
+            var list = new List<Id<User>>();
             string? nextPage;
             string? previousPage;
             HttpResponseMessage response = await community.GetAsync(url, verifyApiName: "community.GetBannedMembersAsync");
@@ -106,7 +106,7 @@ namespace RoSharp.API.Communities
             foreach (dynamic user in data.data)
             {
                 ulong userId = Convert.ToUInt64(user.user.userId);
-                list.Add(new GenericId<User>(userId, community.session));
+                list.Add(new Id<User>(userId, community.session));
             }
             nextPage = data.nextPageCursor;
             previousPage = data.previousPageCursor;

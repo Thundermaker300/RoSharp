@@ -21,12 +21,12 @@ namespace RoSharp.API.Communities
         /// <summary>
         /// The community Id the action occurred in.
         /// </summary>
-        public GenericId<Community> CommunityId { get; init; }
+        public Id<Community> CommunityId { get; init; }
 
         /// <summary>
         /// The user Id of the user that performed the action.
         /// </summary>
-        public GenericId<User> UserId { get; init; }
+        public Id<User> UserId { get; init; }
 
         /// <summary>
         /// The rank Id of the user that performed the action.
@@ -36,17 +36,17 @@ namespace RoSharp.API.Communities
         /// <summary>
         /// Gets the targeted user in this log. Will be <see langword="null"/> if the action isn't targeting a user.
         /// </summary>
-        public GenericId<User>? TargetUserId { get; init; }
+        public Id<User>? TargetUserId { get; init; }
 
         /// <summary>
         /// Gets the targeted community in this log. Will be <see langword="null"/> if the action isn't targeting a community.
         /// </summary>
-        public GenericId<Community>? TargetCommunityId { get; init; }
+        public Id<Community>? TargetCommunityId { get; init; }
 
         /// <inheritdoc/>
         public override string ToString()
         {
-            return $"{Type} [{Time}] CommunityId: {CommunityId.Id} UserID: {UserId.Id}";
+            return $"{Type} [{Time}] CommunityId: {CommunityId.ItemId} UserID: {UserId.ItemId}";
         }
     }
 }
