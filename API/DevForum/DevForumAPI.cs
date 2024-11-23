@@ -1,11 +1,6 @@
 ﻿using Newtonsoft.Json.Linq;
 using RoSharp.Utility;
-using System;
-using System.Collections.Generic;
 using System.Collections.ObjectModel;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace RoSharp.API.DevForum
 {
@@ -61,6 +56,7 @@ namespace RoSharp.API.DevForum
         public static async Task<DevForumTopic> GetTopicAsync(ulong topicId, bool excludeSystemReplies = true)
         {
             HttpResponseMessage response = await client.GetAsync($"https://devforum.roblox.com/t/{topicId}.json");
+            RoUtility.LogHTTP(null, response, client);
             if (response.IsSuccessStatusCode)
             {
                 dynamic data = JObject.Parse(await response.Content.ReadAsStringAsync());
@@ -122,6 +118,7 @@ namespace RoSharp.API.DevForum
         public static async Task<ReadOnlyCollection<DevForumCategory>> GetCategoriesAsync()
         {
             HttpResponseMessage response = await client.GetAsync($"https://devforum.roblox.com/categories.json");
+            RoUtility.LogHTTP(null, response, client);
             if (response.IsSuccessStatusCode)
             {
                 List<DevForumCategory> list = new();

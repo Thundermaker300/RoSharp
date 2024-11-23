@@ -1,4 +1,5 @@
 ﻿using RoSharp.Interfaces;
+using RoSharp.Utility;
 using System.Net;
 using System.Net.Http.Json;
 
@@ -63,32 +64,12 @@ namespace RoSharp.API
             return client;
         }
 
-        private void Log(HttpResponseMessage message, HttpClient client, bool retrying = false)
-        {
-#if DEBUG
-            string body = message.Content.ReadAsStringAsync().Result;
-
-            ConsoleColor color = (message.IsSuccessStatusCode ? ConsoleColor.Cyan : ConsoleColor.Red);
-            RoLogger.Debug($"----- BEGIN REQUEST -----", color);
-            if (retrying)
-                RoLogger.Debug($"<<RETRY REQUEST>>", color);
-            RoLogger.Debug($"{message.RequestMessage?.Method} {(message.RequestMessage?.RequestUri?.ToString() ?? "UNKNOWN")}", color);
-            RoLogger.Debug($"CODE: HTTP {message.StatusCode} ({(int)message.StatusCode})", color);
-            RoLogger.Debug($"AUTH: {session?.RobloSecurity != string.Empty}", color);
-            RoLogger.Debug($"XCSRF: {!string.IsNullOrWhiteSpace(session?.xcsrfToken)} ({(string.IsNullOrWhiteSpace(session?.xcsrfToken) ? "NONE" : session?.xcsrfToken)})", color);
-            RoLogger.Debug($"BODY: {message.RequestMessage?.Content?.ReadAsStringAsync().Result ?? "NONE"}", color);
-            RoLogger.Debug($"REASON PHRASE: HTTP {message.ReasonPhrase}", color);
-            RoLogger.Debug($"RESPONSE BODY: {body.Substring(0, Math.Min(body.Length, 200))}", color);
-            RoLogger.Debug($"----- END REQUEST -----", color);
-#endif
-        }
-
         internal async Task<HttpResponseMessage> GetAsync(string url, string? baseOverride = null, string? verifyApiName = null, bool doNotThrowException = false)
         {
             HttpClient client = MakeHttpClient(baseOverride, verifyApiName);
             HttpResponseMessage message = await client.GetAsync(url);
 
-            Log(message, client);
+            RoUtility.LogHTTP(session, message, client);
 
             if (!doNotThrowException)
                 HttpVerify.ThrowIfNecessary(message, await message.Content.ReadAsStringAsync());
@@ -101,7 +82,7 @@ namespace RoSharp.API
             HttpClient client = MakeHttpClient(baseOverride, verifyApiName);
             HttpResponseMessage message = await client.GetAsync(url);
 
-            Log(message, client);
+            RoUtility.LogHTTP(session, message, client);
 
             string body = await message.Content.ReadAsStringAsync();
             HttpVerify.ThrowIfNecessary(message, body);
@@ -114,7 +95,7 @@ namespace RoSharp.API
             JsonContent content = JsonContent.Create(data);
 
             HttpResponseMessage response = await client.PostAsync(url, content);
-            Log(response, client, retrying);
+            RoUtility.LogHTTP(session, response, client, retrying);
 
             if (response.StatusCode == HttpStatusCode.Forbidden && !retrying && session != null)
             {
@@ -134,7 +115,7 @@ namespace RoSharp.API
             JsonContent content = JsonContent.Create(data);
 
             HttpResponseMessage response = await client.PatchAsync(url, content);
-            Log(response, client, retrying);
+            RoUtility.LogHTTP(session, response, client, retrying);
 
             if (response.StatusCode == HttpStatusCode.Forbidden && !retrying && session != null)
             {
@@ -153,7 +134,7 @@ namespace RoSharp.API
             HttpClient client = MakeHttpClient(baseOverride, verifyApiName);
 
             HttpResponseMessage response = await client.DeleteAsync(url);
-            Log(response, client, retrying);
+            RoUtility.LogHTTP(session, response, client, retrying);
 
             if (response.StatusCode == HttpStatusCode.Forbidden && !retrying && session != null)
             {
@@ -163,8 +144,6 @@ namespace RoSharp.API
                     return await DeleteAsync(url, baseOverride, verifyApiName, true);
                 }
             }
-
-            Log(response, client);
 
             HttpVerify.ThrowIfNecessary(response, await response.Content.ReadAsStringAsync());
             return response;

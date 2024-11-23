@@ -3,6 +3,7 @@ using RoSharp.API.Assets.Experiences;
 using RoSharp.Exceptions;
 using RoSharp.Extensions;
 using RoSharp.Structures;
+using RoSharp.Utility;
 using System.Net;
 
 namespace RoSharp.API
@@ -26,8 +27,10 @@ namespace RoSharp.API
             if (cursor != null)
                 url += $"&sortsPageToken={cursor}";
 
-            HttpClient client = MakeClient(session.Global());
+            session ??= session.Global();
+            HttpClient client = MakeClient();
             HttpResponseMessage response = await client.GetAsync(url);
+            RoUtility.LogHTTP(session, response, client);
             string body = await response.Content.ReadAsStringAsync();
             HttpVerify.ThrowIfNecessary(response, body);
 

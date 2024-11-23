@@ -1,6 +1,7 @@
 ﻿using Newtonsoft.Json.Linq;
 using RoSharp.Enums;
 using RoSharp.Extensions;
+using RoSharp.Utility;
 using System.Collections.ObjectModel;
 using System.Net;
 
@@ -18,8 +19,10 @@ namespace RoSharp.API
         /// <returns>A task containing the <see cref="ReadOnlyDictionary{TKey, TValue}"/> upon completion.</returns>
         public static async Task<ReadOnlyDictionary<AssetType, int>> GetPriceFloorsAsync(Session? session)
         {
-            HttpClient client = MakeClient(session.Global("PriceFloorAPI.GetPriceFloorsAsync"));
+            session ??= session.Global("PriceFloorAPI.GetPriceFloorsAsync");
+            HttpClient client = MakeClient(session);
             HttpResponseMessage response = await client.GetAsync("/v1/collectibles/metadata");
+            RoUtility.LogHTTP(session, response, client);
             string body = await response.Content.ReadAsStringAsync();
 
             HttpVerify.ThrowIfNecessary(response, body);
