@@ -170,7 +170,7 @@ namespace RoSharp.API.Assets.Experiences
 
             foreach (dynamic item in data.data)
             {
-                GameServer server = new GameServer()
+                GameServer server = new()
                 {
                     ServerId = item.id,
                     MaxPlayers = item.maxPlayers,

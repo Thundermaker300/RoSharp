@@ -532,7 +532,7 @@ namespace RoSharp.API
                 userTag = name,
             };
 
-            HttpResponseMessage response = await PostAsync("/v1/user/tag", body, Constants.URL("contacts"), "User.SetCustomName");
+            await PostAsync("/v1/user/tag", body, Constants.URL("contacts"), "User.SetCustomName");
         }
 
         /// <summary>
@@ -686,11 +686,10 @@ namespace RoSharp.API
         /// </summary>
         /// <param name="assetType">The <see cref="AssetType"/> to use for this request.</param>
         /// <param name="limit">The limit of assets to return.</param>
-        /// <param name="sortOrder">The sort order.</param>
         /// <param name="cursor">The cursor for the next page. Obtained by calling this API previously.</param>
         /// <returns>A task containing a <see cref="PageResponse{T}"/> of <see cref="Id{T}"/> upon completion.</returns>
         /// <remarks>This API method does not cache and will make a request each time it is called. This API also does not work for Badges, Bundles, and GamePasses -- see their respective APIs.</remarks>
-        public async Task<PageResponse<Id<Asset>>> GetFavoritesAsync(AssetType assetType, FixedLimit limit = FixedLimit.Limit100, RequestSortOrder sortOrder = RequestSortOrder.Desc, string? cursor = null)
+        public async Task<PageResponse<Id<Asset>>> GetFavoritesAsync(AssetType assetType, FixedLimit limit = FixedLimit.Limit100, string? cursor = null)
         {
             string url = $"/users/favorites/list-json?userId={Id}&assetTypeId={(int)assetType}&itemsPerPage={limit.Limit()}";
             if (cursor != null)

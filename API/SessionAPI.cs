@@ -127,7 +127,7 @@ namespace RoSharp.API
             {
                 string catName = Convert.ToString(cat.Name);
 
-                if (incomeSkipList.Any(sky => catName.ToLower() == sky.ToLower()))
+                if (incomeSkipList.Any(sky => catName.Equals(sky, StringComparison.OrdinalIgnoreCase)))
                     continue;
 
                 IncomeType incomeType = Enum.Parse<IncomeType>(catName.Replace("total", string.Empty, StringComparison.OrdinalIgnoreCase), true);

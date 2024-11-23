@@ -62,7 +62,7 @@ namespace RoSharp.API.Assets.Experiences
         public async Task<MAUData> GetMAUData(DateTime date)
         {
             // Total MAU
-            object body = MakeGenericBody(date, "MonthlyActiveUsers", Array.Empty<object>());
+            object body = MakeGenericBody(date, "MonthlyActiveUsers", []);
             HttpResponseMessage message = await experience.PostAsync(AnalyticUrl, body, Constants.URL("apis"), "DeveloperStats.GetMAUData");
             dynamic data = JObject.Parse(await message.Content.ReadAsStringAsync());
             int totalMau = data.operation.queryResult.values[0].dataPoints[0].value;
