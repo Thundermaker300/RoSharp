@@ -109,10 +109,10 @@ namespace RoSharp.API.Communities
             if (RoPool<Community>.Contains(communityId))
                 return RoPool<Community>.Get(communityId, session.Global());
 
-            Community newGroup = new(communityId, session.Global());
-            await newGroup.RefreshAsync();
+            Community newCommunity = new(communityId, session.Global());
+            await newCommunity.RefreshAsync();
 
-            return newGroup;
+            return newCommunity;
         }
 
         /// <summary>
@@ -160,7 +160,7 @@ namespace RoSharp.API.Communities
 
             try
             {
-                string rawData = await GetStringAsync($"/v1/groups/{Id}/currency", Constants.URL("economy"), verifyApiName: "Group.GetGroupFunds");
+                string rawData = await GetStringAsync($"/v1/groups/{Id}/currency", Constants.URL("economy"), verifyApiName: "Community.GetGroupFunds");
                 dynamic robuxData = JObject.Parse(rawData);
                 robux = robuxData.robux;
             }
@@ -255,7 +255,7 @@ namespace RoSharp.API.Communities
         public async Task ModifyDescriptionAsync(string text)
         {
             object body = new { description = text };
-            await PatchAsync($"/v1/groups/{Id}/description", body, verifyApiName: "Group.ModifyDescriptionAsync");
+            await PatchAsync($"/v1/groups/{Id}/description", body, verifyApiName: "Community.ModifyDescriptionAsync");
         }
 
         /// <summary>
@@ -267,7 +267,7 @@ namespace RoSharp.API.Communities
         public async Task ShoutAsync(string text)
         {
             object body = new { message = text };
-            await PatchAsync($"/v1/groups/{Id}/status", body, verifyApiName: "Group.ShoutAsync");
+            await PatchAsync($"/v1/groups/{Id}/status", body, verifyApiName: "Community.ShoutAsync");
         }
 
         /// <summary>
@@ -316,7 +316,7 @@ namespace RoSharp.API.Communities
             if (cursor != null)
                 url += "&cursor=" + cursor;
 
-            string rawData = await GetStringAsync(url, verifyApiName: "Group.GetAuditLogsAsync");
+            string rawData = await GetStringAsync(url, verifyApiName: "Community.GetAuditLogsAsync");
             dynamic data = JObject.Parse(rawData);
 
             List<CommunityAuditLog> list = [];
@@ -397,10 +397,11 @@ namespace RoSharp.API.Communities
         /// <param name="timeLength">The length of time to use for the breakdown.</param>
         /// <returns>A task containing a <see cref="EconomyBreakdown"/> upon completion.</returns>
         /// <remarks>This API method does not cache and will make a request each time it is called.</remarks>
+        /// <exception cref="RobloxAPIException">Roblox API failure or lack of permissions.</exception>
         public async Task<EconomyBreakdown> GetIncomeAsync(AnalyticTimeLength timeLength = AnalyticTimeLength.Day)
         {
             var url = $"/v1/groups/{Id}/revenue/summary/{timeLength.ToString().ToLower()}";
-            string rawData = await GetStringAsync(url, Constants.URL("economy"), verifyApiName: "Group.GetIncomeAsync");
+            string rawData = await GetStringAsync(url, Constants.URL("economy"), verifyApiName: "Community.GetIncomeAsync");
             dynamic data = JObject.Parse(rawData);
 
             int amount = 0;
@@ -448,7 +449,7 @@ namespace RoSharp.API.Communities
             var list = new List<CommunityPost>();
             string? nextPage;
             string? previousPage;
-            HttpResponseMessage response = await GetAsync(url, verifyApiName: "Group.GetGroupPostsAsync");
+            HttpResponseMessage response = await GetAsync(url, verifyApiName: "Community.GetGroupPostsAsync");
 
             dynamic data = JObject.Parse(await response.Content.ReadAsStringAsync());
             foreach (dynamic post in data.data)

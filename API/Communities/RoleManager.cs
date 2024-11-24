@@ -200,7 +200,7 @@ namespace RoSharp.API.Communities
             {
                 try
                 {
-                    string rawData = await manager.group.GetStringAsync($"/v1/groups/{manager.group.Id}/roles/permissions", verifyApiName: "Group.GetRolePermissions");
+                    string rawData = await manager.group.GetStringAsync($"/v1/groups/{manager.group.Id}/roles/permissions", verifyApiName: "Community.GetRolePermissions");
                     dynamic data = JObject.Parse(rawData);
                     foreach (dynamic group in data.data)
                     {
