@@ -270,46 +270,6 @@ namespace RoSharp.API.Communities
         }
 
         /// <summary>
-        /// Gets this community's wall posts.
-        /// </summary>
-        /// <param name="limit">The limit of posts to return.</param>
-        /// <param name="sortOrder">The sort order.</param>
-        /// <param name="cursor">The cursor for the next page. Obtained by calling this API previously.</param>
-        /// <returns>A task containing a <see cref="PageResponse{T}"/> of <see cref="CommunityPost"/> upon completion.</returns>
-        /// <exception cref="RobloxAPIException">Roblox API failure or lack of permissions to see the community wall.</exception>
-        /// <remarks>This API method does not cache and will make a request each time it is called.</remarks>
-        public async Task<PageResponse<CommunityPost>> GetGroupPostsAsync(FixedLimit limit = FixedLimit.Limit100, RequestSortOrder sortOrder = RequestSortOrder.Desc, string? cursor = null)
-        {
-            string url = $"/v2/groups/{Id}/wall/posts?limit={limit.Limit()}&sortOrder={sortOrder}";
-            if (cursor != null)
-                url += "&cursor=" + cursor;
-
-            var list = new List<CommunityPost>();
-            string? nextPage;
-            string? previousPage;
-            HttpResponseMessage response = await GetAsync(url, verifyApiName: "Group.GetGroupPostsAsync");
-
-            dynamic data = JObject.Parse(await response.Content.ReadAsStringAsync());
-            foreach (dynamic post in data.data)
-            {
-                list.Add(new CommunityPost()
-                {
-                    PostId = post.id,
-                    PostedAt = post.updated,
-                    Text = post.body,
-                    RankInCommunity = post.poster == null ? null : post.poster.role.name,
-                    PosterId = post.poster == null ? null : new Id<User>(Convert.ToUInt64(post.poster.userId)),
-
-                    group = this,
-                });
-            }
-            nextPage = data.nextPageCursor;
-            previousPage = data.previousPageCursor;
-
-            return new(list, nextPage, previousPage);
-        }
-
-        /// <summary>
         /// Gets this community's public experiences.
         /// </summary>
         /// <param name="limit">The limit of experiences to return.</param>
@@ -468,6 +428,84 @@ namespace RoSharp.API.Communities
 
             return new EconomyBreakdown(timeLength, amount, breakdown, pending);
         }
+
+        /// <summary>
+        /// Gets this community's wall posts.
+        /// </summary>
+        /// <param name="limit">The limit of posts to return.</param>
+        /// <param name="sortOrder">The sort order.</param>
+        /// <param name="cursor">The cursor for the next page. Obtained by calling this API previously.</param>
+        /// <returns>A task containing a <see cref="PageResponse{T}"/> of <see cref="CommunityPost"/> upon completion.</returns>
+        /// <exception cref="RobloxAPIException">Roblox API failure or lack of permissions to see the community wall.</exception>
+        /// <remarks>This API method does not cache and will make a request each time it is called.</remarks>
+        public async Task<PageResponse<CommunityPost>> GetPostsAsync(FixedLimit limit = FixedLimit.Limit100, RequestSortOrder sortOrder = RequestSortOrder.Desc, string? cursor = null)
+        {
+            string url = $"/v2/groups/{Id}/wall/posts?limit={limit.Limit()}&sortOrder={sortOrder}";
+            if (cursor != null)
+                url += "&cursor=" + cursor;
+
+            var list = new List<CommunityPost>();
+            string? nextPage;
+            string? previousPage;
+            HttpResponseMessage response = await GetAsync(url, verifyApiName: "Group.GetGroupPostsAsync");
+
+            dynamic data = JObject.Parse(await response.Content.ReadAsStringAsync());
+            foreach (dynamic post in data.data)
+            {
+                list.Add(new CommunityPost()
+                {
+                    PostId = post.id,
+                    PostedAt = post.updated,
+                    Text = post.body,
+                    RankInCommunity = post.poster == null ? null : post.poster.role.name,
+                    PosterId = post.poster == null ? null : new Id<User>(Convert.ToUInt64(post.poster.userId)),
+
+                    group = this,
+                });
+            }
+            nextPage = data.nextPageCursor;
+            previousPage = data.previousPageCursor;
+
+            return new(list, nextPage, previousPage);
+        }
+
+        /// <summary>
+        /// Delete all wall posts from the given user.
+        /// </summary>
+        /// <param name="userId">The user Id of the posts to delete.</param>
+        /// <returns>A task that completes when the operation is finished.</returns>
+        /// <exception cref="RobloxAPIException">Roblox API failure or lack of permissions.</exception>
+        public async Task DeletePostsFromMemberAsync(ulong userId)
+        {
+            await DeleteAsync($"/v1/groups/{Id}/wall/users/{userId}/posts");
+        }
+
+        /// <summary>
+        /// Delete all wall posts from the given user.
+        /// </summary>
+        /// <param name="user">The user whose posts to delete.</param>
+        /// <returns>A task that completes when the operation is finished.</returns>
+        /// <exception cref="RobloxAPIException">Roblox API failure or lack of permissions.</exception>
+        public async Task DeletePostsFromMemberAsync(User user)
+            => await DeletePostsFromMemberAsync(user.Id);
+
+        /// <summary>
+        /// Deletes the wall post with the given Id.
+        /// </summary>
+        /// <param name="postId">The post Id to delete. Can be obtained from <see cref="GetPostsAsync(FixedLimit, RequestSortOrder, string?)"/>.</param>
+        /// <returns>A task that completes when the operation is finished.</returns>
+        public async Task DeletePostAsync(ulong postId)
+        {
+            await DeleteAsync($"/v1/groups/{Id}/wall/posts/{postId}");
+        }
+
+        /// <summary>
+        /// Deletes the specified wall post. Convenience method, equivalent to calling <see cref="DeletePostAsync(ulong)"/> with the <see cref="CommunityPost"/>'s <see cref="CommunityPost.PostId"/>.
+        /// </summary>
+        /// <param name="post">The post to delete. Can be obtained from <see cref="GetPostsAsync(FixedLimit, RequestSortOrder, string?)"/>.</param>
+        /// <returns>A task that completes when the operation is finished.</returns>
+        public async Task DeletePostAsync(CommunityPost post)
+            => await DeletePostAsync(post.PostId);
 
         /// <inheritdoc/>
         public override string ToString()

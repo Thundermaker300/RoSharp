@@ -363,26 +363,6 @@ namespace RoSharp.API.Communities
         public async Task KickMemberAsync(User user) => await KickMemberAsync(user.Id);
 
         /// <summary>
-        /// Delete all wall posts from the given user.
-        /// </summary>
-        /// <param name="userId">The user Id of the posts to delete.</param>
-        /// <returns>A task that completes when the operation is finished.</returns>
-        /// <exception cref="RobloxAPIException">Roblox API failure or lack of permissions.</exception>
-        public async Task DeletePostsFromMemberAsync(ulong userId)
-        {
-            await community.DeleteAsync($"/v1/groups/{community.Id}/wall/users/{userId}/posts");
-        }
-
-        /// <summary>
-        /// Delete all wall posts from the given user.
-        /// </summary>
-        /// <param name="user">The user whose posts to delete.</param>
-        /// <returns>A task that completes when the operation is finished.</returns>
-        /// <exception cref="RobloxAPIException">Roblox API failure or lack of permissions.</exception>
-        public async Task DeletePostsFromMemberAsync(User user)
-            => await DeletePostsFromMemberAsync(user.Id);
-
-        /// <summary>
         /// Bans a user from the community.
         /// </summary>
         /// <param name="userId">The unique Id of the user to ban.</param>
@@ -392,7 +372,7 @@ namespace RoSharp.API.Communities
         public async Task BanMemberAsync(ulong userId, bool deletePosts = false)
         {
             if (deletePosts)
-                await DeletePostsFromMemberAsync(userId);
+                await community.DeletePostsFromMemberAsync(userId);
 
             await community.PostAsync($"/v1/groups/{community.Id}/bans/{userId}", new { }, verifyApiName: "MemberManager.BanMemberAsync");
         }
