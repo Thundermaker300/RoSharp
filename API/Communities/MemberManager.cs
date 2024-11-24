@@ -370,7 +370,7 @@ namespace RoSharp.API.Communities
         /// <exception cref="RobloxAPIException">Roblox API failure or lack of permissions.</exception>
         public async Task DeletePostsFromMemberAsync(ulong userId)
         {
-            await community.DeleteAsync($"https://groups.roblox.com/v1/groups/{community.Id}/wall/users/{userId}/posts");
+            await community.DeleteAsync($"/v1/groups/{community.Id}/wall/users/{userId}/posts");
         }
 
         /// <summary>
