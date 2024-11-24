@@ -6,6 +6,7 @@ using RoSharp.Exceptions;
 using RoSharp.Extensions;
 using RoSharp.Interfaces;
 using RoSharp.Structures;
+using RoSharp.Utility;
 using System.Collections.ObjectModel;
 using System.Diagnostics;
 
@@ -490,13 +491,23 @@ namespace RoSharp.API.Communities
             => await DeletePostsFromMemberAsync(user.Id);
 
         /// <summary>
+        /// Delete all wall posts from the given user.
+        /// </summary>
+        /// <param name="username">The user name of the posts to delete.</param>
+        /// <returns>A task that completes when the operation is finished.</returns>
+        /// <exception cref="RobloxAPIException">Roblox API failure or lack of permissions.</exception>
+        public async Task DeletePostsFromMemberAsync(string username)
+            => await DeletePostsFromMemberAsync(await UserUtility.GetUserIdAsync(username));
+
+        /// <summary>
         /// Deletes the wall post with the given Id.
         /// </summary>
         /// <param name="postId">The post Id to delete. Can be obtained from <see cref="GetPostsAsync(FixedLimit, RequestSortOrder, string?)"/>.</param>
         /// <returns>A task that completes when the operation is finished.</returns>
+        /// <exception cref="RobloxAPIException">Roblox API failure or lack of permissions.</exception>
         public async Task DeletePostAsync(ulong postId)
         {
-            await DeleteAsync($"/v1/groups/{Id}/wall/posts/{postId}");
+            await DeleteAsync($"/v1/groups/{Id}/wall/posts/{postId}", verifyApiName: "Community.DeletePostAsync");
         }
 
         /// <summary>
@@ -504,6 +515,7 @@ namespace RoSharp.API.Communities
         /// </summary>
         /// <param name="post">The post to delete. Can be obtained from <see cref="GetPostsAsync(FixedLimit, RequestSortOrder, string?)"/>.</param>
         /// <returns>A task that completes when the operation is finished.</returns>
+        /// <exception cref="RobloxAPIException">Roblox API failure or lack of permissions.</exception>
         public async Task DeletePostAsync(CommunityPost post)
             => await DeletePostAsync(post.PostId);
 
