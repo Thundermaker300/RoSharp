@@ -1,5 +1,6 @@
 ﻿using Newtonsoft.Json.Linq;
 using RoSharp.API.Assets.Experiences;
+using RoSharp.Enums;
 using RoSharp.Exceptions;
 using RoSharp.Extensions;
 using RoSharp.Structures;
@@ -17,15 +18,32 @@ namespace RoSharp.API
         /// Gets experiences currently on the front page and returns a <see cref="ChartsResponse"/> class containing this information.
         /// </summary>
         /// <param name="session">Logged in session, optional.</param>
+        /// <param name="options">Options to filter the charts API by.</param>
         /// <param name="cursor">The cursor to use to advance to the next page. Obtained by calling this API previously.</param>
         /// <returns>A task containing a <see cref="ChartsResponse"/> upon completion.</returns>
         /// <exception cref="RobloxAPIException">Error from the Roblox API.</exception>
         /// <remarks>This API method does not cache and will make a request each time it is called.</remarks>
-        public static async Task<ChartsResponse> GetFrontPageExperiencesAsync(Session? session = null, string? cursor = null)
+        public static async Task<ChartsResponse> GetFrontPageExperiencesAsync(Session? session = null, ChartsFilterOptions? options = null, string? cursor = null)
         {
+            options ??= new ChartsFilterOptions();
+
             string url = $"/explore-api/v1/get-sorts?sessionId={DateTime.UtcNow.Ticks}";
             if (cursor != null)
                 url += $"&sortsPageToken={cursor}";
+
+            if (options.Device.HasValue)
+                url += "&device=" + options.Device.Value switch
+                {
+                    Device.Computer => "computer",
+                    Device.Console => "console",
+                    Device.VR => "vr",
+                    Device.Phone => options.IsHighEndDevice ? "high_end_phone" : "low_end_phone",
+                    Device.Tablet => options.IsHighEndDevice ? "high_end_tablet" : "low_end_tablet",
+                    _ => "all",
+                };
+
+            if (!string.IsNullOrWhiteSpace(options.CountryCode))
+                url += $"&country={options.CountryCode.ToLower()}";
 
             session ??= session.Global();
             HttpClient client = MakeClient();
