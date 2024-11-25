@@ -39,10 +39,15 @@ namespace RoSharp.API
         public ulong ItemId { get; }
 
         /// <summary>
-        /// Returns the <typeparamref name="T"/> associated with this Id. Makes an API call to obtain information.
+        /// Returns the <typeparamref name="T"/> associated with this Id.
+        /// <para>
+        /// This API member calls the "FromId" API member of the <typeparamref name="T"/>.
+        /// As such, at least one API request is made (sometimes more depending on the type -- experiences make at least 3 for example).
+        /// Keep this in mind if doing requests en-masse.
+        /// Any subsequent calls to this method (or the "FromId" method of the original <typeparamref name="T"/>) will return a cached value. If the returned <typeparamref name="T"/> is a <see cref="IRefreshable"/>, take advantage of <see cref="IRefreshable.RefreshAsync"/> if you are expecting data to change.
+        /// </para>
         /// </summary>
         /// <returns>A task that contains the <typeparamref name="T"/> instance upon completion.</returns>
-        /// <remarks>Roblox's API is only invoked once. Any subsequent calls to this method will return a cached value. If the returned <typeparamref name="T"/> is a <see cref="IRefreshable"/>, take advantage of <see cref="IRefreshable.RefreshAsync"/> if you are expecting data to change.</remarks>
         public async Task<T> GetInstanceAsync(Session? session = null)
         {
             Session? sessionToUse = session ?? storedSession ?? GlobalSession.Assigned;

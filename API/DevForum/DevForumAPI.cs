@@ -4,6 +4,10 @@ using System.Collections.ObjectModel;
 
 namespace RoSharp.API.DevForum
 {
+    /// <summary>
+    /// Read-only API for getting information from the Roblox Developer Forum.
+    /// </summary>
+    /// <remarks>This API is not built with authentication, so it is read-only.</remarks>
     public class DevForumAPI
     {
         private static HttpClient client = new();
@@ -53,6 +57,13 @@ namespace RoSharp.API.DevForum
             return posts;
         }
 
+        /// <summary>
+        /// Returns a topic given its Id.
+        /// </summary>
+        /// <param name="topicId">The Id of the topic.</param>
+        /// <param name="excludeSystemReplies">Exclude system replies within topics.</param>
+        /// <returns>A task containing a <see cref="DevForumTopic"/> upon completion.</returns>
+        /// <exception cref="ArgumentException">Invalid topic Id.</exception>
         public static async Task<DevForumTopic> GetTopicAsync(ulong topicId, bool excludeSystemReplies = true)
         {
             HttpResponseMessage response = await client.GetAsync($"https://devforum.roblox.com/t/{topicId}.json");
@@ -115,12 +126,36 @@ namespace RoSharp.API.DevForum
             throw new ArgumentException("Invalid topic Id.", nameof(topicId));
         }
 
+        private static DevForumCategory MakeCat(dynamic item)
+        {
+            return new()
+            {
+                Title = item.name,
+                Id = item.id,
+                Color = item.color,
+                Position = item.position,
+                Description = item.description,
+                DisplayTopics = item.num_featured_topics,
+            };
+        }
+
+        private static List<DevForumCategory> catCache;
+
+        /// <summary>
+        /// Returns a list of DevForum categories.
+        /// </summary>
+        /// <returns>A task containing a <see cref="ReadOnlyCollection{T}"/> of <see cref="DevForumCategory"/> upon completion.</returns>
+        /// <exception cref="ArgumentException">Unknown error.</exception>
+        /// <remarks>This API does not include subcategories, use <see cref="DevForumCategory.SubcategoryIds"/> in conjunction with <see cref="GetCategoryAsync(ushort)"/>.</remarks>
         public static async Task<ReadOnlyCollection<DevForumCategory>> GetCategoriesAsync()
         {
-            HttpResponseMessage response = await client.GetAsync($"https://devforum.roblox.com/categories.json");
-            RoUtility.LogHTTP(null, response, client);
-            if (response.IsSuccessStatusCode)
+            if (catCache == null)
             {
+                HttpResponseMessage response = await client.GetAsync($"https://devforum.roblox.com/categories.json");
+                RoUtility.LogHTTP(null, response, client);
+                if (!response.IsSuccessStatusCode)
+                    throw new ArgumentException($"Unknown error. HTTP {response.StatusCode}");
+
                 List<DevForumCategory> list = new();
                 dynamic data = JObject.Parse(await response.Content.ReadAsStringAsync());
                 foreach (dynamic item in data.category_list.categories)
@@ -135,29 +170,43 @@ namespace RoSharp.API.DevForum
                     {
                         topicIds.Add(Convert.ToUInt64(item3.id));
                     }
-                    list.Add(new()
-                    {
-                        Title = item.name,
-                        Id = item.id,
-                        Color = item.color,
-                        Position = item.position,
-                        Description = item.description,
-                        DisplayTopics = item.num_featured_topics,
-                        SubcategoryIds = subcats.AsReadOnly(),
-                        TopicIds = topicIds.AsReadOnly(),
-                    });
+                    DevForumCategory cat = MakeCat(item);
+                    cat.SubcategoryIds = subcats.AsReadOnly();
+                    cat.TopicIds = topicIds.AsReadOnly();
+                    cat.IsSubcategory = false;
+
+                    list.Add(cat);
                 }
-                return list.AsReadOnly();
+
+                catCache = list;
             }
-            throw new ArgumentException($"Unknown error. HTTP {response.StatusCode}");
+            return catCache.AsReadOnly();
         }
 
+        /// <summary>
+        /// Gets a category given its unique Id.
+        /// </summary>
+        /// <param name="categoryId">The Id of the category.</param>
+        /// <returns>A task containing a <see cref="DevForumCategory"/> upon completion.</returns>
+        /// <exception cref="ArgumentException">Invalid category Id.</exception>
         public static async Task<DevForumCategory> GetCategoryAsync(ushort categoryId)
         {
+            // Main cats
             foreach (var category in await GetCategoriesAsync())
             {
                 if (category.Id == categoryId)
                     return category;
+            }
+
+            // Subcats
+            HttpResponseMessage message = await client.GetAsync($"https://devforum.roblox.com/c/{categoryId}/show.json");
+            if (message.IsSuccessStatusCode)
+            {
+                dynamic data = JObject.Parse(await message.Content.ReadAsStringAsync());
+                DevForumCategory sub = MakeCat(data.category);
+                sub.IsSubcategory = true;
+                catCache.Add(sub);
+                return sub;
             }
             throw new ArgumentException("Invalid category Id.", nameof(categoryId));
         }
