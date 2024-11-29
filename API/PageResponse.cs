@@ -4,7 +4,7 @@ using System.Collections.ObjectModel;
 namespace RoSharp.API
 {
     /// <summary>
-    /// Represents a response from the Roblox API that can be paged (usually via a 'cursor' parameter).
+    /// Represents a list response from the Roblox API that contains a <see cref="NextPageCursor"/> and sometimes a <see cref="PreviousPageCursor"/>, allowing for repeat calls using these cursors to advance through large APIs.
     /// </summary>
     /// <typeparam name="T">The return type from the Roblox API.</typeparam>
     public sealed class PageResponse<T> : IEnumerable<T>

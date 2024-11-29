@@ -8,7 +8,7 @@ using System.Net;
 namespace RoSharp.API
 {
     /// <summary>
-    /// Static class that contains utility methods for accessing Roblox's price floor information.
+    /// Static class that contains utility methods for accessing Roblox's price floor information. All API within this class require authentication.
     /// </summary>
     public static class PriceFloorAPI
     {

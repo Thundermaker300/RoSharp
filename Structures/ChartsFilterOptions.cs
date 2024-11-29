@@ -3,7 +3,7 @@
 namespace RoSharp.Structures
 {
     /// <summary>
-    /// Options to filter <see cref="API.ChartsAPI.GetFrontPageExperiencesAsync"/> by.
+    /// Options to filter <see cref="API.GameAPI.GetFrontPageExperiencesAsync"/> by.
     /// </summary>
     public class ChartsFilterOptions
     {
