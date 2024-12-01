@@ -678,31 +678,51 @@ namespace RoSharp.API.Assets.Experiences
         /// <summary>
         /// Gets this experience's thumbnails.
         /// </summary>
-        /// <param name="size">The thumbnail size to use.</param>
-        /// <param name="defaultRobloxThumbnailIfNecessary">If the experience has no thumbnails, return the default Roblox thumbnail?</param>
-        /// <returns>A <see cref="ReadOnlyCollection{T}"/> of <see cref="Asset"/>s that are the experience's thumbnails.</returns>
+        /// <returns>A <see cref="ReadOnlyCollection{T}"/> of <see cref="ExperienceThumbnail"/>s that are the experience's thumbnails.</returns>
         /// <exception cref="ArgumentException">Invalid experience to get thumbnails for.</exception>
         /// <remarks>This API method does not cache and will make a request each time it is called.</remarks>
-        public async Task<ReadOnlyCollection<Asset>> GetThumbnailsAsync(ExperienceThumbnailSize size = ExperienceThumbnailSize.S768x432, bool defaultRobloxThumbnailIfNecessary = true)
+        public async Task<ReadOnlyCollection<ExperienceThumbnail>> GetThumbnailsAsync()
         {
-            string url = $"/v1/games/multiget/thumbnails?universeIds={UniverseId}&countPerUniverse=25&defaults={defaultRobloxThumbnailIfNecessary.ToString().ToLower()}&size={size.ToString().Substring(1)}&format=Png&isCircular=false";
-            string rawData = await GetStringAsync(url, Constants.URL("thumbnails"));
+            string url = $"/v2/games/{UniverseId}/media";
+            string rawData = await GetStringAsync(url);
             dynamic data = JObject.Parse(rawData);
+            List<ExperienceThumbnail> thumbnails = [];
             if (data.data.Count == 0)
-                throw new ArgumentException("Invalid asset to get thumbnail for.");
+                return thumbnails.AsReadOnly();
 
-            List<Asset> thumbnails = [];
-            foreach (dynamic thumbnail in data.data[0].thumbnails)
+            foreach (dynamic thumbnail in data.data)
             {
-                if (thumbnail.state != "Completed")
+                if (thumbnail.assetType != "Image")
                     continue;
 
-                ulong assetId = Convert.ToUInt64(thumbnail.targetId);
+                ulong assetId = Convert.ToUInt64(thumbnail.imageId);
+                Asset a = await Asset.FromId(assetId, session);
 
-                thumbnails.Add(await Asset.FromId(assetId, session));
+                thumbnails.Add(new() { Asset = a, AltText = thumbnail.altText });
             }
 
             return thumbnails.AsReadOnly();
+        }
+
+        /// <summary>
+        /// Returns a youtu.be URL to the experience's video trailer.
+        /// </summary>
+        /// <returns>A task containing a <see cref="string"/> upon completion. Will be <see langword="null"/> if the experience does not have a video.</returns>
+        public async Task<string?> GetVideoAsync()
+        {
+            string url = $"/v2/games/{UniverseId}/media";
+            string rawData = await GetStringAsync(url);
+            dynamic data = JObject.Parse(rawData);
+
+            foreach (dynamic thumbnail in data.data)
+            {
+                if (thumbnail.assetType != "YouTubeVideo")
+                    continue;
+
+                return $"https://www.youtu.be/{thumbnail.videoHash}";
+            }
+
+            return null;
         }
 
         /// <summary>
