@@ -130,6 +130,10 @@ namespace RoSharp
             }
         }
 
+        /// <summary>
+        /// Adds an API key to this session.
+        /// </summary>
+        /// <param name="apiKey">The API key to add, or <see langword="null"/> to remove the API key.</param>
         public void SetAPIKey(string apiKey)
             => this.apiKey = apiKey;
 
