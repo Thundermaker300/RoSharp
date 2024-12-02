@@ -24,6 +24,13 @@ namespace RoSharp.Utility
             return list.First().Value;
         }
 
+        /// <summary>
+        /// Converts an array of usernames to a dictionary, mapping the usernames to their user Id.
+        /// </summary>
+        /// <param name="usernames">The username list.</param>
+        /// <returns>A task containing a <see cref="ReadOnlyDictionary{TKey, TValue}"/> upon completion.</returns>
+        /// <exception cref="ArgumentException">No valid usernames.</exception>
+        /// <exception cref="RobloxAPIException">Roblox API failure.</exception>
         public static async Task<ReadOnlyDictionary<string, ulong>> GetUserIdsAsync(params string[] usernames)
         {
             object content = new
@@ -51,6 +58,13 @@ namespace RoSharp.Utility
             return dict.AsReadOnly();
         }
 
+        /// <summary>
+        /// Converts a <see cref="IEnumerable{T}"/> of usernames to a dictionary, mapping the usernames to their user Id.
+        /// </summary>
+        /// <param name="usernames">The username list.</param>
+        /// <returns>A task containing a <see cref="ReadOnlyDictionary{TKey, TValue}"/> upon completion.</returns>
+        /// <exception cref="ArgumentException">No valid usernames.</exception>
+        /// <exception cref="RobloxAPIException">Roblox API failure.</exception>
         public static async Task<ReadOnlyDictionary<string, ulong>> GetUserIdsAsync(IEnumerable<string> usernames)
             => await GetUserIdsAsync(usernames.ToArray());
     }

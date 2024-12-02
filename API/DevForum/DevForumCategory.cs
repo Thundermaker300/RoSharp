@@ -1,4 +1,5 @@
 ﻿using System.Collections.ObjectModel;
+using System.Numerics;
 
 namespace RoSharp.API.DevForum
 {
@@ -45,12 +46,12 @@ namespace RoSharp.API.DevForum
         /// <summary>
         /// A <see cref="ReadOnlyCollection{T}"/> of IDs of categories within this category. Will be <see langword="null"/> for subcategories.
         /// </summary>
-        public ReadOnlyCollection<ushort>? SubcategoryIds { get; internal set; }
+        public ReadOnlyCollection<ushort>? SubcategoryIds { get; internal set; } = new List<ushort>(0).AsReadOnly();
 
         /// <summary>
         /// Topic IDs of topics that are currently being shown. Will be <see langword="null"/> for subcategories.
         /// </summary>
-        public ReadOnlyCollection<ulong>? TopicIds { get; internal set; }
+        public ReadOnlyCollection<ulong>? TopicIds { get; internal set; } = new List<ulong>(0).AsReadOnly();
 
         /// <summary>
         /// Gets the topics that are currently being shown in this category.
