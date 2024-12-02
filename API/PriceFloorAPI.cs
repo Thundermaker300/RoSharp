@@ -19,13 +19,9 @@ namespace RoSharp.API
         /// <returns>A task containing the <see cref="ReadOnlyDictionary{TKey, TValue}"/> upon completion.</returns>
         public static async Task<ReadOnlyDictionary<AssetType, int>> GetPriceFloorsAsync(Session? session)
         {
-            session ??= session.Global("PriceFloorAPI.GetPriceFloorsAsync");
-            HttpClient client = MakeClient(session);
-            HttpResponseMessage response = await client.GetAsync("/v1/collectibles/metadata");
-            RoUtility.LogHTTP(session, response, client);
-            string body = await response.Content.ReadAsStringAsync();
 
-            HttpVerify.ThrowIfNecessary(response, body);
+            HttpRequestMessage message = new(HttpMethod.Get, $"{Constants.URL("itemconfiguration")}/v1/collectibles/metadata");
+            string body = await HttpManager.SendStringAsync(session, message, "PriceFloorAPI.GetPriceFloorsAsync");
 
             var dict = new Dictionary<AssetType, int>();
             dynamic data = JObject.Parse(body);
@@ -54,28 +50,6 @@ namespace RoSharp.API
                 return value;
 
             return null;
-        }
-
-        private static HttpClient MakeClient(Session session)
-        {
-            SessionVerify.ThrowIfNecessary(session, "PriceFloorAPI");
-
-            Uri uri = new(Constants.URL("itemconfiguration"));
-
-            CookieContainer cookies = new();
-            HttpClientHandler handler = new()
-            {
-                CookieContainer = cookies
-            };
-
-            cookies.Add(uri, new Cookie(".ROBLOSECURITY", session.RobloSecurity));
-
-            HttpClient client = new(handler)
-            {
-                BaseAddress = uri
-            };
-
-            return client;
         }
     }
 }

@@ -21,8 +21,6 @@ namespace RoSharp.API.Assets.Experiences
         /// <inheritdoc/>
         public override string BaseUrl => Constants.URL("games");
 
-        private static HttpClient genericClient { get; } = new HttpClient();
-
         /// <summary>
         /// Gets the universe ID of this experience. Equivalent to <see cref="Id"/>.
         /// </summary>

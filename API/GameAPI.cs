@@ -51,12 +51,9 @@ namespace RoSharp.API
             if (!string.IsNullOrWhiteSpace(options.CountryCode))
                 url += $"&country={options.CountryCode.ToLower()}";
 
-            session ??= session.Global();
-            HttpClient client = MakeClient();
-            HttpResponseMessage response = await client.GetAsync(url);
-            RoUtility.LogHTTP(session, response, client);
-            string body = await response.Content.ReadAsStringAsync();
-            HttpVerify.ThrowIfNecessary(response, body);
+
+            HttpRequestMessage message = new(HttpMethod.Get, url);
+            string body = await HttpManager.SendStringAsync(session, message);
 
             List<ChartCategory> categories = [];
             dynamic data = JObject.Parse(body);
@@ -112,12 +109,8 @@ namespace RoSharp.API
             if (cursor != null)
                 url += $"&pageToken={cursor}";
 
-            session ??= session.Global();
-            HttpClient client = MakeClient(session);
-            HttpResponseMessage response = await client.GetAsync(url);
-            RoUtility.LogHTTP(session, response, client);
-            string body = await response.Content.ReadAsStringAsync();
-            HttpVerify.ThrowIfNecessary(response, body);
+            HttpRequestMessage message = new(HttpMethod.Get, url);
+            string body = await HttpManager.SendStringAsync(session, message);
 
             List<Id<Experience>> list = [];
             dynamic data = JObject.Parse(body);
@@ -142,23 +135,19 @@ namespace RoSharp.API
         /// <exception cref="RobloxAPIException">Roblox API failure or lack of permissions (must be authenticated to access).</exception>
         public static async Task<ReadOnlyCollection<Id<Experience>>> GetTodaysPicksAsync(Session? session)
         {
-            session ??= session.Global();
-            HttpClient client = MakeClient(session);
-
-            object body = new
+            object payloadBody = new
             {
                 pageType = "Home",
                 sessionId = SessionId,
             };
+            JsonContent payload = JsonContent.Create(payloadBody);
+            HttpRequestMessage message = new(HttpMethod.Post, $"/discovery-api/omni-recommendation")
+            {
+                Content = payload,
+            };
 
-            JsonContent payload = JsonContent.Create(body);
-
-            var response = await client.PostAsync($"/discovery-api/omni-recommendation", payload);
-            RoUtility.LogHTTP(session, response, client);
-            string rawData = await response.Content.ReadAsStringAsync();
-            HttpVerify.ThrowIfNecessary(response, rawData);
-
-            dynamic data = JObject.Parse(rawData);
+            string body = await HttpManager.SendStringAsync(session, message);
+            dynamic data = JObject.Parse(body);
 
             List<Id<Experience>> list = [];
             foreach (dynamic sort in data.sorts)
@@ -187,13 +176,8 @@ namespace RoSharp.API
         /// <returns>A task containing a <see cref="ReadOnlyCollection{T}"/> of <see cref="string"/>s upon completion.</returns>
         public static async Task<ReadOnlyCollection<string>> GetAutocompleteSuggestionsAsync(string query, Session? session = null)
         {
-            session ??= session.Global();
-            HttpClient client = MakeClient(session);
-            HttpResponseMessage response = await client.GetAsync($"/games-autocomplete/v1/get-suggestion/{query}");
-            RoUtility.LogHTTP(session, response, client);
-            string body = await response.Content.ReadAsStringAsync();
-            HttpVerify.ThrowIfNecessary(response, body);
-
+            HttpRequestMessage message = new(HttpMethod.Get, $"/games-autocomplete/v1/get-suggestion/{query}");
+            string body = await HttpManager.SendStringAsync(session, message);
             dynamic data = JObject.Parse(body);
 
             List<string> list = [];
@@ -203,27 +187,6 @@ namespace RoSharp.API
                 list.Add(newItem);
             }
             return list.AsReadOnly();
-        }
-
-        private static HttpClient MakeClient(Session? session = null)
-        {
-            Uri uri = new(Constants.URL("apis"));
-
-            CookieContainer cookies = new();
-            HttpClientHandler handler = new()
-            {
-                CookieContainer = cookies
-            };
-
-            if (session != null && session.RobloSecurity != string.Empty)
-                cookies.Add(uri, new Cookie(".ROBLOSECURITY", session?.RobloSecurity));
-
-            HttpClient client = new(handler)
-            {
-                BaseAddress = uri
-            };
-
-            return client;
         }
     }
 }

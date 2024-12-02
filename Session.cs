@@ -86,24 +86,16 @@ namespace RoSharp
         /// </summary>
         /// <param name="roblosecurity">The .ROBLOSECURITY token to use for authentication.</param>
         /// <returns>A Task that completes when the operation is finished.</returns>
+        /// <exception cref="ArgumentNullException">Thrown if the <paramref name="roblosecurity"/> is null, empty, or whitespace.</exception>
         /// <exception cref="RobloxAPIException">Thrown if the authentication fails.</exception>
         public async Task LoginAsync(string roblosecurity)
         {
-            Uri uri = new(Constants.URL("users"));
+            ArgumentNullException.ThrowIfNullOrWhiteSpace(roblosecurity, nameof(roblosecurity));
 
-            CookieContainer cookies = new();
-            HttpClientHandler handler = new()
-            {
-                CookieContainer = cookies
-            };
-            cookies.Add(uri, new Cookie(".ROBLOSECURITY", roblosecurity));
+            HttpRequestMessage message = new(HttpMethod.Get, $"{Constants.URL("users")}/v1/users/authenticated");
+            message.Headers.Add("Cookie", $".ROBLOSECURITY={roblosecurity}");
+            HttpResponseMessage authResponse = await HttpManager.SendAsync(null, message);
 
-            HttpClient client = new(handler)
-            {
-                BaseAddress = uri
-            };
-
-            HttpResponseMessage authResponse = await client.GetAsync("/v1/users/authenticated");
             if (authResponse.StatusCode == HttpStatusCode.Unauthorized)
             {
                 throw new RobloxAPIException("Login failed.");
@@ -142,24 +134,6 @@ namespace RoSharp
             authUser = null;
 
             roblosecurity = string.Empty;
-        }
-
-        /// <summary>
-        /// Creates a <see cref="CustomRequest"/> using this Session.
-        /// </summary>
-        /// <returns>The <see cref="CustomRequest"/>.</returns>
-        public CustomRequest MakeCustomRequest(string? url = null)
-        {
-            CustomRequest custom;
-            if (LoggedIn)
-            {
-                custom = new CustomRequest(this, url);
-            }
-            else
-            {
-                custom = new CustomRequest(null, url);
-            }
-            return custom;
         }
     }
 }

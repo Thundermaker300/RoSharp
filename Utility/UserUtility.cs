@@ -10,8 +10,6 @@ namespace RoSharp.Utility
     /// </summary>
     public static class UserUtility
     {
-        private static HttpClient userUtilityClient { get; } = new HttpClient();
-
         /// <summary>
         /// Gets the User Id that corresponds with the given username.
         /// </summary>
@@ -21,31 +19,23 @@ namespace RoSharp.Utility
         /// <exception cref="RobloxAPIException">Roblox API failure.</exception>
         public static async Task<ulong> GetUserIdAsync(string username)
         {
-            object request = new
-            {
-                usernames = new[] { username },
-            };
-            var content = JsonContent.Create(request);
-            HttpResponseMessage response = await userUtilityClient.PostAsync($"{Constants.URL("users")}/v1/usernames/users", content);
-            string body = await response.Content.ReadAsStringAsync();
-            HttpVerify.ThrowIfNecessary(response, body);
-
-            dynamic data = JObject.Parse(await response.Content.ReadAsStringAsync());
-            if (data.data.Count == 0)
-            {
-                throw new ArgumentException("Invalid username provided.");
-            }
-            return data.data[0].id;
+            var list = await GetUserIdsAsync([username]);
+            return list.First().Value;
         }
 
-        public static async Task<ReadOnlyDictionary<string, ulong>> GetUserIdsAsync(IEnumerable<string> usernames)
+        public static async Task<ReadOnlyDictionary<string, ulong>> GetUserIdsAsync(params string[] usernames)
         {
             object request = new
             {
                 usernames = usernames.ToArray(),
             };
             var content = JsonContent.Create(request);
-            HttpResponseMessage response = await userUtilityClient.PostAsync($"{Constants.URL("users")}/v1/usernames/users", content);
+            HttpRequestMessage payload = new(HttpMethod.Post, $"{Constants.URL("users")}/v1/usernames/users")
+            {
+                Content = content
+            };
+
+            HttpResponseMessage response = await HttpManager.SendAsync(null, payload);
             string body = await response.Content.ReadAsStringAsync();
             HttpVerify.ThrowIfNecessary(response, body);
 
@@ -63,5 +53,8 @@ namespace RoSharp.Utility
             }
             return dict.AsReadOnly();
         }
+
+        public static async Task<ReadOnlyDictionary<string, ulong>> GetUserIdsAsync(IEnumerable<string> usernames)
+            => await GetUserIdsAsync(usernames.ToArray());
     }
 }

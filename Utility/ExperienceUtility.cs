@@ -8,7 +8,6 @@ namespace RoSharp.Utility
     /// </summary>
     public static class ExperienceUtility
     {
-        private static HttpClient experienceUtilityClient { get; } = new HttpClient();
 
         /// <summary>
         /// Gets the universe Id from a place Id.
@@ -18,7 +17,8 @@ namespace RoSharp.Utility
         /// <exception cref="ArgumentException">Invalid place ID provided.</exception>
         public static async Task<ulong> GetUniverseIdAsync(ulong placeId)
         {
-            HttpResponseMessage response = await experienceUtilityClient.GetAsync($"{Constants.URL("apis")}/universes/v1/places/{placeId}/universe");
+            HttpRequestMessage payload = new(HttpMethod.Get, $"{Constants.URL("apis")}/universes/v1/places/{placeId}/universe");
+            HttpResponseMessage response = await HttpManager.SendAsync(null, payload);
             string raw = await response.Content.ReadAsStringAsync();
             dynamic universeData = JObject.Parse(raw);
             if (universeData.universeId != null)

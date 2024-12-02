@@ -35,32 +35,12 @@ namespace RoSharp.API
 
         internal Session? session;
 
-        private HttpClient httpClient;
-        private HttpClientHandler httpHandler;
-
         internal HttpRequestMessage SetupMessage(string url, string? baseOverride = null, string? verifyApiName = null)
         {
-            if (verifyApiName != null)
-                SessionVerify.ThrowIfNecessary(session, verifyApiName);
-
             Uri uri = new(string.Concat(baseOverride ?? BaseUrl, url));
-
-            if (httpClient == null)
-            {
-                httpHandler = new HttpClientHandler();
-                httpHandler.UseCookies = false;
-
-                httpClient = new HttpClient(httpHandler);
-            }
 
             HttpRequestMessage request = new();
             request.RequestUri = uri;
-
-            if (session?.RobloSecurity != string.Empty)
-                request.Headers.Add("Cookie", $".ROBLOSECURITY={session?.RobloSecurity}");
-
-            if (!string.IsNullOrWhiteSpace(session?.xcsrfToken))
-                request.Headers.Add("x-csrf-token", session?.xcsrfToken);
 
             return request;
         }
@@ -70,93 +50,73 @@ namespace RoSharp.API
             HttpRequestMessage reqMessage = SetupMessage(url, baseOverride, verifyApiName);
             reqMessage.Method = HttpMethod.Get;
 
-            HttpResponseMessage message = await httpClient.SendAsync(reqMessage);
-            RoUtility.LogHTTP(session, message, httpClient);
-
-            if (!doNotThrowException)
-                HttpVerify.ThrowIfNecessary(message, await message.Content.ReadAsStringAsync());
-
-            return message;
+            return await HttpManager.SendAsync(session, reqMessage, verifyApiName, doNotThrowException);
         }
 
-        internal async Task<string> GetStringAsync(string url, string? baseOverride = null, string? verifyApiName = null)
+        internal async Task<string> GetStringAsync(string url, string? baseOverride = null, string? verifyApiName = null, bool doNotThrowException = false)
         {
             HttpRequestMessage reqMessage = SetupMessage(url, baseOverride, verifyApiName);
             reqMessage.Method = HttpMethod.Get;
 
-            HttpResponseMessage message = await httpClient.SendAsync(reqMessage);
-
-            RoUtility.LogHTTP(session, message, httpClient);
-
-            string body = await message.Content.ReadAsStringAsync();
-            HttpVerify.ThrowIfNecessary(message, body);
-            return body;
+            return await HttpManager.SendStringAsync(session, reqMessage, verifyApiName, true);
         }
 
-        internal async Task<HttpResponseMessage> PostAsync(string url, object data, string? baseOverride = null, string? verifyApiName = null, bool retrying = false)
+        internal async Task<HttpResponseMessage> PostAsync(string url, object data, string? baseOverride = null, string? verifyApiName = null, bool doNotThrowException = false, bool retrying = false)
         {
             HttpRequestMessage reqMessage = SetupMessage(url, baseOverride, verifyApiName);
             JsonContent content = JsonContent.Create(data);
             reqMessage.Method = HttpMethod.Post;
             reqMessage.Content = content;
 
-            HttpResponseMessage message = await httpClient.SendAsync(reqMessage);
-
-            RoUtility.LogHTTP(session, message, httpClient, retrying);
+            HttpResponseMessage message = await HttpManager.SendAsync(session, reqMessage, verifyApiName, doNotThrowException, retrying);
 
             if (message.StatusCode == HttpStatusCode.Forbidden && !retrying && session != null)
             {
                 if (message.Headers.TryGetValues("x-csrf-token", out IEnumerable<string>? headers))
                 {
                     session.xcsrfToken = headers.First();
-                    return await PostAsync(url, data, baseOverride, verifyApiName, true);
+                    return await PostAsync(url, data, baseOverride, verifyApiName, doNotThrowException, retrying: true);
                 }
             }
 
-            HttpVerify.ThrowIfNecessary(message, await message.Content.ReadAsStringAsync());
             return message;
         }
-        internal async Task<HttpResponseMessage> PatchAsync(string url, object data, string? baseOverride = null, string? verifyApiName = null, bool retrying = false)
+        internal async Task<HttpResponseMessage> PatchAsync(string url, object data, string? baseOverride = null, string? verifyApiName = null, bool doNotThrowException = false, bool retrying = false)
         {
             HttpRequestMessage reqMessage = SetupMessage(url, baseOverride, verifyApiName);
             JsonContent content = JsonContent.Create(data);
             reqMessage.Method = HttpMethod.Patch;
             reqMessage.Content = content;
 
-            HttpResponseMessage message = await httpClient.SendAsync(reqMessage);
-
-            RoUtility.LogHTTP(session, message, httpClient, retrying);
+            HttpResponseMessage message = await HttpManager.SendAsync(session, reqMessage, verifyApiName, doNotThrowException, retrying);
 
             if (message.StatusCode == HttpStatusCode.Forbidden && !retrying && session != null)
             {
                 if (message.Headers.TryGetValues("x-csrf-token", out IEnumerable<string>? headers))
                 {
                     session.xcsrfToken = headers.First();
-                    return await PatchAsync(url, data, baseOverride, verifyApiName, true);
+                    return await PatchAsync(url, data, baseOverride, verifyApiName, doNotThrowException, retrying: true);
                 }
             }
 
-            HttpVerify.ThrowIfNecessary(message, await message.Content.ReadAsStringAsync());
             return message;
         }
-        internal async Task<HttpResponseMessage> DeleteAsync(string url, string? baseOverride = null, string? verifyApiName = null, bool retrying = false)
+        internal async Task<HttpResponseMessage> DeleteAsync(string url, string? baseOverride = null, string? verifyApiName = null, bool doNotThrowException = false, bool retrying = false)
         {
             HttpRequestMessage reqMessage = SetupMessage(url, baseOverride, verifyApiName);
             reqMessage.Method = HttpMethod.Delete;
 
-            HttpResponseMessage message = await httpClient.SendAsync(reqMessage);
-            RoUtility.LogHTTP(session, message, httpClient, retrying);
+            HttpResponseMessage message = await HttpManager.SendAsync(session, reqMessage, verifyApiName, doNotThrowException, retrying);
 
             if (message.StatusCode == HttpStatusCode.Forbidden && !retrying && session != null)
             {
                 if (message.Headers.TryGetValues("x-csrf-token", out IEnumerable<string>? headers))
                 {
                     session.xcsrfToken = headers.First();
-                    return await DeleteAsync(url, baseOverride, verifyApiName, true);
+                    return await DeleteAsync(url, baseOverride, verifyApiName, doNotThrowException, retrying: true);
                 }
             }
 
-            HttpVerify.ThrowIfNecessary(message, await message.Content.ReadAsStringAsync());
             return message;
         }
 

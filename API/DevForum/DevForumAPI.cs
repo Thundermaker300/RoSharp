@@ -10,8 +10,6 @@ namespace RoSharp.API.DevForum
     /// <remarks>This API is not built with authentication, so it is read-only.</remarks>
     public class DevForumAPI
     {
-        private static HttpClient client = new();
-
         internal static async Task<List<DevForumPost>> ConvertRawData(dynamic data)
         {
             var usernames = new List<string>();
@@ -66,8 +64,9 @@ namespace RoSharp.API.DevForum
         /// <exception cref="ArgumentException">Invalid topic Id.</exception>
         public static async Task<DevForumTopic> GetTopicAsync(ulong topicId, bool excludeSystemReplies = true)
         {
-            HttpResponseMessage response = await client.GetAsync($"https://devforum.roblox.com/t/{topicId}.json");
-            RoUtility.LogHTTP(null, response, client);
+            HttpRequestMessage message = new(HttpMethod.Get, $"https://devforum.roblox.com/t/{topicId}.json");
+            HttpResponseMessage response = await HttpManager.SendAsync(null, message);
+
             if (response.IsSuccessStatusCode)
             {
                 dynamic data = JObject.Parse(await response.Content.ReadAsStringAsync());
@@ -151,8 +150,9 @@ namespace RoSharp.API.DevForum
         {
             if (catCache == null)
             {
-                HttpResponseMessage response = await client.GetAsync($"https://devforum.roblox.com/categories.json");
-                RoUtility.LogHTTP(null, response, client);
+                HttpRequestMessage message = new(HttpMethod.Get, $"https://devforum.roblox.com/categories.json");
+                HttpResponseMessage response = await HttpManager.SendAsync(null, message);
+
                 if (!response.IsSuccessStatusCode)
                     throw new ArgumentException($"Unknown error. HTTP {response.StatusCode}");
 
@@ -199,15 +199,19 @@ namespace RoSharp.API.DevForum
             }
 
             // Subcats
-            HttpResponseMessage message = await client.GetAsync($"https://devforum.roblox.com/c/{categoryId}/show.json");
-            if (message.IsSuccessStatusCode)
+
+            HttpRequestMessage message = new(HttpMethod.Get, $"https://devforum.roblox.com/c/{categoryId}/show.json");
+            HttpResponseMessage response = await HttpManager.SendAsync(null, message);
+
+            if (response.IsSuccessStatusCode)
             {
-                dynamic data = JObject.Parse(await message.Content.ReadAsStringAsync());
+                dynamic data = JObject.Parse(await response.Content.ReadAsStringAsync());
                 DevForumCategory sub = MakeCat(data.category);
                 sub.IsSubcategory = true;
                 catCache.Add(sub);
                 return sub;
             }
+
             throw new ArgumentException("Invalid category Id.", nameof(categoryId));
         }
     }
