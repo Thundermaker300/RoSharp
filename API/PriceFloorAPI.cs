@@ -1,6 +1,7 @@
 ﻿using Newtonsoft.Json.Linq;
 using RoSharp.Enums;
 using RoSharp.Extensions;
+using RoSharp.Structures;
 using RoSharp.Utility;
 using System.Collections.ObjectModel;
 using System.Net;
@@ -20,7 +21,7 @@ namespace RoSharp.API
         public static async Task<ReadOnlyDictionary<AssetType, int>> GetPriceFloorsAsync(Session? session)
         {
 
-            HttpRequestMessage message = new(HttpMethod.Get, $"{Constants.URL("itemconfiguration")}/v1/collectibles/metadata");
+            HttpMessage message = new(HttpMethod.Get, $"{Constants.URL("itemconfiguration")}/v1/collectibles/metadata");
             string body = await HttpManager.SendStringAsync(session, message, "PriceFloorAPI.GetPriceFloorsAsync");
 
             var dict = new Dictionary<AssetType, int>();

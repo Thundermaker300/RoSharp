@@ -1,4 +1,5 @@
 ﻿using Newtonsoft.Json.Linq;
+using RoSharp.Structures;
 using RoSharp.Utility;
 using System.Collections.ObjectModel;
 
@@ -64,7 +65,7 @@ namespace RoSharp.API.DevForum
         /// <exception cref="ArgumentException">Invalid topic Id.</exception>
         public static async Task<DevForumTopic> GetTopicAsync(ulong topicId, bool excludeSystemReplies = true)
         {
-            HttpRequestMessage message = new(HttpMethod.Get, $"https://devforum.roblox.com/t/{topicId}.json");
+            HttpMessage message = new(HttpMethod.Get, $"https://devforum.roblox.com/t/{topicId}.json");
             HttpResponseMessage response = await HttpManager.SendAsync(null, message);
 
             if (response.IsSuccessStatusCode)
@@ -150,7 +151,7 @@ namespace RoSharp.API.DevForum
         {
             if (catCache == null)
             {
-                HttpRequestMessage message = new(HttpMethod.Get, $"https://devforum.roblox.com/categories.json");
+                HttpMessage message = new(HttpMethod.Get, $"https://devforum.roblox.com/categories.json");
                 HttpResponseMessage response = await HttpManager.SendAsync(null, message);
 
                 if (!response.IsSuccessStatusCode)
@@ -200,7 +201,7 @@ namespace RoSharp.API.DevForum
 
             // Subcats
 
-            HttpRequestMessage message = new(HttpMethod.Get, $"https://devforum.roblox.com/c/{categoryId}/show.json");
+            HttpMessage message = new(HttpMethod.Get, $"https://devforum.roblox.com/c/{categoryId}/show.json");
             HttpResponseMessage response = await HttpManager.SendAsync(null, message);
 
             if (response.IsSuccessStatusCode)

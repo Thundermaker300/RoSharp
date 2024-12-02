@@ -100,13 +100,13 @@ namespace RoSharp.API.Communities
 
         internal async Task RequestUpdateRole(Role roleId, string newName)
         {
-            object body = new { name = newName, rank = roleId.Rank };
+            object body = new { name = newName, description = roleId.Description, rank = roleId.Rank };
             await group.PatchAsync($"/v1/groups/{group.Id}/rolesets/{roleId.Id}", body, verifyApiName: "Role.UpdateAsync");
         }
 
         internal async Task RequestUpdateRole(Role roleId, int newRank)
         {
-            object body = new { name = roleId.Name, rank = newRank };
+            object body = new { name = roleId.Name, description = roleId.Description, rank = newRank };
             await group.PatchAsync($"/v1/groups/{group.Id}/rolesets/{roleId.Id}", body, verifyApiName: "Role.UpdateAsync");
         }
 

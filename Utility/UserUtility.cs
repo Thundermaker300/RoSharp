@@ -1,5 +1,6 @@
 ﻿using Newtonsoft.Json.Linq;
 using RoSharp.Exceptions;
+using RoSharp.Structures;
 using System.Collections.ObjectModel;
 using System.Net.Http.Json;
 
@@ -25,15 +26,11 @@ namespace RoSharp.Utility
 
         public static async Task<ReadOnlyDictionary<string, ulong>> GetUserIdsAsync(params string[] usernames)
         {
-            object request = new
+            object content = new
             {
                 usernames = usernames.ToArray(),
             };
-            var content = JsonContent.Create(request);
-            HttpRequestMessage payload = new(HttpMethod.Post, $"{Constants.URL("users")}/v1/usernames/users")
-            {
-                Content = content
-            };
+            HttpMessage payload = new(HttpMethod.Post, $"{Constants.URL("users")}/v1/usernames/users", content);
 
             HttpResponseMessage response = await HttpManager.SendAsync(null, payload);
             string body = await response.Content.ReadAsStringAsync();

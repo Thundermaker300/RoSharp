@@ -92,9 +92,17 @@ namespace RoSharp
         {
             ArgumentNullException.ThrowIfNullOrWhiteSpace(roblosecurity, nameof(roblosecurity));
 
+            HttpClientHandler handler = new()
+            {
+                UseCookies = false
+            };
+
+            HttpClient client = new(handler);
+
             HttpRequestMessage message = new(HttpMethod.Get, $"{Constants.URL("users")}/v1/users/authenticated");
             message.Headers.Add("Cookie", $".ROBLOSECURITY={roblosecurity}");
-            HttpResponseMessage authResponse = await HttpManager.SendAsync(null, message);
+
+            HttpResponseMessage authResponse = await client.SendAsync(message);
 
             if (authResponse.StatusCode == HttpStatusCode.Unauthorized)
             {

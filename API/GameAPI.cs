@@ -52,7 +52,7 @@ namespace RoSharp.API
                 url += $"&country={options.CountryCode.ToLower()}";
 
 
-            HttpRequestMessage message = new(HttpMethod.Get, url);
+            HttpMessage message = new(HttpMethod.Get, url);
             string body = await HttpManager.SendStringAsync(session, message);
 
             List<ChartCategory> categories = [];
@@ -109,7 +109,7 @@ namespace RoSharp.API
             if (cursor != null)
                 url += $"&pageToken={cursor}";
 
-            HttpRequestMessage message = new(HttpMethod.Get, url);
+            HttpMessage message = new(HttpMethod.Get, url);
             string body = await HttpManager.SendStringAsync(session, message);
 
             List<Id<Experience>> list = [];
@@ -135,16 +135,12 @@ namespace RoSharp.API
         /// <exception cref="RobloxAPIException">Roblox API failure or lack of permissions (must be authenticated to access).</exception>
         public static async Task<ReadOnlyCollection<Id<Experience>>> GetTodaysPicksAsync(Session? session)
         {
-            object payloadBody = new
+            object payload = new
             {
                 pageType = "Home",
                 sessionId = SessionId,
             };
-            JsonContent payload = JsonContent.Create(payloadBody);
-            HttpRequestMessage message = new(HttpMethod.Post, $"/discovery-api/omni-recommendation")
-            {
-                Content = payload,
-            };
+            HttpMessage message = new(HttpMethod.Post, $"/discovery-api/omni-recommendation", payload);
 
             string body = await HttpManager.SendStringAsync(session, message);
             dynamic data = JObject.Parse(body);
@@ -176,7 +172,7 @@ namespace RoSharp.API
         /// <returns>A task containing a <see cref="ReadOnlyCollection{T}"/> of <see cref="string"/>s upon completion.</returns>
         public static async Task<ReadOnlyCollection<string>> GetAutocompleteSuggestionsAsync(string query, Session? session = null)
         {
-            HttpRequestMessage message = new(HttpMethod.Get, $"/games-autocomplete/v1/get-suggestion/{query}");
+            HttpMessage message = new(HttpMethod.Get, $"/games-autocomplete/v1/get-suggestion/{query}");
             string body = await HttpManager.SendStringAsync(session, message);
             dynamic data = JObject.Parse(body);
 

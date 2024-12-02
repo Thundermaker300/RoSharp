@@ -1,5 +1,9 @@
 ﻿using RoSharp.Extensions;
+using RoSharp.Structures;
+using System;
 using System.Collections.Concurrent;
+using System.Net;
+using System.Net.Http.Json;
 
 namespace RoSharp.Utility
 {
@@ -20,7 +24,7 @@ namespace RoSharp.Utility
 
         public static void Return(HttpClient client) => httpClients.Enqueue(client);
 
-        public static async Task<HttpResponseMessage> SendAsync(Session? session, HttpRequestMessage message, string? verifyApiName = null, bool doNotThrowException = false, bool retrying = false)
+        public static async Task<HttpResponseMessage> SendAsync(Session? session, HttpMessage inputMessage, string? verifyApiName = null, bool doNotThrowException = false, bool retrying = false)
         {
             session ??= session.Global();
 
@@ -28,6 +32,10 @@ namespace RoSharp.Utility
                 SessionVerify.ThrowIfNecessary(session, verifyApiName);
 
             HttpClient client = Get();
+            HttpRequestMessage message = new HttpRequestMessage(inputMessage.Method, inputMessage.Url);
+
+            if (inputMessage.Content != null)
+                message.Content = JsonContent.Create(inputMessage.Content);
 
             if (!string.IsNullOrWhiteSpace(session?.RobloSecurity))
                 message.Headers.Add("Cookie", $".ROBLOSECURITY={session.RobloSecurity}");
@@ -39,13 +47,22 @@ namespace RoSharp.Utility
             RoUtility.LogHTTP(session, resp, client, retrying);
             Return(client);
 
+            if (resp.StatusCode == HttpStatusCode.Forbidden && !retrying && session != null && message.Method != HttpMethod.Get)
+            {
+                if (resp.Headers.TryGetValues("x-csrf-token", out IEnumerable<string>? headers))
+                {
+                    session.xcsrfToken = headers.First();
+                    return await SendAsync(session, inputMessage, verifyApiName, doNotThrowException, retrying: true);
+                }
+            }
+
             if (!doNotThrowException)
                 HttpVerify.ThrowIfNecessary(resp, await resp.Content.ReadAsStringAsync());
 
             return resp;
         }
 
-        public static async Task<string> SendStringAsync(Session? session, HttpRequestMessage message, string? verifyApiName = null, bool doNotThrowException = false, bool retrying = false)
+        public static async Task<string> SendStringAsync(Session? session, HttpMessage message, string? verifyApiName = null, bool doNotThrowException = false, bool retrying = false)
         {
             var response = await SendAsync(session, message, verifyApiName, true, retrying);
             string body = await response.Content.ReadAsStringAsync();

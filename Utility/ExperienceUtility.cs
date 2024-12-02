@@ -1,5 +1,6 @@
 ﻿using Newtonsoft.Json.Linq;
 using RoSharp.Enums;
+using RoSharp.Structures;
 
 namespace RoSharp.Utility
 {
@@ -17,7 +18,7 @@ namespace RoSharp.Utility
         /// <exception cref="ArgumentException">Invalid place ID provided.</exception>
         public static async Task<ulong> GetUniverseIdAsync(ulong placeId)
         {
-            HttpRequestMessage payload = new(HttpMethod.Get, $"{Constants.URL("apis")}/universes/v1/places/{placeId}/universe");
+            HttpMessage payload = new(HttpMethod.Get, $"{Constants.URL("apis")}/universes/v1/places/{placeId}/universe");
             HttpResponseMessage response = await HttpManager.SendAsync(null, payload);
             string raw = await response.Content.ReadAsStringAsync();
             dynamic universeData = JObject.Parse(raw);
