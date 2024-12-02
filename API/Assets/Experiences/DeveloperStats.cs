@@ -59,12 +59,25 @@ namespace RoSharp.API.Assets.Experiences
         /// <param name="date">The date.</param>
         /// <returns>A <see cref="MAUData"/> containing data about that day's monthly active users (MAU) amount.</returns>
         /// <remarks>This API method does not cache and will make a request each time it is called.</remarks>
-        public async Task<MAUData> GetMAUData(DateTime date)
+        public async Task<MAUData> GetMAUDataAsync(DateTime date)
         {
             // Total MAU
             object body = MakeGenericBody(date, "MonthlyActiveUsers", []);
             HttpResponseMessage message = await experience.PostAsync(AnalyticUrl, body, Constants.URL("apis"), "DeveloperStats.GetMAUData");
             dynamic data = JObject.Parse(await message.Content.ReadAsStringAsync());
+
+            if (data.operation.queryResult.values.Count == 0)
+            {
+                return new MAUData()
+                {
+                    TotalMonthlyUsers = 0,
+                    ByCountry = new Dictionary<string, int>(0).AsReadOnly(),
+                    ByGender = new Dictionary<Gender, int>(0).AsReadOnly(),
+                    ByAgeRange = new Dictionary<string, int>(0).AsReadOnly(),
+                    ByLocale = new Dictionary<string, int>(0).AsReadOnly(),
+                };
+            }
+
             int totalMau = data.operation.queryResult.values[0].dataPoints[0].value;
 
             // By Country
