@@ -873,6 +873,25 @@ namespace RoSharp.API.Assets.Experiences
             await PostAsync($"/game-update-notifications/v1/publish/{UniverseId}", text, Constants.URL("apis"), "Experience.PostUpdateAsync");
         }
 
+        /// <summary>
+        /// Publishes a message through <c>MessagingService</c> to the experience.
+        /// </summary>
+        /// <param name="topic">The topic.</param>
+        /// <param name="data">The message.</param>
+        /// <returns>A task that completes when the operation is finished.</returns>
+        /// <remarks>This API member requires a session with an API key, and the API key must have the <c>universe-messaging-service:publish</c> permission.</remarks>
+        public async Task PublishMessageAsync(string topic, string data)
+        {
+            SessionVerify.ThrowAPIKeyIfNecessary(session, "Experience.PublishMessageAsync", "universe-messaging-service:publish");
+
+            object body = new
+            {
+                message = data,
+            };
+
+            await PostAsync($"/messaging-service/v1/universes/{UniverseId}/topics/{topic}", body, Constants.URL("apis"));
+        }
+
         /// <inheritdoc/>
         public override string ToString()
         {
