@@ -36,55 +36,35 @@ namespace RoSharp.API
 
         internal Session? session;
 
-        internal HttpMessage SetupMessage(string url, string? baseOverride = null, string? verifyApiName = null)
-        {
-            HttpMessage request = new();
-            request.Url = string.Concat(baseOverride ?? BaseUrl, url);
-
-            return request;
-        }
-
         internal async Task<HttpResponseMessage> GetAsync(string url, string? baseOverride = null, string? verifyApiName = null, bool doNotThrowException = false)
         {
-            HttpMessage reqMessage = SetupMessage(url, baseOverride, verifyApiName);
-            reqMessage.Method = HttpMethod.Get;
-
+            HttpMessage reqMessage = new(HttpMethod.Get, string.Concat(baseOverride ?? BaseUrl, url));
             return await HttpManager.SendAsync(session, reqMessage, verifyApiName, doNotThrowException);
         }
 
         internal async Task<string> GetStringAsync(string url, string? baseOverride = null, string? verifyApiName = null, bool doNotThrowException = false)
         {
-            HttpMessage reqMessage = SetupMessage(url, baseOverride, verifyApiName);
-            reqMessage.Method = HttpMethod.Get;
-
+            HttpMessage reqMessage = new(HttpMethod.Get, string.Concat(baseOverride ?? BaseUrl, url));
             return await HttpManager.SendStringAsync(session, reqMessage, verifyApiName, true);
         }
 
         internal async Task<HttpResponseMessage> PostAsync(string url, object data, string? baseOverride = null, string? verifyApiName = null, bool doNotThrowException = false, bool retrying = false)
         {
-            HttpMessage reqMessage = SetupMessage(url, baseOverride, verifyApiName);
-            reqMessage.Method = HttpMethod.Post;
-            reqMessage.Content = data;
-
+            HttpMessage reqMessage = new(HttpMethod.Post, string.Concat(baseOverride ?? BaseUrl, url), data);
             HttpResponseMessage message = await HttpManager.SendAsync(session, reqMessage, verifyApiName, doNotThrowException, retrying);
 
             return message;
         }
         internal async Task<HttpResponseMessage> PatchAsync(string url, object data, string? baseOverride = null, string? verifyApiName = null, bool doNotThrowException = false, bool retrying = false)
         {
-            HttpMessage reqMessage = SetupMessage(url, baseOverride, verifyApiName);
-            reqMessage.Method = HttpMethod.Patch;
-            reqMessage.Content = data;
-
+            HttpMessage reqMessage = new(HttpMethod.Patch, string.Concat(baseOverride ?? BaseUrl, url), data);
             HttpResponseMessage message = await HttpManager.SendAsync(session, reqMessage, verifyApiName, doNotThrowException, retrying);
 
             return message;
         }
         internal async Task<HttpResponseMessage> DeleteAsync(string url, string? baseOverride = null, string? verifyApiName = null, bool doNotThrowException = false, bool retrying = false)
         {
-            HttpMessage reqMessage = SetupMessage(url, baseOverride, verifyApiName);
-            reqMessage.Method = HttpMethod.Delete;
-
+            HttpMessage reqMessage = new(HttpMethod.Delete, string.Concat(baseOverride ?? BaseUrl, url));
             HttpResponseMessage message = await HttpManager.SendAsync(session, reqMessage, verifyApiName, doNotThrowException, retrying);
 
             return message;

@@ -11,7 +11,7 @@ namespace RoSharp.Utility
     {
         private static ConcurrentQueue<HttpClient> httpClients = new ConcurrentQueue<HttpClient>();
 
-        public static HttpClient Get()
+        public static HttpClient GetClient()
         {
             if (httpClients.TryDequeue(out HttpClient? cl))
                 return cl;
@@ -31,7 +31,7 @@ namespace RoSharp.Utility
             if (verifyApiName != null)
                 SessionVerify.ThrowIfNecessary(session, verifyApiName);
 
-            HttpClient client = Get();
+            HttpClient client = GetClient();
             HttpRequestMessage message = new HttpRequestMessage(inputMessage.Method, inputMessage.Url);
 
             if (inputMessage.Content != null)
@@ -44,7 +44,7 @@ namespace RoSharp.Utility
                 message.Headers.Add("x-csrf-token", session.xcsrfToken);
 
             HttpResponseMessage resp = await client.SendAsync(message);
-            RoUtility.LogHTTP(session, resp, client, retrying);
+            RoUtility.LogHTTP(session, resp, retrying);
             Return(client);
 
             if (resp.StatusCode == HttpStatusCode.Forbidden && !retrying && session != null && message.Method != HttpMethod.Get)

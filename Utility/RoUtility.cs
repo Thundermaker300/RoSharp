@@ -5,7 +5,7 @@
     /// </summary>
     public static class RoUtility
     {
-        internal static void LogHTTP(Session? session, HttpResponseMessage message, HttpClient client, bool retrying = false)
+        internal static void LogHTTP(Session? session, HttpResponseMessage message, bool retrying = false)
         {
 #if DEBUG
             string body = message.Content.ReadAsStringAsync().Result;

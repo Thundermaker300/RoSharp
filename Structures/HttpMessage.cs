@@ -18,5 +18,7 @@ namespace RoSharp.Structures
             Url = url;
             Content = content;
         }
+
+        public HttpMessage(string url) => Url = url;
     }
 }
