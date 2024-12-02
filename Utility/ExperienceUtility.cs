@@ -1,4 +1,5 @@
-﻿using RoSharp.Enums;
+﻿using Newtonsoft.Json.Linq;
+using RoSharp.Enums;
 
 namespace RoSharp.Utility
 {
@@ -7,6 +8,27 @@ namespace RoSharp.Utility
     /// </summary>
     public static class ExperienceUtility
     {
+        private static HttpClient experienceUtilityClient { get; } = new HttpClient();
+
+        /// <summary>
+        /// Gets the universe Id from a place Id.
+        /// </summary>
+        /// <param name="placeId">The place Id.</param>
+        /// <returns>The universe Id.</returns>
+        /// <exception cref="ArgumentException">Invalid place ID provided.</exception>
+        public static async Task<ulong> GetUniverseIdAsync(ulong placeId)
+        {
+            HttpResponseMessage response = await experienceUtilityClient.GetAsync($"{Constants.URL("apis")}/universes/v1/places/{placeId}/universe");
+            string raw = await response.Content.ReadAsStringAsync();
+            dynamic universeData = JObject.Parse(raw);
+            if (universeData.universeId != null)
+            {
+                return universeData.universeId;
+            }
+            
+            throw new ArgumentException("Invalid place ID provided.", nameof(placeId));
+        }
+
         /// <summary>
         /// Returns a <see cref="Genre"/> given the name of the genre. This method is case-insensitive.
         /// </summary>

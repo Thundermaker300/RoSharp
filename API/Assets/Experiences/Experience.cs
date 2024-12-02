@@ -182,23 +182,7 @@ namespace RoSharp.API.Assets.Experiences
         /// <exception cref="RobloxAPIException">Roblox API failure.</exception>
         /// <remarks>This is the most common method as the Place ID is present in the URL when going to any general experience page.</remarks>
         public static async Task<Experience> FromPlaceId(ulong placeId, Session? session = null)
-        {
-            ulong universeId;
-
-            HttpResponseMessage response = await genericClient.GetAsync($"{Constants.URL("apis")}/universes/v1/places/{placeId}/universe");
-            string raw = await response.Content.ReadAsStringAsync();
-            dynamic universeData = JObject.Parse(raw);
-            if (universeData.universeId != null)
-            {
-                universeId = universeData.universeId;
-            }
-            else
-            {
-                throw new ArgumentException("Invalid place ID provided.", nameof(placeId));
-            }
-
-            return await FromId(universeId, session);
-        }
+            => await FromId(await ExperienceUtility.GetUniverseIdAsync(placeId), session);
 
         /// <summary>
         /// Returns a <see cref="Experience"/> given the Id of the universe.
