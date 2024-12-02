@@ -14,6 +14,7 @@ namespace RoSharp
     {
         private bool loggedIn = false;
         private string roblosecurity = "";
+        private string apiKey = "";
         private SessionAPI? sessionAPI;
         internal string username = "";
         internal string displayname = "";
@@ -22,6 +23,8 @@ namespace RoSharp
         internal string xcsrfToken = "";
 
         internal string RobloSecurity => roblosecurity;
+
+        internal string APIKey => apiKey;
 
         /// <summary>
         /// Indicates if this session has been logged in.
@@ -127,8 +130,11 @@ namespace RoSharp
             }
         }
 
+        public void SetAPIKey(string apiKey)
+            => this.apiKey = apiKey;
+
         /// <summary>
-        /// Clears the stored security token and de-authenticates this session.
+        /// Clears all stored security tokens and de-authenticates this session.
         /// </summary>
         public void LogoutAsync()
         {
@@ -142,6 +148,7 @@ namespace RoSharp
             authUser = null;
 
             roblosecurity = string.Empty;
+            apiKey = string.Empty;
         }
     }
 }

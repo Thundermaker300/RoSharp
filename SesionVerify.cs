@@ -16,6 +16,12 @@
         /// </summary>
         public const string GENERIC_REFRESH_MESSAGE =
             "This API member ({0}) requires a logged-in session to be attached. Please attach a logged-in session via AttachSession() and run RefreshAsync() to update the API cache, or add the session when first accessing this class. Alternatively, assign a global session.";
+        
+        /// <summary>
+        /// Generic message for when an API needs a session with an API key.
+        /// </summary>
+        public const string GENERIC_APIKEY_MESSAGE =
+            "This API member ({0}) requires a session containing an API key with the '{1}' permission. Please attach a session via AttachSession() (or add the session when first accessing the class) and call Session.SetAPIKey() before executing this method.";
 
         /// <summary>
         /// Verifies the provided session.
@@ -32,6 +38,16 @@
             return true;
         }
 
+        public static bool VerifyApiKey(Session? session)
+        {
+            if (session is null)
+                return false;
+            if (string.IsNullOrWhiteSpace(session.APIKey))
+                return false;
+
+            return true;
+        }
+
         /// <summary>
         /// Calls <see cref="Throw(string)"/> with the given API member name if the session is not verified.
         /// </summary>
@@ -41,6 +57,12 @@
         {
             if (!Verify(session))
                 Throw(apiMemberName);
+        }
+
+        public static void ThrowAPIKeyIfNecessary(Session? session, string apiMemberName, string perm)
+        {
+            if (!VerifyApiKey(session))
+                throw new ArgumentException(string.Format(GENERIC_APIKEY_MESSAGE, apiMemberName, perm), "session");
         }
 
         /// <summary>

@@ -80,8 +80,8 @@ namespace RoSharp.API
         {
             ArgumentNullException.ThrowIfNull(session);
 
-            if (!session.LoggedIn)
-                throw new ArgumentException("The provided session is not logged in!");
+            //if (!session.LoggedIn)
+            //    throw new ArgumentException("The provided session is not logged in!");
 
             this.session = session;
 

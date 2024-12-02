@@ -49,6 +49,11 @@ namespace RoSharp.Utility
             if (!string.IsNullOrWhiteSpace(session?.xcsrfToken))
                 message.Headers.Add("x-csrf-token", session.xcsrfToken);
 
+            if (!string.IsNullOrWhiteSpace(session?.APIKey))
+            {
+                message.Headers.Add("x-api-key", session.APIKey);
+            }
+
             HttpResponseMessage resp = await client.SendAsync(message);
             RoUtility.LogHTTP(session, resp, retrying);
             Return(client);

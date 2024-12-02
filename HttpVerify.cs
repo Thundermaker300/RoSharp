@@ -26,9 +26,13 @@ namespace RoSharp
             body ??= message.Content.ReadAsStringAsync().Result;
 
             string? userMessage = null;
-            dynamic data = JObject.Parse(body);
-            if (data.errors != null)
-                userMessage =  data.errors[0].message ?? data.errors[0].userFacingMessage ?? message.ReasonPhrase;
+            try
+            {
+                dynamic data = JObject.Parse(body);
+                if (data.errors != null)
+                    userMessage = data.errors[0].message ?? data.errors[0].userFacingMessage ?? message.ReasonPhrase;
+            }
+            catch { }
 
             if (userMessage != null)
                 userMessage = $"(HTTP {message.StatusCode}) Roblox API error: {userMessage}. Please ensure you have proper permissions to perform this action and try again. Request url: {message.RequestMessage?.RequestUri} Request method: {message.RequestMessage?.Method}";
