@@ -33,7 +33,12 @@ namespace RoSharp
             if (userMessage != null)
                 userMessage = $"(HTTP {message.StatusCode}) Roblox API error: {userMessage}. Please ensure you have proper permissions to perform this action and try again. Request url: {message.RequestMessage?.RequestUri} Request method: {message.RequestMessage?.Method}";
 
-            RobloxAPIException exception = new(userMessage ?? $"(HTTP {message.StatusCode}) No error message provided by Roblox. Please ensure you have proper permissions to perform this action and try again. Request url: {message.RequestMessage?.RequestUri} Request method: {message.RequestMessage?.Method}", message.StatusCode);
+            userMessage ??= userMessage ?? $"(HTTP {message.StatusCode}) No error message provided by Roblox. Please ensure you have proper permissions to perform this action and try again. Request url: {message.RequestMessage?.RequestUri} Request method: {message.RequestMessage?.Method}";
+
+            RoLogger.Debug(userMessage, ConsoleColor.Yellow);
+            RoLogger.Debug($"Response body: {body}", ConsoleColor.Yellow);
+
+            RobloxAPIException exception = new(userMessage, message.StatusCode);
             throw exception;
         }
     }

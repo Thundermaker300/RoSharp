@@ -11,6 +11,7 @@ namespace RoSharp.Structures
         public HttpMethod Method { get; set; }
         public string Url { get; set; }
         public object? Content { get; set; }
+        public Dictionary<string, IEnumerable<string>> Headers { get; set; } = new(0);
 
         public HttpMessage(HttpMethod method, string url, object? content = null)
         {

@@ -37,6 +37,12 @@ namespace RoSharp.Utility
             if (inputMessage.Content != null)
                 message.Content = JsonContent.Create(inputMessage.Content);
 
+            if (inputMessage.Headers.Count > 0)
+            {
+                foreach (var header in inputMessage.Headers)
+                    message.Headers.Add(header.Key, header.Value);
+            }    
+
             if (!string.IsNullOrWhiteSpace(session?.RobloSecurity))
                 message.Headers.Add("Cookie", $".ROBLOSECURITY={session.RobloSecurity}");
 
