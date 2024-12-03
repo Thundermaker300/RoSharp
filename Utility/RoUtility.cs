@@ -17,7 +17,8 @@
             RoLogger.Debug($"{message.RequestMessage?.Method} {(message.RequestMessage?.RequestUri?.ToString() ?? "UNKNOWN")}", color);
             RoLogger.Debug($"CODE: HTTP {message.StatusCode} ({(int)message.StatusCode})", color);
             RoLogger.Debug($"AUTH: {!string.IsNullOrWhiteSpace(session?.RobloSecurity)}", color);
-            RoLogger.Debug($"XCSRF: {!string.IsNullOrWhiteSpace(session?.xcsrfToken)} ({(string.IsNullOrWhiteSpace(session?.xcsrfToken) ? "NONE" : session?.xcsrfToken)})", color);
+            RoLogger.Debug($"XCSRF: {!string.IsNullOrWhiteSpace(session?.xcsrfToken)}", color);
+            RoLogger.Debug($"XAPIKEY: {!string.IsNullOrWhiteSpace(session?.APIKey)}", color);
             RoLogger.Debug($"REQUEST BODY: {message.RequestMessage?.Content?.ReadAsStringAsync().Result ?? "NONE"}", color);
             RoLogger.Debug($"REASON PHRASE: HTTP {message.ReasonPhrase}", color);
             RoLogger.Debug($"RESPONSE BODY: {body.Substring(0, Math.Min(body.Length, 200))}", color);
