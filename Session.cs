@@ -125,7 +125,7 @@ namespace RoSharp
                     loggedAt = DateTime.Now;
 
                     sessionAPI = await SessionAPI.FromSession(this);
-                    authUser = await User.FromId(userid);
+                    authUser = await User.FromId(userid, this);
                 }
             }
         }
