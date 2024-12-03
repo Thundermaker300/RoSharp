@@ -12,6 +12,8 @@ namespace RoSharp.Enums
 
         Sent,
 
+        News,
+
         Archive,
     }
 }
