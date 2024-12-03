@@ -168,6 +168,7 @@ namespace RoSharp.API
                     Created = item.created,
                     IsRead = item.isRead,
                     IsSystemMessage = item.isSystemMessage,
+                    CurrentTab = tab,
                 };
                 messages.Add(message);
             }
@@ -199,5 +200,32 @@ namespace RoSharp.API
 
         public async Task MarkUnreadAsync(PrivateMessage message)
             => await MarkUnreadAsync(message.Id);
+
+
+        public async Task ArchiveAsync(ulong messageId)
+        {
+            object body = new
+            {
+                messageIds = new[] { messageId },
+            };
+
+            await PostAsync("/v1/messages/archive", body, Constants.URL("privatemessages"), "SessionAPI.ArchiveAsync");
+        }
+
+        public async Task ArchiveAsync(PrivateMessage message)
+            => await ArchiveAsync(message.Id);
+
+        public async Task UnarchiveAsync(ulong messageId)
+        {
+            object body = new
+            {
+                messageIds = new[] { messageId },
+            };
+
+            await PostAsync("/v1/messages/unarchive", body, Constants.URL("privatemessages"), "SessionAPI.UnarchiveAsync");
+        }
+
+        public async Task UnarchiveAsync(PrivateMessage message)
+            => await UnarchiveAsync(message.Id);
     }
 }

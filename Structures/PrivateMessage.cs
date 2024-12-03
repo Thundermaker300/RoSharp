@@ -1,4 +1,5 @@
 ﻿using RoSharp.API;
+using RoSharp.Enums;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -17,5 +18,6 @@ namespace RoSharp.Structures
         public DateTime Created { get; init; }
         public bool IsSystemMessage { get; init; }
         public bool IsRead { get; init; }
+        public MessagesPageTab CurrentTab { get; init; }
     }
 }
