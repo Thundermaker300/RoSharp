@@ -3,6 +3,7 @@ using RoSharp.API.Assets.Experiences;
 using RoSharp.Enums;
 using RoSharp.Interfaces;
 using RoSharp.Structures;
+using System.Collections.ObjectModel;
 
 namespace RoSharp.API
 {
@@ -145,5 +146,56 @@ namespace RoSharp.API
 
             return new EconomyBreakdown(timeLength, amount, breakdown, pending);
         }
+
+        public async Task<ReadOnlyCollection<PrivateMessage>> GetPrivateMessagesAsync(int pageNumber, int pageSize = 20, MessagesPageTab tab = MessagesPageTab.Inbox)
+        {
+            string url = $"/v1/messages?messageTab={tab.ToString().ToLower()}&pageNumber={pageNumber}&pageSize={pageSize}";
+            string rawData = await GetStringAsync(url, Constants.URL("privatemessages"), "SessionAPI.ReadPrivateMessagesAsync");
+            dynamic data = JObject.Parse(rawData);
+
+            List<PrivateMessage> messages = new List<PrivateMessage>();
+            foreach (dynamic item in data.collection)
+            {
+                PrivateMessage message = new()
+                {
+                    Id = item.id,
+                    Subject = item.subject,
+                    Text = item.body,
+                    Recipient = new(Convert.ToUInt64(item.recipient.id)),
+                    Sender = new(Convert.ToUInt64(item.sender.id)),
+                    Created = item.created,
+                    IsRead = item.isRead,
+                    IsSystemMessage = item.isSystemMessage,
+                };
+                messages.Add(message);
+            }
+            return messages.AsReadOnly();
+        }
+
+        public async Task MarkReadAsync(ulong messageId)
+        {
+            object body = new
+            {
+                messageIds = new[] { messageId },
+            };
+
+            await PostAsync("/v1/messages/mark-read", body, Constants.URL("privatemessages"), "SessionAPI.MarkReadAsync");
+        }
+
+        public async Task MarkReadAsync(PrivateMessage message)
+            => await MarkReadAsync(message.Id);
+
+        public async Task MarkUnreadAsync(ulong messageId)
+        {
+            object body = new
+            {
+                messageIds = new[] { messageId },
+            };
+
+            await PostAsync("/v1/messages/mark-unread", body, Constants.URL("privatemessages"), "SessionAPI.MarkUnreadAsync");
+        }
+
+        public async Task MarkUnreadAsync(PrivateMessage message)
+            => await MarkUnreadAsync(message.Id);
     }
 }
