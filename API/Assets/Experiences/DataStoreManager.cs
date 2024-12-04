@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Linq;
 using System.Net;
+using System.Net.Http.Json;
 using System.Text;
 using System.Threading.Tasks;
 
@@ -21,6 +22,7 @@ namespace RoSharp.API.Assets.Experiences
 
         public async Task<PageResponse<DataStore>> ListDataStoresAsync(string? cursor = null, string scope = "global")
         {
+            SessionVerify.ThrowAPIKeyIfNecessary(experience.session, "DataStoreManager.ListDataStoresAsync", "universe-datastores.objects:list");
             string url = $"/datastores/v1/universes/{experience.UniverseId}/standard-datastores?limit=10&scope={scope}";
             if (cursor != null)
                 url += $"&cursor={cursor}";
@@ -45,6 +47,7 @@ namespace RoSharp.API.Assets.Experiences
 
         public async Task<DataStore?> GetDataStoreAsync(string name, string scope = "global")
         {
+            SessionVerify.ThrowAPIKeyIfNecessary(experience.session, "DataStoreManager.GetDataStoreAsync", "universe-datastores.objects:list");
             ArgumentNullException.ThrowIfNullOrWhiteSpace(name, nameof(name));
 
             DataStore? match = null;
@@ -67,6 +70,7 @@ namespace RoSharp.API.Assets.Experiences
 
         internal async Task<DataStoreEntry?> GetKeyAsync(string dataStoreName, string key, string scope = "global")
         {
+            SessionVerify.ThrowAPIKeyIfNecessary(experience.session, "DataStore.GetAsync", "universe-datastores.objects:read");
             string url = $"/datastores/v1/universes/{experience.UniverseId}/standard-datastores/datastore/entries/entry"
                 + $"?dataStoreName={dataStoreName}"
                 + $"&entryKey={key}"
@@ -77,7 +81,16 @@ namespace RoSharp.API.Assets.Experiences
             if (res.StatusCode == HttpStatusCode.NoContent)
                 return null;
 
-            string rawData = await res.Content.ReadAsStringAsync();
+            dynamic rawData;
+            try
+            {
+                // Parse if it's an object
+                rawData = JObject.Parse(await res.Content.ReadAsStringAsync());
+            }
+            catch
+            {
+                rawData = await res.Content.ReadAsStringAsync();
+            }
 
             DateTime created = DateTime.UnixEpoch;
             if (res.Headers.TryGetValues("roblox-entry-created-time", out var createdHeaders))
@@ -97,6 +110,17 @@ namespace RoSharp.API.Assets.Experiences
                 Content = rawData,
             };
         }
+
+        internal async Task SetKeyAsync(string dataStoreName, string key, object newContent, string scope = "global")
+        {
+            SessionVerify.ThrowAPIKeyIfNecessary(experience.session, "DataStore.SetAsync", "universe-datastores.objects:create");
+            string url = $"/datastores/v1/universes/{experience.UniverseId}/standard-datastores/datastore/entries/entry"
+                + $"?dataStoreName={dataStoreName}"
+                + $"&entryKey={key}"
+                + $"&scope={scope}";
+
+            await experience.PostAsync(url, newContent, Constants.URL("apis"));
+        }
     }
 
     public class DataStore
@@ -111,6 +135,9 @@ namespace RoSharp.API.Assets.Experiences
 
         public async Task<DataStoreEntry?> GetAsync(string key)
             => await manager.GetKeyAsync(Name, key, Scope);
+
+        public async Task SetAsync(string key, object value)
+            => await manager.SetKeyAsync(Name, key, value, Scope);
     }
 
     public class DataStoreEntry
@@ -121,8 +148,12 @@ namespace RoSharp.API.Assets.Experiences
         public DateTime Created { get; init; }
         public DateTime Updated { get; init; }
         public string Version { get; init; }
+
+        /// <summary>
+        /// Not supported. TODO
+        /// </summary>
         public ReadOnlyCollection<Id<User>> UserIds { get; init; }
-        public string Content { get; init; }
+        public dynamic Content { get; init; }
 
         internal DataStoreEntry(DataStoreManager manager) { this.manager = manager; }
     }

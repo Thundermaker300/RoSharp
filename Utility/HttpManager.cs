@@ -35,7 +35,12 @@ namespace RoSharp.Utility
             HttpRequestMessage message = new HttpRequestMessage(inputMessage.Method, inputMessage.Url);
 
             if (inputMessage.Content != null)
-                message.Content = JsonContent.Create(inputMessage.Content);
+            {
+                JsonContent content = JsonContent.Create(inputMessage.Content);
+                message.Content = content;
+                message.Content.Headers.ContentType = new System.Net.Http.Headers.MediaTypeHeaderValue("application/json");
+                message.Content.Headers.ContentLength = (await content.ReadAsStringAsync()).Length;
+            }
 
             if (inputMessage.Headers.Count > 0)
             {
