@@ -152,6 +152,13 @@ namespace RoSharp.API.Assets.Experiences
         /// </summary>
         public DeveloperStats Statistics => statistics;
 
+        private DataStoreManager dataStorage;
+
+        /// <summary>
+        /// Gets the experience's <see cref="DataStoreManager"/> object, which allows for modifying the experience's DataStores via the Cloud API.
+        /// </summary>
+        public DataStoreManager DataStorage => dataStorage;
+
         internal bool favoritedByUser;
 
         /// <inheritdoc/>
@@ -168,6 +175,7 @@ namespace RoSharp.API.Assets.Experiences
                 RoPool<Experience>.Add(this);
 
             statistics = new(this);
+            dataStorage = new(this);
         }
 
         /// <summary>
