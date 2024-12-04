@@ -121,6 +121,17 @@ namespace RoSharp.API.Assets.Experiences
 
             await experience.PostAsync(url, newContent, Constants.URL("apis"));
         }
+
+        internal async Task DeleteKeyAsync(string dataStoreName, string key, string scope = "global")
+        {
+            SessionVerify.ThrowAPIKeyIfNecessary(experience.session, "DataStore.DeleteAsync", "universe-datastores.objects:delete");
+            string url = $"/datastores/v1/universes/{experience.UniverseId}/standard-datastores/datastore/entries/entry"
+                + $"?dataStoreName={dataStoreName}"
+                + $"&entryKey={key}"
+                + $"&scope={scope}";
+
+            await experience.DeleteAsync(url, Constants.URL("apis"));
+        }
     }
 
     public class DataStore
@@ -138,6 +149,9 @@ namespace RoSharp.API.Assets.Experiences
 
         public async Task SetAsync(string key, object value)
             => await manager.SetKeyAsync(Name, key, value, Scope);
+
+        public async Task DeleteAsync(string key)
+            => await manager.DeleteKeyAsync(Name, key, Scope);
     }
 
     public class DataStoreEntry
