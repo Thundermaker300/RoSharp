@@ -268,7 +268,7 @@ namespace RoSharp.API.Assets.Experiences
                 // So let's just skip it to save roughly 700ms.
                 await UpdateVoiceVideoAsync();
                 await UpdateConfigurationAsync();
-                await UpdatePrivateServerInfoAsync();
+                await UpdatePrivateServerInfoAndDevicesAsync();
             }
             else
             {
@@ -487,33 +487,7 @@ namespace RoSharp.API.Assets.Experiences
             downvotes = data.data[0].downVotes;
         }
 
-        // Configuration related properties
-        private List<string> devices = [];
-
-        /// <summary>
-        /// Gets the devices that this experience is playable on.
-        /// </summary>
-        /// <remarks>This list will be empty for experiences that the authenticated user does not have access to modify.</remarks>
-        public ReadOnlyCollection<Device> Devices => devices.Select(Enum.Parse<Device>).ToList().AsReadOnly();
-
-        private const string VIPEnabledRegex = @"data-private-server-product-id=""([0-9]+)""";
-        private const string VIPPriceRegex = @"data-private-server-price=""([0-9]+)""";
-        private async Task UpdatePrivateServerInfoAsync()
-        {
-            // Not my proudest scrape ☹️
-            // Note: If anyone can find an API endpoint that gets Private Server cost, PLEASE PLEASE
-            // let me know!! Scraping seems to be the only way to get VIP Server price for now.
-            string rawData = await GetStringAsync($"/games/servers-section/{UniverseId}", Constants.ROBLOX_URL);
-
-            var matchEnabled = Regex.Match(rawData, VIPEnabledRegex);
-            if (matchEnabled.Success && matchEnabled.Groups.Count > 1)
-                privateServers = matchEnabled.Groups[1].Value != "0";
-
-            var matchPrice = Regex.Match(rawData, VIPPriceRegex);
-            if (matchPrice.Success && matchPrice.Groups.Count > 1)
-                privateServerCost = Convert.ToInt32(matchPrice.Groups[1].Value);
-        }
-
+        // Access related properties
         private bool? privateServers;
 
         /// <summary>
@@ -531,6 +505,44 @@ namespace RoSharp.API.Assets.Experiences
         /// <remarks>This value will always be <c>0</c> if this instance is not authenticated.</remarks>
         /// <seealso cref="PrivateServers"/>
         public int PrivateServerCost => privateServerCost.GetValueOrDefault();
+
+        private List<Device> devices = [];
+
+        /// <summary>
+        /// Gets the devices that this experience is playable on.
+        /// </summary>
+        public ReadOnlyCollection<Device> Devices => devices.AsReadOnly();
+        private async Task UpdatePrivateServerInfoAndDevicesAsync()
+        {
+            string rawData = await GetStringAsync($"/user/cloud/v2/universes/{UniverseId}", Constants.URL("apis"), "Experience.UpdatePrivateServerInfoAndDevicesAsync");
+            dynamic data = JObject.Parse(rawData);
+
+            if (data.privateServerPriceRobux != null)
+            {
+                privateServers = true;
+                privateServerCost = data.privateServerPriceRobux;
+            }
+            else
+            {
+                privateServers = false;
+                privateServerCost = 0;
+            }
+
+            List<Device> devices = [];
+
+            if (data.desktopEnabled == true)
+                devices.Add(Device.Computer);
+            if (data.mobileEnabled == true)
+                devices.Add(Device.Phone);
+            if (data.tabletEnabled == true)
+                devices.Add(Device.Tablet);
+            if (data.consoleEnabled == true)
+                devices.Add(Device.Console);
+            if (data.vrEnabled == true)
+                devices.Add(Device.VR);
+
+            this.devices = devices;
+        }
 
         /// <summary>
         /// Gets whether or not players must pay to play the experience.
@@ -567,11 +579,6 @@ namespace RoSharp.API.Assets.Experiences
 
             string rawData = await response.Content.ReadAsStringAsync();
             dynamic data = JObject.Parse(rawData);
-
-            if (data.playableDevices != null) {
-                List<string>? devices = ((JArray)data.playableDevices).ToObject<List<string>>();
-                this.devices = devices ?? [];
-            }
 
             friendsOnly = data.isFriendsOnly;
             studioAccessToAPIsAllowed = Convert.ToBoolean(data.studioAccessToApisAllowed);
