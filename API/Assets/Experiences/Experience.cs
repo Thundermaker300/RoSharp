@@ -157,7 +157,16 @@ namespace RoSharp.API.Assets.Experiences
         /// <summary>
         /// Gets the experience's <see cref="DataStoreManager"/> object, which allows for modifying the experience's DataStores via the Cloud API.
         /// </summary>
-        public DataStoreManager DataStorage => dataStorage;
+        /// <remarks>This experience must have a session with an API key, or the global session must have an API key, in order to use this member.</remarks>
+        /// <exception cref="ArgumentException">The session attached to this experience does not have an API key.</exception>
+        public DataStoreManager DataStorage
+        {
+            get
+            {
+                SessionVerify.ThrowAPIKeyIfNecessary(session, "Experience.DataStorage", "datastore");
+                return dataStorage;
+            }
+        }
 
         internal bool favoritedByUser;
 
