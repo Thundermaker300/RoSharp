@@ -16,15 +16,18 @@
         /// Assigns a session to be used as the global session.
         /// </summary>
         /// <param name="session">The session to use.</param>
-        /// <exception cref="ArgumentException">Will throw if the session is <see langword="null"/> or not authenticated.</exception>
+        /// <exception cref="ArgumentException">Will throw if the session is not authenticated and does not have an API key.</exception>
+        /// <exception cref="ArgumentNullException">The <paramref name="session"/> is <see langword="null"/>.</exception>
         /// <exception cref="InvalidOperationException">Will throw if the provided session is already assigned as the current session.</exception>
         /// <remarks>The provided session cannot be <see langword="null"/> and must be authenticated by <see cref="Session.LoginAsync(string)"/> before calling this method.</remarks>
         public static void AssignSession(Session session)
         {
+            ArgumentNullException.ThrowIfNull(session, nameof(session));
+
             if (session.Equals(assigned))
                 throw new InvalidOperationException("The provided session is already assigned as the global session!");
-            if (!SessionVerify.Verify(session))
-                throw new ArgumentException("GlobalSession.AssignSession requires a non-null & authenticated session.");
+            if (!SessionVerify.Verify(session) && session.APIKey == string.Empty)
+                throw new ArgumentException("GlobalSession.AssignSession requires a non-null & authenticated session (or a session with an API key).");
 
             assigned = session;
         }
