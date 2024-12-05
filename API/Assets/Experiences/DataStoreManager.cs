@@ -1,5 +1,7 @@
 ﻿using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
+using RoSharp.Structures;
+using RoSharp.Utility;
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
@@ -118,7 +120,7 @@ namespace RoSharp.API.Assets.Experiences
             };
         }
 
-        public async Task SetKeyAsync(string dataStoreName, string key, object newContent, string scope = "global")
+        public async Task SetKeyAsync(string dataStoreName, string key, object newContent, IList<ulong> userIds, string scope = "global")
         {
             SessionVerify.ThrowAPIKeyIfNecessary(experience.session, "DataStore.SetAsync", "universe-datastores.objects:create");
             string url = $"/datastores/v1/universes/{experience.UniverseId}/standard-datastores/datastore/entries/entry"
@@ -126,8 +128,19 @@ namespace RoSharp.API.Assets.Experiences
                 + $"&entryKey={key}"
                 + $"&scope={scope}";
 
-            await experience.PostAsync(url, newContent, Constants.URL("apis"));
+            HttpMessage message = new(HttpMethod.Post, string.Concat(Constants.URL("apis"), url), newContent);
+
+            if (userIds.Count > 0)
+                message.Headers.Add("roblox-entry-userids", [JsonConvert.SerializeObject(userIds)] );
+
+            await HttpManager.SendAsync(experience.session, message);
         }
+
+        public async Task SetKeyAsync(string dataStoreName, string key, object newContent, string scope = "global")
+            => await SetKeyAsync(dataStoreName, key, newContent, new List<ulong>(0), scope);
+
+        public async Task SetKeyAsync(string dataStoreName, string key, object newContent, IList<User> users, string scope = "global")
+            => await SetKeyAsync(dataStoreName, key, newContent, users.Select(u => u.Id).ToList(), scope);
 
         public async Task DeleteKeyAsync(string dataStoreName, string key, string scope = "global")
         {
@@ -181,6 +194,26 @@ namespace RoSharp.API.Assets.Experiences
         /// <returns>A task that completes when the operation is finished.</returns>
         public async Task SetAsync(string key, object value)
             => await manager.SetKeyAsync(Name, key, value, Scope);
+
+        /// <summary>
+        /// Sets a key within the datastore.
+        /// </summary>
+        /// <param name="key">The key.</param>
+        /// <param name="value">The new value.</param>
+        /// <param name="userIds">A list of user Ids to associate with the datastore.</param>
+        /// <returns>A task that completes when the operation is finished.</returns>
+        public async Task SetAsync(string key, object value, IList<ulong> userIds)
+            => await manager.SetKeyAsync(Name, key, value, userIds, Scope);
+
+        /// <summary>
+        /// Sets a key within the datastore.
+        /// </summary>
+        /// <param name="key">The key.</param>
+        /// <param name="value">The new value.</param>
+        /// <param name="users">A list of users to associate with the datastore.</param>
+        /// <returns>A task that completes when the operation is finished.</returns>
+        public async Task SetAsync(string key, object value, IList<User> users)
+            => await manager.SetKeyAsync(Name, key, value, users, Scope);
 
         /// <summary>
         /// Deletes a key within the datastore.
