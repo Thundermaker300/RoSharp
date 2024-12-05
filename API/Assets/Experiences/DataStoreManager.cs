@@ -85,16 +85,7 @@ namespace RoSharp.API.Assets.Experiences
             if (res.StatusCode == HttpStatusCode.NoContent)
                 return null;
 
-            dynamic rawData;
-            try
-            {
-                // Parse if it's an object
-                rawData = JObject.Parse(await res.Content.ReadAsStringAsync());
-            }
-            catch
-            {
-                rawData = await res.Content.ReadAsStringAsync();
-            }
+            string rawData = await res.Content.ReadAsStringAsync();
 
             DateTime created = DateTime.UnixEpoch;
             if (res.Headers.TryGetValues("roblox-entry-created-time", out var createdHeaders))
@@ -235,7 +226,7 @@ namespace RoSharp.API.Assets.Experiences
         /// <summary>
         /// Gets the content in this key.
         /// </summary>
-        public dynamic Content { get; init; }
+        public string Content { get; init; }
 
         internal DataStoreEntry(DataStoreManager manager) { this.manager = manager; }
     }
