@@ -1,4 +1,5 @@
-﻿using Newtonsoft.Json.Linq;
+﻿using Newtonsoft.Json;
+using Newtonsoft.Json.Linq;
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
@@ -10,6 +11,9 @@ using System.Threading.Tasks;
 
 namespace RoSharp.API.Assets.Experiences
 {
+    /// <summary>
+    /// Manager class for reading and modifying data within an experience's <c>DataStoreService</c>.
+    /// </summary>
     public class DataStoreManager
     {
         internal Experience experience;
@@ -100,13 +104,25 @@ namespace RoSharp.API.Assets.Experiences
             if (res.Headers.TryGetValues("last-modified", out var updatedHeaders))
                 created = DateTime.Parse(updatedHeaders.First());
 
+            List<Id<User>> ids = new();
+            if (res.Headers.TryGetValues("roblox-entry-userids", out var userIdHeaders))
+            {
+                string idsRaw = userIdHeaders.First();
+                ulong[]? ulongIds = JsonConvert.DeserializeObject<ulong[]>(idsRaw);
+                if (ulongIds != null)
+                {
+                    foreach (ulong id in ulongIds)
+                        ids.Add(new(id, experience.session));
+                }
+            }
+
             return new DataStoreEntry(this)
             {
                 Key = key,
                 Created = created,
                 Updated = updated,
                 Version = res.Headers.GetValues("roblox-entry-version")?.FirstOrDefault() ?? "0",
-                UserIds = null,
+                UserIds = ids.AsReadOnly(),
                 Content = rawData,
             };
         }
@@ -134,39 +150,91 @@ namespace RoSharp.API.Assets.Experiences
         }
     }
 
+    /// <summary>
+    /// Represents a data store within an experience.
+    /// </summary>
     public class DataStore
     {
         private DataStoreManager manager;
 
+        /// <summary>
+        /// Gets the name of the data store.
+        /// </summary>
         public string Name { get; init; }
+
+        /// <summary>
+        /// Gets the time the data store was created.
+        /// </summary>
         public DateTime Created { get; init; }
+
+        /// <summary>
+        /// Gets the scope of the datastore.
+        /// </summary>
         public string Scope { get; init; }
 
         internal DataStore(DataStoreManager manager) { this.manager = manager; }
 
+        /// <summary>
+        /// Gets a key within the datastore.
+        /// </summary>
+        /// <param name="key">The key.</param>
+        /// <returns>A task containing a <see cref="DataStoreEntry"/> representing the key. Can be <see langword="null"/>.</returns>
         public async Task<DataStoreEntry?> GetAsync(string key)
             => await manager.GetKeyAsync(Name, key, Scope);
 
+        /// <summary>
+        /// Sets a key within the datastore.
+        /// </summary>
+        /// <param name="key">The key.</param>
+        /// <param name="value">The new value.</param>
+        /// <returns>A task that completes when the operation is finished.</returns>
         public async Task SetAsync(string key, object value)
             => await manager.SetKeyAsync(Name, key, value, Scope);
 
+        /// <summary>
+        /// Deletes a key within the datastore.
+        /// </summary>
+        /// <param name="key">The key to delete.</param>
+        /// <returns>A task that completes when the operation is finished.</returns>
         public async Task DeleteAsync(string key)
             => await manager.DeleteKeyAsync(Name, key, Scope);
     }
 
+    /// <summary>
+    /// Represents a key with a value within a <see cref="DataStore"/>.
+    /// </summary>
     public class DataStoreEntry
     {
         private DataStoreManager manager;
 
+        /// <summary>
+        /// Gets the name of the key.
+        /// </summary>
         public string Key { get; init; }
+
+        /// <summary>
+        /// Gets when the key was created.
+        /// </summary>
         public DateTime Created { get; init; }
+
+        /// <summary>
+        /// Gets the last time the key was updated.
+        /// </summary>
         public DateTime Updated { get; init; }
+
+        /// <summary>
+        /// Gets the current Roblox-defined version of the key.
+        /// </summary>
         public string Version { get; init; }
 
         /// <summary>
-        /// Not supported. TODO
+        /// Gets a <see cref="ReadOnlyCollection{T}"/> of <see cref="Id{T}"/> of <see cref="User"/>s that are associated with this API key.
         /// </summary>
         public ReadOnlyCollection<Id<User>> UserIds { get; init; }
+        
+        /// <summary>
+        /// Gets the content in this key.
+        /// </summary>
         public dynamic Content { get; init; }
 
         internal DataStoreEntry(DataStoreManager manager) { this.manager = manager; }
