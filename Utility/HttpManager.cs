@@ -57,7 +57,10 @@ namespace RoSharp.Utility
             if (message.Headers.Count > 0)
             {
                 foreach (var header in message.Headers)
-                    messageToSend.Headers.Add(header.Key, header.Value);
+                {
+                    if (!messageToSend.Headers.Contains(header.Key))
+                        messageToSend.Headers.Add(header.Key, header.Value);
+                }
             }    
 
             if (!string.IsNullOrWhiteSpace(session?.RobloSecurity))

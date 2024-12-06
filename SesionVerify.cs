@@ -24,7 +24,7 @@
             "This API member ({0}) requires a session containing an API key with the '{1}' permission. Please attach a session via AttachSession() (or add the session when first accessing the class) and call Session.SetAPIKey() before executing this method.";
 
         /// <summary>
-        /// Verifies the provided session.
+        /// Verifies the provided session and returns if it is authenticated.
         /// </summary>
         /// <param name="session">The session.</param>
         /// <returns>Whether or not it passed verification.</returns>
@@ -38,6 +38,11 @@
             return true;
         }
 
+        /// <summary>
+        /// Verifies the provided session and returns if it has an API key.
+        /// </summary>
+        /// <param name="session">The session.</param>
+        /// <returns>Whether or not it passed verification.</returns>
         public static bool VerifyApiKey(Session? session)
         {
             if (session is null)
@@ -59,6 +64,12 @@
                 Throw(apiMemberName);
         }
 
+        /// <summary>
+        /// Throws an exception with the given API member name and API key perm if the session does not have an API key.
+        /// </summary>
+        /// <param name="session">Session to verify.</param>
+        /// <param name="apiMemberName">API name.</param>
+        /// <param name="perm">The permission.</param>
         public static void ThrowAPIKeyIfNecessary(Session? session, string apiMemberName, string perm)
         {
             if (!VerifyApiKey(session))

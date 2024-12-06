@@ -31,6 +31,7 @@ namespace RoSharp.API.Assets.Experiences
         public async Task RefreshAsync()
         {
             history = null;
+            await Task.CompletedTask;
         }
 
         private object MakeGenericBody(DateTime date, string metric, object[] breakdown)

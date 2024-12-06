@@ -95,7 +95,11 @@ namespace RoSharp.API
         /// </summary>
         /// <param name="experience">The target experience.</param>
         /// <returns>A task that contains a bool when completed.</returns>
-        public async Task<bool> FavoritedExperienceAsync(Experience experience) => experience.favoritedByUser; // TODO: This api does not check for matching session.
+        public async Task<bool> FavoritedExperienceAsync(Experience experience)
+        { // TODO: This api does not check for matching session.
+            await Task.CompletedTask;
+            return experience.favoritedByUser;
+        }
 
         /// <summary>
         /// Gets a value indicating whether or not the specified experience is favorited by the authenticated user.
@@ -147,6 +151,13 @@ namespace RoSharp.API
             return new EconomyBreakdown(timeLength, amount, breakdown, pending);
         }
 
+        /// <summary>
+        /// Returns the authenticated user's private messages.
+        /// </summary>
+        /// <param name="pageNumber">The page number to start on.</param>
+        /// <param name="pageSize">The size of each page.</param>
+        /// <param name="tab">The tab to search on.</param>
+        /// <returns>A task containing a <see cref="ReadOnlyCollection{T}"/> of <see cref="PrivateMessage"/> upon completion.</returns>
         public async Task<ReadOnlyCollection<PrivateMessage>> GetPrivateMessagesAsync(int pageNumber = 0, int pageSize = 20, MessagesPageTab tab = MessagesPageTab.Inbox)
         {
             string url = tab is MessagesPageTab.News
@@ -175,6 +186,11 @@ namespace RoSharp.API
             return messages.AsReadOnly();
         }
 
+        /// <summary>
+        /// Marks a private message as read.
+        /// </summary>
+        /// <param name="messageId">The unique Id of the message.</param>
+        /// <returns>A task that completes when the operation is finished.</returns>
         public async Task MarkReadAsync(ulong messageId)
         {
             object body = new
@@ -185,9 +201,19 @@ namespace RoSharp.API
             await PostAsync("/v1/messages/mark-read", body, Constants.URL("privatemessages"), "SessionAPI.MarkReadAsync");
         }
 
+        /// <summary>
+        /// Marks a private message as read.
+        /// </summary>
+        /// <param name="message">The message.</param>
+        /// <returns>A task that completes when the operation is finished.</returns>
         public async Task MarkReadAsync(PrivateMessage message)
             => await MarkReadAsync(message.Id);
 
+        /// <summary>
+        /// Marks a private message as unread.
+        /// </summary>
+        /// <param name="messageId">The unique Id of the message.</param>
+        /// <returns>A task that completes when the operation is finished.</returns>
         public async Task MarkUnreadAsync(ulong messageId)
         {
             object body = new
@@ -198,10 +224,19 @@ namespace RoSharp.API
             await PostAsync("/v1/messages/mark-unread", body, Constants.URL("privatemessages"), "SessionAPI.MarkUnreadAsync");
         }
 
+        /// <summary>
+        /// Marks a private message as unread.
+        /// </summary>
+        /// <param name="message">The message.</param>
+        /// <returns>A task that completes when the operation is finished.</returns>
         public async Task MarkUnreadAsync(PrivateMessage message)
             => await MarkUnreadAsync(message.Id);
 
-
+        /// <summary>
+        /// Archives a private message.
+        /// </summary>
+        /// <param name="messageId">The unique Id of the message.</param>
+        /// <returns>A task that completes when the operation is finished.</returns>
         public async Task ArchiveAsync(ulong messageId)
         {
             object body = new
@@ -212,9 +247,19 @@ namespace RoSharp.API
             await PostAsync("/v1/messages/archive", body, Constants.URL("privatemessages"), "SessionAPI.ArchiveAsync");
         }
 
+        /// <summary>
+        /// Archives a private message.
+        /// </summary>
+        /// <param name="message">The message.</param>
+        /// <returns>A task that completes when the operation is finished.</returns>
         public async Task ArchiveAsync(PrivateMessage message)
             => await ArchiveAsync(message.Id);
 
+        /// <summary>
+        /// Un-archives a private message.
+        /// </summary>
+        /// <param name="messageId">The unique Id of the message.</param>
+        /// <returns>A task that completes when the operation is finished.</returns>
         public async Task UnarchiveAsync(ulong messageId)
         {
             object body = new
@@ -225,6 +270,11 @@ namespace RoSharp.API
             await PostAsync("/v1/messages/unarchive", body, Constants.URL("privatemessages"), "SessionAPI.UnarchiveAsync");
         }
 
+        /// <summary>
+        /// Un-archives a private message.
+        /// </summary>
+        /// <param name="message">The message.</param>
+        /// <returns>A task that completes when the operation is finished.</returns>
         public async Task UnarchiveAsync(PrivateMessage message)
             => await UnarchiveAsync(message.Id);
     }

@@ -1,5 +1,6 @@
 ﻿using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
+using RoSharp.Exceptions;
 using RoSharp.Structures;
 using RoSharp.Utility;
 using System;
@@ -26,6 +27,16 @@ namespace RoSharp.API.Assets.Experiences
             experience = exp;
         }
 
+        /// <summary>
+        /// Gets a list of datastores within this experience.
+        /// <para>
+        /// An attached API key with the <c>universe-datastores.objects:list</c> permission is required to use this method.
+        /// </para>
+        /// </summary>
+        /// <param name="cursor">The cursor for the next page. Obtained by calling this API previously.</param>
+        /// <param name="scope">The scope of the request. Defaults to <c>global</c>.</param>
+        /// <returns>A task containing a <see cref="PageResponse{T}"/> of <see cref="DataStore"/> upon completion.</returns>
+        /// <exception cref="RobloxAPIException">Roblox API failure or lack of permissions.</exception>
         public async Task<PageResponse<DataStore>> ListDataStoresAsync(string? cursor = null, string scope = "global")
         {
             SessionVerify.ThrowAPIKeyIfNecessary(experience.session, "DataStoreManager.ListDataStoresAsync", "universe-datastores.objects:list");
@@ -51,6 +62,17 @@ namespace RoSharp.API.Assets.Experiences
             return new(dataStores, nextPage, null);
         }
 
+        /// <summary>
+        /// Gets a specific datastore within this experience.
+        /// <para>
+        /// An attached API key with the <c>universe-datastores.objects:list</c> permission is required to use this method.
+        /// </para>
+        /// </summary>
+        /// <param name="name">The name of the datastore, cannot be <see langword="null"/>.</param>
+        /// <param name="scope">The scope of the request. Defaults to <c>global</c>.</param>
+        /// <returns>A task containing a <see cref="DataStore"/> upon completion. Can be <see langword="null"/> if there is no data.</returns>
+        /// <exception cref="RobloxAPIException">Roblox API failure or lack of permissions.</exception>
+        /// <exception cref="ArgumentNullException">Name cannot be null.</exception>
         public async Task<DataStore?> GetDataStoreAsync(string name, string scope = "global")
         {
             SessionVerify.ThrowAPIKeyIfNecessary(experience.session, "DataStoreManager.GetDataStoreAsync", "universe-datastores.objects:list");
@@ -74,9 +96,24 @@ namespace RoSharp.API.Assets.Experiences
             return match;
         }
 
+        /// <summary>
+        /// Gets a specific key from a datastore within this experience.
+        /// <para>
+        /// An attached API key with the <c>universe-datastores.objects:read</c> permission is required to use this method.
+        /// </para>
+        /// </summary>
+        /// <param name="dataStoreName">The name of the datastore.</param>
+        /// <param name="key">The key of the data.</param>
+        /// <param name="scope">The scope of the request. Defaults to <c>global</c>.</param>
+        /// <returns>A task containing <see cref="DataStoreEntry"/> upon completion. Can be <see langword="null"/> if there is no data.</returns>
+        /// <exception cref="RobloxAPIException">Roblox API failure or lack of permissions.</exception>
+        /// <exception cref="ArgumentNullException">dataStoreName and key cannot be null.</exception>
         public async Task<DataStoreEntry?> GetKeyAsync(string dataStoreName, string key, string scope = "global")
         {
             SessionVerify.ThrowAPIKeyIfNecessary(experience.session, "DataStore.GetAsync", "universe-datastores.objects:read");
+            ArgumentNullException.ThrowIfNullOrWhiteSpace(dataStoreName, nameof(dataStoreName));
+            ArgumentNullException.ThrowIfNullOrWhiteSpace(key, nameof(key));
+
             string url = $"/datastores/v1/universes/{experience.UniverseId}/standard-datastores/datastore/entries/entry"
                 + $"?dataStoreName={dataStoreName}"
                 + $"&entryKey={key}"
@@ -120,9 +157,27 @@ namespace RoSharp.API.Assets.Experiences
             };
         }
 
+        /// <summary>
+        /// Sets a specific key from a datastore within this experience.
+        /// <para>
+        /// An attached API key with the <c>universe-datastores.objects:create</c> permission is required to use this method.
+        /// </para>
+        /// </summary>
+        /// <param name="dataStoreName">The name of the datastore.</param>
+        /// <param name="key">The key of the data.</param>
+        /// <param name="newContent">The new content to set. Can be any type except <see langword="null"/> and will be converted automatically.</param>
+        /// <param name="userIds">A list of user Ids to associate with this datastore.</param>
+        /// <param name="scope">The scope of the request. Defaults to <c>global</c>.</param>
+        /// <returns>A task that completes when the operation is finished.</returns>
+        /// <exception cref="RobloxAPIException">Roblox API failure or lack of permissions.</exception>
+        /// <exception cref="ArgumentNullException">dataStoreName, key, and newContent cannot be null.</exception>
         public async Task SetKeyAsync(string dataStoreName, string key, object newContent, IList<ulong> userIds, string scope = "global")
         {
             SessionVerify.ThrowAPIKeyIfNecessary(experience.session, "DataStore.SetAsync", "universe-datastores.objects:create");
+            ArgumentNullException.ThrowIfNullOrWhiteSpace(dataStoreName, nameof(dataStoreName));
+            ArgumentNullException.ThrowIfNullOrWhiteSpace(key, nameof(key));
+            ArgumentNullException.ThrowIfNull(newContent, nameof(newContent));
+
             string url = $"/datastores/v1/universes/{experience.UniverseId}/standard-datastores/datastore/entries/entry"
                 + $"?dataStoreName={dataStoreName}"
                 + $"&entryKey={key}"
@@ -136,15 +191,57 @@ namespace RoSharp.API.Assets.Experiences
             await HttpManager.SendAsync(experience.session, message);
         }
 
+        /// <summary>
+        /// Sets a specific key from a datastore within this experience.
+        /// <para>
+        /// An attached API key with the <c>universe-datastores.objects:create</c> permission is required to use this method.
+        /// </para>
+        /// </summary>
+        /// <param name="dataStoreName">The name of the datastore.</param>
+        /// <param name="key">The key of the data.</param>
+        /// <param name="newContent">The new content to set. Can be any type except <see langword="null"/> and will be converted automatically.</param>
+        /// <param name="scope">The scope of the request. Defaults to <c>global</c>.</param>
+        /// <returns>A task that completes when the operation is finished.</returns>
+        /// <exception cref="RobloxAPIException">Roblox API failure or lack of permissions.</exception>
+        /// <exception cref="ArgumentNullException">dataStoreName and key cannot be null.</exception>
         public async Task SetKeyAsync(string dataStoreName, string key, object newContent, string scope = "global")
             => await SetKeyAsync(dataStoreName, key, newContent, new List<ulong>(0), scope);
 
+        /// <summary>
+        /// Sets a specific key from a datastore within this experience.
+        /// <para>
+        /// An attached API key with the <c>universe-datastores.objects:create</c> permission is required to use this method.
+        /// </para>
+        /// </summary>
+        /// <param name="dataStoreName">The name of the datastore.</param>
+        /// <param name="key">The key of the data.</param>
+        /// <param name="newContent">The new content to set. Can be any type except <see langword="null"/> and will be converted automatically.</param>
+        /// <param name="users">A list of users to associate with this datastore.</param>
+        /// <param name="scope">The scope of the request. Defaults to <c>global</c>.</param>
+        /// <returns>A task that completes when the operation is finished.</returns>
+        /// <exception cref="RobloxAPIException">Roblox API failure or lack of permissions.</exception>
+        /// <exception cref="ArgumentNullException">dataStoreName and key cannot be null.</exception>
         public async Task SetKeyAsync(string dataStoreName, string key, object newContent, IList<User> users, string scope = "global")
             => await SetKeyAsync(dataStoreName, key, newContent, users.Select(u => u.Id).ToList(), scope);
 
+        /// <summary>
+        /// Deletes a specific key from a datastore within this experience.
+        /// <para>
+        /// An attached API key with the <c>universe-datastores.objects:delete</c> permission is required to use this method.
+        /// </para>
+        /// </summary>
+        /// <param name="dataStoreName">The name of the datastore.</param>
+        /// <param name="key">The key of the data.</param>
+        /// <param name="scope">The scope of the request. Defaults to <c>global</c>.</param>
+        /// <returns>A task that completes when the operation is finished.</returns>
+        /// <exception cref="RobloxAPIException">Roblox API failure or lack of permissions.</exception>
+        /// <exception cref="ArgumentNullException">dataStoreName and key cannot be null.</exception>
         public async Task DeleteKeyAsync(string dataStoreName, string key, string scope = "global")
         {
             SessionVerify.ThrowAPIKeyIfNecessary(experience.session, "DataStore.DeleteAsync", "universe-datastores.objects:delete");
+            ArgumentNullException.ThrowIfNullOrWhiteSpace(dataStoreName, nameof(dataStoreName));
+            ArgumentNullException.ThrowIfNullOrWhiteSpace(key, nameof(key));
+
             string url = $"/datastores/v1/universes/{experience.UniverseId}/standard-datastores/datastore/entries/entry"
                 + $"?dataStoreName={dataStoreName}"
                 + $"&entryKey={key}"
@@ -190,7 +287,7 @@ namespace RoSharp.API.Assets.Experiences
         /// Sets a key within the datastore.
         /// </summary>
         /// <param name="key">The key.</param>
-        /// <param name="value">The new value.</param>
+        /// <param name="value">The new value. Can be any type except <see langword="null"/> and will be converted automatically</param>
         /// <returns>A task that completes when the operation is finished.</returns>
         public async Task SetAsync(string key, object value)
             => await manager.SetKeyAsync(Name, key, value, Scope);

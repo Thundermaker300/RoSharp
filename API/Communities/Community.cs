@@ -133,6 +133,8 @@ namespace RoSharp.API.Communities
         /// </summary>
         public async Task<MemberManager> GetMemberManagerAsync()
         {
+            await Task.CompletedTask;
+
             memberManager ??= new MemberManager(this);
             return memberManager;
         }

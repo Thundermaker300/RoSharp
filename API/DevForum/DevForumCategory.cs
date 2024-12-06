@@ -62,10 +62,14 @@ namespace RoSharp.API.DevForum
         {
             List<DevForumTopic> list = new();
 
-            foreach (var topic in TopicIds)
+            if (TopicIds != null)
             {
-                list.Add(await DevForumAPI.GetTopicAsync(topic, excludeSystemReplies));
+                foreach (var topic in TopicIds)
+                {
+                    list.Add(await DevForumAPI.GetTopicAsync(topic, excludeSystemReplies));
+                }
             }
+
             return list.AsReadOnly();
         }
 
