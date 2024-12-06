@@ -33,7 +33,7 @@ namespace RoSharp.Structures
         /// COOKIE, X-CSRF-TOKEN, X-API-KEY, CONTENT-TYPE, CONTENT-LENGTH
         /// </para>
         /// </summary>
-        public Dictionary<string, IEnumerable<string>> Headers { get; set; } = new(0);
+        public Dictionary<string, IEnumerable<string>> Headers { get; set; } = [];
 
         /// <summary>
         /// Creates a new <see cref="HttpMessage"/>.

@@ -60,7 +60,7 @@ namespace RoSharp.API.DevForum
         /// <returns>A task containing a <see cref="ReadOnlyCollection{T}"/> of <see cref="DevForumTopic"/> upon completion.</returns>
         public async Task<ReadOnlyCollection<DevForumTopic>> GetTopicsAsync(bool excludeSystemReplies = true)
         {
-            List<DevForumTopic> list = new();
+            List<DevForumTopic> list = [];
 
             if (TopicIds != null)
             {

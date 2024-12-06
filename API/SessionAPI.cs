@@ -166,7 +166,7 @@ namespace RoSharp.API
             string rawData = await GetStringAsync(url, Constants.URL("privatemessages"), "SessionAPI.ReadPrivateMessagesAsync");
             dynamic data = JObject.Parse(rawData);
 
-            List<PrivateMessage> messages = new List<PrivateMessage>();
+            List<PrivateMessage> messages = [];
             foreach (dynamic item in data.collection)
             {
                 PrivateMessage message = new()

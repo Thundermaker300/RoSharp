@@ -48,7 +48,7 @@ namespace RoSharp.API.Assets.Experiences
             dynamic data = JObject.Parse(rawData);
 
             string? nextPage = data.nextPageCursor;
-            List<DataStore> dataStores = new List<DataStore>();
+            List<DataStore> dataStores = [];
 
             foreach (dynamic dataStore in data.datastores)
             {
@@ -134,7 +134,7 @@ namespace RoSharp.API.Assets.Experiences
             if (res.Headers.TryGetValues("last-modified", out var updatedHeaders))
                 created = DateTime.Parse(updatedHeaders.First());
 
-            List<Id<User>> ids = new();
+            List<Id<User>> ids = [];
             if (res.Headers.TryGetValues("roblox-entry-userids", out var userIdHeaders))
             {
                 string idsRaw = userIdHeaders.First();
