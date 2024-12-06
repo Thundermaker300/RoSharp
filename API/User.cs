@@ -145,8 +145,6 @@ namespace RoSharp.API
             robloxBadges = null;
             primaryGroup = null;
             socialChannels = null;
-            currentlyWearing = null;
-            collections = null;
             groups = null;
             customName = null;
 
@@ -271,7 +269,7 @@ namespace RoSharp.API
         /// <summary>
         /// Gets the user's primary community.
         /// </summary>
-        /// <returns>A task containing a <see cref="Community"/> on completion. Will be <see langword="null"/> if the user does not have a primary community.</returns>
+        /// <returns>A task containing a <see cref="Community"/> on completion. Can be <see langword="null"/> if the user does not have a primary community.</returns>
         public async Task<Community?> GetPrimaryGroupAsync()
         {
             if (primaryGroup == null)
@@ -354,56 +352,45 @@ namespace RoSharp.API
             return socialChannels;
         }
 
-        private ReadOnlyCollection<Asset>? currentlyWearing;
-
         /// <summary>
-        /// Returns a <see cref="ReadOnlyCollection{T}"/> of <see cref="Asset"/> this user is currently wearing.
+        /// Returns a list of assets this user is currently wearing.
         /// </summary>
-        /// <returns><see cref="ReadOnlyCollection{T}"/></returns>
-        /// <remarks>The <see cref="Session"/> attached to this <see cref="User"/> will automatically be added to the returned <see cref="Asset"/> instances. This method will throw an exception if this User instance has no <see cref="Session"/> attached, as <see cref="Asset"/> instances must have a session attached.</remarks>
+        /// <returns>A task containing a <see cref="ReadOnlyCollection{T}"/> of <see cref="Id{T}"/> upon completion.</returns>
+        /// <remarks>This API method does not cache and will make a request each time it is called.</remarks>
         /// <exception cref="RobloxAPIException">Roblox API failure.</exception>
-        public async Task<ReadOnlyCollection<Asset>> GetCurrentlyWearingAsync()
+        public async Task<ReadOnlyCollection<Id<Asset>>> GetCurrentlyWearingAsync()
         {
-            if (currentlyWearing == null)
-            {
-                string rawData = await GetStringAsync($"/v1/users/{Id}/currently-wearing", Constants.URL("avatar"));
-                dynamic data = JObject.Parse(rawData);
+            string rawData = await GetStringAsync($"/v1/users/{Id}/currently-wearing", Constants.URL("avatar"));
+            dynamic data = JObject.Parse(rawData);
 
-                List<Asset> list = [];
-                foreach (dynamic item in data.assetIds)
-                {
-                    ulong assetId = Convert.ToUInt64(item);
-                    list.Add(await Asset.FromId(assetId, session));
-                }
-                currentlyWearing = list.AsReadOnly();
+            List<Id<Asset>> list = [];
+            foreach (dynamic item in data.assetIds)
+            {
+                ulong assetId = Convert.ToUInt64(item);
+                list.Add(new(assetId, session));
             }
-            return currentlyWearing;
+            return list.AsReadOnly();
         }
 
-        private ReadOnlyCollection<Asset>? collections;
-
         /// <summary>
-        /// Returns a <see cref="ReadOnlyCollection{T}"/> of <see cref="Asset"/> that are in this user's collection.
+        /// Returns a list of assets that are in this user's collection.
         /// </summary>
-        /// <returns><see cref="ReadOnlyCollection{T}"/></returns>
-        /// <remarks>The <see cref="Session"/> attached to this <see cref="User"/> will automatically be added to the returned <see cref="Asset"/> instances. This method will throw an exception if this User instance has no <see cref="Session"/> attached, as <see cref="Asset"/> instances must have a session attached.</remarks>
+        /// <returns>A task containing a <see cref="ReadOnlyCollection{T}"/> of <see cref="Id{T}"/> upon completion.</returns>
+        /// <remarks>This API method does not cache and will make a request each time it is called.</remarks>
         /// <exception cref="RobloxAPIException">Roblox API failure.</exception>
-        public async Task<ReadOnlyCollection<Asset>> GetCollectionItemsAsync()
+        public async Task<ReadOnlyCollection<Id<Asset>>> GetCollectionItemsAsync()
         {
-            if (collections == null)
-            { // TODO: "infinity value error"
-                string rawData = await GetStringAsync($"/users/profile/robloxcollections-json?userId={Id}", Constants.ROBLOX_URL);
-                dynamic data = JObject.Parse(rawData);
+            // TODO: "infinity value error"
+            string rawData = await GetStringAsync($"/users/profile/robloxcollections-json?userId={Id}", Constants.ROBLOX_URL);
+            dynamic data = JObject.Parse(rawData);
 
-                List<Asset> list = [];
-                foreach (dynamic item in data.CollectionsItems)
-                {
-                    ulong assetId = Convert.ToUInt64(item.Id);
-                    list.Add(await Asset.FromId(assetId, session));
-                }
-                collections = list.AsReadOnly();
+            List<Id<Asset>> list = [];
+            foreach (dynamic item in data.CollectionsItems)
+            {
+                ulong assetId = Convert.ToUInt64(item.Id);
+                list.Add(new(assetId, session));
             }
-            return collections;
+            return list.AsReadOnly();
         }
 
         /// <summary>
@@ -659,6 +646,7 @@ namespace RoSharp.API
         /// <remarks>This API method does not cache and will make a request each time it is called. This API also does not work for Badges, Bundles, and GamePasses -- see their respective APIs.</remarks>
         /// <seealso cref="PrivateInventory"/>
         /// <seealso cref="GetBadgesAsync(FixedLimit, RequestSortOrder, string?)"/>
+        /// <exception cref="RobloxAPIException">Roblox API failure or the authenticated user cannot see this user's inventory.</exception>
         public async Task<PageResponse<Id<Asset>>> GetInventoryAsync(AssetType assetType, FixedLimit limit = FixedLimit.Limit100, RequestSortOrder sortOrder = RequestSortOrder.Desc, string? cursor = null)
         {
             string url = $"/v2/users/{Id}/inventory/{(int)assetType}?limit={limit.Limit()}&sortOrder={sortOrder}";
@@ -682,7 +670,7 @@ namespace RoSharp.API
         }
 
         /// <summary>
-        /// Returns items that the user owns. This method WILL throw an exception if the authenticated user cannot see this user's inventory.
+        /// Returns items that the user has favorited.
         /// </summary>
         /// <param name="assetType">The <see cref="AssetType"/> to use for this request.</param>
         /// <param name="limit">The limit of assets to return.</param>
