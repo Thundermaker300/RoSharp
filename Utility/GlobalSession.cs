@@ -19,7 +19,7 @@
         /// <exception cref="ArgumentException">Will throw if the session is not authenticated and does not have an API key.</exception>
         /// <exception cref="ArgumentNullException">The <paramref name="session"/> is <see langword="null"/>.</exception>
         /// <exception cref="InvalidOperationException">Will throw if the provided session is already assigned as the current session.</exception>
-        /// <remarks>The provided session cannot be <see langword="null"/> and must be authenticated by <see cref="Session.LoginAsync(string)"/> before calling this method.</remarks>
+        /// <remarks>The provided session cannot be <see langword="null"/> and must be authenticated by <see cref="Session.LoginAsync(string)"/> OR have an attached API key before calling this method.</remarks>
         public static void AssignSession(Session session)
         {
             ArgumentNullException.ThrowIfNull(session, nameof(session));
