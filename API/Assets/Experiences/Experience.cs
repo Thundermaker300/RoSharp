@@ -1035,7 +1035,7 @@ namespace RoSharp.API.Assets.Experiences
         /// <inheritdoc/>
         public override string ToString()
         {
-            return $"{Type} [{Time}] {{{Id}}} ExpID: {UniverseId.ItemId} UserID: {UserId.ItemId}";
+            return $"{Type} [{Time}] {{{Id}}} ExpID: {UniverseId.UniqueId} UserID: {UserId.UniqueId}";
         }
     }
 

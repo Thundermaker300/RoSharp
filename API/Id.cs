@@ -10,9 +10,9 @@ namespace RoSharp.API
     /// To return the associated item with all of its data, see <see cref="GetInstanceAsync(Session?)"/>.
     /// </para>
     /// <para>
-    /// If a <see cref="Session"/> is provided in the API that returns this method (either directly in the method or indirectly in the class), that session will also be associated with the instance returned by <see cref="GetInstanceAsync(Session?)"/>.
+    /// If a <see cref="Session"/> is provided in the API that returns this method (either directly in the method or indirectly in the class), that session will also be associated with the instance returned by <see cref="GetInstanceAsync(Session?)"/> automatically.
     /// A session can be provided to this method directly to override the session for the returned instance.
-    /// Otherwise, the global session from <see cref="GlobalSession"/> will be used if it is assigned.
+    /// If all else fails, the global session from <see cref="GlobalSession"/> will be used if it is assigned.
     /// </para>
     /// </summary>
     public sealed class Id<T>
@@ -28,7 +28,7 @@ namespace RoSharp.API
         /// <param name="session">The session. Optional.</param>
         public Id(ulong id, Session? session = null)
         {
-            ItemId = id;
+            UniqueId = id;
 
             storedSession = session;
         }
@@ -36,7 +36,12 @@ namespace RoSharp.API
         /// <summary>
         /// Gets the Id of the <typeparamref name="T"/>.
         /// </summary>
-        public ulong ItemId { get; }
+        public ulong UniqueId { get; }
+
+        /// <summary>
+        /// Gets the <see cref="System.Type"/> that is being encapsulated by this object. Equivalent to <c>typeof(<typeparamref name="T"/>).</c>
+        /// </summary>
+        public Type Type => typeof(T);
 
         /// <summary>
         /// Returns the <typeparamref name="T"/> associated with this Id.
@@ -51,20 +56,20 @@ namespace RoSharp.API
         public async Task<T> GetInstanceAsync(Session? session = null)
         {
             Session? sessionToUse = session ?? storedSession ?? GlobalSession.Assigned;
-            stored ??= await T.FromId(ItemId, sessionToUse);
+            stored ??= await T.FromId(UniqueId, sessionToUse);
             return stored;
         }
 
         /// <inheritdoc/>
         public override string ToString()
         {
-            return ItemId.ToString();
+            return UniqueId.ToString();
         }
 
         /// <summary>
-        /// Converts the <see cref="Id{T}"/> to its Id. Equivalent to accessing <see cref="Id{T}.ItemId"/>.
+        /// Converts the <see cref="Id{T}"/> to its Id. Equivalent to accessing <see cref="Id{T}.UniqueId"/>.
         /// </summary>
         /// <param name="id">The <see cref="Id{T}"/> to convert.</param>
-        public static implicit operator ulong(Id<T> id) => id.ItemId;
+        public static implicit operator ulong(Id<T> id) => id.UniqueId;
     }
 }

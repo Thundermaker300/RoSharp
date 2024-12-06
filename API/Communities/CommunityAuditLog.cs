@@ -46,7 +46,7 @@ namespace RoSharp.API.Communities
         /// <inheritdoc/>
         public override string ToString()
         {
-            return $"{Type} [{Time}] CommunityId: {CommunityId.ItemId} UserID: {UserId.ItemId}";
+            return $"{Type} [{Time}] CommunityId: {CommunityId.UniqueId} UserID: {UserId.UniqueId}";
         }
     }
 }

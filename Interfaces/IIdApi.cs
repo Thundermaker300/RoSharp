@@ -22,7 +22,6 @@
         /// <param name="id">The Id.</param>
         /// <param name="session">Session. Optional.</param>
         /// <returns>A task containing the <typeparamref name="T"/>.</returns>
-        /// <exception cref="NotImplementedException">Always thrown.</exception>
         public abstract static Task<T> FromId(ulong id, Session? session);
 
         /// <summary>

@@ -211,7 +211,7 @@ namespace RoSharp.API.Assets
         /// <inheritdoc/>
         public override string ToString()
         {
-            return $"{Name} [{Id}] {{EXP:{experience.ItemId}}} <{AwardedCount}>";
+            return $"{Name} [{Id}] {{EXP:{experience.UniqueId}}} <{AwardedCount}>";
         }
         
         /// <inheritdoc/>
