@@ -3,6 +3,7 @@
     /// <summary>
     /// Indicates the type of an asset.
     /// </summary>
+    /// <seealso cref="API.Assets.Asset.AssetType"/>
     public enum AssetType
     {
         // "Body" isn't an official AssetType. However, it is included in the enum so that it can be included
