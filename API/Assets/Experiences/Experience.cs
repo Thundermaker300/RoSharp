@@ -168,8 +168,6 @@ namespace RoSharp.API.Assets.Experiences
             }
         }
 
-        internal bool favoritedByUser;
-
         /// <inheritdoc/>
         public DateTime RefreshedAt { get; set; }
 
@@ -245,8 +243,6 @@ namespace RoSharp.API.Assets.Experiences
             rootPlaceId = new Id<Place>(Convert.ToUInt64(data.rootPlaceId), session);
             genre = ExperienceUtility.GetGenre(Convert.ToString(data.genre_l1));
             subgenre = ExperienceUtility.GetGenre(Convert.ToString(data.genre_l2));
-
-            favoritedByUser = data.isFavoritedByUser;
 
             if (data.price == null)
                 cost = 0;

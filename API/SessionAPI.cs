@@ -7,9 +7,6 @@ using System.Collections.ObjectModel;
 
 namespace RoSharp.API
 {
-    // TODO: The API in this class needs converted to use the new system (SessionVerify.ThrowIfNecessary)
-    // The API should also all be obtained in a ctor or refresh method instead of each access.
-
     /// <summary>
     /// Some API that only the authenticated user can see and perform (such as their Robux amount).
     /// </summary>
@@ -89,24 +86,6 @@ namespace RoSharp.API
         /// Gets the amount of Robux the authenticated user has.
         /// </summary>
         public int Robux => robux;
-
-        /// <summary>
-        /// Gets a value indicating whether or not the specified experience is favorited by the authenticated user.
-        /// </summary>
-        /// <param name="experience">The target experience.</param>
-        /// <returns>A task that contains a bool when completed.</returns>
-        public async Task<bool> FavoritedExperienceAsync(Experience experience)
-        { // TODO: This api does not check for matching session.
-            await Task.CompletedTask;
-            return experience.favoritedByUser;
-        }
-
-        /// <summary>
-        /// Gets a value indicating whether or not the specified experience is favorited by the authenticated user.
-        /// </summary>
-        /// <param name="experienceId">The target experience Id.</param>
-        /// <returns>A task that contains a bool when completed.</returns>
-        public async Task<bool> FavoritedExperienceAsync(ulong experienceId) => await FavoritedExperienceAsync(await Experience.FromId(experienceId, session));
 
         private string[] incomeSkipList = ["incomingRobuxTotal", "outgoingRobuxTotal"];
 
