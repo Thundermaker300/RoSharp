@@ -378,10 +378,13 @@ namespace RoSharp.API
         /// <returns>A task containing a <see cref="ReadOnlyCollection{T}"/> of <see cref="Id{T}"/> upon completion.</returns>
         /// <remarks>This API method does not cache and will make a request each time it is called.</remarks>
         /// <exception cref="RobloxAPIException">Roblox API failure.</exception>
+        /// <exception cref="ArgumentException">Invalid user.</exception>
         public async Task<ReadOnlyCollection<Id<Asset>>> GetCollectionItemsAsync()
         {
-            // TODO: "infinity value error"
-            string rawData = await GetStringAsync($"/users/profile/robloxcollections-json?userId={Id}", Constants.ROBLOX_URL);
+            string rawData = await GetStringAsync($"/users/profile/robloxcollections-json?userId={Id}", Constants.ROBLOX_URL_WWW);
+            if (rawData.Contains("Invalid user"))
+                throw new ArgumentException("Invalid user.");
+            Console.WriteLine(rawData);
             dynamic data = JObject.Parse(rawData);
 
             List<Id<Asset>> list = [];
