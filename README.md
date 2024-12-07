@@ -5,7 +5,7 @@
 [![Discord](https://img.shields.io/discord/1305657567137107978?color=738adb&label=Discord&logo=discord&logoColor=white&style=for-the-badge)](https://discord.gg/3hH7qT33Wy)
 
 # RoSharp
-RoSharp is a C#/.NET utility package designed as a wrapper for Roblox's Web API system. RoSharp requires NET 8.0 or later.
+RoSharp is a C#/.NET utility package designed as a wrapper for Roblox's Web API system. The framework is built on .NET 8.0, and requires version 13.0.3 or greater of Newtonsoft.Json (which will be installed alongside the framework if installed with NuGet).
 
 See [wiki](https://github.com/Thundermaker300/RoSharp/wiki) for all extensive documentation. This wiki is work in progress! Every public member within the framework is documented via C#'s XML documentation, so users of Visual Studio and Visual Studio Code (and likely other IDEs) should be covered!
 
