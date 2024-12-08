@@ -44,10 +44,10 @@ namespace RoSharp.Utility
         {
             session ??= session.Global();
 
-            if (message.AuthType is AuthType.RobloSecurity or AuthType.RobloSecurityAndApiKey)
+            if (message.AuthType is AuthType.RobloSecurity or AuthType.RobloSecurityAndApiKey && !message.SilenceExceptions)
                 SessionVerify.ThrowIfNecessary(session, message.ApiName ?? "UNKNOWN - MESSAGE DEV");
 
-            if (message.AuthType is AuthType.ApiKey or AuthType.RobloSecurityAndApiKey)
+            if (message.AuthType is AuthType.ApiKey or AuthType.RobloSecurityAndApiKey && !message.SilenceExceptions)
                 SessionVerify.ThrowAPIKeyIfNecessary(session, message.ApiName ?? "UNKNOWN - MESSAGE DEV", message.ApiKeyPermission ?? "UNKNOWN - MESSAGE DEV");
 
             HttpClient client = GetClient();
