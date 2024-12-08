@@ -36,18 +36,33 @@ namespace RoSharp.API
 
         internal Session? session;
 
+        internal async Task<HttpResponseMessage> SendAsync(HttpMessage message, string? baseOverride = null)
+        {
+            message.Url = string.Concat(baseOverride ?? BaseUrl, message.Url);
+            return await HttpManager.SendAsync(session, message);
+        }
+
+        internal async Task<string> SendStringAsync(HttpMessage message, string? baseOverride = null)
+        {
+            message.Url = string.Concat(baseOverride ?? BaseUrl, message.Url);
+            return await HttpManager.SendStringAsync(session, message);
+        }
+
+        [Obsolete("Use SendAsync")]
         internal async Task<HttpResponseMessage> GetAsync(string url, string? baseOverride = null, string? verifyApiName = null, bool doNotThrowException = false)
         {
             HttpMessage reqMessage = new(HttpMethod.Get, string.Concat(baseOverride ?? BaseUrl, url));
             return await HttpManager.SendAsync(session, reqMessage, verifyApiName, doNotThrowException);
         }
 
+        [Obsolete("Use SendStringAsync")]
         internal async Task<string> GetStringAsync(string url, string? baseOverride = null, string? verifyApiName = null, bool doNotThrowException = false)
         {
             HttpMessage reqMessage = new(HttpMethod.Get, string.Concat(baseOverride ?? BaseUrl, url));
             return await HttpManager.SendStringAsync(session, reqMessage, verifyApiName, true);
         }
 
+        [Obsolete("Use SendAsync")]
         internal async Task<HttpResponseMessage> PostAsync(string url, object data, string? baseOverride = null, string? verifyApiName = null, bool doNotThrowException = false, bool retrying = false)
         {
             HttpMessage reqMessage = new(HttpMethod.Post, string.Concat(baseOverride ?? BaseUrl, url), data);
@@ -55,6 +70,8 @@ namespace RoSharp.API
 
             return message;
         }
+
+        [Obsolete("Use SendAsync")]
         internal async Task<HttpResponseMessage> PatchAsync(string url, object data, string? baseOverride = null, string? verifyApiName = null, bool doNotThrowException = false, bool retrying = false)
         {
             HttpMessage reqMessage = new(HttpMethod.Patch, string.Concat(baseOverride ?? BaseUrl, url), data);
@@ -62,6 +79,8 @@ namespace RoSharp.API
 
             return message;
         }
+
+        [Obsolete("Use SendAsync")]
         internal async Task<HttpResponseMessage> DeleteAsync(string url, string? baseOverride = null, string? verifyApiName = null, bool doNotThrowException = false, bool retrying = false)
         {
             HttpMessage reqMessage = new(HttpMethod.Delete, string.Concat(baseOverride ?? BaseUrl, url));

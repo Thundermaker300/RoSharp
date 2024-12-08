@@ -140,7 +140,7 @@ namespace RoSharp.API
                 pageType = "Home",
                 sessionId = SessionId,
             };
-            HttpMessage message = new(HttpMethod.Post, $"/discovery-api/omni-recommendation", payload);
+            HttpMessage message = new(HttpMethod.Post, $"{Constants.URL("apis")}/discovery-api/omni-recommendation", payload);
 
             string body = await HttpManager.SendStringAsync(session, message);
             dynamic data = JObject.Parse(body);

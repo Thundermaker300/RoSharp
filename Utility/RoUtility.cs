@@ -5,13 +5,15 @@
     /// </summary>
     public static class RoUtility
     {
-        internal static void LogHTTP(Session? session, HttpResponseMessage message, bool retrying = false)
+        internal static void LogHTTP(Session? session, HttpResponseMessage message, bool retrying = false, bool usingV2Request = false)
         {
 #if DEBUG
             string body = message.Content.ReadAsStringAsync().Result;
 
             ConsoleColor color = (message.IsSuccessStatusCode ? ConsoleColor.Cyan : ConsoleColor.Red);
             RoLogger.Debug($"----- BEGIN REQUEST -----", color);
+            if (usingV2Request)
+                RoLogger.Debug($"<<V2 REQUEST>>", color);
             if (retrying)
                 RoLogger.Debug($"<<RETRY REQUEST>>", color);
             RoLogger.Debug($"{message.RequestMessage?.Method} {(message.RequestMessage?.RequestUri?.ToString() ?? "UNKNOWN")}", color);
