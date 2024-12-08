@@ -1,5 +1,6 @@
 ﻿using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
+using RoSharp.Enums;
 using RoSharp.Exceptions;
 using RoSharp.Structures;
 using RoSharp.Utility;
@@ -39,12 +40,18 @@ namespace RoSharp.API.Assets.Experiences
         /// <exception cref="RobloxAPIException">Roblox API failure or lack of permissions.</exception>
         public async Task<PageResponse<DataStore>> ListDataStoresAsync(string? cursor = null, string scope = "global")
         {
-            SessionVerify.ThrowAPIKeyIfNecessary(experience.session, "DataStoreManager.ListDataStoresAsync", "universe-datastores.objects:list");
             string url = $"/datastores/v1/universes/{experience.UniverseId}/standard-datastores?limit=10&scope={scope}";
             if (cursor != null)
                 url += $"&cursor={cursor}";
 
-            string rawData = await experience.GetStringAsync(url, Constants.URL("apis"));
+            var message = new HttpMessage(HttpMethod.Get, url)
+            {
+                AuthType = AuthType.ApiKey,
+                ApiName = nameof(ListDataStoresAsync),
+                ApiKeyPermission = "universe-datastores.objects:list"
+            };
+
+            string rawData = await experience.SendStringAsync(message, Constants.URL("apis"));
             dynamic data = JObject.Parse(rawData);
 
             string? nextPage = data.nextPageCursor;
@@ -110,7 +117,6 @@ namespace RoSharp.API.Assets.Experiences
         /// <exception cref="ArgumentNullException">dataStoreName and key cannot be null.</exception>
         public async Task<DataStoreEntry?> GetKeyAsync(string dataStoreName, string key, string scope = "global")
         {
-            SessionVerify.ThrowAPIKeyIfNecessary(experience.session, "DataStore.GetAsync", "universe-datastores.objects:read");
             ArgumentNullException.ThrowIfNullOrWhiteSpace(dataStoreName, nameof(dataStoreName));
             ArgumentNullException.ThrowIfNullOrWhiteSpace(key, nameof(key));
 
@@ -119,7 +125,14 @@ namespace RoSharp.API.Assets.Experiences
                 + $"&entryKey={key}"
                 + $"&scope={scope}";
 
-            HttpResponseMessage res = await experience.GetAsync(url, Constants.URL("apis"));
+            var message = new HttpMessage(HttpMethod.Get, url)
+            {
+                AuthType = AuthType.ApiKey,
+                ApiName = nameof(GetKeyAsync),
+                ApiKeyPermission = "universe-datastores.objects:read"
+            };
+
+            HttpResponseMessage res = await experience.SendAsync(message, Constants.URL("apis"));
 
             if (res.StatusCode == HttpStatusCode.NoContent)
                 return null;
@@ -173,7 +186,6 @@ namespace RoSharp.API.Assets.Experiences
         /// <exception cref="ArgumentNullException">dataStoreName, key, and newContent cannot be null.</exception>
         public async Task SetKeyAsync(string dataStoreName, string key, object newContent, IList<ulong> userIds, string scope = "global")
         {
-            SessionVerify.ThrowAPIKeyIfNecessary(experience.session, "DataStore.SetAsync", "universe-datastores.objects:create");
             ArgumentNullException.ThrowIfNullOrWhiteSpace(dataStoreName, nameof(dataStoreName));
             ArgumentNullException.ThrowIfNullOrWhiteSpace(key, nameof(key));
             ArgumentNullException.ThrowIfNull(newContent, nameof(newContent));
@@ -183,12 +195,17 @@ namespace RoSharp.API.Assets.Experiences
                 + $"&entryKey={key}"
                 + $"&scope={scope}";
 
-            HttpMessage message = new(HttpMethod.Post, string.Concat(Constants.URL("apis"), url), newContent);
+            HttpMessage message = new(HttpMethod.Post, url, newContent)
+            {
+                AuthType = AuthType.ApiKey,
+                ApiName = nameof(SetKeyAsync),
+                ApiKeyPermission = "universe-datastores.objects:create"
+            };
 
             if (userIds.Count > 0)
                 message.Headers.Add("roblox-entry-userids", [JsonConvert.SerializeObject(userIds)] );
 
-            await HttpManager.SendAsync(experience.session, message);
+            await experience.SendAsync(message, Constants.URL("apis"));
         }
 
         /// <summary>
@@ -238,7 +255,6 @@ namespace RoSharp.API.Assets.Experiences
         /// <exception cref="ArgumentNullException">dataStoreName and key cannot be null.</exception>
         public async Task DeleteKeyAsync(string dataStoreName, string key, string scope = "global")
         {
-            SessionVerify.ThrowAPIKeyIfNecessary(experience.session, "DataStore.DeleteAsync", "universe-datastores.objects:delete");
             ArgumentNullException.ThrowIfNullOrWhiteSpace(dataStoreName, nameof(dataStoreName));
             ArgumentNullException.ThrowIfNullOrWhiteSpace(key, nameof(key));
 
@@ -247,7 +263,14 @@ namespace RoSharp.API.Assets.Experiences
                 + $"&entryKey={key}"
                 + $"&scope={scope}";
 
-            await experience.DeleteAsync(url, Constants.URL("apis"));
+            var message = new HttpMessage(HttpMethod.Delete, url)
+            {
+                AuthType = AuthType.ApiKey,
+                ApiName = nameof(DeleteKeyAsync),
+                ApiKeyPermission = "universe-datastores.objects:delete"
+            };
+
+            await experience.SendAsync(message, Constants.URL("apis"));
         }
     }
 

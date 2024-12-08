@@ -1,9 +1,11 @@
 ﻿using Newtonsoft.Json.Linq;
 using RoSharp.API.Assets.Experiences;
 using RoSharp.API.Pooling;
+using RoSharp.Enums;
 using RoSharp.Exceptions;
 using RoSharp.Extensions;
 using RoSharp.Interfaces;
+using RoSharp.Structures;
 
 namespace RoSharp.API.Assets
 {
@@ -123,7 +125,7 @@ namespace RoSharp.API.Assets
         /// <inheritdoc/>
         public async Task RefreshAsync()
         {
-            HttpResponseMessage response = await GetAsync($"/v1/badges/{Id}");
+            HttpResponseMessage response = await SendAsync(HttpMethod.Get, $"/v1/badges/{Id}");
             string raw = await response.Content.ReadAsStringAsync();
             dynamic data = JObject.Parse(raw);
 
@@ -153,7 +155,7 @@ namespace RoSharp.API.Assets
         public async Task<string> GetThumbnailAsync()
         {
             string url = $"/v1/badges/icons?badgeIds={Id}&size=150x150&format=Png&isCircular=false";
-            string rawData = await GetStringAsync(url, Constants.URL("thumbnails"));
+            string rawData = await SendStringAsync(HttpMethod.Get, url, Constants.URL("thumbnails"));
             dynamic data = JObject.Parse(rawData);
             if (data.data.Count == 0)
                 throw new ArgumentException("Invalid badge to get thumbnail for.");
@@ -168,14 +170,18 @@ namespace RoSharp.API.Assets
         /// <exception cref="RobloxAPIException">Roblox API failure or lack of permissions.</exception>
         public async Task ModifyAsync(BadgeModifyOptions options)
         {
-            object body = new
+            var message = new HttpMessage(HttpMethod.Patch, $"/v1/badges/{Id}", new
             {
                 name = options.Name ?? Name,
                 description = options.Description ?? Description,
                 enabled = options.IsEnabled ?? IsEnabled,
+            })
+            {
+                AuthType = AuthType.RobloSecurity,
+                ApiName = nameof(ModifyAsync),
             };
 
-            await PatchAsync($"/v1/badges/{Id}", body, verifyApiName: "Badge.ModifyAsync");
+            await SendAsync(message);
         }
 
         /// <summary>

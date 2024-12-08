@@ -21,8 +21,13 @@ namespace RoSharp.API
         public static async Task<ReadOnlyDictionary<AssetType, int>> GetPriceFloorsAsync(Session? session)
         {
 
-            HttpMessage message = new(HttpMethod.Get, $"{Constants.URL("itemconfiguration")}/v1/collectibles/metadata");
-            string body = await HttpManager.SendStringAsync(session, message, "PriceFloorAPI.GetPriceFloorsAsync");
+            HttpMessage message = new(HttpMethod.Get, $"{Constants.URL("itemconfiguration")}/v1/collectibles/metadata")
+            {
+                AuthType = AuthType.RobloSecurity,
+                ApiName = nameof(GetPriceFloorsAsync)
+            };
+
+            string body = await HttpManager.SendStringAsync(session, message);
 
             var dict = new Dictionary<AssetType, int>();
             dynamic data = JObject.Parse(body);

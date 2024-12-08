@@ -42,10 +42,22 @@ namespace RoSharp.API
             return await HttpManager.SendAsync(session, message);
         }
 
+        internal async Task<HttpResponseMessage> SendAsync(HttpMethod method, string url, string? baseOverride = null, object? body = null)
+        {
+            var message = new HttpMessage(method, url, body);
+            return await SendAsync(message, baseOverride);
+        }
+
         internal async Task<string> SendStringAsync(HttpMessage message, string? baseOverride = null)
         {
             message.Url = string.Concat(baseOverride ?? BaseUrl, message.Url);
             return await HttpManager.SendStringAsync(session, message);
+        }
+
+        internal async Task<string> SendStringAsync(HttpMethod method, string url, string? baseOverride = null, object? body = null)
+        {
+            var message = new HttpMessage(method, url, body);
+            return await SendStringAsync(message, baseOverride);
         }
 
         [Obsolete("Use SendAsync")]

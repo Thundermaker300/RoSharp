@@ -102,7 +102,7 @@ namespace RoSharp.API.Assets.Experiences
         /// <exception cref="ArgumentException">Invalid place Id provided.</exception>
         public async Task RefreshAsync()
         {
-            HttpResponseMessage message = await GetAsync($"/v1/games/multiget-place-details?placeIds={Id}");
+            HttpResponseMessage message = await SendAsync(HttpMethod.Get, $"/v1/games/multiget-place-details?placeIds={Id}");
             JArray dataUseless = JArray.Parse(await message.Content.ReadAsStringAsync());
 
             if (dataUseless.Count == 0)
@@ -140,7 +140,7 @@ namespace RoSharp.API.Assets.Experiences
         /// <exception cref="ArgumentException">Invalid asset to get thumbnail for.</exception>
         public async Task<string> GetIconAsync(IconSize size = IconSize.S420x420)
         {
-            string rawData = await GetStringAsync($"/v1/places/gameicons?placeIds={Id}&returnPolicy=PlaceHolder&size={size.ToString().Substring(1)}&format=Png&isCircular=false", Constants.URL("thumbnails"));
+            string rawData = await SendStringAsync(HttpMethod.Get, $"/v1/places/gameicons?placeIds={Id}&returnPolicy=PlaceHolder&size={size.ToString().Substring(1)}&format=Png&isCircular=false", Constants.URL("thumbnails"));
             dynamic data = JObject.Parse(rawData);
 
             if (data.data.Count == 0)
@@ -161,7 +161,7 @@ namespace RoSharp.API.Assets.Experiences
             if (cursor != null)
                 url += $"&cursor={cursor}";
 
-            string rawData = await GetStringAsync(url);
+            string rawData = await SendStringAsync(HttpMethod.Get, url);
             dynamic data = JObject.Parse(rawData);
 
             List<GameServer> list = [];

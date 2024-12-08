@@ -33,7 +33,7 @@ namespace RoSharp.API
         {
             options ??= new ChartsFilterOptions();
 
-            string url = $"/explore-api/v1/get-sorts?sessionId={SessionId}";
+            string url = $"{Constants.URL("apis")}/explore-api/v1/get-sorts?sessionId={SessionId}";
             if (cursor != null)
                 url += $"&sortsPageToken={cursor}";
 
@@ -105,7 +105,8 @@ namespace RoSharp.API
         {
             if (exactMatchSearch)
                 query = $"\"{query}\"";
-            string url = $"/search-api/omni-search?searchQuery={query}&sessionId={SessionId}&pageType=all";
+
+            string url = $"{Constants.URL("apis")}/search-api/omni-search?searchQuery={query}&sessionId={SessionId}&pageType=all";
             if (cursor != null)
                 url += $"&pageToken={cursor}";
 

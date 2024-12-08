@@ -230,7 +230,7 @@ namespace RoSharp.API.Assets
         /// <inheritdoc/>
         public async Task RefreshAsync()
         {
-            HttpResponseMessage response = await GetAsync($"/v2/assets/{Id}/details", Constants.URL("economy"));
+            HttpResponseMessage response = await SendAsync(HttpMethod.Get, $"/v2/assets/{Id}/details", Constants.URL("economy"));
             string raw = await response.Content.ReadAsStringAsync();
             dynamic data = JObject.Parse(raw);
 
@@ -280,20 +280,23 @@ namespace RoSharp.API.Assets
             isCommunityOwned = data.Creator.CreatorType == "Group";
 
             // Update favorites
-            try
+            HttpMessage message = new(HttpMethod.Get, $"/v1/favorites/assets/{Id}/count")
             {
-                favorites = Convert.ToUInt64(await GetStringAsync($"/v1/favorites/assets/{Id}/count"));
-            }
-            catch
-            {
+                SilenceExceptions = true
+            };
+
+            var favoritesRequest = await SendAsync(message);
+            if (favoritesRequest.IsSuccessStatusCode)
+                favorites = Convert.ToUInt64(await favoritesRequest.Content.ReadAsStringAsync());
+            else
                 favorites = 0;
-            }
 
             // Reset properties
             thumbnailUrl = await GetThumbnailAsync(ThumbnailSize.S420x420);
 
             // Check if creator hub asset
-            HttpResponseMessage catalogResponse = await GetAsync($"/toolbox-service/v1/items/details?assetIds={Id}", Constants.URL("apis"), doNotThrowException: true);
+            message.Url = $"/toolbox-service/v1/items/details?assetIds={Id}";
+            HttpResponseMessage catalogResponse = await SendAsync(message, Constants.URL("apis"));
             if (catalogResponse.StatusCode == HttpStatusCode.OK)
             {
                 isCreatorHubAsset = true;
@@ -357,7 +360,7 @@ namespace RoSharp.API.Assets
         public async Task<string> GetThumbnailAsync(ThumbnailSize size = ThumbnailSize.S420x420)
         {
             string url = $"/v1/assets?assetIds={Id}&returnPolicy=PlaceHolder&size={size.ToString().Substring(1)}&format=Png&isCircular=false";
-            string rawData = await GetStringAsync(url, Constants.URL("thumbnails"));
+            string rawData = await SendStringAsync(HttpMethod.Get, url, Constants.URL("thumbnails"));
             dynamic data = JObject.Parse(rawData);
             if (data.data.Count == 0)
                 throw new ArgumentException("Invalid asset to get thumbnail for.");
@@ -378,7 +381,13 @@ namespace RoSharp.API.Assets
                 description = options.Description ?? Description,
             };
 
-            await PatchAsync($"/v1/assets/{Id}", body, Constants.URL("develop"), "Asset.ModifyAsync");
+            HttpMessage message = new(HttpMethod.Patch, $"/v1/assets/{Id}", body)
+            {
+                AuthType = AuthType.RobloSecurity,
+                ApiName = nameof(ModifyAsync),
+            };
+
+            await SendAsync(message, Constants.URL("develop"));
         }
 
         /// <summary>
@@ -392,7 +401,7 @@ namespace RoSharp.API.Assets
         {
             int? priceInRobux = !isOnSale ? null : cost;
             Dictionary<int, int> saleAvailabilityLocations = new() { [0] = 0, [1] = 1 };
-            object body = new
+            var message = new HttpMessage(HttpMethod.Post, $"/v1/assets/{Id}/release", new
             {
                 saleStatus = (isOnSale ? "OnSale" : "OffSale"),
                 priceConfiguration = new
@@ -403,8 +412,12 @@ namespace RoSharp.API.Assets
                 {
                     saleAvailabilityLocations = saleAvailabilityLocations
                 }
+            })
+            {
+                AuthType = AuthType.RobloSecurity,
+                ApiName = nameof(SetSaleStatusAsync),
             };
-            await PostAsync("/v1/assets/3307894526/release", body, Constants.URL("itemconfiguration"), "Asset.SetSaleStatusAsync");
+            await SendAsync(message, Constants.URL("itemconfiguration"));
         }
 
         /// <summary>
@@ -423,7 +436,7 @@ namespace RoSharp.API.Assets
             if (cursor != null)
                 url += $"&cursor={cursor}";
 
-            string rawData = await GetStringAsync(url, Constants.URL("apis"));
+            string rawData = await SendStringAsync(HttpMethod.Get, url, Constants.URL("apis"));
             dynamic data = JObject.Parse(rawData);
             string? nextPage = data.nextCursor;
 
@@ -480,7 +493,7 @@ namespace RoSharp.API.Assets
         /// <remarks>This API method does not cache and will make a request each time it is called. Occasionally, Roblox's API will produce a 'bad recommendation' that leads to an asset that doesn't exist (either deleted or hidden). If this is the case, RoSharp will skip over it automatically. However, if the limit is set to Roblox's maximum of 45, this will result in less than 45 assets being returned.</remarks>
         public async Task<ReadOnlyCollection<Id<Asset>>> GetRecommendedAsync(int limit = 7)
         {
-            string rawData = await GetStringAsync($"/v2/recommendations/assets?assetId={Id}&assetTypeId={(int)AssetType}&numItems=45");
+            string rawData = await SendStringAsync(HttpMethod.Get, $"/v2/recommendations/assets?assetId={Id}&assetTypeId={(int)AssetType}&numItems=45");
             dynamic data = JObject.Parse(rawData);
             List<Id<Asset>> list = [];
             foreach (dynamic item in data.data)

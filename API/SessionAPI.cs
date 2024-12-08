@@ -40,16 +40,16 @@ namespace RoSharp.API
             if (session == null)
                 throw new InvalidOperationException("SessionAPI must have a session.");
 
-            dynamic genderData = JObject.Parse(await GetStringAsync("/v1/gender"));
+            dynamic genderData = JObject.Parse(await SendStringAsync(HttpMethod.Get, "/v1/gender"));
             gender = (Gender)Convert.ToInt32(genderData.gender);
 
-            dynamic countryCodeData = JObject.Parse(await GetStringAsync("/v1/users/authenticated/country-code"));
+            dynamic countryCodeData = JObject.Parse(await SendStringAsync(HttpMethod.Get, "/v1/users/authenticated/country-code"));
             countryCode = countryCodeData.countryCode;
 
-            dynamic birthdateData = JObject.Parse(await GetStringAsync("/v1/birthdate"));
+            dynamic birthdateData = JObject.Parse(await SendStringAsync(HttpMethod.Get, "/v1/birthdate"));
             birthDate = new DateOnly((int)birthdateData.birthYear, (int)birthdateData.birthMonth, (int)birthdateData.birthDay);
 
-            dynamic robuxData = JObject.Parse(await GetStringAsync("/v1/user/currency", Constants.URL("economy")));
+            dynamic robuxData = JObject.Parse(await SendStringAsync(HttpMethod.Get, "/v1/user/currency", Constants.URL("economy")));
             robux = robuxData.robux;
         }
 
@@ -99,8 +99,12 @@ namespace RoSharp.API
             if (session == null)
                 throw new InvalidOperationException("Session cannot be null.");
 
-            var url = $"/v2/users/{session.userid}/transaction-totals?timeFrame={timeLength}&transactionType=summary";
-            string rawData = await GetStringAsync(url, Constants.URL("economy"), verifyApiName: "SessionAPI.GetIncomeAsync");
+            var message = new HttpMessage(HttpMethod.Get, $"/v2/users/{session.userid}/transaction-totals?timeFrame={timeLength}&transactionType=summary")
+            {
+                AuthType = AuthType.RobloSecurity,
+                ApiName = nameof(GetIncomeAsync)
+            };
+            string rawData = await SendStringAsync(message, Constants.URL("economy"));
             dynamic data = JObject.Parse(rawData);
 
             int amount = 0;
@@ -142,13 +146,20 @@ namespace RoSharp.API
             string url = tab is MessagesPageTab.News
                 ? "/v1/announcements"
                 : $"/v1/messages?messageTab={tab.ToString().ToLower()}&pageNumber={pageNumber}&pageSize={pageSize}";
-            string rawData = await GetStringAsync(url, Constants.URL("privatemessages"), "SessionAPI.ReadPrivateMessagesAsync");
+
+            var message = new HttpMessage(HttpMethod.Get, url)
+            {
+                AuthType = AuthType.RobloSecurity,
+                ApiName = nameof(GetPrivateMessagesAsync)
+            };
+
+            string rawData = await SendStringAsync(message, Constants.URL("privatemessages"));
             dynamic data = JObject.Parse(rawData);
 
             List<PrivateMessage> messages = [];
             foreach (dynamic item in data.collection)
             {
-                PrivateMessage message = new()
+                PrivateMessage privateMessage = new()
                 {
                     Id = item.id,
                     Subject = item.subject,
@@ -160,7 +171,7 @@ namespace RoSharp.API
                     IsSystemMessage = item.isSystemMessage,
                     CurrentTab = tab,
                 };
-                messages.Add(message);
+                messages.Add(privateMessage);
             }
             return messages.AsReadOnly();
         }
@@ -172,12 +183,16 @@ namespace RoSharp.API
         /// <returns>A task that completes when the operation is finished.</returns>
         public async Task MarkReadAsync(ulong messageId)
         {
-            object body = new
+            var message = new HttpMessage(HttpMethod.Post, "/v1/messages/mark-read", new
             {
                 messageIds = new[] { messageId },
+            })
+            {
+                AuthType = AuthType.RobloSecurity,
+                ApiName = nameof(MarkReadAsync),
             };
 
-            await PostAsync("/v1/messages/mark-read", body, Constants.URL("privatemessages"), "SessionAPI.MarkReadAsync");
+            await SendAsync(message, Constants.URL("privatemessages"));
         }
 
         /// <summary>
@@ -195,12 +210,16 @@ namespace RoSharp.API
         /// <returns>A task that completes when the operation is finished.</returns>
         public async Task MarkUnreadAsync(ulong messageId)
         {
-            object body = new
+            var message = new HttpMessage(HttpMethod.Post, "/v1/messages/mark-unread", new
             {
                 messageIds = new[] { messageId },
+            })
+            {
+                AuthType = AuthType.RobloSecurity,
+                ApiName = nameof(MarkUnreadAsync),
             };
 
-            await PostAsync("/v1/messages/mark-unread", body, Constants.URL("privatemessages"), "SessionAPI.MarkUnreadAsync");
+            await SendAsync(message, Constants.URL("privatemessages"));
         }
 
         /// <summary>
@@ -218,12 +237,16 @@ namespace RoSharp.API
         /// <returns>A task that completes when the operation is finished.</returns>
         public async Task ArchiveAsync(ulong messageId)
         {
-            object body = new
+            var message = new HttpMessage(HttpMethod.Post, "/v1/messages/archive", new
             {
                 messageIds = new[] { messageId },
+            })
+            {
+                AuthType = AuthType.RobloSecurity,
+                ApiName = nameof(ArchiveAsync),
             };
 
-            await PostAsync("/v1/messages/archive", body, Constants.URL("privatemessages"), "SessionAPI.ArchiveAsync");
+            await SendAsync(message, Constants.URL("privatemessages"));
         }
 
         /// <summary>
@@ -241,12 +264,16 @@ namespace RoSharp.API
         /// <returns>A task that completes when the operation is finished.</returns>
         public async Task UnarchiveAsync(ulong messageId)
         {
-            object body = new
+            var message = new HttpMessage(HttpMethod.Post, "/v1/messages/unarchive", new
             {
                 messageIds = new[] { messageId },
+            })
+            {
+                AuthType = AuthType.RobloSecurity,
+                ApiName = nameof(UnarchiveAsync),
             };
 
-            await PostAsync("/v1/messages/unarchive", body, Constants.URL("privatemessages"), "SessionAPI.UnarchiveAsync");
+            await SendAsync(message, Constants.URL("privatemessages"));
         }
 
         /// <summary>
