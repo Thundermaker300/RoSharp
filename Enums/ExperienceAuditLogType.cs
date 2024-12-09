@@ -23,9 +23,20 @@
         DeleteNotification = 4,
 
         /// <summary>
+        /// A notification string was updated.
+        /// </summary>
+        UpdateNotification = 5,
+
+        /// <summary>
         /// The experience's name was modified.
         /// </summary>
-        NameUpdated = 16,
+        ExperienceRenamed = 16,
+
+        /// <summary>
+        /// The experience's name was modified.
+        /// </summary>
+        [Obsolete("Use ExperienceRenamed")]
+        NameUpdated = ExperienceRenamed,
 
         /// <summary>
         /// The experience's description was modified.
@@ -48,6 +59,11 @@
         PaidAccessModified = 68,
 
         /// <summary>
+        /// The experience's cost to play (in Robux) was modified.
+        /// </summary>
+        PaidAccessPriceModified = 69,
+
+        /// <summary>
         /// The experience's playable devices was modified.
         /// </summary>
         PlayableDevicesModified = 70,
@@ -58,9 +74,49 @@
         PrivateServersModified = 71,
 
         /// <summary>
-        /// The experience's private server price was modified.
+        /// The experience's private server price (in Robux) was modified.
         /// </summary>
         PrivateServerPriceModified = 72,
+
+        /// <summary>
+        /// A user was invited to play and/or modify an experience.
+        /// </summary>
+        UserInvited = 88,
+
+        /// <summary>
+        /// A group's role was invited to play an experience.
+        /// </summary>
+        GroupRoleInvited = 89,
+
+        /// <summary>
+        /// An invited user's permission was changed from play to edit or vice versa.
+        /// </summary>
+        UserPermissionsChanged = 90,
+
+        /// <summary>
+        /// A user was removed from being able to play and/or modify an experience.
+        /// </summary>
+        UserRemoved = 91,
+
+        /// <summary>
+        /// A group's role was removed from being able to play an experience.
+        /// </summary>
+        GroupRoleRemoved = 93,
+
+        /// <summary>
+        /// The experience was renamed.
+        /// </summary>
+        PlaceRenamed = 103,
+
+        /// <summary>
+        /// A place was added to an experience.
+        /// </summary>
+        PlaceAdded = 118,
+
+        /// <summary>
+        /// A place was removed from an experience.
+        /// </summary>
+        PlaceRemoved = 119,
 
         /// <summary>
         /// A place had a new version published.

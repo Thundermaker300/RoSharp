@@ -132,9 +132,6 @@ namespace RoSharp.API.Communities
             return await FromId(groupId.Value, session);
         }
 
-        // TODO: Add FromName (and CommunityUtility) using
-        // https://groups.roblox.com/v1/groups/search/lookup?groupName=
-
         /// <summary>
         /// Gets a <see cref="RoleManager"/> class that has additional API to manage community roles.
         /// </summary>
