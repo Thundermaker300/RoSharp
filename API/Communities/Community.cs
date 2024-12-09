@@ -115,6 +115,23 @@ namespace RoSharp.API.Communities
             return newCommunity;
         }
 
+        /// <summary>
+        /// Returns a <see cref="Community"/> given its name.
+        /// </summary>
+        /// <param name="communityName">The community name.</param>
+        /// <param name="session">The session, optional.</param>
+        /// <returns>A task containing the <see cref="Community"/> upon completion.</returns>
+        /// <exception cref="ArgumentException">If the community name is invalid.</exception>
+        /// <exception cref="RobloxAPIException">Roblox API failure.</exception>
+        public static async Task<Community> FromName(string communityName, Session? session = null)
+        {
+            ulong? groupId = await CommunityUtility.GetCommunityIdAsync(communityName);
+            if (!groupId.HasValue)
+                throw new ArgumentException($"Invalid group name '{communityName}'.");
+
+            return await FromId(groupId.Value, session);
+        }
+
         // TODO: Add FromName (and CommunityUtility) using
         // https://groups.roblox.com/v1/groups/search/lookup?groupName=
 
