@@ -130,7 +130,7 @@ namespace RoSharp.API
         /// <inheritdoc/>
         public async Task RefreshAsync()
         {
-            HttpResponseMessage response = await GetAsync($"/v1/users/{Id}");
+            HttpResponseMessage response = await SendAsync(HttpMethod.Get, $"/v1/users/{Id}");
 
             string raw = await response.Content.ReadAsStringAsync();
             dynamic data = JObject.Parse(raw);
@@ -148,15 +148,15 @@ namespace RoSharp.API
             groups = null;
             customName = null;
 
-            // Update premium
+            // Update premium + inventory
             if (SessionVerify.Verify(session))
             {
                 // Premium
-                HttpResponseMessage premiumResponse = await GetAsync($"/v1/users/{Id}/validate-membership", Constants.URL("premiumfeatures"), "User.IsPremium [RefreshAsync]");
+                HttpResponseMessage premiumResponse = await SendAsync(HttpMethod.Get, $"/v1/users/{Id}/validate-membership", Constants.URL("premiumfeatures"));
                 isPremium = Convert.ToBoolean(await premiumResponse.Content.ReadAsStringAsync());
 
                 // Private Inventory
-                HttpResponseMessage inventoryResponse = await GetAsync($"/v1/users/{Id}/can-view-inventory", Constants.URL("inventory"), "User.PrivateInventory [RefreshAsync]");
+                HttpResponseMessage inventoryResponse = await SendAsync(HttpMethod.Get, $"/v1/users/{Id}/can-view-inventory", Constants.URL("inventory"));
                 dynamic inventoryData = JObject.Parse(await inventoryResponse.Content.ReadAsStringAsync());
                 privateInventory = !Convert.ToBoolean(inventoryData.canView);
             }
@@ -174,8 +174,8 @@ namespace RoSharp.API
 
         private async Task UpdateFollowingsAsync()
         {
-            dynamic followingsData = JObject.Parse(await GetStringAsync($"/v1/users/{Id}/followings/count", Constants.URL("friends")));
-            dynamic followersData = JObject.Parse(await GetStringAsync($"/v1/users/{Id}/followers/count", Constants.URL("friends")));
+            dynamic followingsData = JObject.Parse(await SendStringAsync(HttpMethod.Get, $"/v1/users/{Id}/followings/count", Constants.URL("friends")));
+            dynamic followersData = JObject.Parse(await SendStringAsync(HttpMethod.Get, $"/v1/users/{Id}/followers/count", Constants.URL("friends")));
 
             following = followingsData.count;
             followers = followersData.count;
@@ -227,7 +227,7 @@ namespace RoSharp.API
             if (robloxBadges == null)
             {
                 List<string> badges = [];
-                string rawData = await GetStringAsync($"/v1/users/{Id}/roblox-badges", Constants.URL("accountinformation"));
+                string rawData = await SendStringAsync(HttpMethod.Get, $"/v1/users/{Id}/roblox-badges", Constants.URL("accountinformation"));
                 JArray data = JArray.Parse(rawData);
                 foreach (dynamic badgeData in data.Children<JObject>())
                 {
@@ -254,7 +254,7 @@ namespace RoSharp.API
                 url += "&cursor=" + cursor;
 
             List<string> history = [];
-            string rawData = await GetStringAsync(url);
+            string rawData = await SendStringAsync(HttpMethod.Get, url);
             dynamic data = JObject.Parse(rawData);
             foreach (dynamic historyData in data.data)
             {
@@ -274,8 +274,8 @@ namespace RoSharp.API
         {
             if (primaryGroup == null)
             {
-                string rawData = await GetStringAsync($"/v1/users/{Id}/groups/primary/role", Constants.URL("groups"));
-                if (rawData == "null")
+                string rawData = await SendStringAsync(HttpMethod.Get, $"/v1/users/{Id}/groups/primary/role", Constants.URL("groups"));
+                if (rawData == "null") // love roblox
                     return null;
 
                 dynamic data = JObject.Parse(rawData);
@@ -296,7 +296,7 @@ namespace RoSharp.API
         {
             if (groups == null)
             {
-                string rawData = await GetStringAsync($"/v1/users/{Id}/groups/roles", Constants.URL("groups"));
+                string rawData = await SendStringAsync(HttpMethod.Get, $"/v1/users/{Id}/groups/roles", Constants.URL("groups"));
                 dynamic data = JObject.Parse(rawData);
 
                 Dictionary<Community, Role> dict = [];
@@ -339,7 +339,7 @@ namespace RoSharp.API
             if (socialChannels == null)
             {
                 Dictionary<string, string> dict = [];
-                string rawData = await GetStringAsync($"/v1/users/{Id}/promotion-channels?alwaysReturnUrls=true", Constants.URL("accountinformation"));
+                string rawData = await SendStringAsync(HttpMethod.Get, $"/v1/users/{Id}/promotion-channels?alwaysReturnUrls=true", Constants.URL("accountinformation"));
                 dynamic data = JObject.Parse(rawData);
                 foreach (dynamic media in data)
                 {
@@ -360,7 +360,7 @@ namespace RoSharp.API
         /// <exception cref="RobloxAPIException">Roblox API failure.</exception>
         public async Task<ReadOnlyCollection<Id<Asset>>> GetCurrentlyWearingAsync()
         {
-            string rawData = await GetStringAsync($"/v1/users/{Id}/currently-wearing", Constants.URL("avatar"));
+            string rawData = await SendStringAsync(HttpMethod.Get, $"/v1/users/{Id}/currently-wearing", Constants.URL("avatar"));
             dynamic data = JObject.Parse(rawData);
 
             List<Id<Asset>> list = [];
@@ -381,7 +381,7 @@ namespace RoSharp.API
         /// <exception cref="ArgumentException">Invalid user.</exception>
         public async Task<ReadOnlyCollection<Id<Asset>>> GetCollectionItemsAsync()
         {
-            string rawData = await GetStringAsync($"/users/profile/robloxcollections-json?userId={Id}", Constants.ROBLOX_URL_WWW);
+            string rawData = await SendStringAsync(HttpMethod.Get, $"/users/profile/robloxcollections-json?userId={Id}", Constants.ROBLOX_URL_WWW);
             if (rawData.Contains("Invalid user"))
                 throw new ArgumentException("Invalid user.");
             Console.WriteLine(rawData);
@@ -405,7 +405,7 @@ namespace RoSharp.API
         /// <remarks>This API method does not cache and will make a request each time it is called.</remarks>
         public async Task<ReadOnlyCollection<Id<User>>> GetFriendsAsync(int limit = 50)
         {
-            string rawData = await GetStringAsync($"/v1/users/{Id}/friends", Constants.URL("friends"));
+            string rawData = await SendStringAsync(HttpMethod.Get, $"/v1/users/{Id}/friends", Constants.URL("friends"));
             dynamic data = JObject.Parse(rawData);
             List<Id<User>> friends = [];
             int count = 0;
@@ -438,7 +438,7 @@ namespace RoSharp.API
                 url += "&cursor=" + cursor;
 
             var list = new List<Id<User>>();
-            HttpResponseMessage response = await GetAsync(url, Constants.URL("friends"));
+            HttpResponseMessage response = await SendAsync(HttpMethod.Get, url, Constants.URL("friends"));
             dynamic data = JObject.Parse(await response.Content.ReadAsStringAsync());
             string? nextPage = data.nextPageCursor;
             string? previousPage = data.previousPageCursor;
@@ -467,7 +467,7 @@ namespace RoSharp.API
                 url += "&cursor=" + cursor;
 
             var list = new List<Id<User>>();
-            HttpResponseMessage response = await GetAsync(url, Constants.URL("friends"));
+            HttpResponseMessage response = await SendAsync(HttpMethod.Get, url, Constants.URL("friends"));
             dynamic data = JObject.Parse(await response.Content.ReadAsStringAsync());
             string? nextPage = data.nextPageCursor;
             string? previousPage = data.previousPageCursor;
@@ -491,11 +491,16 @@ namespace RoSharp.API
         {
             if (customName == null)
             {
-                object body = new
+                var message = new HttpMessage(HttpMethod.Post, "/v1/user/get-tags", new
                 {
                     targetUserIds = new[] { Id }
+                })
+                {
+                    AuthType = AuthType.RobloSecurity,
+                    ApiName = nameof(GetCustomNameAsync),
                 };
-                HttpResponseMessage response = await PostAsync("/v1/user/get-tags", body, Constants.URL("contacts"));
+
+                HttpResponseMessage response = await SendAsync(message, Constants.URL("contacts"));
                 JArray data = JArray.Parse(await response.Content.ReadAsStringAsync());
                 if (data.Count != 0)
                 {
@@ -516,13 +521,17 @@ namespace RoSharp.API
         {
             ArgumentNullException.ThrowIfNull(name, nameof(name));
 
-            object body = new
+            var message = new HttpMessage(HttpMethod.Post, "/v1/user/tag", new
             {
                 targetUserId = Id,
                 userTag = name,
+            })
+            {
+                AuthType = AuthType.RobloSecurity,
+                ApiName = nameof(SetCustomName),
             };
 
-            await PostAsync("/v1/user/tag", body, Constants.URL("contacts"), "User.SetCustomName");
+            await SendAsync(message, Constants.URL("contacts"));
         }
 
         /// <summary>
@@ -556,7 +565,7 @@ namespace RoSharp.API
                 ThumbnailType.Headshot => "-headshot",
                 _ => string.Empty,
             } + $"?userIds={Id}&size={size.ToString().Substring(1)}&format=Png&isCircular=false";
-            string rawData = await GetStringAsync(url, Constants.URL("thumbnails"));
+            string rawData = await SendStringAsync(HttpMethod.Get, url, Constants.URL("thumbnails"));
             dynamic data = JObject.Parse(rawData);
             if (data.data.Count == 0)
                 throw new ArgumentException("Invalid user to get thumbnail for.");
@@ -572,7 +581,7 @@ namespace RoSharp.API
         /// <remarks>This API method does not cache and will make a request each time it is called.</remarks>
         public async Task<bool> OwnsAssetAsync(ulong assetId, int assetItemType = 0)
         {
-            string result = await GetStringAsync($"/v1/users/{Id}/items/{assetItemType}/{assetId}/is-owned", Constants.URL("inventory"));
+            string result = await SendStringAsync(HttpMethod.Get, $"/v1/users/{Id}/items/{assetItemType}/{assetId}/is-owned", Constants.URL("inventory"));
             return Convert.ToBoolean(result);
         }
 
@@ -593,7 +602,7 @@ namespace RoSharp.API
         /// <remarks>This API method does not cache and will make a request each time it is called.</remarks>
         public async Task<bool> HasBadgeAsync(ulong badgeId)
         {
-            string rawData = await GetStringAsync($"/v1/users/{Id}/badges/awarded-dates?badgeIds={badgeId}", Constants.URL("badges"));
+            string rawData = await SendStringAsync(HttpMethod.Get, $"/v1/users/{Id}/badges/awarded-dates?badgeIds={badgeId}", Constants.URL("badges"));
             dynamic data = JObject.Parse(rawData);
 
             return data.data.Count > 0;
@@ -622,7 +631,7 @@ namespace RoSharp.API
             if (cursor != null)
                 url += "&cursor=" + cursor;
 
-            string rawData = await GetStringAsync(url, Constants.URL("badges"));
+            string rawData = await SendStringAsync(HttpMethod.Get, url, Constants.URL("badges"));
             dynamic data = JObject.Parse(rawData);
 
             List<Id<Badge>> list = [];
@@ -656,7 +665,7 @@ namespace RoSharp.API
             if (cursor != null)
                 url += "&cursor=" + cursor;
 
-            string rawData = await GetStringAsync(url, Constants.URL("inventory"));
+            string rawData = await SendStringAsync(HttpMethod.Get, url, Constants.URL("inventory"));
             dynamic data = JObject.Parse(rawData);
 
             List<Id<Asset>> list = [];
@@ -686,7 +695,7 @@ namespace RoSharp.API
             if (cursor != null)
                 url += "&cursor=" + cursor;
 
-            string rawData = await GetStringAsync(url, Constants.ROBLOX_URL_WWW);
+            string rawData = await SendStringAsync(HttpMethod.Get, url, Constants.ROBLOX_URL_WWW);
             dynamic data = JObject.Parse(rawData);
 
             List<Id<Asset>> list = [];
@@ -715,7 +724,7 @@ namespace RoSharp.API
                 userIds = new[] { Id },
             };
 
-            HttpResponseMessage response = await PostAsync("/v1/presence/users", body, Constants.URL("presence"));
+            HttpResponseMessage response = await SendAsync(HttpMethod.Post, "/v1/presence/users", Constants.URL("presence"), body);
             dynamic uselessData = JObject.Parse(await response.Content.ReadAsStringAsync());
             dynamic data = uselessData.userPresences[0];
 
@@ -730,14 +739,14 @@ namespace RoSharp.API
         /// </summary>
         /// <returns>A task that completes when the operation is finished.</returns>
         public async Task SendFriendRequestAsync()
-            => await PostAsync($"/v1/contacts/{Id}/request-friendship", new { });
+            => await SendAsync(HttpMethod.Post, $"/v1/contacts/{Id}/request-friendship", body: new { });
 
         /// <summary>
         /// Unfriends the user.
         /// </summary>
         /// <returns>A task that completes when the operation is finished.</returns>
         public async Task UnfriendAsync() =>
-            await PostAsync($"/v1/users/{Id}/unfriend", new { });
+            await SendAsync(HttpMethod.Post, $"/v1/users/{Id}/unfriend", body: new { });
 
 
         /// <inheritdoc/>

@@ -5,7 +5,9 @@ using RoSharp.Enums;
 using RoSharp.Exceptions;
 using RoSharp.Extensions;
 using RoSharp.Interfaces;
+using RoSharp.Structures;
 using RoSharp.Utility;
+using System;
 using System.Collections.ObjectModel;
 
 using Regex = System.Text.RegularExpressions.Regex;
@@ -224,7 +226,7 @@ namespace RoSharp.API.Assets.Experiences
             playabilityStatus = null;
             socialChannels = null;
 
-            HttpResponseMessage response = await GetAsync($"/v1/games?universeIds={UniverseId}");
+            HttpResponseMessage response = await SendAsync(HttpMethod.Get, $"/v1/games?universeIds={UniverseId}");
             dynamic whyaretheresomanywrappers = JObject.Parse(await response.Content.ReadAsStringAsync());
             if (whyaretheresomanywrappers.data.Count == 0)
             {
@@ -297,7 +299,7 @@ namespace RoSharp.API.Assets.Experiences
             if (!SessionVerify.Verify(session))
                 return;
 
-            string commSetting = await GetStringAsync($"/v1/settings/universe/{UniverseId}", Constants.URL("voice"));
+            string commSetting = await SendStringAsync(HttpMethod.Get, $"/v1/settings/universe/{UniverseId}", Constants.URL("voice"));
             dynamic data = JObject.Parse(commSetting);
 
             voiceEnabled = data.isUniverseEnabledForVoice;
@@ -325,7 +327,7 @@ namespace RoSharp.API.Assets.Experiences
         {
             if (!playabilityStatus.HasValue)
             {
-                string raw = await GetStringAsync($"/v1/games/multiget-playability-status?universeIds={UniverseId}");
+                string raw = await SendStringAsync(HttpMethod.Get, $"/v1/games/multiget-playability-status?universeIds={UniverseId}");
                 dynamic data = JArray.Parse(raw);
                 if (Enum.TryParse<PlayabilityStatus>(Convert.ToString(data[0].playabilityStatus), out PlayabilityStatus result))
                 {
@@ -358,8 +360,14 @@ namespace RoSharp.API.Assets.Experiences
         {
             if (socialChannels == null)
             {
+                var message = new HttpMessage(HttpMethod.Get, $"/v1/games/{UniverseId}/social-links/list")
+                {
+                    AuthType = AuthType.RobloSecurity,
+                    ApiName = nameof(GetSocialChannelsAsync)
+                };
+
                 Dictionary<string, string> dict = [];
-                string rawData = await GetStringAsync($"/v1/games/{UniverseId}/social-links/list", verifyApiName: "Experience.SocialChannels");
+                string rawData = await SendStringAsync(message);
                 dynamic data = JObject.Parse(rawData);
                 foreach (dynamic media in data.data)
                 {
@@ -396,7 +404,7 @@ namespace RoSharp.API.Assets.Experiences
         private async Task UpdateExperienceGuidelinesDataAsync()
         {
             // Update profanity
-            string commSetting = await GetStringAsync($"/asset-text-filter-settings/public/universe/{UniverseId}", Constants.URL("apis"));
+            string commSetting = await SendStringAsync(HttpMethod.Get, $"/asset-text-filter-settings/public/universe/{UniverseId}", Constants.URL("apis"));
             dynamic dataProfane = JObject.Parse(commSetting);
             profanityAllowed = dataProfane.Profanity;
 
@@ -406,8 +414,7 @@ namespace RoSharp.API.Assets.Experiences
                 universeId = UniverseId.ToString()
             };
 
-            HttpResponseMessage response = await PostAsync("/experience-guidelines-api/experience-guidelines/get-age-recommendation", body, Constants.URL("apis"));
-            string rawData = await response.Content.ReadAsStringAsync();
+            string rawData = await SendStringAsync(HttpMethod.Post, "/experience-guidelines-api/experience-guidelines/get-age-recommendation", Constants.URL("apis"), body);
             dynamic dataUseless = JObject.Parse(rawData);
             dynamic data = dataUseless.ageRecommendationDetails;
 
@@ -477,7 +484,7 @@ namespace RoSharp.API.Assets.Experiences
 
         private async Task UpdateVotesAsync()
         {
-            string rawData = await GetStringAsync($"/v1/games/votes?universeIds={UniverseId}");
+            string rawData = await SendStringAsync(HttpMethod.Get, $"/v1/games/votes?universeIds={UniverseId}");
             dynamic data = JObject.Parse(rawData);
             upvotes = data.data[0].upVotes;
             downvotes = data.data[0].downVotes;
@@ -510,7 +517,7 @@ namespace RoSharp.API.Assets.Experiences
         public ReadOnlyCollection<Device> Devices => devices.AsReadOnly();
         private async Task UpdatePrivateServerInfoAndDevicesAsync()
         {
-            string rawData = await GetStringAsync($"/user/cloud/v2/universes/{UniverseId}", Constants.URL("apis"), "Experience.UpdatePrivateServerInfoAndDevicesAsync");
+            string rawData = await SendStringAsync(HttpMethod.Get, $"/user/cloud/v2/universes/{UniverseId}", Constants.URL("apis"));
             dynamic data = JObject.Parse(rawData);
 
             if (data.privateServerPriceRobux != null)
@@ -563,14 +570,15 @@ namespace RoSharp.API.Assets.Experiences
 
         private async Task UpdateConfigurationAsync()
         {
-            HttpResponseMessage? response = null;
-            try // Catch unauthorized errors for configuration data
+            var message = new HttpMessage(HttpMethod.Post, $"/v2/universes/{UniverseId}/configuration", new { })
             {
-                response = await PatchAsync($"/v2/universes/{UniverseId}/configuration", new { }, Constants.URL("develop"), "Experience.UpdateConfigurationAsync");
-            }
-            catch {}
+                AuthType = AuthType.RobloSecurity,
+                ApiName = nameof(UpdateConfigurationAsync),
+                SilenceExceptions = true
+            };
+            HttpResponseMessage response = await SendAsync(message, Constants.URL("develop"));
 
-            if (response == null)
+            if (!response.IsSuccessStatusCode)
                 return;
 
             string rawData = await response.Content.ReadAsStringAsync();
@@ -595,7 +603,7 @@ namespace RoSharp.API.Assets.Experiences
             if (cursor != null)
                 url += "&cursor=" + cursor;
 
-            string rawData = await GetStringAsync(url, Constants.URL("develop"));
+            string rawData = await SendStringAsync(HttpMethod.Get, url, Constants.URL("develop"));
             dynamic data = JObject.Parse(rawData);
 
             List<Id<Place>> list = [];
@@ -620,7 +628,7 @@ namespace RoSharp.API.Assets.Experiences
         /// <remarks>Occasionally, Roblox's API will produce a 'bad recommendation' that leads to an asset that doesn't exist (either deleted or hidden). If this is the case, RoSharp will skip over it automatically. However, if the limit is set to Roblox's maximum of 45, this will result in less than 45 assets being returned.</remarks>
         public async Task<ReadOnlyCollection<Experience>> GetRecommendedAsync(int limit = 6)
         {
-            string rawData = await GetStringAsync($"/v1/games/recommendations/game/{UniverseId}?maxRows={limit}");
+            string rawData = await SendStringAsync(HttpMethod.Get, $"/v1/games/recommendations/game/{UniverseId}?maxRows={limit}");
             dynamic data = JObject.Parse(rawData);
             List<Experience> list = [];
             foreach (dynamic item in data.games)
@@ -661,7 +669,7 @@ namespace RoSharp.API.Assets.Experiences
             if (cursor != null)
                 url += "&cursor=" + cursor;
 
-            string rawData = await GetStringAsync(url, Constants.URL("badges"));
+            string rawData = await SendStringAsync(HttpMethod.Get, url, Constants.URL("badges"));
             dynamic data = JObject.Parse(rawData);
 
             List<Id<Badge>> list = [];
@@ -686,7 +694,7 @@ namespace RoSharp.API.Assets.Experiences
         public async Task<ReadOnlyCollection<ExperienceThumbnail>> GetThumbnailsAsync()
         {
             string url = $"/v2/games/{UniverseId}/media";
-            string rawData = await GetStringAsync(url);
+            string rawData = await SendStringAsync(HttpMethod.Get, url);
             dynamic data = JObject.Parse(rawData);
             List<ExperienceThumbnail> thumbnails = [];
             if (data.data.Count == 0)
@@ -713,7 +721,7 @@ namespace RoSharp.API.Assets.Experiences
         public async Task<string?> GetVideoAsync()
         {
             string url = $"/v2/games/{UniverseId}/media";
-            string rawData = await GetStringAsync(url);
+            string rawData = await SendStringAsync(HttpMethod.Get, url);
             dynamic data = JObject.Parse(rawData);
 
             foreach (dynamic thumbnail in data.data)
@@ -736,7 +744,13 @@ namespace RoSharp.API.Assets.Experiences
         public async Task SetPrivacyAsync(bool isPublic)
         {
             string url = $"/v1/universes/{Id}/{(isPublic == false ? "de" : string.Empty)}activate";
-            await PostAsync(url, new { }, Constants.URL("develop"), "Experience.SetPrivacyAsync");
+            var message = new HttpMessage(HttpMethod.Post, url, new { })
+            {
+                AuthType = AuthType.RobloSecurity,
+                ApiName = nameof(SetPrivacyAsync)
+            };
+
+            await SendAsync(message, Constants.URL("develop"));
         }
 
         /// <summary>
@@ -747,7 +761,7 @@ namespace RoSharp.API.Assets.Experiences
         /// <seealso cref="SetPrivacyAsync(bool)"/>
         public async Task ModifyAsync(ExperienceModifyOptions options)
         {
-            object body = new
+            var message = new HttpMessage(HttpMethod.Patch, $"/v2/universes/{UniverseId}/configuration", new
             {
                 name = options.Name ?? Name,
                 description = options.Description ?? Description,
@@ -758,9 +772,13 @@ namespace RoSharp.API.Assets.Experiences
                 isFriendsOnly = options.FriendsOnly ?? FriendsOnly,
                 playableDevices = options.PlayableDevices ?? Devices.ToList(),
                 studioAccessToApisAllowed = options.StudioAccessToAPIsAllowed ?? StudioAccessToAPIsAllowed
+            })
+            {
+                AuthType = AuthType.RobloSecurity,
+                ApiName = nameof(ModifyAsync),
             };
 
-            await PatchAsync($"/v2/universes/{UniverseId}/configuration", body, Constants.URL("develop"), "Experience.ModifyAsync");
+            await SendAsync(message, Constants.URL("develop"));
         }
 
         /// <summary>
@@ -771,7 +789,7 @@ namespace RoSharp.API.Assets.Experiences
         /// <remarks>Genres can only be changed ONCE every three months.</remarks>
         public async Task ModifyGenreAsync(Genre newGenre)
         {
-            object body = new
+            var message = new HttpMessage(HttpMethod.Post, "/experience-genre-api/v1/Creator/ExperienceGenre", new
             {
                 universeId = UniverseId,
                 genreTaxonomyVersion = 1,
@@ -780,9 +798,13 @@ namespace RoSharp.API.Assets.Experiences
                 {
                     includeUpdateLockExpirationTime = true,
                 }
+            })
+            {
+                AuthType = AuthType.RobloSecurity,
+                ApiName = nameof(ModifyGenreAsync)
             };
 
-            await PostAsync("/experience-genre-api/v1/Creator/ExperienceGenre", body, "https://apis.roblox.com", "Experience.ModifyGenreAsync");
+            await SendAsync(message, Constants.URL("apis"));
             
         }
 
@@ -803,7 +825,7 @@ namespace RoSharp.API.Assets.Experiences
             if (permanent == false && !length.HasValue)
                 throw new InvalidOperationException("length cannot be null if permanent is false.");
 
-            var body = new
+            var message = new HttpMessage(HttpMethod.Patch, $"/user/cloud/v2/universes/{UniverseId}/user-restrictions/{userId}", new
             {
                 gameJoinRestriction = new
                 {
@@ -813,9 +835,13 @@ namespace RoSharp.API.Assets.Experiences
                     duration = (permanent ? null : $"{length.GetValueOrDefault().TotalSeconds}s"),
                     excludeAltAccounts = excludeAlts,
                 }
+            })
+            {
+                AuthType = AuthType.RobloSecurity,
+                ApiName = nameof(BanUserAsync),
             };
 
-            await PatchAsync($"/user/cloud/v2/universes/{UniverseId}/user-restrictions/{userId}", body, Constants.URL("apis"), "Experience.BanUserAsync");
+            await SendAsync(message, Constants.URL("apis"));
         }
 
         /// <summary>
@@ -855,15 +881,19 @@ namespace RoSharp.API.Assets.Experiences
         /// <returns>A task that completes when the task is finished.</returns>
         public async Task UnbanUserAsync(ulong userId)
         {
-            var body = new
+            var message = new HttpMessage(HttpMethod.Patch, $"/user/cloud/v2/universes/{UniverseId}/user-restrictions/{userId}?", new
             {
                 gameJoinRestriction = new
                 {
                     active = false,
                 }
+            })
+            {
+                AuthType = AuthType.RobloSecurity,
+                ApiName = nameof(UnbanUserAsync),
             };
 
-            await PatchAsync($"/user/cloud/v2/universes/{UniverseId}/user-restrictions/{userId}?", body, Constants.URL("apis"), "Experience.UnbanUserAsync");
+            await SendAsync(message, Constants.URL("apis"));
         }
 
         /// <summary>
@@ -890,7 +920,7 @@ namespace RoSharp.API.Assets.Experiences
         /// <exception cref="RobloxAPIException">Roblox API failure or lack of permissions.</exception>
         public async Task PostUpdateAsync(string text)
         {
-            await PostAsync($"/game-update-notifications/v1/publish/{UniverseId}", text, Constants.URL("apis"), "Experience.PostUpdateAsync");
+            await SendAsync(HttpMethod.Post, $"/game-update-notifications/v1/publish/{UniverseId}", Constants.URL("apis"), text);
         }
 
         /// <summary>
@@ -902,14 +932,17 @@ namespace RoSharp.API.Assets.Experiences
         /// <remarks>This API member requires a session with an API key, and the API key must have the <c>universe-messaging-service:publish</c> permission.</remarks>
         public async Task PublishMessageAsync(string topic, string data)
         {
-            SessionVerify.ThrowAPIKeyIfNecessary(session, "Experience.PublishMessageAsync", "universe-messaging-service:publish");
-
-            object body = new
+            var message = new HttpMessage(HttpMethod.Post, $"/messaging-service/v1/universes/{UniverseId}/topics/{topic}", new
             {
                 message = data,
+            })
+            {
+                AuthType = AuthType.ApiKey,
+                ApiName = nameof(PublishMessageAsync),
+                ApiKeyPermission = "universe-messaging-service:publish",
             };
 
-            await PostAsync($"/messaging-service/v1/universes/{UniverseId}/topics/{topic}", body, Constants.URL("apis"));
+            await SendAsync(message, Constants.URL("apis"));
         }
 
         /// <inheritdoc/>
