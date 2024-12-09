@@ -2,7 +2,9 @@
 using RoSharp.Enums;
 using RoSharp.Exceptions;
 using RoSharp.Extensions;
+using RoSharp.Structures;
 using RoSharp.Utility;
+using System;
 using System.Diagnostics;
 
 namespace RoSharp.API.Communities
@@ -35,7 +37,13 @@ namespace RoSharp.API.Communities
             if (cursor != null)
                 url += "&cursor=" + cursor;
 
-            HttpResponseMessage response = await community.GetAsync(url, verifyApiName: "community.GetPendingRequestsAsync");
+            var message = new HttpMessage(HttpMethod.Get, url)
+            {
+                AuthType = AuthType.RobloSecurity,
+                ApiName = nameof(GetPendingRequestsAsync)
+            };
+
+            HttpResponseMessage response = await community.SendAsync(message);
             string rawData = await response.Content.ReadAsStringAsync();
             dynamic data = JObject.Parse(rawData);
 
@@ -66,10 +74,16 @@ namespace RoSharp.API.Communities
             if (cursor != null)
                 url += "&cursor=" + cursor;
 
+            var message = new HttpMessage(HttpMethod.Get, url)
+            {
+                AuthType = AuthType.RobloSecurity,
+                ApiName = nameof(GetMembersAsync)
+            };
+
             var list = new List<Id<User>>();
             string? nextPage;
             string? previousPage;
-            HttpResponseMessage response = await community.GetAsync(url, verifyApiName: "community.GetMembersAsync");
+            HttpResponseMessage response = await community.SendAsync(message);
 
             dynamic data = JObject.Parse(await response.Content.ReadAsStringAsync());
             foreach (dynamic user in data.data)
@@ -97,10 +111,16 @@ namespace RoSharp.API.Communities
             if (cursor != null)
                 url += "&cursor=" + cursor;
 
+            var message = new HttpMessage(HttpMethod.Get, url)
+            {
+                AuthType = AuthType.RobloSecurity,
+                ApiName = nameof(GetBannedMembersAsync)
+            };
+
             var list = new List<Id<User>>();
             string? nextPage;
             string? previousPage;
-            HttpResponseMessage response = await community.GetAsync(url, verifyApiName: "community.GetBannedMembersAsync");
+            HttpResponseMessage response = await community.SendAsync(message);
 
             dynamic data = JObject.Parse(await response.Content.ReadAsStringAsync());
             foreach (dynamic user in data.data)
@@ -122,7 +142,7 @@ namespace RoSharp.API.Communities
         /// <remarks>This API method does not cache and will make a request each time it is called.</remarks>
         public async Task<bool> IsInCommunityAsync(ulong userId)
         {
-            string rawData = await community.GetStringAsync($"/v1/users/{userId}/groups/roles?includeLocked=true");
+            string rawData = await community.SendStringAsync(HttpMethod.Get, $"/v1/users/{userId}/groups/roles?includeLocked=true");
             dynamic data = JObject.Parse(rawData);
             foreach (dynamic community in data.data)
             {
@@ -158,7 +178,7 @@ namespace RoSharp.API.Communities
         /// <remarks>This API method does not cache and will make a request each time it is called.</remarks>
         public async Task<Role?> GetRoleInCommunityAsync(ulong userId)
         {
-            string rawData = await community.GetStringAsync($"/v1/users/{userId}/groups/roles?includeLocked=true");
+            string rawData = await community.SendStringAsync(HttpMethod.Get, $"/v1/users/{userId}/groups/roles?includeLocked=true");
             dynamic data = JObject.Parse(rawData);
             foreach (dynamic community in data.data)
             {
@@ -196,12 +216,18 @@ namespace RoSharp.API.Communities
         public async Task ModifyJoinRequestAsync(ulong userId, JoinRequestAction action)
         {
             string url = $"/v1/groups/{community.Id}/join-requests/users/{userId}";
-            HttpResponseMessage response = action switch
+            var message = new HttpMessage(action switch
             {
-                JoinRequestAction.Accept => await community.PostAsync(url, new { }, verifyApiName: "MemberManager.ModifyJoinRequestAsync"),
-                JoinRequestAction.Decline => await community.DeleteAsync(url, "MemberManager.ModifyJoinRequestAsync"),
-                _ => throw new UnreachableException("JoinRequestAction must be Accept or Decline."),
+                JoinRequestAction.Accept => HttpMethod.Post,
+                JoinRequestAction.Decline => HttpMethod.Delete,
+                _ => throw new UnreachableException("JoinRequestAction must be Accept or Decline.")
+            }, url)
+            {
+                AuthType = AuthType.RobloSecurity,
+                ApiName = nameof(ModifyJoinRequestAsync)
             };
+
+            await community.SendAsync(message);
         }
 
         /// <summary>
@@ -226,8 +252,13 @@ namespace RoSharp.API.Communities
 
         internal async Task SetRankAsyncInternal(ulong userId, ulong newRoleId)
         {
-            object body = new { roleId = newRoleId };
-            await community.PatchAsync($"/v1/groups/{community.Id}/users/{userId}", body, verifyApiName: "MemberManager.SetRankAsync");
+            var message = new HttpMessage(HttpMethod.Patch, $"/v1/groups/{community.Id}/users/{userId}", new { roleId = newRoleId })
+            {
+                AuthType = AuthType.RobloSecurity,
+                ApiName = nameof(SetRankAsync)
+            };
+
+            await community.SendAsync(message);
         }
 
         /// <summary>
@@ -351,7 +382,13 @@ namespace RoSharp.API.Communities
         /// <exception cref="RobloxAPIException">Roblox API failure or lack of permissions.</exception>
         public async Task KickMemberAsync(ulong userId)
         {
-            await community.DeleteAsync($"/v1/groups/{community.Id}/users/{userId}", verifyApiName: "MemberManager.KickMemberAsync");
+            var message = new HttpMessage(HttpMethod.Delete, $"/v1/groups/{community.Id}/users/{userId}")
+            {
+                AuthType = AuthType.RobloSecurity,
+                ApiName = nameof(KickMemberAsync)
+            };
+
+            await community.SendAsync(message);
         }
 
         /// <summary>
@@ -374,7 +411,13 @@ namespace RoSharp.API.Communities
             if (deletePosts)
                 await community.DeletePostsFromMemberAsync(userId);
 
-            await community.PostAsync($"/v1/groups/{community.Id}/bans/{userId}", new { }, verifyApiName: "MemberManager.BanMemberAsync");
+            var message = new HttpMessage(HttpMethod.Post, $"/v1/groups/{community.Id}/bans/{userId}", new { })
+            {
+                AuthType = AuthType.RobloSecurity,
+                ApiName = nameof(BanMemberAsync)
+            };
+
+            await community.SendAsync(message);
         }
 
         /// <summary>
@@ -394,7 +437,13 @@ namespace RoSharp.API.Communities
         /// <returns></returns>
         public async Task UnbanMemberAsync(ulong userId)
         {
-            await community.DeleteAsync($"https://groups.roblox.com/v1/groups/{community.Id}/bans/{userId}");
+            var message = new HttpMessage(HttpMethod.Delete, $"https://groups.roblox.com/v1/groups/{community.Id}/bans/{userId}")
+            {
+                AuthType = AuthType.RobloSecurity,
+                ApiName = nameof(UnbanMemberAsync)
+            };
+
+            await community.SendAsync(message);
         }
 
         /// <summary>

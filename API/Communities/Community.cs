@@ -145,7 +145,7 @@ namespace RoSharp.API.Communities
         /// <inheritdoc/>
         public async Task RefreshAsync()
         {
-            HttpResponseMessage response = await GetAsync($"/v1/groups/{Id}");
+            HttpResponseMessage response = await SendAsync(HttpMethod.Get, $"/v1/groups/{Id}");
             string raw = await response.Content.ReadAsStringAsync();
             dynamic data = JObject.Parse(raw);
 
@@ -163,13 +163,19 @@ namespace RoSharp.API.Communities
 
             members = data.memberCount;
 
-            try
+            HttpMessage currencyMessage = new(HttpMethod.Get, $"/v1/groups/{Id}/currency")
             {
-                string rawData = await GetStringAsync($"/v1/groups/{Id}/currency", Constants.URL("economy"), verifyApiName: "Community.GetGroupFunds");
-                dynamic robuxData = JObject.Parse(rawData);
+                AuthType = AuthType.RobloSecurity,
+                ApiName = nameof(RefreshAsync) + "-GetCurrency",
+                SilenceExceptions = true,
+            };
+            HttpResponseMessage currencyResponse = await SendAsync(currencyMessage, Constants.URL("economy"));
+            if (currencyResponse.IsSuccessStatusCode)
+            {
+                dynamic robuxData = JObject.Parse(await currencyResponse.Content.ReadAsStringAsync());
                 robux = robuxData.robux;
             }
-            catch
+            else
             {
                 robux = -1;
             }
@@ -194,7 +200,7 @@ namespace RoSharp.API.Communities
         {
             if (shout == null)
             {
-                string rawData = await GetStringAsync($"/v1/groups/{Id}");
+                string rawData = await SendStringAsync(HttpMethod.Get, $"/v1/groups/{Id}");
                 dynamic data = JObject.Parse(rawData);
                 if (data.shout != null)
                 {
@@ -222,7 +228,7 @@ namespace RoSharp.API.Communities
             if (socialChannels == null)
             {
                 Dictionary<string, string> dict = [];
-                string rawData = await GetStringAsync($"/v1/groups/{Id}/social-links");
+                string rawData = await SendStringAsync(HttpMethod.Get, $"/v1/groups/{Id}/social-links");
                 dynamic data = JObject.Parse(rawData);
                 foreach (dynamic media in data.data)
                 {
@@ -244,7 +250,7 @@ namespace RoSharp.API.Communities
         public async Task<string> GetIconAsync(ThumbnailSize size = ThumbnailSize.S420x420)
         {
             string url = $"/v1/groups/icons?communityIds={Id}&size={size.ToString().Substring(1)}&format=Png&isCircular=false";
-            string rawData = await GetStringAsync(url, Constants.URL("thumbnails"));
+            string rawData = await SendStringAsync(HttpMethod.Get, url, Constants.URL("thumbnails"));
             dynamic data = JObject.Parse(rawData);
             if (data.data.Count == 0)
                 throw new UnreachableException("Invalid group to get icon for.");
@@ -259,8 +265,12 @@ namespace RoSharp.API.Communities
         /// <exception cref="RobloxAPIException">Roblox API failure or lack of permissions.</exception>
         public async Task ModifyDescriptionAsync(string text)
         {
-            object body = new { description = text };
-            await PatchAsync($"/v1/groups/{Id}/description", body, verifyApiName: "Community.ModifyDescriptionAsync");
+            var message = new HttpMessage(HttpMethod.Patch, $"/v1/groups/{Id}/description", new { description = text })
+            {
+                AuthType = AuthType.RobloSecurity,
+                ApiName = nameof(ModifyDescriptionAsync),
+            };
+            await SendAsync(message);
         }
 
         /// <summary>
@@ -271,8 +281,12 @@ namespace RoSharp.API.Communities
         /// <exception cref="RobloxAPIException">Roblox API failure or lack of permissions.</exception>
         public async Task ShoutAsync(string text)
         {
-            object body = new { message = text };
-            await PatchAsync($"/v1/groups/{Id}/status", body, verifyApiName: "Community.ShoutAsync");
+            var message = new HttpMessage(HttpMethod.Patch, $"/v1/groups/{Id}/status", new { message = text })
+            {
+                AuthType = AuthType.RobloSecurity,
+                ApiName = nameof(ShoutAsync)
+            };
+            await SendAsync(message);
         }
 
         /// <summary>
@@ -293,7 +307,7 @@ namespace RoSharp.API.Communities
             var list = new List<Id<Experience>>();
             string? nextPage;
             string? previousPage;
-            HttpResponseMessage response = await GetAsync(url, Constants.URL("games"));
+            HttpResponseMessage response = await SendAsync(HttpMethod.Get, url, Constants.URL("games"));
 
             dynamic data = JObject.Parse(await response.Content.ReadAsStringAsync());
             foreach (dynamic exp in data.data)
@@ -321,7 +335,13 @@ namespace RoSharp.API.Communities
             if (cursor != null)
                 url += "&cursor=" + cursor;
 
-            string rawData = await GetStringAsync(url, verifyApiName: "Community.GetAuditLogsAsync");
+            var message = new HttpMessage(HttpMethod.Get, url)
+            {
+                AuthType = AuthType.RobloSecurity,
+                ApiName = nameof(GetAuditLogsAsync)
+            };
+
+            string rawData = await SendStringAsync(message);
             dynamic data = JObject.Parse(rawData);
 
             List<CommunityAuditLog> list = [];
@@ -358,7 +378,7 @@ namespace RoSharp.API.Communities
         {
             string url = $"/v1/groups/{Id}/relationships/allies?maxRows={limit}&sortOrder={sortOrder}&startRowIndex={startRowIndex}";
 
-            string rawData = await GetStringAsync(url);
+            string rawData = await SendStringAsync(HttpMethod.Get, url);
             dynamic data = JObject.Parse(rawData);
 
             List<Id<Community>> list = [];
@@ -382,7 +402,7 @@ namespace RoSharp.API.Communities
         {
             string url = $"/v1/groups/{Id}/relationships/enemies?maxRows={limit}&sortOrder={sortOrder}&startRowIndex={startRowIndex}";
 
-            string rawData = await GetStringAsync(url);
+            string rawData = await SendStringAsync(HttpMethod.Get, url);
             dynamic data = JObject.Parse(rawData);
 
             List<Id<Community>> list = [];
@@ -406,7 +426,13 @@ namespace RoSharp.API.Communities
         public async Task<EconomyBreakdown> GetIncomeAsync(AnalyticTimeLength timeLength = AnalyticTimeLength.Day)
         {
             var url = $"/v1/groups/{Id}/revenue/summary/{timeLength.ToString().ToLower()}";
-            string rawData = await GetStringAsync(url, Constants.URL("economy"), verifyApiName: "Community.GetIncomeAsync");
+            var message = new HttpMessage(HttpMethod.Delete, url)
+            {
+                AuthType = AuthType.RobloSecurity,
+                ApiName = nameof(GetIncomeAsync)
+            };
+
+            string rawData = await SendStringAsync(message, Constants.URL("economy"));
             dynamic data = JObject.Parse(rawData);
 
             int amount = 0;
@@ -451,10 +477,16 @@ namespace RoSharp.API.Communities
             if (cursor != null)
                 url += "&cursor=" + cursor;
 
+            var message = new HttpMessage(HttpMethod.Get, url)
+            {
+                AuthType = AuthType.RobloSecurity,
+                ApiName = nameof(GetPostsAsync)
+            };
+
             var list = new List<CommunityPost>();
             string? nextPage;
             string? previousPage;
-            HttpResponseMessage response = await GetAsync(url, verifyApiName: "Community.GetGroupPostsAsync");
+            HttpResponseMessage response = await SendAsync(message);
 
             dynamic data = JObject.Parse(await response.Content.ReadAsStringAsync());
             foreach (dynamic post in data.data)
@@ -484,7 +516,13 @@ namespace RoSharp.API.Communities
         /// <exception cref="RobloxAPIException">Roblox API failure or lack of permissions.</exception>
         public async Task DeletePostsFromMemberAsync(ulong userId)
         {
-            await DeleteAsync($"/v1/groups/{Id}/wall/users/{userId}/posts");
+            var message = new HttpMessage(HttpMethod.Delete, $"/v1/groups/{Id}/wall/users/{userId}/posts")
+            {
+                AuthType = AuthType.RobloSecurity,
+                ApiName = nameof(DeletePostsFromMemberAsync)
+            };
+
+            await SendAsync(message);
         }
 
         /// <summary>
@@ -513,7 +551,13 @@ namespace RoSharp.API.Communities
         /// <exception cref="RobloxAPIException">Roblox API failure or lack of permissions.</exception>
         public async Task DeletePostAsync(ulong postId)
         {
-            await DeleteAsync($"/v1/groups/{Id}/wall/posts/{postId}", verifyApiName: "Community.DeletePostAsync");
+            var message = new HttpMessage(HttpMethod.Delete, $"/v1/groups/{Id}/wall/posts/{postId}")
+            {
+                AuthType = AuthType.RobloSecurity,
+                ApiName = nameof(DeletePostAsync)
+            };
+
+            await SendAsync(message);
         }
 
         /// <summary>

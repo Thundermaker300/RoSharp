@@ -3,6 +3,8 @@ using RoSharp.Enums;
 using RoSharp.Exceptions;
 using RoSharp.Extensions;
 using RoSharp.Interfaces;
+using RoSharp.Structures;
+using System;
 using System.Collections.ObjectModel;
 using System.Net.Http.Json;
 
@@ -31,7 +33,7 @@ namespace RoSharp.API.Communities
         public async Task RefreshAsync()
         {
             List<Role> list = [];
-            string rawData = await group.GetStringAsync($"/v1/groups/{group.Id}/roles");
+            string rawData = await group.SendStringAsync(HttpMethod.Get, $"/v1/groups/{group.Id}/roles");
             dynamic data = JObject.Parse(rawData);
             foreach (dynamic rank in data.roles)
             {
@@ -79,15 +81,19 @@ namespace RoSharp.API.Communities
         /// <remarks>This method will call <see cref="RefreshAsync"/> upon completion, forcing <see cref="Roles"/> to be updated automatically. As of November 16th, 2024, roles cost R$25 to make. This method will bypass a confirmation prompt and purchase the role immediately. Use caution in order to not accidentally create roles and burn through money!</remarks>
         public async Task<Role> CreateRoleAsync(string name, string description, byte rank, bool purchaseWithCommunityFunds)
         {
-            object body = new
+            var message = new HttpMessage(HttpMethod.Post, $"/v1/groups/{group.Id}/rolesets/create", new
             {
                 name = name,
                 description = description,
                 rank = rank,
                 usingGroupFunds = purchaseWithCommunityFunds,
+            })
+            {
+                AuthType = AuthType.RobloSecurity,
+                ApiName = nameof(CreateRoleAsync),
             };
 
-            HttpResponseMessage response = await group.PostAsync($"/v1/groups/{group.Id}/rolesets/create", body, verifyApiName: "RoleManager.CreateRoleAsync");
+            HttpResponseMessage response = await group.SendAsync(message);
             dynamic data = JObject.Parse(await response.Content.ReadAsStringAsync());
             await RefreshAsync();
             return GetRole(Convert.ToByte(data.rank));
@@ -95,19 +101,36 @@ namespace RoSharp.API.Communities
 
         internal async Task RequestDeleteRole(ulong roleId)
         {
-            await group.DeleteAsync($"/v1/groups/{group.Id}/rolesets/{roleId}", verifyApiName: "Role.DeleteAsync");
+            var message = new HttpMessage(HttpMethod.Delete, $"/v1/groups/{group.Id}/rolesets/{roleId}")
+            {
+                AuthType = AuthType.RobloSecurity,
+                ApiName = nameof(Role.DeleteAsync)
+            };
+
+            await group.SendAsync(message);
         }
 
         internal async Task RequestUpdateRole(Role roleId, string newName)
         {
             object body = new { name = newName, description = roleId.Description, rank = roleId.Rank };
-            await group.PatchAsync($"/v1/groups/{group.Id}/rolesets/{roleId.Id}", body, verifyApiName: "Role.UpdateAsync");
+            var message = new HttpMessage(HttpMethod.Patch, $"/v1/groups/{group.Id}/rolesets/{roleId.Id}", body)
+            {
+                AuthType = AuthType.RobloSecurity,
+                ApiName = nameof(Role.UpdateAsync)
+            };
+            await group.SendAsync(message);
         }
 
         internal async Task RequestUpdateRole(Role roleId, int newRank)
         {
             object body = new { name = roleId.Name, description = roleId.Description, rank = newRank };
-            await group.PatchAsync($"/v1/groups/{group.Id}/rolesets/{roleId.Id}", body, verifyApiName: "Role.UpdateAsync");
+            var message = new HttpMessage(HttpMethod.Patch, $"/v1/groups/{group.Id}/rolesets/{roleId.Id}", body)
+            {
+                AuthType = AuthType.RobloSecurity,
+                ApiName = nameof(Role.UpdateAsync)
+            };
+
+            await group.SendAsync(message);
         }
 
         /// <inheritdoc/>
@@ -198,9 +221,16 @@ namespace RoSharp.API.Communities
 
             if (manager.areConfigurationsAccessible)
             {
-                try
+                HttpMessage message = new HttpMessage(HttpMethod.Get, $"/v1/groups/{manager.group.Id}/roles/permissions")
                 {
-                    string rawData = await manager.group.GetStringAsync($"/v1/groups/{manager.group.Id}/roles/permissions", verifyApiName: "Community.GetRolePermissions");
+                    AuthType = AuthType.RobloSecurity,
+                    ApiName = "Community.GetRolePermissions",
+                    SilenceExceptions = true,
+                };
+                HttpResponseMessage response = await manager.group.SendAsync(message);
+                if (response.IsSuccessStatusCode)
+                {
+                    string rawData = await response.Content.ReadAsStringAsync();
                     dynamic data = JObject.Parse(rawData);
                     foreach (dynamic group in data.data)
                     {
@@ -223,7 +253,7 @@ namespace RoSharp.API.Communities
                     }
                     r.canAccessPermissions = true;
                 }
-                catch
+                else
                 {
                     manager.areConfigurationsAccessible = false;
                 }
@@ -249,10 +279,16 @@ namespace RoSharp.API.Communities
             if (cursor != null)
                 url += "&cursor=" + cursor;
 
+            var message = new HttpMessage(HttpMethod.Get, url)
+            {
+                AuthType = AuthType.RobloSecurity,
+                ApiName = nameof(GetMembersAsync)
+            };
+
             var list = new List<Id<User>>();
             string? nextPage;
             string? previousPage;
-            HttpResponseMessage response = await roleManager.group.GetAsync(url, verifyApiName: "Role.GetMembersAsync");
+            HttpResponseMessage response = await roleManager.group.SendAsync(message);
 
             dynamic data = JObject.Parse(await response.Content.ReadAsStringAsync());
             foreach (dynamic user in data.data)
