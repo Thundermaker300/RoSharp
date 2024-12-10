@@ -147,6 +147,7 @@ namespace RoSharp.API
             socialChannels = null;
             groups = null;
             customName = null;
+            experiences = null;
 
             // Update premium + inventory
             if (SessionVerify.Verify(session))
@@ -557,6 +558,7 @@ namespace RoSharp.API
         /// <returns>A task containing a string URL to the thumbnail upon completion.</returns>
         /// <remarks>This API method does not cache and will make a request each time it is called.</remarks>
         /// <exception cref="ArgumentException">Invalid user to get thumbnail for.</exception>
+        /// <exception cref="RobloxAPIException">Roblox API failure.</exception>
         public async Task<string> GetThumbnailAsync(ThumbnailType type = ThumbnailType.Full, ThumbnailSize size = ThumbnailSize.S420x420)
         {
             string url = "/v1/users/avatar" + type switch
@@ -570,6 +572,31 @@ namespace RoSharp.API
             if (data.data.Count == 0)
                 throw new ArgumentException("Invalid user to get thumbnail for.");
             return data.data[0].imageUrl;
+        }
+
+        private ReadOnlyCollection<Id<Experience>>? experiences;
+
+        /// <summary>
+        /// Returns experiences that are owned by the user and shown on their profile.
+        /// </summary>
+        /// <returns>A task containing a <see cref="ReadOnlyCollection{T}"/> of <see cref="Id{T}"/> upon completion.</returns>
+        /// <exception cref="RobloxAPIException">Roblox API failure.</exception>
+        public async Task<ReadOnlyCollection<Id<Experience>>> GetExperiencesAsync()
+        {
+            if (experiences == null)
+            {
+                string rawData = await SendStringAsync(HttpMethod.Get, $"/users/profile/playergames-json?userId={Id}", Constants.ROBLOX_URL_WWW);
+                dynamic data = JObject.Parse(rawData);
+
+                List<Id<Experience>> list = [];
+                foreach (dynamic experience in data.Games)
+                {
+                    ulong id = experience.UniverseID;
+                    list.Add(new(id, session));
+                }
+                experiences = list.AsReadOnly();
+            }
+            return experiences;
         }
 
         /// <summary>
