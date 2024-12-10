@@ -259,6 +259,7 @@ namespace RoSharp.API.Assets.Experiences
             // configs
             await UpdateExperienceGuidelinesDataAsync();
             await UpdateVotesAsync();
+            await UpdateAvatarStartInfoAsync();
 
             if (SessionVerify.Verify(session.Global()))
             {
@@ -488,6 +489,52 @@ namespace RoSharp.API.Assets.Experiences
             dynamic data = JObject.Parse(rawData);
             upvotes = data.data[0].upVotes;
             downvotes = data.data[0].downVotes;
+        }
+
+        private AvatarType avatarType = AvatarType.Unknown;
+
+        /// <summary>
+        /// Gets the avatar type specified for this experience.
+        /// </summary>
+        public AvatarType AvatarType => avatarType;
+
+        private ReadOnlyDictionary<AvatarScaleType, double> minimumAvatarScales;
+
+        /// <summary>
+        /// Gets the minimum for different types of avatar scale types within this experience.
+        /// </summary>
+        public ReadOnlyDictionary<AvatarScaleType, double> MinimumAvatarScales => minimumAvatarScales;
+
+        private ReadOnlyDictionary<AvatarScaleType, double> maximumAvatarScales;
+
+        /// <summary>
+        /// Gets the maximum for different types of avatar scale types within this experience.
+        /// </summary>
+        public ReadOnlyDictionary<AvatarScaleType, double> MaximumAvatarScales => maximumAvatarScales;
+
+        private async Task UpdateAvatarStartInfoAsync()
+        {
+            string rawData = await SendStringAsync(HttpMethod.Get, $"/v1/game-start-info?universeId={UniverseId}", Constants.URL("avatar"));
+            dynamic data = JObject.Parse(rawData);
+            avatarType = Enum.Parse<AvatarType>(Convert.ToString(data.gameAvatarType));
+
+            Dictionary<AvatarScaleType, double> mins = [];
+            Dictionary<AvatarScaleType, double> maxs = [];
+
+            foreach (dynamic scale in data.universeAvatarMinScales)
+            {
+                if (Enum.TryParse<AvatarScaleType>(Convert.ToString(scale.Name), true, out AvatarScaleType result))
+                    mins.Add(result, Convert.ToDouble(scale.Value));
+            }
+
+            foreach (dynamic scale in data.universeAvatarMaxScales)
+            {
+                if (Enum.TryParse<AvatarScaleType>(Convert.ToString(scale.Name), true, out AvatarScaleType result))
+                    maxs.Add(result, Convert.ToDouble(scale.Value));
+            }
+
+            minimumAvatarScales = mins.AsReadOnly();
+            maximumAvatarScales = maxs.AsReadOnly();
         }
 
         // Access related properties
