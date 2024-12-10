@@ -19,6 +19,17 @@ Install-Package RoSharp -Version <version>
 ```
 RoSharp can also be installed by downloading the DLL under the "Releases" and adding it to your project manually.
 
+## Features
+Below are some of the following features that are available in RoSharp:
+* Users: Get information of any user on the platform, including their badges, inventory (if visible), experiences, and more.
+* Communities: Manage your community from a console app, Discord bot, etc! This framework includes the ability to make new ranks, accept and decline join requests, delete wall posts, remove members, and more!
+* Assets: View data of assets and manage owned assets directly from the framework.
+* Experiences: See all sorts of data from your experiences, even MAU and income data, with much more to come! You can also modify experiences, ban users, etc. You can even modify in-experience DataStores and send MessagingService messages using this framework thanks to Roblox's open-cloud API. The first of its kind to have these game-changing capabilities!
+* Price Floors: Integrated API to view Roblox's live price floor data. Use this data alongside the Assets API to calculate the price of an item automatically, and keep track of ever-changing Roblox price floors.
+* Custom Requests: RoSharp provides an easy way for you, the user, to make your own requests to the Roblox API using the framework's authentication system. Gone are the days of digging into the depths of authentication yourself, this framework has you covered! Get the URL and go, while the framework does the HTTP magic of headers and content itself.
+* (BONUS) DevForum API: Read-only API for viewing the DevForum from the eyes of a non-authenticated user via Discourse's APIs. See posts and replies of public posts, including official Roblox updates.
+* Much more!
+
 ## Credits
 [Robloxdotnet](https://github.com/Loravis/Robloxdotnet) by [Loravis](https://github.com/Loravis) -- Original inspiration for RoSharp, various inspirations taken from this project.
 
