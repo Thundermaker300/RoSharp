@@ -88,7 +88,7 @@ namespace RoSharp.Utility
                 messageToSend.Headers.Add("x-api-key", session.APIKey);
 
             HttpResponseMessage resp = await client.SendAsync(messageToSend);
-            RoUtility.LogHTTP(session, resp, !message.EnableRetrying, usingV2Request: true);
+            RoUtility.LogHTTP(session, message, resp, !message.EnableRetrying);
             Return(client);
 
             if (resp.StatusCode == HttpStatusCode.Forbidden && message.EnableRetrying && session != null && messageToSend.Method != HttpMethod.Get)

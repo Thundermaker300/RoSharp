@@ -24,7 +24,7 @@ namespace RoSharp
             if (!disableLogging)
             {
                 Console.ForegroundColor = debugOverride;
-                Console.WriteLine($"[{DateTime.Now:O}] {message}");
+                Console.WriteLine(string.IsNullOrWhiteSpace(message) ? null : $"[ROSHARP] [{DateTime.Now:O}] {message}");
                 Console.ResetColor();
             }
 #endif
@@ -44,7 +44,7 @@ namespace RoSharp
             if (!disableLogging)
             {
                 Console.ForegroundColor = ConsoleColor.Yellow;
-                Console.WriteLine($"[{DateTime.Now:O}] RoSharp Warning: {message}");
+                Console.WriteLine($"[ROSHARP] [{DateTime.Now:O}]: {message}");
                 Console.ResetColor();
             }
         }
