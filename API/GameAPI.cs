@@ -18,7 +18,7 @@ namespace RoSharp.API
     public static class GameAPI
     {
         // lol
-        private static string SessionId => DateTime.UtcNow.Ticks.ToString();
+        internal static string SessionId => DateTime.UtcNow.Ticks.ToString();
 
         /// <summary>
         /// Gets experiences currently on the front page and returns a <see cref="ChartsResponse"/> class containing this information.
@@ -101,32 +101,9 @@ namespace RoSharp.API
         /// <returns>A task containing a <see cref="PageResponse{T}"/> of <see cref="Id{T}"/> upon completion.</returns>
         /// <exception cref="RobloxAPIException">Error from the Roblox API.</exception>
         /// <remarks>This API method does not cache and will make a request each time it is called.</remarks>
+        [Obsolete("Use SearchAPI.SearchExperiencesAsync()")]
         public static async Task<PageResponse<Id<Experience>>> SearchAsync(string query, Session? session = null, bool exactMatchSearch = false, string? cursor = null)
-        {
-            if (exactMatchSearch)
-                query = $"\"{query}\"";
-
-            string url = $"{Constants.URL("apis")}/search-api/omni-search?searchQuery={query}&sessionId={SessionId}&pageType=all";
-            if (cursor != null)
-                url += $"&pageToken={cursor}";
-
-            HttpMessage message = new(HttpMethod.Get, url);
-            string body = await HttpManager.SendStringAsync(session, message);
-
-            List<Id<Experience>> list = [];
-            dynamic data = JObject.Parse(body);
-            foreach (dynamic item in data.searchResults)
-            {
-                if (item.contentGroupType != "Game")
-                    continue;
-
-                ulong universeId = item.contents[0].universeId;
-                list.Add(new(universeId, session));
-            }
-
-            string token = data.nextPageToken;
-            return new(list, token, null);
-        }
+            => await SearchAPI.SearchExperiencesAsync(query, session, exactMatchSearch, cursor);
 
         /// <summary>
         /// Gets a list of Roblox selected experiences to show in the "Today's Picks" sort.
