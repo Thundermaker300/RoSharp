@@ -78,6 +78,13 @@ namespace RoSharp.API.Communities
         /// </summary>
         public int Robux => robux;
 
+        private bool isLocked = false;
+
+        /// <summary>
+        /// Gets whether or not this group has been locked.
+        /// </summary>
+        public bool IsLocked => isLocked;
+
 
         private RoleManager roleManager;
 
@@ -180,6 +187,11 @@ namespace RoSharp.API.Communities
 
             members = data.memberCount;
 
+            if (data.isLocked != null && data.isLocked == true)
+                isLocked = true;
+            else
+                isLocked = false;
+
             HttpMessage currencyMessage = new(HttpMethod.Get, $"/v1/groups/{Id}/currency")
             {
                 AuthType = AuthType.RobloSecurity,
@@ -277,8 +289,13 @@ namespace RoSharp.API.Communities
         /// Gets this community's social channels.
         /// </summary>
         /// <returns>A task containing a <see cref="ReadOnlyDictionary{TKey, TValue}"/> upon completion. The key is the name of the social media platform, and the value is its URL.</returns>
+        /// <exception cref="InvalidOperationException">Group is locked.</exception>
+        /// <remarks>This method will throw an <see cref="InvalidOperationException"/> if <see cref="IsLocked"/> is <see langword="true"/>.</remarks>
         public async Task<ReadOnlyDictionary<string, string>> GetSocialChannelsAsync()
         {
+            if (IsLocked)
+                throw new InvalidOperationException("Group is locked.");
+
             if (socialChannels == null)
             {
                 Dictionary<string, string> dict = [];
