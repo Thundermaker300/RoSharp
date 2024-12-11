@@ -421,23 +421,10 @@ namespace RoSharp.API.Communities
         /// <param name="sortOrder">The sort order.</param>
         /// <param name="startRowIndex">The amount of items to skip before returning data, or <c>0</c> to skip none.</param>
         /// <returns>A task containing a <see cref="PageResponse{T}"/> of <see cref="Id{T}"/> upon completion.</returns>
+        [Obsolete("Use GetRelationshipsAsync()")]
         public async Task<PageResponse<Id<Community>>> GetAlliesAsync(int limit = 50, RequestSortOrder sortOrder = RequestSortOrder.Desc, int startRowIndex = 0)
-        {
-            string url = $"/v1/groups/{Id}/relationships/allies?maxRows={limit}&sortOrder={sortOrder}&startRowIndex={startRowIndex}";
+            => await GetRelationshipsAsync(CommunityRelationship.Allies, limit, sortOrder, startRowIndex);
 
-            string rawData = await SendStringAsync(HttpMethod.Get, url);
-            dynamic data = JObject.Parse(rawData);
-
-            List<Id<Community>> list = [];
-            string? nextPage = Convert.ToString(data.nextRowIndex);
-
-            foreach (dynamic item in data.relatedGroups)
-            {
-                list.Add(new(Convert.ToUInt64(item.id), session));
-            }
-
-            return new PageResponse<Id<Community>>(list, nextPage, null);
-        }
         /// <summary>
         /// Gets this community's allies.
         /// </summary>
@@ -445,9 +432,21 @@ namespace RoSharp.API.Communities
         /// <param name="sortOrder">The sort order.</param>
         /// <param name="startRowIndex">The amount of items to skip before returning data, or <c>0</c> to skip none.</param>
         /// <returns>A task containing a <see cref="PageResponse{T}"/> of <see cref="Id{T}"/> upon completion.</returns>
+        [Obsolete("Use GetRelationshipsAsync()")]
         public async Task<PageResponse<Id<Community>>> GetEnemiesAsync(int limit = 50, RequestSortOrder sortOrder = RequestSortOrder.Desc, int startRowIndex = 0)
+            => await GetRelationshipsAsync(CommunityRelationship.Enemies, limit, sortOrder, startRowIndex);
+
+        /// <summary>
+        /// Gets communities that are in a relationship (allies or enemies) with this community.
+        /// </summary>
+        /// <param name="relationshipType">The relationship type.</param>
+        /// <param name="limit">The maximum amount of communities to return.</param>
+        /// <param name="sortOrder">The sort order.</param>
+        /// <param name="startRowIndex">The amount of items to skip before returning data, or <c>0</c> to skip none.</param>
+        /// <returns>A task containing a <see cref="PageResponse{T}"/> of <see cref="Id{T}"/> upon completion.</returns>
+        public async Task<PageResponse<Id<Community>>> GetRelationshipsAsync(CommunityRelationship relationshipType, int limit = 50, RequestSortOrder sortOrder = RequestSortOrder.Desc, int startRowIndex = 0)
         {
-            string url = $"/v1/groups/{Id}/relationships/enemies?maxRows={limit}&sortOrder={sortOrder}&startRowIndex={startRowIndex}";
+            string url = $"/v1/groups/{Id}/relationships/{relationshipType.ToString().ToLower()}?maxRows={limit}&sortOrder={sortOrder}&startRowIndex={startRowIndex}";
 
             string rawData = await SendStringAsync(HttpMethod.Get, url);
             dynamic data = JObject.Parse(rawData);
@@ -665,7 +664,11 @@ namespace RoSharp.API.Communities
         }
     }
 
-    public sealed class CommunityModifyOptions
+    /// <summary>
+    /// Specifies the options to use for community modification.
+    /// </summary>
+    /// <remarks>Any property in this class that is not changed will not modify the website.</remarks>
+    public class CommunityModifyOptions
     {
         /// <summary>
         /// Gets or sets the new description of the community.
