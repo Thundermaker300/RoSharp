@@ -152,14 +152,25 @@ namespace RoSharp.API
             // Update premium + inventory
             if (SessionVerify.Verify(session))
             {
+                var message = new HttpMessage(HttpMethod.Get, $"/v1/users/{Id}/validate-membership")
+                {
+                    SilenceExceptions = true
+                };
+
                 // Premium
-                HttpResponseMessage premiumResponse = await SendAsync(HttpMethod.Get, $"/v1/users/{Id}/validate-membership", Constants.URL("premiumfeatures"));
-                isPremium = Convert.ToBoolean(await premiumResponse.Content.ReadAsStringAsync());
+                HttpResponseMessage premiumResponse = await SendAsync(message, Constants.URL("premiumfeatures"));
+                if (premiumResponse.IsSuccessStatusCode)
+                    isPremium = Convert.ToBoolean(await premiumResponse.Content.ReadAsStringAsync());
 
                 // Private Inventory
-                HttpResponseMessage inventoryResponse = await SendAsync(HttpMethod.Get, $"/v1/users/{Id}/can-view-inventory", Constants.URL("inventory"));
-                dynamic inventoryData = JObject.Parse(await inventoryResponse.Content.ReadAsStringAsync());
-                privateInventory = !Convert.ToBoolean(inventoryData.canView);
+                message.Url = $"/v1/users/{Id}/can-view-inventory";
+
+                HttpResponseMessage inventoryResponse = await SendAsync(message, Constants.URL("inventory"));
+                if (inventoryResponse.IsSuccessStatusCode)
+                {
+                    dynamic inventoryData = JObject.Parse(await inventoryResponse.Content.ReadAsStringAsync());
+                    privateInventory = !Convert.ToBoolean(inventoryData.canView);
+                }
             }
             else
             {
