@@ -7,6 +7,7 @@ using RoSharp.Extensions;
 using RoSharp.Interfaces;
 using RoSharp.Structures;
 using RoSharp.Utility;
+using System;
 using System.Collections.ObjectModel;
 using System.Diagnostics;
 using System.Net;
@@ -461,6 +462,83 @@ namespace RoSharp.API.Communities
 
             return new PageResponse<Id<Community>>(list, nextPage, null);
         }
+
+        /// <summary>
+        /// Sends a relationship request from this community to another.
+        /// </summary>
+        /// <param name="communityId">The Id of the community to send the request to.</param>
+        /// <param name="relationshipType">The type of relationship.</param>
+        /// <returns>A task that completes when the operation is finished.</returns>
+        public async Task SendRelationshipRequest(ulong communityId, CommunityRelationship relationshipType = CommunityRelationship.Allies)
+        {
+            string url = $"/v1/groups/{Id}/relationships/{relationshipType.ToString().ToLower()}/{communityId}";
+            await SendAsync(HttpMethod.Post, url, body: new { });
+        }
+
+        /// <summary>
+        /// Sends a relationship request from this community to another.
+        /// </summary>
+        /// <param name="community">The community to send the request to.</param>
+        /// <param name="relationshipType">The type of relationship.</param>
+        /// <returns>A task that completes when the operation is finished.</returns>
+        public async Task SendRelationshipRequest(Community community, CommunityRelationship relationshipType = CommunityRelationship.Allies)
+            => await SendRelationshipRequest(community.Id, relationshipType);
+
+        /// <summary>
+        /// Removes a relationship between this community and another.
+        /// </summary>
+        /// <param name="communityId">The Id of the community whose relationship to delete.</param>
+        /// <param name="relationshipType">The type of relationship.</param>
+        /// <returns>A task that completes when the operation is finished.</returns>
+        public async Task RemoveRelationshipAsync(ulong communityId, CommunityRelationship relationshipType = CommunityRelationship.Allies)
+        {
+            string url = $"/v1/groups/{Id}/relationships/{relationshipType.ToString().ToLower()}/{communityId}";
+            await SendAsync(HttpMethod.Delete, url, body: new { });
+        }
+
+        /// <summary>
+        /// Removes a relationship between this community and another.
+        /// </summary>
+        /// <param name="community">The community whose relationship to delete.</param>
+        /// <param name="relationshipType">The type of relationship.</param>
+        /// <returns>A task that completes when the operation is finished.</returns>
+        public async Task RemoveRelationshipAsync(Community community, CommunityRelationship relationshipType = CommunityRelationship.Allies)
+            => await RemoveRelationshipAsync(community.Id, relationshipType);
+
+        /// <summary>
+        /// Modifies a relationship request to this group.
+        /// </summary>
+        /// <param name="communityId">The Id of the community whose request to modify.</param>
+        /// <param name="relationshipType">The type of relationship.</param>
+        /// <param name="action">Whether to accept or decline the relationship request.</param>
+        /// <returns>A task that completes when the operation is finished.</returns>
+        public async Task ModifyRelationshipRequest(ulong communityId, JoinRequestAction action, CommunityRelationship relationshipType = CommunityRelationship.Allies)
+        {
+            string url = $"/v1/groups/{Id}/relationships/{relationshipType.ToString().ToLower()}/requests/{communityId}";
+
+            var message = new HttpMessage(action switch
+            {
+                JoinRequestAction.Accept => HttpMethod.Post,
+                JoinRequestAction.Decline => HttpMethod.Delete,
+                _ => throw new UnreachableException("JoinRequestAction must be Accept or Decline.")
+            }, url)
+            {
+                AuthType = AuthType.RobloSecurity,
+                ApiName = nameof(ModifyRelationshipRequest)
+            };
+
+            await SendAsync(message);
+        }
+
+        /// <summary>
+        /// Modifies a relationship request to this group.
+        /// </summary>
+        /// <param name="community">The community whose request to modify.</param>
+        /// <param name="relationshipType">The type of relationship.</param>
+        /// <param name="action">Whether to accept or decline the relationship request.</param>
+        /// <returns>A task that completes when the operation is finished.</returns>
+        public async Task ModifyRelationshipRequest(Community community, JoinRequestAction action, CommunityRelationship relationshipType = CommunityRelationship.Allies)
+            => await ModifyRelationshipRequest(community.Id, action, relationshipType);
 
         /// <summary>
         /// Gets this community's income statistics for the given <paramref name="timeLength"/>.
