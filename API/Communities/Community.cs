@@ -10,6 +10,7 @@ using RoSharp.Utility;
 using System.Collections.ObjectModel;
 using System.Diagnostics;
 using System.Net;
+using static System.Net.Mime.MediaTypeNames;
 
 namespace RoSharp.API.Communities
 {
@@ -315,15 +316,9 @@ namespace RoSharp.API.Communities
         /// <param name="text">The new community's description.</param>
         /// <returns>Task that completes when the operation is finished.</returns>
         /// <exception cref="RobloxAPIException">Roblox API failure or lack of permissions.</exception>
+        [Obsolete("Use ModifyAsync")]
         public async Task ModifyDescriptionAsync(string text)
-        {
-            var message = new HttpMessage(HttpMethod.Patch, $"/v1/groups/{Id}/description", new { description = text })
-            {
-                AuthType = AuthType.RobloSecurity,
-                ApiName = nameof(ModifyDescriptionAsync),
-            };
-            await SendAsync(message);
-        }
+            => await ModifyAsync(new() { Description = text });
 
         /// <summary>
         /// Creates a community shout.
@@ -621,6 +616,38 @@ namespace RoSharp.API.Communities
         public async Task DeletePostAsync(CommunityPost post)
             => await DeletePostAsync(post.PostId);
 
+        /// <summary>
+        /// Modifies the community.
+        /// </summary>
+        /// <param name="options">The options to use.</param>
+        /// <returns>A task that completes when the operation is finished.</returns>
+        public async Task ModifyAsync(CommunityModifyOptions options)
+        {
+            var message = new HttpMessage(HttpMethod.Patch, $"/v1/groups/{Id}/settings", new
+            {
+                isApprovalRequired = options.ManualApproval,
+                areGroupGamesVisible = options.GamesVisible,
+                areEnemiesAllowed = options.EnemyDeclarations,
+                areGroupFundsVisible = options.FundsVisible,
+            })
+            {
+                AuthType = AuthType.RobloSecurity,
+                ApiName = nameof(ModifyAsync),
+            };
+
+            await SendAsync(message);
+
+            if (!string.IsNullOrWhiteSpace(options.Description))
+            {
+                var message2 = new HttpMessage(HttpMethod.Patch, $"/v1/groups/{Id}/description", new { description = options.Description })
+                {
+                    AuthType = AuthType.RobloSecurity,
+                    ApiName = nameof(ModifyDescriptionAsync),
+                };
+                await SendAsync(message2);
+            }
+        }
+
         /// <inheritdoc/>
         public override string ToString()
         {
@@ -636,5 +663,33 @@ namespace RoSharp.API.Communities
                 AttachSession(session);
             return this;
         }
+    }
+
+    public sealed class CommunityModifyOptions
+    {
+        /// <summary>
+        /// Gets or sets the new description of the community.
+        /// </summary>
+        public string? Description { get; set; }
+
+        /// <summary>
+        /// Gets and sets whether or not manual approval is enabled, which requires joining users to be approved.
+        /// </summary>
+        public bool? ManualApproval { get; set; }
+
+        /// <summary>
+        /// Gets and sets whether or not group funds are publicly visible.
+        /// </summary>
+        public bool? FundsVisible { get; set; }
+
+        /// <summary>
+        /// Gets and sets whether or not group experiences are publicly visible.
+        /// </summary>
+        public bool? GamesVisible { get; set; }
+
+        /// <summary>
+        /// Gets and sets whether or not the group can have and make enemy declarations.
+        /// </summary>
+        public bool? EnemyDeclarations { get; set; }
     }
 }
