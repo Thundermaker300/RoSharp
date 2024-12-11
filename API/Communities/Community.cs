@@ -9,6 +9,7 @@ using RoSharp.Structures;
 using RoSharp.Utility;
 using System.Collections.ObjectModel;
 using System.Diagnostics;
+using System.Net;
 
 namespace RoSharp.API.Communities
 {
@@ -196,6 +197,7 @@ namespace RoSharp.API.Communities
 
             // Reset properties
             shout = null;
+            shoutGuilded = null;
             socialChannels = null;
 
             if (roleManager != null)
@@ -229,6 +231,42 @@ namespace RoSharp.API.Communities
                 }
             }
             return shout;
+        }
+
+        private GuildedShout? shoutGuilded;
+
+        /// <summary>
+        /// Gets the community's guilded shout, if it has a Guilded server linked.
+        /// </summary>
+        /// <returns>A task containing a <see cref="GuildedShout"/> if the community has one.</returns>
+        public async Task<GuildedShout?> GetGuildedShoutAsync()
+        {
+            if (shoutGuilded == null)
+            {
+                HttpResponseMessage response = await SendAsync(HttpMethod.Get, $"/community-links/v1/groups/{Id}/shout", Constants.URL("apis"));
+                if (response.StatusCode != HttpStatusCode.NoContent)
+                {
+                    string rawData = await response.Content.ReadAsStringAsync();
+                    dynamic data = JObject.Parse(rawData);
+                    ulong posterId = Convert.ToUInt64(data.createdBy);
+
+                    shoutGuilded = new GuildedShout
+                    {
+                        GuildedId = data.communityId,
+                        ShoutId = data.announcementId,
+                        ShoutChannelId = data.announcementChannelId,
+                        Title = data.title,
+                        Content = data.content,
+                        ImageUrl = data.imageURL,
+                        LikeCount = data.likeCount,
+                        Poster = await User.FromId(posterId, session),
+                        PostedAt = data.createdAt,
+                        UpdatedAt = data.updatedAt,
+                        ReactionsVisible = data.areReactionCountsVisible,
+                    };
+                }
+            }
+            return shoutGuilded;
         }
 
         private ReadOnlyDictionary<string, string>? socialChannels;
