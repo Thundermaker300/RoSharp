@@ -179,9 +179,35 @@ namespace RoSharp.API
             }
 
 
-            // Updating Following/Followers
+            // Updating data
             await UpdateFollowingsAsync();
+            await UpdateAvatarAsync();
             RefreshedAt = DateTime.Now;
+        }
+
+        private async Task UpdateAvatarAsync()
+        {
+            // TODO: Add information on the avatar's body colors.
+            
+            string rawData = await SendStringAsync(HttpMethod.Get, $"/v2/avatar/users/{Id}/avatar", Constants.URL("avatar"));
+            dynamic data = JObject.Parse(rawData);
+
+            avatarType = Enum.Parse<AvatarType>(Convert.ToString(data.playerAvatarType), true);
+
+            Dictionary<AvatarScaleType, double> scales = [];
+            foreach (dynamic scale in data.scales)
+            {
+                if (Enum.TryParse<AvatarScaleType>(Convert.ToString(scale.Name), true, out AvatarScaleType result))
+                    scales.Add(result, Convert.ToDouble(scale.Value));
+            }
+            avatarScales = scales.AsReadOnly();
+
+            List<Id<Asset>> assets = [];
+            foreach (dynamic asset in data.assets)
+            {
+                assets.Add(new(Convert.ToUInt64(asset.id), session));
+            }
+            currentlyWearing = assets.AsReadOnly();
         }
 
         private async Task UpdateFollowingsAsync()
@@ -211,6 +237,20 @@ namespace RoSharp.API
                 return isPremium.GetValueOrDefault();
             }
         }
+
+        private AvatarType avatarType;
+
+        /// <summary>
+        /// Gets the avatar type of the user. Will either be <see cref="AvatarType.R6"/> or <see cref="AvatarType.R15"/>.
+        /// </summary>
+        public AvatarType AvatarType => avatarType;
+
+        private ReadOnlyDictionary<AvatarScaleType, double> avatarScales;
+
+        /// <summary>
+        /// Gets the user's choice of avatar scaling.
+        /// </summary>
+        public ReadOnlyDictionary<AvatarScaleType, double> AvatarScales => avatarScales;
 
         private int following = -1;
 
@@ -364,25 +404,23 @@ namespace RoSharp.API
             return socialChannels;
         }
 
+        private ReadOnlyCollection<Id<Asset>> currentlyWearing;
+
+        /// <summary>
+        /// Gets a list of assets the user is currently wearing.
+        /// </summary>
+        // [TODO BEFORE RELEASE] Convert this to a new type with information on the avatar's x,y,z of position, rotation, and scale.
+        public ReadOnlyCollection<Id<Asset>> CurrentlyWearing => currentlyWearing;
+
         /// <summary>
         /// Returns a list of assets this user is currently wearing.
         /// </summary>
         /// <returns>A task containing a <see cref="ReadOnlyCollection{T}"/> of <see cref="Id{T}"/> upon completion.</returns>
         /// <remarks>This API method does not cache and will make a request each time it is called.</remarks>
         /// <exception cref="RobloxAPIException">Roblox API failure.</exception>
+        [Obsolete("Use User.CurrentlyWearing.")]
         public async Task<ReadOnlyCollection<Id<Asset>>> GetCurrentlyWearingAsync()
-        {
-            string rawData = await SendStringAsync(HttpMethod.Get, $"/v1/users/{Id}/currently-wearing", Constants.URL("avatar"));
-            dynamic data = JObject.Parse(rawData);
-
-            List<Id<Asset>> list = [];
-            foreach (dynamic item in data.assetIds)
-            {
-                ulong assetId = Convert.ToUInt64(item);
-                list.Add(new(assetId, session));
-            }
-            return list.AsReadOnly();
-        }
+            => CurrentlyWearing;
 
         /// <summary>
         /// Returns a list of assets that are in this user's collection.

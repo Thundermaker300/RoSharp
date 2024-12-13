@@ -516,7 +516,13 @@ namespace RoSharp.API.Assets.Experiences
         {
             string rawData = await SendStringAsync(HttpMethod.Get, $"/v1/game-start-info?universeId={UniverseId}", Constants.URL("avatar"));
             dynamic data = JObject.Parse(rawData);
-            avatarType = Enum.Parse<AvatarType>(Convert.ToString(data.gameAvatarType));
+            avatarType = Convert.ToString(data.gameAvatarType) switch
+            {
+                "MorphToR6" => AvatarType.R6,
+                "MorphToR15" => AvatarType.R15,
+                "PlayerChoice" => AvatarType.PlayerChoice,
+                _ => AvatarType.Unknown,
+            };
 
             Dictionary<AvatarScaleType, double> mins = [];
             Dictionary<AvatarScaleType, double> maxs = [];

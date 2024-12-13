@@ -12,19 +12,19 @@ namespace RoSharp.Enums
     public enum AvatarType
     {
         /// <summary>
-        /// Unknown avatar type within this experience.
+        /// Unknown avatar type.
         /// </summary>
         Unknown,
 
         /// <summary>
-        /// Set all users to R6 avatars.
+        /// Represents a player rig with 6 joints.
         /// </summary>
-        MorphToR6,
+        R6,
 
         /// <summary>
-        /// Set all users to R15 or Rthro avatars.
+        /// Represents a player rig with 15 joints.
         /// </summary>
-        MorphToR15,
+        R15,
 
         /// <summary>
         /// Allow users to choose what character rig they use.
