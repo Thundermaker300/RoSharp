@@ -84,6 +84,10 @@ namespace RoSharp.API.Assets.Experiences
         /// </summary>
         public DateTime LastUpdated => lastUpdated;
 
+        private PaidAccessType paidAccessType;
+
+        public PaidAccessType PaidAccessType => paidAccessType; // TODO: Use this when fiat is finished
+
         private int cost;
 
         /// <summary>
