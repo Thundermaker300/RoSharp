@@ -6,6 +6,7 @@ using RoSharp.Exceptions;
 using RoSharp.Extensions;
 using RoSharp.Interfaces;
 using RoSharp.Structures;
+using RoSharp.Structures.PurchaseTypes;
 using System.Collections.ObjectModel;
 using System.Net;
 
@@ -87,26 +88,29 @@ namespace RoSharp.API.Assets
         /// </summary>
         public DateTime LastUpdated => lastUpdated;
 
-        private int price;
-
         /// <summary>
         /// Gets the Robux price of this asset.
         /// </summary>
-        public int Price => price;
+        [Obsolete("Use PurchaseInfo")]
+        public int Price => purchaseInfo is RobuxPurchase rbx ? (int)rbx.Price : 0;
 
-        private double usdPrice;
-        
         /// <summary>
         /// Gets the USD price of this asset.
         /// </summary>
-        public double UsdPrice => usdPrice;
+        [Obsolete("Use PurchaseInfo")]
+        public double UsdPrice => purchaseInfo is FiatPurchase fiat ? fiat.Price : 0;
 
-        private bool onSale;
+        private IPurchaseType purchaseInfo;
+
+        /// <summary>
+        /// Gets information about purchasing this asset.
+        /// </summary>
+        public IPurchaseType PurchaseInfo => purchaseInfo;
 
         /// <summary>
         /// Gets whether or not this asset is available for purchase.
         /// </summary>
-        public bool OnSale => onSale;
+        public bool OnSale => purchaseInfo is not NotForSalePurchase;
 
         private int sales;
 
@@ -239,7 +243,6 @@ namespace RoSharp.API.Assets
             sales = data.Sales;
             isLimited = data.IsLimited;
             isLimitedUnique = data.IsLimitedUnique;
-            onSale = data.IsForSale;
             created = data.Created;
             lastUpdated = data.Updated;
             assetType = (AssetType)Convert.ToInt32(data.AssetTypeId);
@@ -271,7 +274,15 @@ namespace RoSharp.API.Assets
 
             if (data.PriceInRobux != null)
             {
-                price = data.PriceInRobux;
+                purchaseInfo = new RobuxPurchase() { Price = data.PriceInRobux };
+            }
+            else
+            {
+                if (data.IsPublicDomain == true || AssetType is AssetType.Place)
+                    // Places are never public domain
+                    purchaseInfo = new FreePurchase();
+                else
+                    purchaseInfo = new NotForSalePurchase();
             }
 
             ulong creatorId = Convert.ToUInt64(data.Creator.CreatorTargetId);
@@ -309,7 +320,15 @@ namespace RoSharp.API.Assets
 
                 hasScripts = toolboxData.asset.hasScripts;
                 duration = toolboxData.asset.duration;
-                this.usdPrice = usdPrice;
+
+                if (usdPrice > 0)
+                {
+                    purchaseInfo = new FiatPurchase()
+                    {
+                        Price = usdPrice,
+                        CurrencyCode = toolboxData.fiatProduct.purchasePrice.currencyCode,
+                    };
+                }
             }
             else
             {
@@ -514,7 +533,7 @@ namespace RoSharp.API.Assets
         /// <inheritdoc/>
         public override string ToString()
         {
-            return $"{Name} [{Id}] ({AssetType}) {{{(!IsCommunityOwned ? "@" : string.Empty)}{OwnerName}}} <R${(OnSale == true ? Price : "0")}>";
+            return $"{Name} [{Id}] ({AssetType}) {{{(!IsCommunityOwned ? "@" : string.Empty)}{OwnerName}}} <{PurchaseInfo}>";
         }
 
         /// <inheritdoc/>

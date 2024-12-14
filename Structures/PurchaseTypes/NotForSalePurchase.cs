@@ -1,15 +1,20 @@
 ﻿using RoSharp.Enums;
 using RoSharp.Interfaces;
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
 
 namespace RoSharp.Structures.PurchaseTypes
 {
     /// <summary>
-    /// Indicates that an item is free.
+    /// Indicates that an item is not for sale.
     /// </summary>
-    public struct FreePurchase : IPurchaseType
+    public struct NotForSalePurchase : IPurchaseType
     {
         /// <inheritdoc/>
-        public PurchaseType Type => PurchaseType.Free;
+        public PurchaseType Type => PurchaseType.NotForSale;
 
         /// <inheritdoc/>
         public double Price => 0;
@@ -17,7 +22,7 @@ namespace RoSharp.Structures.PurchaseTypes
         /// <inheritdoc/>
         public override string ToString()
         {
-            return "[FREE]";
+            return "[NOT FOR SALE]";
         }
     }
 }
