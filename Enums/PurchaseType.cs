@@ -6,9 +6,9 @@ using System.Threading.Tasks;
 
 namespace RoSharp.Enums
 {
-    public enum PaidAccessType
+    public enum PurchaseType
     {
-        FreeToPlay,
+        Free,
         Robux,
         LocalCurrency,
     }

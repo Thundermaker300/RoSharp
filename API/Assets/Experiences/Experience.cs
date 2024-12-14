@@ -84,16 +84,20 @@ namespace RoSharp.API.Assets.Experiences
         /// </summary>
         public DateTime LastUpdated => lastUpdated;
 
-        private PaidAccessType paidAccessType;
-
-        public PaidAccessType PaidAccessType => paidAccessType; // TODO: Use this when fiat is finished
-
         private int cost;
 
         /// <summary>
         /// Gets the price in Robux to play this experience, if it is paid access.
         /// </summary>
-        public int Cost => cost;
+        [Obsolete("Use PurchaseType instead.")]
+        public int Cost => PurchaseType is RobuxPurchase robux ? (int)robux.Price : 0;
+
+        private IPurchaseType purchaseType;
+
+        /// <summary>
+        /// Gets information about purchasing this experience.
+        /// </summary>
+        public IPurchaseType PurchaseType => purchaseType;
 
         private bool uncopylocked;
 
@@ -250,10 +254,11 @@ namespace RoSharp.API.Assets.Experiences
             genre = ExperienceUtility.GetGenre(Convert.ToString(data.genre_l1));
             subgenre = ExperienceUtility.GetGenre(Convert.ToString(data.genre_l2));
 
+            // TODO: Add FiatPurchase here.
             if (data.price == null)
-                cost = 0;
+                purchaseType = new FreePurchase();
             else
-                cost = data.price;
+                purchaseType = new RobuxPurchase() { Price = data.price };
 
             ulong creatorId = Convert.ToUInt64(data.creator.id);
             ownerId = creatorId;
@@ -607,7 +612,7 @@ namespace RoSharp.API.Assets.Experiences
         /// <summary>
         /// Gets whether or not players must pay to play the experience.
         /// </summary>
-        public bool PurchaseRequired => Cost != 0;
+        public bool PurchaseRequired => PurchaseType is not FreePurchase;
 
         private bool? friendsOnly;
 
@@ -1005,7 +1010,7 @@ namespace RoSharp.API.Assets.Experiences
         /// <inheritdoc/>
         public override string ToString()
         {
-            return $"{Name} [{UniverseId}] {{{(!IsCommunityOwned ? "@" : string.Empty)}{OwnerName}}} <R${Cost}>";
+            return $"{Name} [{UniverseId}] {{{(!IsCommunityOwned ? "@" : string.Empty)}{OwnerName}}} {PurchaseType}";
         }
 
         /// <inheritdoc/>
