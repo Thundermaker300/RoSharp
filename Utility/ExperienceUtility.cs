@@ -1,6 +1,8 @@
 ﻿using Newtonsoft.Json.Linq;
 using RoSharp.Enums;
+using RoSharp.Extensions;
 using RoSharp.Structures;
+using System.Collections.ObjectModel;
 
 namespace RoSharp.Utility
 {
@@ -9,7 +11,6 @@ namespace RoSharp.Utility
     /// </summary>
     public static class ExperienceUtility
     {
-
         /// <summary>
         /// Gets the universe Id from a place Id.
         /// </summary>
@@ -28,6 +29,36 @@ namespace RoSharp.Utility
             }
             
             throw new ArgumentException("Invalid place ID provided.", nameof(placeId));
+        }
+
+        /// <summary>
+        /// Gets a list of fiat (local currency) purchase options for experiences.
+        /// </summary>
+        /// <param name="session">An authenticated session, required.</param>
+        /// <returns>A task containing a <see cref="ReadOnlyCollection{T}"/> of <see cref="FiatPurchase"/> upon completion.</returns>
+        public static async Task<ReadOnlyCollection<FiatPurchase>> GetFiatOptionsAsync(Session? session)
+        {
+            HttpMessage payload = new(HttpMethod.Get, $"{Constants.URL("apis")}/fiat-paid-access-service/v1/product/prices")
+            {
+                AuthType = AuthType.RobloSecurity,
+                ApiName = nameof(GetFiatOptionsAsync),
+            };
+
+            string rawData = await HttpManager.SendStringAsync(session.Global(), payload);
+            dynamic data = JObject.Parse(rawData);
+            List<FiatPurchase> list = [];
+            foreach (dynamic item in data.prices)
+            {
+                list.Add(new()
+                {
+                    Id = item.id,
+                    CurrencyCode = item.amount.currencyCode,
+                    Price = Convert.ToDouble(item.amount.units + "." + Convert.ToString(item.amount.nanos)),
+                    PayoutAmount = Convert.ToDouble(item.payoutAmount.units + "." + Convert.ToString(item.payoutAmount.nanos)),
+                    PayoutPercent = Convert.ToDouble(item.payoutPercentage),
+                });
+            }
+            return list.AsReadOnly();
         }
 
         /// <summary>
