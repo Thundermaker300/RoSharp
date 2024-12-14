@@ -2,6 +2,7 @@
 using RoSharp.Enums;
 using RoSharp.Extensions;
 using RoSharp.Structures;
+using RoSharp.Structures.PurchaseTypes;
 using System.Collections.ObjectModel;
 
 namespace RoSharp.Utility

@@ -6,6 +6,7 @@ using RoSharp.Exceptions;
 using RoSharp.Extensions;
 using RoSharp.Interfaces;
 using RoSharp.Structures;
+using RoSharp.Structures.PurchaseTypes;
 using RoSharp.Utility;
 using System;
 using System.Collections.ObjectModel;
@@ -89,15 +90,15 @@ namespace RoSharp.API.Assets.Experiences
         /// <summary>
         /// Gets the price in Robux to play this experience, if it is paid access.
         /// </summary>
-        [Obsolete("Use PurchaseType instead.")]
-        public int Cost => PurchaseType is RobuxPurchase robux ? (int)robux.Price : 0;
+        [Obsolete("Use PurchaseInfo instead.")]
+        public int Cost => PurchaseInfo is RobuxPurchase robux ? (int)robux.Price : 0;
 
-        private IPurchaseType purchaseType;
+        private IPurchaseType purchaseInfo;
 
         /// <summary>
         /// Gets information about purchasing this experience.
         /// </summary>
-        public IPurchaseType PurchaseType => purchaseType;
+        public IPurchaseType PurchaseInfo => purchaseInfo;
 
         private bool uncopylocked;
 
@@ -254,11 +255,32 @@ namespace RoSharp.API.Assets.Experiences
             genre = ExperienceUtility.GetGenre(Convert.ToString(data.genre_l1));
             subgenre = ExperienceUtility.GetGenre(Convert.ToString(data.genre_l2));
 
-            // TODO: Add FiatPurchase here.
-            if (data.price == null)
-                purchaseType = new FreePurchase();
+            if (data.localizedFiatPrice != null)
+            {
+                string fiatDisplay = data.localizedFiatPrice;
+                double cost = Convert.ToDouble(fiatDisplay.Replace("$", string.Empty));
+                bool found = false;
+                foreach (var fiatOption in await ExperienceUtility.GetFiatOptionsAsync(session))
+                {
+                    if (fiatOption.Price == cost)
+                    {
+                        purchaseInfo = fiatOption;
+                        found = true;
+                    }
+                }
+                if (!found) purchaseInfo = new UnknownPurchase();
+            }
+            else if (data.price != null)
+            {
+                purchaseInfo = new RobuxPurchase() { Price = data.price };
+            }
             else
-                purchaseType = new RobuxPurchase() { Price = data.price };
+            {
+                if (!SessionVerify.Verify(session))
+                    purchaseInfo = new UnknownPurchase();
+                else
+                    purchaseInfo = new FreePurchase();
+            }
 
             ulong creatorId = Convert.ToUInt64(data.creator.id);
             ownerId = creatorId;
@@ -612,7 +634,7 @@ namespace RoSharp.API.Assets.Experiences
         /// <summary>
         /// Gets whether or not players must pay to play the experience.
         /// </summary>
-        public bool PurchaseRequired => PurchaseType is not FreePurchase;
+        public bool PurchaseRequired => purchaseInfo is not FreePurchase;
 
         private bool? friendsOnly;
 
@@ -1010,7 +1032,7 @@ namespace RoSharp.API.Assets.Experiences
         /// <inheritdoc/>
         public override string ToString()
         {
-            return $"{Name} [{UniverseId}] {{{(!IsCommunityOwned ? "@" : string.Empty)}{OwnerName}}} {PurchaseType}";
+            return $"{Name} [{UniverseId}] {{{(!IsCommunityOwned ? "@" : string.Empty)}{OwnerName}}} {PurchaseInfo}";
         }
 
         /// <inheritdoc/>

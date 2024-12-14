@@ -6,7 +6,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace RoSharp.Structures
+namespace RoSharp.Structures.PurchaseTypes
 {
     /// <summary>
     /// Represents a fiat purchase type, which is a real-world currency purchase.
@@ -39,7 +39,7 @@ namespace RoSharp.Structures
         public double PayoutPercent { get; init; }
 
         /// <inheritdoc/>
-        public PurchaseType PurchaseType => PurchaseType.LocalCurrency;
+        public PurchaseType Type => PurchaseType.LocalCurrency;
 
         /// <inheritdoc/>
         public override string ToString()

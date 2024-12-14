@@ -6,7 +6,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace RoSharp.Structures
+namespace RoSharp.Structures.PurchaseTypes
 {
     /// <summary>
     /// Represents a Robux purchase type.
@@ -19,7 +19,7 @@ namespace RoSharp.Structures
         public double Price { get; init; }
 
         /// <inheritdoc/>
-        public PurchaseType PurchaseType => PurchaseType.Robux;
+        public PurchaseType Type => PurchaseType.Robux;
 
         /// <inheritdoc/>
         public override string ToString()

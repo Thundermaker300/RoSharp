@@ -6,7 +6,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace RoSharp.Structures
+namespace RoSharp.Structures.PurchaseTypes
 {
     /// <summary>
     /// Indicates that an item is free.
@@ -14,7 +14,7 @@ namespace RoSharp.Structures
     public struct FreePurchase : IPurchaseType
     {
         /// <inheritdoc/>
-        public PurchaseType PurchaseType => PurchaseType.Free;
+        public PurchaseType Type => PurchaseType.Free;
 
         /// <inheritdoc/>
         public double Price => 0;

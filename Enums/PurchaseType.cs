@@ -8,6 +8,7 @@ namespace RoSharp.Enums
 {
     public enum PurchaseType
     {
+        Unknown,
         Free,
         Robux,
         LocalCurrency,

@@ -15,7 +15,7 @@ namespace RoSharp.Interfaces
         /// <summary>
         /// Gets the type of purchase.
         /// </summary>
-        public PurchaseType PurchaseType { get; }
+        public PurchaseType Type { get; }
 
         /// <summary>
         /// Gets the price of the purchase.
