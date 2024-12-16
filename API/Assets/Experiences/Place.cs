@@ -10,29 +10,10 @@ namespace RoSharp.API.Assets.Experiences
     /// <summary>
     /// Represents a single location within a <see cref="Experiences.Experience"/> (universe).
     /// </summary>
-    public class Place : APIMain, IRefreshable, IIdApi<Place>
+    public class Place : Asset, IRefreshable, IIdApi<Place>
     {
         /// <inheritdoc/>
         public override string BaseUrl => Constants.URL("games");
-
-        /// <summary>
-        /// Gets the unique Id of the place.
-        /// </summary>
-        public ulong Id { get; }
-
-        private string name;
-
-        /// <summary>
-        /// Gets the name of this place.
-        /// </summary>
-        public string Name => name;
-
-        private string description;
-
-        /// <summary>
-        /// Gets the description of this place.
-        /// </summary>
-        public string Description => description;
 
         private Experience experience;
 
@@ -41,42 +22,14 @@ namespace RoSharp.API.Assets.Experiences
         /// </summary>
         public Experience Experience => experience;
 
-        private ulong ownerId;
-        private string ownerName;
-        private bool isCommunityOwned;
-
-        /// <summary>
-        /// Gets the unique Id (community or user) of the owner of this place.
-        /// </summary>
-        public ulong OwnerId => ownerId;
-
-        /// <summary>
-        /// Gets the name (community or user) of the owner of this place.
-        /// </summary>
-        public string OwnerName => ownerName;
-
-        /// <summary>
-        /// Gets whether or not this place is owned by a community.
-        /// </summary>
-        /// <seealso cref="GetOwnerAsync"/>
-        public bool IsCommunityOwned => isCommunityOwned;
-
         /// <inheritdoc/>
-        public string Url => $"{Constants.ROBLOX_URL}/games/{Id}/";
+        public new string Url => $"{Constants.ROBLOX_URL}/games/{Id}/";
 
-        /// <inheritdoc/>
-        public DateTime RefreshedAt { get; set; }
+        /// <inheritdoc cref="Experience.Favorites"/>
+        public new ulong Favorites => Experience.Favorites;
 
         private Place(ulong id, Session? session)
-        {
-            Id = id;
-
-            if (session != null)
-                AttachSession(session);
-
-            if (!RoPool<Place>.Contains(Id))
-                RoPool<Place>.Add(this);
-        }
+            : base(id, session) { }
 
         /// <summary>
         /// Gets a place from the provided Id.
@@ -87,7 +40,7 @@ namespace RoSharp.API.Assets.Experiences
         /// <remarks>For a quicker way to get stats on an entire universe, see <see cref="Experience.FromPlaceId(ulong, Session?)"/>.</remarks>
         /// <exception cref="ArgumentException">Invalid place Id provided.</exception>
         /// <exception cref="Exceptions.RobloxAPIException">Roblox API failure.</exception>
-        public static async Task<Place> FromId(ulong id, Session? session = null)
+        public new static async Task<Place> FromId(ulong id, Session? session = null)
         {
             if (RoPool<Place>.Contains(id))
                 return RoPool<Place>.Get(id, session.Global());
@@ -95,13 +48,16 @@ namespace RoSharp.API.Assets.Experiences
             Place newUser = new(id, session.Global());
             await newUser.RefreshAsync();
 
+            RoPool<Place>.Add(newUser);
+
             return newUser;
         }
 
         /// <inheritdoc/>
         /// <exception cref="ArgumentException">Invalid place Id provided.</exception>
-        public async Task RefreshAsync()
+        public new async Task RefreshAsync()
         {
+            await base.RefreshAsync();
             HttpResponseMessage message = await SendAsync(HttpMethod.Get, $"/v1/games/multiget-place-details?placeIds={Id}");
             JArray dataUseless = JArray.Parse(await message.Content.ReadAsStringAsync());
 
@@ -110,27 +66,8 @@ namespace RoSharp.API.Assets.Experiences
 
             foreach (dynamic data in dataUseless.Children<JObject>())
             {
-                name = data.sourceName;
-                description = data.sourceDescription;
-
                 experience = await Experiences.Experience.FromId(Convert.ToUInt64(data.universeId), session);
-                ownerId = experience.OwnerId;
-                ownerName = experience.OwnerName;
-                isCommunityOwned = experience.IsCommunityOwned;
             }
-        }
-
-        /// <summary>
-        /// Returns the owner of this asset.
-        /// </summary>
-        /// <returns>A task containing the owner of this asset.</returns>
-        public async Task<IAssetOwner> GetOwnerAsync()
-        {
-            if (IsCommunityOwned)
-            {
-                return await Community.FromId(OwnerId);
-            }
-            return await User.FromId(OwnerId);
         }
 
         /// <summary>

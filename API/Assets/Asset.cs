@@ -1,4 +1,5 @@
 ﻿using Newtonsoft.Json.Linq;
+using RoSharp.API.Assets.Experiences;
 using RoSharp.API.Communities;
 using RoSharp.API.Pooling;
 using RoSharp.Enums;
@@ -436,8 +437,12 @@ namespace RoSharp.API.Assets
         /// <param name="cost">The cost to purchase the asset.</param>
         /// <returns>A task that completes when the operation is finished.</returns>
         /// <exception cref="RobloxAPIException">Roblox API failure or lack of permissions.</exception>
+        /// <exception cref="InvalidOperationException">Use <c>Experience.ModifyAsync</c> to modify the experience's sale status.</exception>
         public async Task SetSaleStatusAsync(bool isOnSale, int cost)
         {
+            if (AssetType is AssetType.Place)
+                throw new InvalidOperationException($"Use {nameof(Experience.ModifyAsync)} to modify the experience's sale status.");
+
             int? priceInRobux = !isOnSale ? null : cost;
             Dictionary<int, int> saleAvailabilityLocations = new() { [0] = 0, [1] = 1 };
             var message = new HttpMessage(HttpMethod.Post, $"/v1/assets/{Id}/release", new
