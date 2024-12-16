@@ -6,6 +6,9 @@ using RoSharp.Interfaces;
 
 namespace RoSharp.API.Assets
 {
+    /// <summary>
+    /// Represents a Roblox game-pass.
+    /// </summary>
     public class GamePass : Asset, IRefreshable, IIdApi<GamePass>
     {
         private Id<Place> place;
@@ -18,7 +21,8 @@ namespace RoSharp.API.Assets
         private GamePass(ulong assetId, Session? session = null)
             : base(assetId, session) { }
 
-        public static async Task<GamePass> FromId(ulong gamepassId, Session? session = null)
+        /// <inheritdoc/>
+        public new static async Task<GamePass> FromId(ulong gamepassId, Session? session = null)
         {
             if (RoPool<GamePass>.Contains(gamepassId))
                 return RoPool<GamePass>.Get(gamepassId, session.Global());
@@ -31,8 +35,9 @@ namespace RoSharp.API.Assets
 
             return newUser;
         }
-
-        public async Task RefreshAsync()
+        
+        /// <inheritdoc/>
+        public new async Task RefreshAsync()
         {
             await base.RefreshAsync();
             string gamepassData = await SendStringAsync(HttpMethod.Get, $"/game-passes/v1/game-passes/{Id}/details", Constants.URL("apis"));
