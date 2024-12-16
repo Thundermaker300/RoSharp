@@ -160,6 +160,13 @@ namespace RoSharp.API.Assets
         /// </summary>
         public bool IsLimitedUnique => isLimitedUnique;
 
+        private Id<Asset> imageAsset;
+
+        /// <summary>
+        /// Gets the asset representing the image for this asset.
+        /// </summary>
+        public Id<Asset> ImageAsset => imageAsset;
+
         private AssetType assetType;
 
         /// <summary>
@@ -197,18 +204,22 @@ namespace RoSharp.API.Assets
         /// <remarks>This will always be <see cref="TimeSpan.Zero"/> if <see cref="AssetType"/> is not equal to <see cref="AssetType.Audio"/>.</remarks>
         public TimeSpan Duration => TimeSpan.FromSeconds(duration);
 
+        protected string assetTypeOverride;
+
+        /// <summary>
+        /// Gets if this asset represents a game-pass.
+        /// </summary>
+        public bool IsGamePass => assetTypeOverride is "gamepass";
+
         /// <inheritdoc/>
         public DateTime RefreshedAt { get; set; }
 
-        private Asset(ulong assetId, Session? session = null)
+        protected Asset(ulong assetId, Session? session = null)
         {
             Id = assetId;
 
             if (session != null)
                 AttachSession(session);
-
-            if (!RoPool<Asset>.Contains(Id))
-                RoPool<Asset>.Add(this);
         }
 
         /// <summary>
@@ -228,13 +239,20 @@ namespace RoSharp.API.Assets
             Asset newUser = new(assetId, session.Global());
             await newUser.RefreshAsync();
 
+            RoPool<Asset>.Add(newUser);
+
             return newUser;
         }
 
         /// <inheritdoc/>
         public async Task RefreshAsync()
         {
-            HttpResponseMessage response = await SendAsync(HttpMethod.Get, $"/v2/assets/{Id}/details", Constants.URL("economy"));
+            HttpResponseMessage response;
+            if (assetTypeOverride is "gamepass")
+                response = await SendAsync(HttpMethod.Get, $"/game-passes/v1/game-passes/{Id}/product-info", Constants.URL("apis"));
+            else
+                response = await SendAsync(HttpMethod.Get, $"/v2/assets/{Id}/details", Constants.URL("economy"));
+
             string raw = await response.Content.ReadAsStringAsync();
             dynamic data = JObject.Parse(raw);
 
@@ -246,6 +264,7 @@ namespace RoSharp.API.Assets
             created = data.Created;
             lastUpdated = data.Updated;
             assetType = (AssetType)Convert.ToInt32(data.AssetTypeId);
+            imageAsset = new(Convert.ToUInt64(data.IconImageAssetId), session);
             if (data.SaleLocation == null)
                 saleLocation = SaleLocationType.NotApplicable;
             else
@@ -377,6 +396,8 @@ namespace RoSharp.API.Assets
         /// <remarks>This API method does not cache and will make a request each time it is called.</remarks>
         public async Task<string> GetThumbnailAsync(ThumbnailSize size = ThumbnailSize.S420x420)
         {
+            if (ImageAsset != null && ImageAsset.UniqueId != 0)
+                return await (await ImageAsset.GetInstanceAsync()).GetThumbnailAsync(size);
             string url = $"/v1/assets?assetIds={Id}&returnPolicy=PlaceHolder&size={size.ToString().Substring(1)}&format=Png&isCircular=false";
             string rawData = await SendStringAsync(HttpMethod.Get, url, Constants.URL("thumbnails"));
             dynamic data = JObject.Parse(rawData);

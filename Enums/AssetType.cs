@@ -15,6 +15,11 @@
         /// <remarks>This member isn't an official AssetType type, but is included here so that it is included in the <see cref="API.PriceFloorAPI"/>.</remarks>
         Body = -1,
 
+        /// <summary>
+        /// Unknown asset type.
+        /// </summary>
+        Unknown = 0,
+
         // Regular
         /// <summary>
         /// Represents an image asset.
