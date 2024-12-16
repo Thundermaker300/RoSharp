@@ -123,7 +123,7 @@ namespace RoSharp.API.Assets
         /// <summary>
         /// Gets whether or not this asset can be purchased for free.
         /// </summary>
-        public bool Free => OnSale && Price == 0 && UsdPrice == 0;
+        public bool Free => PurchaseInfo is FreePurchase;
 
         private int remaining;
 
@@ -335,7 +335,6 @@ namespace RoSharp.API.Assets
                 isCreatorHubAsset = false;
                 hasScripts = false;
                 duration = 0;
-                usdPrice = 0;
             }
 
             RefreshedAt = DateTime.Now;
