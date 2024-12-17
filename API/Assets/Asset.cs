@@ -205,6 +205,9 @@ namespace RoSharp.API.Assets
         /// <remarks>This will always be <see cref="TimeSpan.Zero"/> if <see cref="AssetType"/> is not equal to <see cref="AssetType.Audio"/>.</remarks>
         public TimeSpan Duration => TimeSpan.FromSeconds(duration);
 
+        /// <summary>
+        /// Override the type of asset.
+        /// </summary>
         protected string assetTypeOverride;
 
         /// <summary>
@@ -215,6 +218,11 @@ namespace RoSharp.API.Assets
         /// <inheritdoc/>
         public DateTime RefreshedAt { get; set; }
 
+        /// <summary>
+        /// Instantiates a new <see cref="Asset"/>.
+        /// </summary>
+        /// <param name="assetId">The Id of the asset.</param>
+        /// <param name="session">The session to attach, optional.</param>
         protected Asset(ulong assetId, Session? session = null)
         {
             Id = assetId;

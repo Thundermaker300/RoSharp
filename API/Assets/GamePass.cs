@@ -48,7 +48,7 @@ namespace RoSharp.API.Assets
         }
 
         /// <inheritdoc/>
-        public GamePass AttachSessionAndReturn(Session? session)
+        public new GamePass AttachSessionAndReturn(Session? session)
         {
             if (session is null || !session.LoggedIn)
                 DetachSession();

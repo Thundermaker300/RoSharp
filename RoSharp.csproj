@@ -6,7 +6,7 @@
     <Nullable>enable</Nullable>
     <PackageId>RoSharp</PackageId>
     <Title>RoSharp</Title>
-    <Version>1.0.0</Version>
+    <Version>1.1.0</Version>
     <Authors>Thunder300</Authors>
     <Company>None</Company>
     <Description>RoSharp is a feature-rich wrapper API for Roblox's Web API.</Description>
@@ -19,7 +19,7 @@
     <PackageTags>roblox</PackageTags>
     <NeutralLanguage>en-US</NeutralLanguage>
     <PackageLicenseFile>LICENSE.md</PackageLicenseFile>
-    <PackageReleaseNotes>Initial 1.0 release.</PackageReleaseNotes>
+    <PackageReleaseNotes>See https://github.com/Thundermaker300/RoSharp/releases/tag/v1.1.0 for release notes.</PackageReleaseNotes>
   </PropertyGroup>
 
   <ItemGroup>

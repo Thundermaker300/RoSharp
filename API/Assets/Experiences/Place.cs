@@ -122,7 +122,7 @@ namespace RoSharp.API.Assets.Experiences
         }
 
         /// <inheritdoc/>
-        public Place AttachSessionAndReturn(Session? session)
+        public new Place AttachSessionAndReturn(Session? session)
         {
             if (session is null || !session.LoggedIn)
                 DetachSession();

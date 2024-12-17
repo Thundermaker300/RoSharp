@@ -28,7 +28,7 @@
         /// <summary>
         /// Experience is playable but must first be purchased with Robux.
         /// </summary>
-        /// <seealso cref="API.Assets.Experiences.Experience.PurchaseType"/>
+        /// <seealso cref="API.Assets.Experiences.Experience.PurchaseInfo"/>
         PurchaseRequired,
 
         /// <summary>
@@ -88,9 +88,9 @@
         ContextualPlayabilityRegionalCompliance,
 
         /// <summary>
-        /// Experience is playable but must first be purchased with local fiat currency.
+        /// Experience is playable but must first be purchased with local (fiat) currency.
         /// </summary>
-        /// <seealso cref="API.Assets.Experiences.Experience.PurchaseType"/>
+        /// <seealso cref="API.Assets.Experiences.Experience.PurchaseInfo"/>
         FiatPurchaseRequired,
 
         /// <summary>

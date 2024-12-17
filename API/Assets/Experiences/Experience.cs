@@ -85,8 +85,6 @@ namespace RoSharp.API.Assets.Experiences
         /// </summary>
         public DateTime LastUpdated => lastUpdated;
 
-        private int cost;
-
         /// <summary>
         /// Gets the price in Robux to play this experience, if it is paid access.
         /// </summary>

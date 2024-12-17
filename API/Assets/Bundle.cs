@@ -1,20 +1,20 @@
-﻿using Newtonsoft.Json.Linq;
-using RoSharp.API.Assets.Experiences;
-using RoSharp.API.Pooling;
+﻿/*using RoSharp.API.Pooling;
 using RoSharp.Extensions;
 using RoSharp.Interfaces;
 
 namespace RoSharp.API.Assets
 {
     /// <summary>
-    /// Represents a Roblox game-pass.
+    /// Represents a Roblox bundle. NOT YET IMPLEMENTED, DO NOT USE.
     /// </summary>
+    /// <exception cref="NotImplementedException">Not implemented.</exception>
     public class Bundle : Asset, IRefreshable, IIdApi<Bundle>
     {
         private Bundle(ulong assetId, Session? session = null)
             : base(assetId, session) { }
 
-        /// <inheritdoc/>
+        /// <summary>NOT YET IMPLEMENTED, DO NOT USE.</summary>
+        /// <exception cref="NotImplementedException">Not implemented.</exception>
         public new static async Task<Bundle> FromId(ulong BundleId, Session? session = null)
         {
             throw new NotImplementedException();
@@ -38,7 +38,7 @@ namespace RoSharp.API.Assets
         }
 
         /// <inheritdoc/>
-        public Bundle AttachSessionAndReturn(Session? session)
+        public new Bundle AttachSessionAndReturn(Session? session)
         {
             if (session is null || !session.LoggedIn)
                 DetachSession();
@@ -48,3 +48,4 @@ namespace RoSharp.API.Assets
         }
     }
 }
+*/
