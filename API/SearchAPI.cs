@@ -32,7 +32,7 @@ namespace RoSharp.API
             if (exactMatchSearch)
                 query = $"\"{query}\"";
 
-            string url = $"{Constants.URL("apis")}/search-api/omni-search?searchQuery={query}&sessionId={GameAPI.SessionId}&pageType=all";
+            string url = $"{Constants.URL("apis")}/search-api/omni-search?verticalType=game&searchQuery={query}&sessionId={GameAPI.SessionId}&pageType=all";
             if (cursor != null)
                 url += $"&pageToken={cursor}";
 
@@ -47,6 +47,48 @@ namespace RoSharp.API
                     continue;
 
                 ulong universeId = item.contents[0].universeId;
+                list.Add(new(universeId, session));
+            }
+
+            string token = data.nextPageToken;
+            return new(list, token, null);
+        }
+
+        /// <summary>
+        /// Searches Roblox users and returns results based on the <paramref name="query"/>.
+        /// <para>
+        /// Roblox uses an advanced algorithm to determine what results are shown. This algorithm usually combines the <paramref name="query"/> with other factors like visits, verified status, etc.
+        /// </para>
+        /// </summary>
+        /// <param name="query">The query to search.</param>
+        /// <param name="session">Logged in session, optional.</param>
+        /// <param name="cursor">The cursor to use to advance to the next page. Obtained by calling this API previously.</param>
+        /// <returns>A task containing a <see cref="PageResponse{T}"/> of <see cref="Id{T}"/> upon completion.</returns>
+        /// <exception cref="RobloxAPIException">Error from the Roblox API.</exception>
+        /// <remarks>This API method does not cache and will make a request each time it is called.</remarks>
+        public static async Task<PageResponse<Id<User>>> SearchUsersAsync(string query, Session? session = null, string? cursor = null)
+        {
+
+            string url = $"{Constants.URL("apis")}/search-api/omni-search?verticalType=user&searchQuery={query}&sessionId={GameAPI.SessionId}";
+            if (cursor != null)
+                url += $"&pageToken={cursor}";
+
+            HttpMessage message = new(HttpMethod.Get, url);
+            string body = await HttpManager.SendStringAsync(session, message);
+
+            List<Id<User>> list = [];
+            dynamic data = JObject.Parse(body);
+
+            if (data.searchResults.Count == 0)
+                return PageResponse<Id<User>>.Empty;
+
+            dynamic results = data.searchResults[0];
+            foreach (dynamic item in results.contents)
+            {
+                if (item.contentType != "User")
+                    continue;
+
+                ulong universeId = item.contentId;
                 list.Add(new(universeId, session));
             }
 
