@@ -93,9 +93,7 @@ namespace RoSharp.API.Assets.Experiences
 
         private IPurchaseType purchaseInfo;
 
-        /// <summary>
-        /// Gets information about purchasing this experience.
-        /// </summary>
+        /// <inheritdoc cref="IPurchaseType"/>
         public IPurchaseType PurchaseInfo => purchaseInfo;
 
         private bool uncopylocked;

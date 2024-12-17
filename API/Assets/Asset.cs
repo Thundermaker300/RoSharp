@@ -103,9 +103,7 @@ namespace RoSharp.API.Assets
 
         private IPurchaseType purchaseInfo;
 
-        /// <summary>
-        /// Gets information about purchasing this asset.
-        /// </summary>
+        /// <inheritdoc cref="IPurchaseType"/>
         public IPurchaseType PurchaseInfo => purchaseInfo;
 
         /// <summary>
