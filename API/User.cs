@@ -31,6 +31,9 @@ namespace RoSharp.API
         /// <inheritdoc/>
         public string Url => $"{Constants.ROBLOX_URL}/users/{Id}/profile";
 
+        /// <inheritdoc/>
+        public AssetOwnerType OwnerType => AssetOwnerType.User;
+
         private string name;
 
         /// <summary>

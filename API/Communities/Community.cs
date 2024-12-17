@@ -31,6 +31,9 @@ namespace RoSharp.API.Communities
         /// <inheritdoc/>
         public string Url => $"{Constants.ROBLOX_URL}/groups/{Id}/";
 
+        /// <inheritdoc/>
+        public AssetOwnerType OwnerType => AssetOwnerType.Community;
+
         private string name;
 
         /// <summary>
