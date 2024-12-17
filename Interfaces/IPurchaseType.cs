@@ -18,18 +18,17 @@ namespace RoSharp.Interfaces
     /// * <see cref="RobuxPurchase"/> - For purchases with Robux.<br/>
     /// * <see cref="UnknownPurchase"/> - Unknown purchase type, typically shouldn't be possible.
     /// </para>
-    /// </summary>
-    /// <example>
-    /// <example>
+    /// <para>
     /// This code shows how to check an item's Robux price.
-        /// <code>
-        /// int robuxPrice = asset.PurchaseInfo is RobuxPurchase robux ? robux.Price : 0;
-        /// </code>
+    /// <code>
+    /// int robuxPrice = asset.PurchaseInfo is RobuxPurchase robux ? robux.Price : 0;
+    /// </code>
     /// This code shows how to see if an item is on sale.
-        /// <code>
-        /// bool onSale = asset.PurchaseInfo is not NotForSalePurchase;
-        /// </code>
-    /// </example>
+    /// <code>
+    /// bool onSale = asset.PurchaseInfo is not NotForSalePurchase;
+    /// </code>
+    /// </para>
+    /// </summary>
     public interface IPurchaseType
     {
         /// <summary>
