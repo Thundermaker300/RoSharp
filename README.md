@@ -12,7 +12,7 @@ See [wiki](https://github.com/Thundermaker300/RoSharp/wiki) for all extensive do
 Join our [Discord](https://discord.gg/3hH7qT33Wy) if you have questions!
 
 ## Installation
-RoSharp can be installed [directly from NuGet](nuget.org/packages/RoSharp) through your IDE's package manager or with the following command in the command-line.
+RoSharp can be installed [directly from NuGet](https://nuget.org/packages/RoSharp) through your IDE's package manager or with the following command in the command-line.
 
 ```
 Install-Package RoSharp -Version <version>
