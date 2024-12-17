@@ -1,4 +1,5 @@
 ﻿using Newtonsoft.Json.Linq;
+using RoSharp.API.Assets;
 using RoSharp.API.Assets.Experiences;
 using RoSharp.API.Communities;
 using RoSharp.Enums;
@@ -131,6 +132,62 @@ namespace RoSharp.API
             }
 
             return new PageResponse<Id<Community>>(list, nextPage, previousPage);
+        }
+
+        /// <summary>
+        /// Searches the Roblox marketplace.
+        /// </summary>
+        /// <param name="category">The category to search in.</param>
+        /// <param name="query">The query to search. Can be <see langword="null"/> to show the top items of the category instead.</param>
+        /// <param name="session">The logged-in session, optional.</param>
+        /// <param name="limit">The limit of items to return. Must be one of the following values or the Roblox API will error: 10, 28, 30, 50, 60, 100, 120.</param>
+        /// <param name="cursor">The cursor for the next page. Obtained by calling this API previously.</param>
+        /// <returns>A task containing a <see cref="PageResponse{T}"/> of <see cref="Id{T}"/> upon completion.</returns>
+        /// <exception cref="RobloxAPIException">Roblox API failure or invalid <paramref name="limit"/>.</exception>
+        /// <seealso cref="MarketplaceAPI.GetCategoriesAsync"/>
+        /// <seealso cref="MarketplaceAPI.GetCategoryAsync(string)"/>
+        /// <seealso cref="MarketplaceCategory.SearchAsync(string, Session?, byte, string?)"/>
+        public static async Task<PageResponse<Id<Asset>>> SearchMarketplaceAsync(MarketplaceCategory category, string? query, Session? session = null, byte limit = 30, string? cursor = null)
+        {
+            ArgumentNullException.ThrowIfNull(category, nameof(category));
+
+            string url = category.SearchUrl + $"&limit={limit}";
+            if (query != null)
+                url += $"&keyword={query}";
+            if (cursor != null)
+                url += $"&cursor={cursor}";
+
+            HttpMessage message = new(HttpMethod.Get, url);
+            string rawData = await HttpManager.SendStringAsync(session, message);
+            dynamic data = JObject.Parse(rawData);
+
+            List<Id<Asset>> list = [];
+            string? nextPage = data.nextPageCursor;
+            string? previousPage = data.previousPageCursor;
+
+            foreach (dynamic item in data.data)
+            {
+                ulong id = Convert.ToUInt64(item.id);
+                list.Add(new(id, session));
+            }
+
+            return new PageResponse<Id<Asset>>(list, nextPage, previousPage);
+        }
+
+        /// <summary>
+        /// Searches the Roblox marketplace.
+        /// </summary>
+        /// <param name="category">The name of the category or subcategory to search in.</param>
+        /// <param name="query">The query to search. Can be <see langword="null"/> to show the top items of the category instead.</param>
+        /// <param name="session">The logged-in session, optional.</param>
+        /// <param name="limit">The limit of items to return. Must be one of the following values or the Roblox API will error: 10, 28, 30, 50, 60, 100, 120.</param>
+        /// <param name="cursor">The cursor for the next page. Obtained by calling this API previously.</param>
+        /// <returns>A task containing a <see cref="PageResponse{T}"/> of <see cref="Id{T}"/> upon completion.</returns>
+        /// <exception cref="RobloxAPIException">Roblox API failure or invalid <paramref name="limit"/>.</exception>
+        public static async Task<PageResponse<Id<Asset>>> SearchMarketplaceAsync(string category, string? query, Session? session = null, byte limit = 30, string? cursor = null)
+        {
+            MarketplaceCategory categoryObject = await MarketplaceAPI.GetCategoryAsync(category) ?? await MarketplaceAPI.GetSubCategoryAsync(category) ?? throw new ArgumentException("Invalid category.");
+            return await SearchMarketplaceAsync(categoryObject, query, session, limit, cursor);
         }
     }
 }
