@@ -167,6 +167,9 @@ namespace RoSharp.API
 
             foreach (dynamic item in data.data)
             {
+                if (item.itemType == "Bundle") // TODO: Add support for bundles.
+                    continue;
+
                 ulong id = Convert.ToUInt64(item.id);
                 list.Add(new(id, session));
             }
