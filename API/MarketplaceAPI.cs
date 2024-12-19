@@ -1,6 +1,8 @@
 ﻿using Newtonsoft.Json.Linq;
 using RoSharp.API.Assets;
+using RoSharp.Enums;
 using RoSharp.Exceptions;
+using RoSharp.Extensions;
 using RoSharp.Structures;
 using RoSharp.Utility;
 using System.Collections.ObjectModel;
@@ -92,6 +94,14 @@ namespace RoSharp.API
                 if (category.Name == categoryName || category.Category == categoryName)
                     return category;
             }
+            return null;
+        }
+
+        public static async Task<MarketplaceCategory?> GetCategoryAsync(AssetType assetType)
+        {
+            int? id = await assetType.GetCategoryIdAsync();
+            if (id.HasValue)
+                return await GetCategoryAsync(id.Value);
             return null;
         }
 

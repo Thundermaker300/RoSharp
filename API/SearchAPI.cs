@@ -184,9 +184,27 @@ namespace RoSharp.API
         /// <param name="cursor">The cursor for the next page. Obtained by calling this API previously.</param>
         /// <returns>A task containing a <see cref="PageResponse{T}"/> of <see cref="Id{T}"/> upon completion.</returns>
         /// <exception cref="RobloxAPIException">Roblox API failure or invalid <paramref name="limit"/>.</exception>
+        /// <exception cref="ArgumentException">Invalid category.</exception>
         public static async Task<PageResponse<Id<Asset>>> SearchMarketplaceAsync(string category, string? query, Session? session = null, byte limit = 30, string? cursor = null)
         {
             MarketplaceCategory categoryObject = await MarketplaceAPI.GetCategoryAsync(category) ?? await MarketplaceAPI.GetSubCategoryAsync(category) ?? throw new ArgumentException("Invalid category.");
+            return await SearchMarketplaceAsync(categoryObject, query, session, limit, cursor);
+        }
+
+        /// <summary>
+        /// Searches the Roblox marketplace.
+        /// </summary>
+        /// <param name="assetType">The type of assets to search.</param>
+        /// <param name="query">The query to search. Can be <see langword="null"/> to show the top items of the category instead.</param>
+        /// <param name="session">The logged-in session, optional.</param>
+        /// <param name="limit">The limit of items to return. Must be one of the following values or the Roblox API will error: 10, 28, 30, 50, 60, 100, 120.</param>
+        /// <param name="cursor">The cursor for the next page. Obtained by calling this API previously.</param>
+        /// <returns>A task containing a <see cref="PageResponse{T}"/> of <see cref="Id{T}"/> upon completion.</returns>
+        /// <exception cref="RobloxAPIException">Roblox API failure or invalid <paramref name="limit"/>.</exception>
+        /// <exception cref="ArgumentException">Invalid category.</exception>
+        public static async Task<PageResponse<Id<Asset>>> SearchMarketplaceAsync(AssetType assetType, string? query, Session? session = null, byte limit = 30, string? cursor = null)
+        {
+            MarketplaceCategory categoryObject = await MarketplaceAPI.GetCategoryAsync(assetType) ?? throw new ArgumentException("Invalid asset type.");
             return await SearchMarketplaceAsync(categoryObject, query, session, limit, cursor);
         }
     }
