@@ -97,14 +97,6 @@ namespace RoSharp.API
             return null;
         }
 
-        public static async Task<MarketplaceCategory?> GetCategoryAsync(AssetType assetType)
-        {
-            int? id = await assetType.GetCategoryIdAsync();
-            if (id.HasValue)
-                return await GetCategoryAsync(id.Value);
-            return null;
-        }
-
         /// <summary>
         /// Gets the subcategory with the given Id.
         /// </summary>
@@ -140,6 +132,20 @@ namespace RoSharp.API
                         return sub;
                 }
             }
+            return null;
+        }
+
+        /// <summary>
+        /// Gets the subcategory with the given asset type.
+        /// </summary>
+        /// <param name="assetType">The asset type.</param>
+        /// <returns>A task containing a <see cref="MarketplaceCategory"/> if found successfully.</returns>
+        /// <exception cref="RobloxAPIException">Roblox API failure.</exception>
+        public static async Task<MarketplaceCategory?> GetSubCategoryAsync(AssetType assetType)
+        {
+            int? id = await assetType.GetCategoryIdAsync();
+            if (id.HasValue)
+                return await GetSubCategoryAsync(id.Value);
             return null;
         }
     }

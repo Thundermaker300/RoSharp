@@ -207,7 +207,7 @@ namespace RoSharp.API
         /// <exception cref="ArgumentException">Invalid category.</exception>
         public static async Task<PageResponse<Id<Asset>>> SearchMarketplaceAsync(AssetType assetType, string? query, Session? session = null, byte limit = 30, string? cursor = null)
         {
-            MarketplaceCategory categoryObject = await MarketplaceAPI.GetCategoryAsync(assetType) ?? throw new ArgumentException("Invalid asset type.");
+            MarketplaceCategory categoryObject = await MarketplaceAPI.GetSubCategoryAsync(assetType) ?? throw new ArgumentException("Invalid asset type.");
             return await SearchMarketplaceAsync(categoryObject, query, session, limit, cursor);
         }
     }
