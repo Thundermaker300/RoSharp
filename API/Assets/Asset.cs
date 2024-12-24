@@ -512,6 +512,31 @@ namespace RoSharp.API.Assets
         }
 
         /// <summary>
+        /// Gets this asset's tags.
+        /// </summary>
+        /// <returns>A task containing a <see cref="ReadOnlyCollection{T}"/> of <see cref="AssetTag"/> upon completion.</returns>
+        public async Task<ReadOnlyCollection<AssetTag>> GetTagsAsync()
+        {
+            if (assetTypeOverride != null)
+                return new(new List<AssetTag>().AsReadOnly());
+
+            string rawData = await SendStringAsync(HttpMethod.Get, $"/v1/item-tags?itemIds=AssetId%3A{Id}", Constants.URL("itemconfiguration"));
+            dynamic data = JObject.Parse(rawData);
+
+            List<AssetTag> tags = [];
+            foreach (dynamic tag in data.data[0].itemTags)
+            {
+                AssetTag newTag = new()
+                {
+                    Name = tag.tag.name,
+                    TagId = tag.tag.tagId,
+                };
+                tags.Add(newTag);
+            }
+            return tags.AsReadOnly();
+        }
+
+        /// <summary>
         /// Gets whether or not the <paramref name="target"/> owns this asset.
         /// </summary>
         /// <param name="target">The user to target.</param>
