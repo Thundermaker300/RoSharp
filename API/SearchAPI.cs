@@ -142,12 +142,13 @@ namespace RoSharp.API
         /// <param name="session">The logged-in session, optional.</param>
         /// <param name="limit">The limit of items to return. Must be one of the following values or the Roblox API will error: 10, 28, 30, 50, 60, 100, 120.</param>
         /// <param name="cursor">The cursor for the next page. Obtained by calling this API previously.</param>
+        /// <param name="options">Optional options to modify the search results.</param>
         /// <returns>A task containing a <see cref="PageResponse{T}"/> of <see cref="Id{T}"/> upon completion.</returns>
         /// <exception cref="RobloxAPIException">Roblox API failure or invalid <paramref name="limit"/>.</exception>
         /// <seealso cref="MarketplaceAPI.GetCategoriesAsync"/>
         /// <seealso cref="MarketplaceAPI.GetCategoryAsync(string)"/>
         /// <seealso cref="MarketplaceCategory.SearchAsync(string, Session?, byte, string?)"/>
-        public static async Task<PageResponse<Id<Asset>>> SearchMarketplaceAsync(MarketplaceCategory category, string? query, Session? session = null, byte limit = 30, string? cursor = null)
+        public static async Task<PageResponse<Id<Asset>>> SearchMarketplaceAsync(MarketplaceCategory category, string? query, Session? session = null, byte limit = 30, string? cursor = null, MarketplaceSearchOptions? options = null)
         {
             ArgumentNullException.ThrowIfNull(category, nameof(category));
 
@@ -156,6 +157,31 @@ namespace RoSharp.API
                 url += $"&keyword={query}";
             if (cursor != null)
                 url += $"&cursor={cursor}";
+
+            if (options is not null)
+            {
+                if (options.CreatorName is not null)
+                    url += $"&creatorName={options.CreatorName}";
+
+                if (options.MinPrice.HasValue)
+                    url += $"&minPrice={options.MinPrice.Value}";
+
+                if (options.MaxPrice.HasValue)
+                    url += $"&maxPrice={options.MaxPrice.Value}";
+
+                if (options.SalesType.HasValue)
+                    url += $"&salesTypeFilter={(int)options.SalesType.Value}";
+
+                // Relevance is the default.
+                if (options.Sort.HasValue && options.Sort.Value != MarketplaceSearchSort.Relevance)
+                    url += $"&sortType={(int)options.Sort.Value}";
+
+                if (options.SortAggregation.HasValue && options.SortAggregation.Value != MarketplaceSearchSortAggregation.AllTime)
+                    url += $"&sortAggregation={(int)options.SortAggregation.Value}";
+
+                if (options.IncludeNotForSale is true)
+                    url += $"&includeNotForSale=true";
+            }
 
             HttpMessage message = new(HttpMethod.Get, url);
             string rawData = await HttpManager.SendStringAsync(session, message);
@@ -185,13 +211,14 @@ namespace RoSharp.API
         /// <param name="session">The logged-in session, optional.</param>
         /// <param name="limit">The limit of items to return. Must be one of the following values or the Roblox API will error: 10, 28, 30, 50, 60, 100, 120.</param>
         /// <param name="cursor">The cursor for the next page. Obtained by calling this API previously.</param>
+        /// <param name="options">Optional options to modify the search results.</param>
         /// <returns>A task containing a <see cref="PageResponse{T}"/> of <see cref="Id{T}"/> upon completion.</returns>
         /// <exception cref="RobloxAPIException">Roblox API failure or invalid <paramref name="limit"/>.</exception>
         /// <exception cref="ArgumentException">Invalid category.</exception>
-        public static async Task<PageResponse<Id<Asset>>> SearchMarketplaceAsync(string category, string? query, Session? session = null, byte limit = 30, string? cursor = null)
+        public static async Task<PageResponse<Id<Asset>>> SearchMarketplaceAsync(string category, string? query, Session? session = null, byte limit = 30, string? cursor = null, MarketplaceSearchOptions? options = null)
         {
             MarketplaceCategory categoryObject = await MarketplaceAPI.GetCategoryAsync(category) ?? await MarketplaceAPI.GetSubCategoryAsync(category) ?? throw new ArgumentException("Invalid category.");
-            return await SearchMarketplaceAsync(categoryObject, query, session, limit, cursor);
+            return await SearchMarketplaceAsync(categoryObject, query, session, limit, cursor, options);
         }
 
         /// <summary>
@@ -202,13 +229,58 @@ namespace RoSharp.API
         /// <param name="session">The logged-in session, optional.</param>
         /// <param name="limit">The limit of items to return. Must be one of the following values or the Roblox API will error: 10, 28, 30, 50, 60, 100, 120.</param>
         /// <param name="cursor">The cursor for the next page. Obtained by calling this API previously.</param>
+        /// <param name="options">Optional options to modify the search results.</param>
         /// <returns>A task containing a <see cref="PageResponse{T}"/> of <see cref="Id{T}"/> upon completion.</returns>
         /// <exception cref="RobloxAPIException">Roblox API failure or invalid <paramref name="limit"/>.</exception>
         /// <exception cref="ArgumentException">Invalid category.</exception>
-        public static async Task<PageResponse<Id<Asset>>> SearchMarketplaceAsync(AssetType assetType, string? query, Session? session = null, byte limit = 30, string? cursor = null)
+        public static async Task<PageResponse<Id<Asset>>> SearchMarketplaceAsync(AssetType assetType, string? query, Session? session = null, byte limit = 30, string? cursor = null, MarketplaceSearchOptions? options = null)
         {
             MarketplaceCategory categoryObject = await MarketplaceAPI.GetSubCategoryAsync(assetType) ?? throw new ArgumentException("Invalid asset type.");
-            return await SearchMarketplaceAsync(categoryObject, query, session, limit, cursor);
+            return await SearchMarketplaceAsync(categoryObject, query, session, limit, cursor, options);
         }
+    }
+
+    /// <summary>
+    /// Allows for configuration of a marketplace search.
+    /// </summary>
+    public class MarketplaceSearchOptions
+    {
+        /// <summary>
+        /// Gets or sets the name of the creator, or <see langword="null"/> to search all creators.
+        /// </summary>
+        public string? CreatorName { get; set; }
+
+        /// <summary>
+        /// Gets or sets if not-for-sale items will be included. Defaults to <see langword="false"/>.
+        /// </summary>
+        public bool IncludeNotForSale { get; set; } = false;
+
+        /// <summary>
+        /// Gets or sets the minimum price, or <see langword="null"/> for no price floor.
+        /// </summary>
+        public int? MinPrice { get; set; }
+
+        /// <summary>
+        /// Gets or sets the maximum price, or <see langword="null"/> for no price ceiling.
+        /// </summary>
+        public int? MaxPrice { get; set; }
+
+        /// <summary>
+        /// Gets or sets the sale type of the search, or <see langword="null"/> for the default search type (<see cref="MarketplaceSearchSalesType.All"/>).
+        /// </summary>
+        public MarketplaceSearchSalesType? SalesType { get; set; }
+
+        /// <summary>
+        /// Gets or sets the sort type of the search, or <see langword="null"/> for the default search type (<see cref="MarketplaceSearchSort.Relevance"/>).
+        /// </summary>
+        public MarketplaceSearchSort? Sort { get; set; }
+
+        /// <summary>
+        /// Gets or sets the sort aggregation type of the search, or <see langword="null"/> for the default aggregation type (<see cref="MarketplaceSearchSortAggregation.AllTime"/>).
+        /// <para>
+        /// This value only applies if <see cref="Sort"/> is equivalent to <see cref="MarketplaceSearchSort.MostFavorited"/> or <see cref="MarketplaceSearchSort.Bestselling"/>.
+        /// </para>
+        /// </summary>
+        public MarketplaceSearchSortAggregation? SortAggregation { get; set; }
     }
 }

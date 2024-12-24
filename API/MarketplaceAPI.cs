@@ -205,7 +205,7 @@ namespace RoSharp.API
         public ReadOnlyCollection<MarketplaceCategory> Subcategories { get; init; }
 
         /// <summary>
-        /// Searches the Roblox marketplace in this category. Equivalent to <see cref="SearchAPI.SearchMarketplaceAsync(MarketplaceCategory, string, Session?, byte, string?)"/> with this category.
+        /// Searches the Roblox marketplace in this category. Equivalent to <see cref="SearchAPI.SearchMarketplaceAsync(MarketplaceCategory, string, Session?, byte, string?, MarketplaceSearchOptions)"/> with this category.
         /// </summary>
         /// <param name="query">The query to search. Can be <see langword="null"/> to show the top items of the category instead.</param>
         /// <param name="session">The logged-in session, optional.</param>
@@ -215,7 +215,7 @@ namespace RoSharp.API
         /// <exception cref="RobloxAPIException">Roblox API failure or invalid <paramref name="limit"/>.</exception>
         /// <seealso cref="MarketplaceAPI.GetCategoriesAsync"/>
         /// <seealso cref="MarketplaceAPI.GetCategoryAsync(string)"/>
-        /// <seealso cref="SearchAPI.SearchMarketplaceAsync(MarketplaceCategory, string, Session?, byte, string?)"/>
+        /// <seealso cref="SearchAPI.SearchMarketplaceAsync(MarketplaceCategory, string, Session?, byte, string?, MarketplaceSearchOptions)"/>
         public async Task<PageResponse<Id<Asset>>> SearchAsync(string? query, Session? session = null, byte limit = 30, string? cursor = null)
             => await SearchAPI.SearchMarketplaceAsync(this, query, session, limit, cursor);
 
