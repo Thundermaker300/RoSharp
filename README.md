@@ -31,7 +31,8 @@ Below are some of the following features that are available in RoSharp:
 * Much more!
 
 ## Credits
-[Robloxdotnet](https://github.com/Loravis/Robloxdotnet) by [Loravis](https://github.com/Loravis) -- Original inspiration for RoSharp, various inspirations taken from this project.
+* [Robloxdotnet](https://github.com/Loravis/Robloxdotnet) by [Loravis](https://github.com/Loravis) -- Original inspiration for RoSharp, various inspirations taken from this project.
+* [RoSeal](https://www.roseal.live/) -- Providing the API/Database that is used for `Experience.GetCommunityWikiUrlAsync`.
 
 ## Donations
 RoSharp doesn't cost anything but donations are greatly appreciated! [Click here to donate](https://ko-fi.com/P5P416152H).

@@ -1025,6 +1025,35 @@ namespace RoSharp.API.Assets.Experiences
             await SendAsync(message, Constants.URL("apis"));
         }
 
+        /// <summary>
+        /// Returns the URL to the experience's community wiki, if one exists.
+        /// <para>
+        /// Note that this method is powered by RoSeal. See more information about RoSeal <see href="https://www.roseal.live/">on their website</see>.
+        /// </para>
+        /// </summary>
+        /// <returns>A task containing a <see cref="Uri"/> upon completion.</returns>
+        public async Task<Uri?> GetCommunityWikiUrlAsync()
+        {
+            string rawData = await SendStringAsync(HttpMethod.Get, "/v2/experience-links.json", "https://data.roseal.live");
+            JArray data = JArray.Parse(rawData);
+            foreach (JToken item in data.Children())
+            {
+#pragma warning disable CS8602
+#pragma warning disable CS8604
+                if (item["universeIds"] != null && item["universeIds"].Any(t => t.Value<ulong>() == UniverseId) && item["links"] != null)
+                {
+                    foreach (JToken link in item["links"].Children())
+                    {
+                        if (link["type"].ToString() == "communityWiki")
+                            return new Uri("https://" + link["url"].ToString());
+                    }
+                }
+            }
+#pragma warning restore CS8602
+#pragma warning restore CS8604
+            return null;
+        }
+
         /// <inheritdoc/>
         public override string ToString()
         {
