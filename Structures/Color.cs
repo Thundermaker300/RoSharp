@@ -94,5 +94,12 @@
         /// Represents a color with HexCode <c>FF0000</c>.
         /// </summary>
         public static Color Red { get; } = new("FF0000");
+
+
+        /// <inheritdoc/>
+        public override string ToString()
+        {
+            return $"Color [{HexCode}] ({RGBString})";
+        }
     }
 }
