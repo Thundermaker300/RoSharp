@@ -748,7 +748,7 @@ namespace RoSharp.API.Communities
         /// <inheritdoc/>
         public override string ToString()
         {
-            return $"{Name} [{Id}] {{{members}}}{(Verified ? " [V]" : string.Empty)}";
+            return $"Community {Name} [{Id}] {{{members}}}{(Verified ? " [V]" : string.Empty)}";
         }
 
         /// <inheritdoc/>

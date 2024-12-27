@@ -76,7 +76,7 @@ namespace RoSharp.API.DevForum
         /// <inheritdoc/>
         public override string ToString()
         {
-            return $"{Title} [{Id}] <#{Color}> -- {Description}";
+            return $"DevForumCategory {Title} [{Id}] <#{Color}> -- {Description}";
         }
     }
 }

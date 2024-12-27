@@ -1057,7 +1057,7 @@ namespace RoSharp.API.Assets.Experiences
         /// <inheritdoc/>
         public override string ToString()
         {
-            return $"{Name} [{UniverseId}] {{{(!IsCommunityOwned ? "@" : string.Empty)}{OwnerName}}} {PurchaseInfo}";
+            return $"Experience {Name} [{UniverseId}] {{{(!IsCommunityOwned ? "@" : string.Empty)}{OwnerName}}} {PurchaseInfo}";
         }
 
         /// <inheritdoc/>
@@ -1131,7 +1131,7 @@ namespace RoSharp.API.Assets.Experiences
         /// <inheritdoc/>
         public override string ToString()
         {
-            return $"{DescriptorType} [{DisplayText}] IconUrl: <{IconUrl}> Type: <{Type}> Frequency: <{Frequency}> Realism: <{Realism}> BloodLevel: <{BloodLevel}> Intensity: <{Intensity}> Presence: <{Presence}>";
+            return $"ExperienceDescriptor {DescriptorType} [{DisplayText}] IconUrl: <{IconUrl}> Type: <{Type}> Frequency: <{Frequency}> Realism: <{Realism}> BloodLevel: <{BloodLevel}> Intensity: <{Intensity}> Presence: <{Presence}>";
         }
     }
 
@@ -1173,7 +1173,7 @@ namespace RoSharp.API.Assets.Experiences
         /// <inheritdoc/>
         public override string ToString()
         {
-            return $"{Type} [{Time}] {{{Id}}} ExpID: {UniverseId.UniqueId} UserID: {UserId.UniqueId}";
+            return $"ExperienceAuditLog {Type} [{Time}] {{{Id}}} ExpID: {UniverseId.UniqueId} UserID: {UserId.UniqueId}";
         }
     }
 

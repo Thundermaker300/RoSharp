@@ -848,7 +848,7 @@ namespace RoSharp.API
         /// <inheritdoc/>
         public override string ToString()
         {
-            return $"{DisplayName} (@{Name}) [{Id}]{(Verified ? " [V]" : string.Empty)}";
+            return $"User {DisplayName} (@{Name}) [{Id}]{(Verified ? " [V]" : string.Empty)}";
         }
 
         /// <inheritdoc/>

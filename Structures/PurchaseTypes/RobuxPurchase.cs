@@ -24,7 +24,7 @@ namespace RoSharp.Structures.PurchaseTypes
         /// <inheritdoc/>
         public override string ToString()
         {
-            return $"R${Price}";
+            return $"RobuxPurchase [R${Price}]";
         }
     }
 }

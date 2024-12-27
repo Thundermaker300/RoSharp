@@ -39,7 +39,7 @@ namespace RoSharp.Structures.PurchaseTypes
         /// <inheritdoc/>
         public override string ToString()
         {
-            return $"({Price} {CurrencyCode})";
+            return $"FiatPurchase [{Price} {CurrencyCode}]";
         }
     }
 }

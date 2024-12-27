@@ -22,7 +22,7 @@ namespace RoSharp.Structures.PurchaseTypes
         /// <inheritdoc/>
         public override string ToString()
         {
-            return "[NOT FOR SALE]";
+            return "NotForSalePurchase [NOT FOR SALE]";
         }
     }
 }

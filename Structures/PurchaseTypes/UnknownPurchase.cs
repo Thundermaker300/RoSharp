@@ -22,7 +22,7 @@ namespace RoSharp.Structures.PurchaseTypes
         /// <inheritdoc/>
         public override string ToString()
         {
-            return $"UNKNOWN COST";
+            return $"UnknownPurchase [UNKNOWN COST]";
         }
     }
 }

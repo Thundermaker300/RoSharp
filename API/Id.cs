@@ -63,7 +63,7 @@ namespace RoSharp.API
         /// <inheritdoc/>
         public override string ToString()
         {
-            return UniqueId.ToString();
+            return $"Id<{Type.Name}> [{UniqueId.ToString()}]";
         }
 
         /// <summary>

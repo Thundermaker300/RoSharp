@@ -17,7 +17,7 @@ namespace RoSharp.Structures.PurchaseTypes
         /// <inheritdoc/>
         public override string ToString()
         {
-            return "[FREE]";
+            return "FreePurchase [FREE]";
         }
     }
 }
