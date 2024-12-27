@@ -67,5 +67,33 @@ namespace RoSharp.Utility
         /// <exception cref="RobloxAPIException">Roblox API failure.</exception>
         public static async Task<ReadOnlyDictionary<string, ulong>> GetUserIdsAsync(IEnumerable<string> usernames)
             => await GetUserIdsAsync(usernames.ToArray());
+
+        private static async Task<ReadOnlyCollection<Color>> GetColors(string key)
+        {
+            HttpMessage payload = new(HttpMethod.Get, $"{Constants.URL("avatar")}/v1/avatar-rules");
+            string rawData = await HttpManager.SendStringAsync(null, payload);
+            dynamic data = JObject.Parse(rawData);
+            
+            List<Color> colors = new List<Color>();
+            foreach (dynamic item in data[key])
+            {
+                colors.Add(new Color(Convert.ToString(item.hexColor)));
+            }
+            return colors.AsReadOnly();
+        }
+
+        /// <summary>
+        /// Gets a list of colors that are listed in the basic body colors in the avatar editor.
+        /// </summary>
+        /// <returns>A task containing a <see cref="ReadOnlyCollection{T}"/> of <see cref="Color"/> upon completion.</returns>
+        public static async Task<ReadOnlyCollection<Color>> GetBasicBodyColorOptionsAsync()
+            => await GetColors("basicBodyColorsPalette");
+
+        /// <summary>
+        /// Gets a list of colors that are listed in the advanced body colors in the avatar editor.
+        /// </summary>
+        /// <returns>A task containing a <see cref="ReadOnlyCollection{T}"/> of <see cref="Color"/> upon completion.</returns>
+        public static async Task<ReadOnlyCollection<Color>> GetAdvancedBodyColorOptionsAsync()
+            => await GetColors("bodyColorsPalette");
     }
 }

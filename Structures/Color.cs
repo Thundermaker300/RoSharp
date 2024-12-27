@@ -64,6 +64,8 @@
 
         public Color(string hex)
         {
+            hex = hex.Replace("#", string.Empty);
+
             hexCode = hex;
 
             rgbCombo = GetRGB();
