@@ -190,8 +190,6 @@ namespace RoSharp.API
 
         private async Task UpdateAvatarAsync()
         {
-            // TODO: Add information on the avatar's body colors.
-            
             string rawData = await SendStringAsync(HttpMethod.Get, $"/v2/avatar/users/{Id}/avatar", Constants.URL("avatar"));
             dynamic data = JObject.Parse(rawData);
 
@@ -211,6 +209,18 @@ namespace RoSharp.API
                 assets.Add(new(Convert.ToUInt64(asset.id), session));
             }
             currentlyWearing = assets.AsReadOnly();
+
+            Dictionary<BodyColorType, Color> colors = new(6);
+            foreach (dynamic color in data.bodyColor3s)
+            {
+                string name = color.Name;
+                name = name.Replace("Color3", string.Empty);
+
+                BodyColorType type = Enum.Parse<BodyColorType>(name, true);
+                Color colorObj = new(Convert.ToString(color.Value));
+                colors.Add(type, colorObj);
+            }
+            bodyColors = colors.AsReadOnly();
         }
 
         private async Task UpdateFollowingsAsync()
@@ -254,6 +264,13 @@ namespace RoSharp.API
         /// Gets the user's choice of avatar scaling.
         /// </summary>
         public ReadOnlyDictionary<AvatarScaleType, double> AvatarScales => avatarScales;
+
+        private ReadOnlyDictionary<BodyColorType, Color> bodyColors;
+
+        /// <summary>
+        /// Gets the user's body colors.
+        /// </summary>
+        public ReadOnlyDictionary<BodyColorType, Color> BodyColors => bodyColors;
 
         private int following = -1;
 
