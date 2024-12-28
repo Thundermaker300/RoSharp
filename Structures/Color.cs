@@ -15,7 +15,7 @@ namespace RoSharp.Structures
             ["Blue"] = FromHex("0000FF"),
         };
 
-        private string hexCode;
+        private string hexCode = "000000";
         private (byte, byte, byte) rgbCombo;
         private (int, int, int) hsvCombo;
 
@@ -39,8 +39,19 @@ namespace RoSharp.Structures
         /// </summary>
         public byte B => rgbCombo.Item3;
 
+        /// <summary>
+        /// Gets the hue component of the color.
+        /// </summary>
         public int H => hsvCombo.Item1;
+
+        /// <summary>
+        /// Gets the saturation component of the color.
+        /// </summary>
         public int S => hsvCombo.Item2;
+
+        /// <summary>
+        /// Gets the value component of the color.
+        /// </summary>
         public int V => hsvCombo.Item3;
 
         /// <summary>
@@ -58,6 +69,9 @@ namespace RoSharp.Structures
         /// </summary>
         public int HexInt => Convert.ToInt32(HexCode, 16);
 
+        /// <summary>
+        /// Gets this color's name if <see cref="IsNamed"/> is <see langword="true"/>.
+        /// </summary>
         public string? Name
         {
             get
@@ -70,6 +84,9 @@ namespace RoSharp.Structures
             }
         }
 
+        /// <summary>
+        /// Gets if this color is named.
+        /// </summary>
         public bool IsNamed => Name is not null;
 
         private void Validate()
@@ -92,6 +109,7 @@ namespace RoSharp.Structures
         // Requires HSV
         private (byte, byte, byte) GetRGBFromHSV()
         {
+            // Code sample from: https://stackoverflow.com/questions/1335426/is-there-a-built-in-c-net-system-api-for-hsv-to-rgb
             var rgb = new int[3];
 
             int baseColor = (H + 60) % 360 / 120;
@@ -168,8 +186,17 @@ namespace RoSharp.Structures
             return ((int)Math.Round(h), (int)Math.Round(s), (int)Math.Round(v));
         }
 
+        /// <summary>
+        /// Creates a new <see cref="Color"/>. Identical to <see cref="Black"/>.
+        /// </summary>
         public Color() { }
 
+        /// <summary>
+        /// Creates a new color given a color hexadecimal code.
+        /// </summary>
+        /// <param name="hex">The code.</param>
+        /// <returns>A new <see cref="Color"/> object.</returns>
+        /// <exception cref="InvalidOperationException">Invalid color.</exception>
         public static Color FromHex(string hex)
         {
             Color c = new();
@@ -184,6 +211,14 @@ namespace RoSharp.Structures
             return c;
         }
 
+        /// <summary>
+        /// Creates a new color given the color's Red, Blue, and Green components.
+        /// </summary>
+        /// <param name="r">The red component of the color.</param>
+        /// <param name="g">The green component of the color.</param>
+        /// <param name="b">The blue component of the color.</param>
+        /// <returns>A new <see cref="Color"/> object.</returns>
+        /// <exception cref="InvalidOperationException">Invalid color.</exception>
         public static Color FromRGB(byte r, byte g, byte b)
         {
             Color c = new();
@@ -196,6 +231,14 @@ namespace RoSharp.Structures
             return c;
         }
 
+        /// <summary>
+        /// Creates a new color given the color's Hue, Saturation, and Value components.
+        /// </summary>
+        /// <param name="h">The hue component of the color.</param>
+        /// <param name="s">The saturation component of the color.</param>
+        /// <param name="v">The value component of the color.</param>
+        /// <returns>A new <see cref="Color"/> object.</returns>
+        /// <exception cref="InvalidOperationException">Invalid color.</exception>
         public static Color FromHSV(int h, int s, int v)
         {
             Color c = new();
