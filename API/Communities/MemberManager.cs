@@ -378,10 +378,14 @@ namespace RoSharp.API.Communities
         /// Kicks the user with the given Id.
         /// </summary>
         /// <param name="userId">The user's Id.</param>
+        /// <param name="deletePosts">If <see langword="true"/>, will also delete their wall posts.</param>
         /// <returns>A task that completes when the operation is finished.</returns>
         /// <exception cref="RobloxAPIException">Roblox API failure or lack of permissions.</exception>
-        public async Task KickMemberAsync(ulong userId)
+        public async Task KickMemberAsync(ulong userId, bool deletePosts = true)
         {
+            if (deletePosts)
+                await community.DeletePostsFromMemberAsync(userId);
+
             var message = new HttpMessage(HttpMethod.Delete, $"/v1/groups/{community.Id}/users/{userId}")
             {
                 AuthType = AuthType.RobloSecurity,
@@ -395,15 +399,16 @@ namespace RoSharp.API.Communities
         /// Kicks the user.
         /// </summary>
         /// <param name="user">The user.</param>
+        /// <param name="deletePosts">If <see langword="true"/>, will also delete their wall posts.</param>
         /// <returns>A task that completes when the operation is finished.</returns>
         /// <exception cref="RobloxAPIException">Roblox API failure or lack of permissions.</exception>
-        public async Task KickMemberAsync(User user) => await KickMemberAsync(user.Id);
+        public async Task KickMemberAsync(User user, bool deletePosts = true) => await KickMemberAsync(user.Id, deletePosts);
 
         /// <summary>
         /// Bans a user from the community.
         /// </summary>
         /// <param name="userId">The unique Id of the user to ban.</param>
-        /// <param name="deletePosts">If true, will also delete their wall posts.</param>
+        /// <param name="deletePosts">If <see langword="true"/>, will also delete their wall posts.</param>
         /// <returns>A task that completes when the operation has finished.</returns>
         /// <exception cref="RobloxAPIException">Roblox API failure or lack of permissions.</exception>
         public async Task BanMemberAsync(ulong userId, bool deletePosts = false)
@@ -424,7 +429,7 @@ namespace RoSharp.API.Communities
         /// Bans a user from the community.
         /// </summary>
         /// <param name="user">The user to ban.</param>
-        /// <param name="deletePosts">If true, will also delete their wall posts.</param>
+        /// <param name="deletePosts">If <see langword="true"/>, will also delete their wall posts.</param>
         /// <returns>A task that completes when the operation has finished.</returns>
         /// <exception cref="RobloxAPIException">Roblox API failure or lack of permissions.</exception>
         public async Task BanMemberAsync(User user, bool deletePosts = false)
