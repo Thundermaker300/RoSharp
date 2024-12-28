@@ -217,7 +217,7 @@ namespace RoSharp.API
                 name = name.Replace("Color3", string.Empty);
 
                 BodyColorType type = Enum.Parse<BodyColorType>(name, true);
-                Color colorObj = new(Convert.ToString(color.Value));
+                Color colorObj = Color.FromHex(Convert.ToString(color.Value));
                 colors.Add(type, colorObj);
             }
             bodyColors = colors.AsReadOnly();

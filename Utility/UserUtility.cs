@@ -77,7 +77,7 @@ namespace RoSharp.Utility
             List<Color> colors = new List<Color>();
             foreach (dynamic item in data[key])
             {
-                colors.Add(new Color(Convert.ToString(item.hexColor)));
+                colors.Add(Color.FromHex(Convert.ToString(item.hexColor)));
             }
             return colors.AsReadOnly();
         }
