@@ -7,6 +7,13 @@ namespace RoSharp.Structures
     /// </summary>
     public struct Color
     {
+        private static Dictionary<string, Color> BuiltIn { get; } = new()
+        {
+            ["Black"] = FromHex("000000"),
+            ["Red"] = FromHex("FF0000"),
+            ["Green"] = FromHex("00FF00"),
+            ["Blue"] = FromHex("0000FF"),
+        };
 
         private string hexCode;
         private (byte, byte, byte) rgbCombo;
@@ -50,6 +57,20 @@ namespace RoSharp.Structures
         /// Gets an integer representing the specific <see cref="HexCode"/>.
         /// </summary>
         public int HexInt => Convert.ToInt32(HexCode, 16);
+
+        public string? Name
+        {
+            get
+            {
+                int hex = HexInt;
+                KeyValuePair<string, Color>? pair = BuiltIn.FirstOrDefault(x => x.Value.HexInt == hex);
+                if (pair.HasValue)
+                    return pair.Value.Key;
+                return null;
+            }
+        }
+
+        public bool IsNamed => Name is not null;
 
         private void Validate()
         {
@@ -193,12 +214,22 @@ namespace RoSharp.Structures
         /// <summary>
         /// Represents a color with HexCode <c>000000</c>.
         /// </summary>
-        public static Color Black { get; } = FromHex("000000");
+        public static Color Black { get; } = BuiltIn["Black"];
 
         /// <summary>
         /// Represents a color with HexCode <c>FF0000</c>.
         /// </summary>
-        public static Color Red { get; } = FromHex("FF0000");
+        public static Color Red { get; } = BuiltIn["Red"];
+
+        /// <summary>
+        /// Represents a color with HexCode <c>00FF00</c>.
+        /// </summary>
+        public static Color Green { get; } = BuiltIn["Green"];
+
+        /// <summary>
+        /// Represents a color with HexCode <c>0000FF</c>.
+        /// </summary>
+        public static Color Blue { get; } = BuiltIn["Blue"];
 
 
         /// <inheritdoc/>
