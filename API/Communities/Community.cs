@@ -745,6 +745,20 @@ namespace RoSharp.API.Communities
             }
         }
 
+        /// <summary>
+        /// Leaves the community if the authenticated user is in it.
+        /// </summary>
+        /// <returns>A task that completes when the operation is finished.</returns>
+        public async Task LeaveAsync()
+        {
+            HttpMessage payload = new(HttpMethod.Delete, $"/v1/groups/{Id}/users/{session?.AuthUser?.Id}")
+            {
+                AuthType = AuthType.RobloSecurity,
+                ApiName = nameof(LeaveAsync),
+            };
+            await SendAsync(payload);
+        }
+
         /// <inheritdoc/>
         public override string ToString()
         {
