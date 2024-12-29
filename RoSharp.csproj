@@ -16,7 +16,7 @@
     <PackageIcon>Roblox_O.png</PackageIcon>
     <PackageReadmeFile>README.md</PackageReadmeFile>
     <RepositoryType>git</RepositoryType>
-    <PackageTags>roblox</PackageTags>
+    <PackageTags>roblox;api;wrapper;c#;webapi</PackageTags>
     <NeutralLanguage>en-US</NeutralLanguage>
     <PackageLicenseFile>LICENSE.md</PackageLicenseFile>
     <PackageReleaseNotes>See https://github.com/Thundermaker300/RoSharp/releases/tag/v1.1.0 for release notes.</PackageReleaseNotes>
