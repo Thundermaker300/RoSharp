@@ -1012,7 +1012,7 @@ namespace RoSharp.API.Assets.Experiences
         /// <remarks>This API member requires a session with an API key, and the API key must have the <c>universe-messaging-service:publish</c> permission.</remarks>
         public async Task PublishMessageAsync(string topic, string data)
         {
-            var message = new HttpMessage(HttpMethod.Post, $"/messaging-service/v1/universes/{UniverseId}/topics/{topic}", new
+            var message = new HttpMessage(HttpMethod.Post, $"/cloud/v2/universes/{UniverseId}:publishMessage", new
             {
                 message = data,
             })
