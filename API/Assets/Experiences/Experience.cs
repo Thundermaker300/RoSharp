@@ -1014,6 +1014,7 @@ namespace RoSharp.API.Assets.Experiences
         {
             var message = new HttpMessage(HttpMethod.Post, $"/cloud/v2/universes/{UniverseId}:publishMessage", new
             {
+                topic = topic,
                 message = data,
             })
             {
