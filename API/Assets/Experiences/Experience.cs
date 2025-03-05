@@ -525,6 +525,13 @@ namespace RoSharp.API.Assets.Experiences
         /// </summary>
         public AvatarType AvatarType => avatarType;
 
+        private bool customAnimationsAllowed = false;
+
+        /// <summary>
+        /// Gets whether or not custom animations are allowed in this experience.
+        /// </summary>
+        public bool CustomAnimationsAllowed => customAnimationsAllowed;
+
         private ReadOnlyDictionary<AvatarScaleType, double> minimumAvatarScales;
 
         /// <summary>
@@ -550,6 +557,8 @@ namespace RoSharp.API.Assets.Experiences
                 "PlayerChoice" => AvatarType.PlayerChoice,
                 _ => AvatarType.Unknown,
             };
+
+            customAnimationsAllowed = Convert.ToBoolean(data.allowCustomAnimations);
 
             Dictionary<AvatarScaleType, double> mins = [];
             Dictionary<AvatarScaleType, double> maxs = [];
