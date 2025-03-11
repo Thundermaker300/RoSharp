@@ -11,6 +11,7 @@ namespace RoSharp.API
     /// <summary>
     /// Static class that contains utility methods for accessing Roblox's price floor information. All API within this class require authentication.
     /// </summary>
+    [Obsolete("All API has been migrated to the MarketplaceAPI class.")]
     public static class PriceFloorAPI
     {
         /// <summary>
@@ -18,30 +19,9 @@ namespace RoSharp.API
         /// </summary>
         /// <param name="session">Logged in session. Required but can be replaced with <see langword="null"/> if there is a global session assigned.</param>
         /// <returns>A task containing the <see cref="ReadOnlyDictionary{TKey, TValue}"/> upon completion.</returns>
+        [Obsolete("See MarketplaceAPI::GetPriceFloorsAsync.")]
         public static async Task<ReadOnlyDictionary<AssetType, int>> GetPriceFloorsAsync(Session? session)
-        {
-
-            HttpMessage message = new(HttpMethod.Get, $"{Constants.URL("itemconfiguration")}/v1/collectibles/metadata")
-            {
-                AuthType = AuthType.RobloSecurity,
-                ApiName = nameof(GetPriceFloorsAsync)
-            };
-
-            string body = await HttpManager.SendStringAsync(session, message);
-
-            var dict = new Dictionary<AssetType, int>();
-            dynamic data = JObject.Parse(body);
-            foreach (JProperty item in data.unlimitedItemPriceFloors)
-            {
-                string name = item.Name;
-                JToken jToken = item.Value;
-                int value = Convert.ToInt32(jToken["priceFloor"]);
-                if (Enum.TryParse(name, out AssetType result))
-                    dict.Add(result, value);
-            }
-
-            return dict.AsReadOnly();
-        }
+            => await MarketplaceAPI.GetPriceFloorsAsync(session);
 
         /// <summary>
         /// Gets the price floor for a specific <see cref="AssetType"/>.
@@ -49,13 +29,8 @@ namespace RoSharp.API
         /// <param name="assetType">The <see cref="AssetType"/> to get the price floor of.</param>
         /// <param name="session">Logged in session. Required but can be replaced with <see langword="null"/> if there is a global session assigned.</param>
         /// <returns>A task containing the price floor as an <see cref="int"/>. Will be <see langword="null"/> if the provided <see cref="AssetType"/> does not have a price floor.</returns>
+        [Obsolete("See MarketplaceAPI::GetPriceFloorForTypeAsync")]
         public static async Task<int?> GetPriceFloorForTypeAsync(AssetType assetType, Session? session)
-        {
-            var priceFloors = await GetPriceFloorsAsync(session);
-            if (priceFloors.TryGetValue(assetType, out int value))
-                return value;
-
-            return null;
-        }
+            => await MarketplaceAPI.GetPriceFloorForTypeAsync(assetType, session);
     }
 }
