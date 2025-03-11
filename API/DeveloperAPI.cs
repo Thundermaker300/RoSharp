@@ -17,14 +17,17 @@ namespace RoSharp.API
         {
             HttpMessage payload = new(HttpMethod.Get, $"{Constants.URL("publish")}/v1/asset-quotas?resourceType=RateLimitUpload&assetType={assetType}");
             string rawData = await HttpManager.SendStringAsync(session, payload);
+
+            return rawData;
         }
 
         /// <summary>
         /// Gets the maximum amount of the given <see cref="AssetType"/> that can be uploaded by the authenticated user in a specific time frame.
         /// </summary>
+        /// <param name="assetType">The asset type to get the quota of.</param>
         /// <param name="session">Logged in session. Required but can be replaced with <see langword="null"/> if there is a global session assigned.</param>
         /// <returns>A task containing the quota upon completion.</returns>
-        public static async Task<int> GetUploadQuotaAsync(Session? session, AssetType assetType)
+        public static async Task<int> GetUploadQuotaAsync(AssetType assetType, Session? session)
         {
             string rawData = await getQuotaData(session, assetType);
             dynamic data = JObject.Parse(rawData);
@@ -39,9 +42,10 @@ namespace RoSharp.API
         /// <summary>
         /// Gets the amount of assets the authenticated user has uploaded within the quota's period.
         /// </summary>
+        /// <param name="assetType">The asset type to get the quota usage of.</param>
         /// <param name="session">Logged in session. Required but can be replaced with <see langword="null"/> if there is a global session assigned.</param>
         /// <returns>A task containing the quota's usage upon completion.</returns>
-        public static async Task<int> GetUploadQuotaUsageAsync(Session? session, AssetType assetType)
+        public static async Task<int> GetUploadQuotaUsageAsync(AssetType assetType, Session? session)
         {
             string rawData = await getQuotaData(session, assetType);
             dynamic data = JObject.Parse(rawData);
