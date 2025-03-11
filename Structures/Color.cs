@@ -7,14 +7,6 @@ namespace RoSharp.Structures
     /// </summary>
     public struct Color
     {
-        private static Dictionary<string, Color> BuiltIn { get; } = new()
-        {
-            ["Black"] = FromHex("000000"),
-            ["Red"] = FromHex("FF0000"),
-            ["Green"] = FromHex("00FF00"),
-            ["Blue"] = FromHex("0000FF"),
-        };
-
         private string hexCode = "000000";
         private (byte, byte, byte) rgbCombo;
         private (int, int, int) hsvCombo;
@@ -253,6 +245,25 @@ namespace RoSharp.Structures
 
 
         // Static colors
+        private static Dictionary<string, Color> BuiltIn { get; } = new()
+        {
+            ["White"] = FromHex("FFFFFF"),
+            ["Black"] = FromHex("000000"),
+            ["Red"] = FromHex("FF0000"),
+            ["Green"] = FromHex("00FF00"),
+            ["Blue"] = FromHex("0000FF"),
+            ["Yellow"] = FromHex("FFFF00"),
+            ["Aqua"] = FromHex("00FFFF"),
+            ["Purple"] = FromHex("800080"),
+            ["Pink"] = FromHex("FF69B4"),
+            ["Brown"] = FromHex("8B4513"),
+            ["Tan"] = FromHex("D2B48C"),
+        };
+
+        /// <summary>
+        /// Represents a color with HexCode <c>FFFFFF</c>.
+        /// </summary>
+        public static Color White { get; } = BuiltIn["White"];
 
         /// <summary>
         /// Represents a color with HexCode <c>000000</c>.
@@ -273,6 +284,36 @@ namespace RoSharp.Structures
         /// Represents a color with HexCode <c>0000FF</c>.
         /// </summary>
         public static Color Blue { get; } = BuiltIn["Blue"];
+
+        /// <summary>
+        /// Represents a color with HexCode <c>FFFF00</c>.
+        /// </summary>
+        public static Color Yellow { get; } = BuiltIn["Yellow"];
+
+        /// <summary>
+        /// Represents a color with HexCode <c>00FFFF</c>.
+        /// </summary>
+        public static Color Aqua { get; } = BuiltIn["Aqua"];
+
+        /// <summary>
+        /// Represents a color with HexCode <c>800080</c>.
+        /// </summary>
+        public static Color Purple { get; } = BuiltIn["Purple"];
+
+        /// <summary>
+        /// Represents a color with HexCode <c>FF69B4</c>.
+        /// </summary>
+        public static Color Pink { get; } = BuiltIn["Pink"];
+
+        /// <summary>
+        /// Represents a color with HexCode <c>8B4513</c>.
+        /// </summary>
+        public static Color Brown { get; } = BuiltIn["Brown"];
+
+        /// <summary>
+        /// Represents a color with HexCode <c>D2B48C</c>.
+        /// </summary>
+        public static Color Tan { get; } = BuiltIn["Tan"];
 
 
         /// <inheritdoc/>
