@@ -11,6 +11,9 @@ using System.Threading.Tasks;
 
 namespace RoSharp.API
 {
+    /// <summary>
+    /// Contains miscellaneous development-related APIs.
+    /// </summary>
     public static class DeveloperAPI
     {
         private static async Task<string> getQuotaData(Session? session, AssetType assetType)
