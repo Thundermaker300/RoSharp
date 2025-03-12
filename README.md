@@ -31,6 +31,71 @@ Below are some of the following features that are available in RoSharp:
 * (BONUS) DevForum API: Read-only API for viewing the DevForum from the eyes of a non-authenticated user via Discourse's APIs. See posts and replies of public posts, including official Roblox updates.
 * Much more!
 
+## Samples
+For all samples and documentation see the [wiki](https://github.com/Thundermaker300/RoSharp/wiki).
+### Login with .ROBLOSECURITY
+```cs
+using RoSharp;
+
+string code = ".ROBLOSECURITY_CODE_HERE";
+
+Session session = new Session();
+await session.LoginAsync(code); // Awaited as we sign into Roblox.
+
+// If successful, the session is now logged in and can be used for API that requires authentication.
+Console.WriteLine(session.AuthUser.Username); // Print the name of the user that is authenticated.
+
+// Reminder: You should NEVER share your .ROBLOSECURITY authentication token in any public code!
+```
+
+### Login with API Key
+```cs
+using RoSharp;
+
+string apiKey = "API_KEY_HERE";
+
+Session session = new Session();
+session.SetAPIKey(apiKey); // Does not need awaited as there's no async operation, it just sets the API key internally.
+```
+
+### Get User Information
+```cs
+using RoSharp;
+using RoSharp.API;
+
+// Authentication is optional for this example and the session does not need to be provided. However, not all information is available to an unauthorized viewer.
+
+User user = await User.FromId(USER_ID_HERE, SESSION_HERE);
+// OR
+User user = await User.FromUsername(USERNAME_HERE, SESSION_HERE);
+
+Console.WriteLine(user.Username);
+```
+
+### Roblox Communities
+```cs
+using RoSharp;
+using RoSharp.API;
+using RoSharp.API.Communities;
+
+// Get Community information
+Community community = await Community.FromId(COMMUNITY_ID_HERE, SESSION_HERE);
+Console.WriteLine(community.Name);
+
+// Get the member manager for the below examples
+MemberManager members = await community.GetMemberManagerAsync();
+
+// Get user's role in a community
+Role? userRole = await members.GetRoleInCommunityAsync(USER_HERE); // Object can be substituted for ID and/or username.
+if (userRole != null)
+{
+    Console.WriteLine(userRole.Name);
+}
+
+// Set user's role in community
+await members.SetRankAsync(USER_HERE, ROLE_OBJECT_HERE); // Objects can be substituted for UserId/Username and Role name/ID.
+```
+
 ## Credits
 * [Robloxdotnet](https://github.com/Loravis/Robloxdotnet) by [Loravis](https://github.com/Loravis) -- Original inspiration for RoSharp, various inspirations taken from this project.
 * [RoSeal](https://www.roseal.live/) -- Providing the API/Database that is used for `Experience.GetCommunityWikiUrlAsync`.
