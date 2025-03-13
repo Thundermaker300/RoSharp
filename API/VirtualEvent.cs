@@ -20,22 +20,38 @@ namespace RoSharp.API
 
         private string title;
 
+        /// <summary>
+        /// Gets the title of the event.
+        /// </summary>
         public string Title => title;
 
         private string subtitle;
 
+        /// <summary>
+        /// Gets the subtitle of the event.
+        /// </summary>
         public string Subtitle => subtitle;
 
         private string description;
 
+        /// <summary>
+        /// Gets the description of the event.
+        /// </summary>
         public string Description => description;
 
         private DateTime startTime;
 
+        /// <summary>
+        /// Gets the <see cref="DateTime"/> that the event will be starting.
+        /// </summary>
         public DateTime StartTime => startTime;
 
 
         private DateTime endTime;
+
+        /// <summary>
+        /// Gets the <see cref="DateTime"/> that the event will be ending.
+        /// </summary>
         public DateTime EndTime => endTime;
 
         /// <summary>
@@ -43,6 +59,9 @@ namespace RoSharp.API
         /// </summary>
         public TimeSpan Length => endTime - startTime;
 
+        /// <summary>
+        /// Gets a <see cref="TimeSpan"/> representing the amount of time until the event starts. Equivalent to <c>StartTime - DateTime.Now</c>. Will be <c>0</c> if the event has started already.
+        /// </summary>
         public TimeSpan TimeUntilStart
         {
             get
@@ -55,37 +74,80 @@ namespace RoSharp.API
         }
 
         private ulong hostId;
+
+        /// <summary>
+        /// Gets the Id of the host (user or community).
+        /// </summary>
         public ulong HostId => hostId;
 
         private bool isCommunityHosted;
+
+        /// <summary>
+        /// Gets whether or not the experience hosting the event is owned by a group.
+        /// </summary>
         public bool IsCommunityHosted => isCommunityHosted;
 
         private Id<Experience> experience;
+
+        /// <summary>
+        /// Gets the <see cref="Id{T}"/> of the experience for the event.
+        /// </summary>
         public Id<Experience> Experience => experience;
 
         private Id<Place> place;
+
+        /// <summary>
+        /// Gets the <see cref="Id{T}"/> of the place for the event.
+        /// </summary>
         public Id<Place> Place => place;
 
         private VirtualEventStatus status;
+
+        /// <summary>
+        /// Gets the current status of the event.
+        /// </summary>
         public VirtualEventStatus Status => status;
 
         private string visibility;
+
+        /// <summary>
+        /// Gets the current visibility of the event.
+        /// </summary>
         public string Visibility => visibility;
 
         private DateTime created;
+
+        /// <summary>
+        /// Gets the <see cref="DateTime"/> the event was created.
+        /// </summary>
         public DateTime Created => created;
 
         private DateTime updated;
+
+        /// <summary>
+        /// Gets the <see cref="DateTime"/> the event was last updated.
+        /// </summary>
         public DateTime Updated => updated;
 
         private VirtualEventCategory category;
+
+        /// <summary>
+        /// Gets the category of the event.
+        /// </summary>
         public VirtualEventCategory Category => category;
 
         private Id<Asset> thumbnail;
+
+        /// <summary>
+        /// Gets the the <see cref="Id{T}"/> of the <see cref="Asset"/> representing the event's thumbnail.
+        /// </summary>
         public Id<Asset> Thumbnail => thumbnail;
 
         private int totalRSVPs;
 
+        /// <summary>
+        /// Gets the total amount of confirmed RSVPs for the event.
+        /// </summary>
         public int TotalRSVPs => totalRSVPs;
 
         /// <inheritdoc/>
