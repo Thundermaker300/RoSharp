@@ -9,6 +9,7 @@ using RoSharp.Structures;
 using RoSharp.Structures.PurchaseTypes;
 using RoSharp.Utility;
 using System;
+using System.Collections.Generic;
 using System.Collections.ObjectModel;
 
 using Regex = System.Text.RegularExpressions.Regex;
@@ -1062,6 +1063,28 @@ namespace RoSharp.API.Assets.Experiences
 #pragma warning restore CS8602
 #pragma warning restore CS8604
             return null;
+        }
+
+        public async Task<PageResponse<Id<VirtualEvent>>> GetVirtualEventsAsync(bool includeFinished = false, string? cursor = null)
+        {
+            string url = $"/virtual-events/v1/universes/{Id}/virtual-events" + (!includeFinished ? $"?fromUtc={DateTime.UtcNow.ToString("s") + ".000Z"}" : string.Empty);
+            if (cursor != null)
+                url += "&cursor=" + cursor;
+
+            string rawData = await SendStringAsync(HttpMethod.Get, url, Constants.URL("apis"));
+            dynamic data = JObject.Parse(rawData);
+
+            List<Id<VirtualEvent>> list = [];
+            string? nextPage = data.nextPageCursor;
+            string? previousPage = data.previousPageCursor;
+
+            foreach (dynamic item in data.data)
+            {
+                ulong id = Convert.ToUInt64(item.id);
+                list.Add(new(id, session));
+            }
+
+            return new PageResponse<Id<VirtualEvent>>(list, nextPage, previousPage);
         }
 
         /// <inheritdoc/>
