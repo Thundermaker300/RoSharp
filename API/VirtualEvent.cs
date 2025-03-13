@@ -6,9 +6,13 @@ using RoSharp.API.Pooling;
 using RoSharp.Enums;
 using RoSharp.Extensions;
 using RoSharp.Interfaces;
+using RoSharp.Structures;
 
 namespace RoSharp.API
 {
+    /// <summary>
+    /// Represents a virtual event for an experience on Roblox.
+    /// </summary>
     public class VirtualEvent : APIMain, IRefreshable, IIdApi<VirtualEvent>
     {
 
@@ -230,6 +234,35 @@ namespace RoSharp.API
             }
 
             return new PageResponse<Id<User>>(rsvps, nextPage, previousPage);
+        }
+
+        public async Task ModifyAsync(VirtualEventConfiguration settings)
+        {
+            string formattedCategory = (settings.Category.HasValue ? settings.Category.Value : Category).ToString().Substring(0, 1).ToLower() + (settings.Category.HasValue ? settings.Category.Value : Category).ToString().Substring(1);
+            object body = new
+            {
+                title = settings.Title ?? Title,
+                subtitle = settings.Subtitle ?? Subtitle,
+                description = settings.Description ?? Description,
+                eventTime = new { startTime = (settings.StartTime.HasValue ? settings.StartTime.Value : StartTime).ToString("s") + ".000Z", endTime = (settings.EndTime.HasValue ? settings.EndTime.Value : StartTime).ToString("s") + ".000Z" },
+                eventCategories = new[] { new { category = formattedCategory, rank = 0 } },
+                visibility = (settings.Visibility.HasValue ? settings.Visibility.Value : Visibility).ToString().ToLower(),
+            };
+            var payload = new HttpMessage(HttpMethod.Patch, $"/virtual-events/v1/virtual-events/{Id}", body)
+            {
+                AuthType = AuthType.RobloSecurity,
+                ApiName = nameof(ModifyAsync),
+            };
+            await SendAsync(payload, Constants.URL("apis"));
+        }
+
+        /// <summary>
+        /// Delete this virtual event.
+        /// </summary>
+        /// <returns>A task that completes when the operation is finished.</returns>
+        public async Task DeleteAsync()
+        {
+            await SendAsync(HttpMethod.Delete, $"/virtual-events/v1/virtual-events/{Id}", Constants.URL("apis"));
         }
 
         /// <summary>

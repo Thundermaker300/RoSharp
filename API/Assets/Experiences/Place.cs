@@ -141,7 +141,7 @@ namespace RoSharp.API.Assets.Experiences
                 groupId = groupid,
                 eventTime = new { startTime = settings.StartTime.Value.ToString("s") + ".000Z", endTime = settings.EndTime.Value.ToString("s") + ".000Z" },
                 eventCategories = new[] { new { category = formattedCategory, rank = 0 } },
-                visibility = settings.Visibility.ToString().ToLower(),
+                visibility = settings.Visibility.Value.ToString().ToLower(),
             };
             HttpMessage payload = new(HttpMethod.Post, $"/virtual-events/v1/virtual-events/create", body)
             {
