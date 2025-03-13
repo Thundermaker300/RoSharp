@@ -108,12 +108,12 @@ namespace RoSharp.API
         /// </summary>
         public VirtualEventStatus Status => status;
 
-        private string visibility;
+        private VirtualEventVisibility visibility;
 
         /// <summary>
         /// Gets the current visibility of the event.
         /// </summary>
-        public string Visibility => visibility;
+        public VirtualEventVisibility Visibility => visibility;
 
         private DateTime created;
 
@@ -192,7 +192,7 @@ namespace RoSharp.API
             experience = new(Convert.ToUInt64(data.universeId), session);
             place = new(Convert.ToUInt64(data.placeId), session);
             status = Enum.Parse<VirtualEventStatus>(Convert.ToString(data.eventStatus), true);
-            visibility = data.eventVisibility;
+            visibility = Enum.Parse<VirtualEventVisibility>(Convert.ToString(data.eventVisibility), true);
             created = data.createdUtc;
             updated = data.updatedUtc;
             category = Enum.Parse<VirtualEventCategory>(Convert.ToString(data.eventCategories[0].category), true);
@@ -204,6 +204,13 @@ namespace RoSharp.API
             dynamic rsvps = JObject.Parse(rawRsvps);
             totalRSVPs = rsvps.counters.going;
         }
+
+        /// <summary>
+        /// Gets this event's RSVPs.
+        /// </summary>
+        /// <param name="cursor">The cursor for the next page. Obtained by calling this API previously.</param>
+        /// <returns>A task containing a <see cref="PageResponse{T}"/> of <see cref="Id{T}"/> upon completion.</returns>
+        /// <remarks>This API method does not cache and will make a request each time it is called.</remarks>
         public async Task<PageResponse<Id<User>>> GetRSVPsAsync(string? cursor = null)
         {
             string url = $"/virtual-events/v1/virtual-events/{Id}/rsvps";

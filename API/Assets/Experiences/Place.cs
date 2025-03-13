@@ -4,6 +4,7 @@ using RoSharp.API.Pooling;
 using RoSharp.Enums;
 using RoSharp.Extensions;
 using RoSharp.Interfaces;
+using RoSharp.Structures;
 
 namespace RoSharp.API.Assets.Experiences
 {
@@ -121,6 +122,38 @@ namespace RoSharp.API.Assets.Experiences
             return new(list, nextPage, previousPage);
         }
 
+        public async Task<VirtualEvent> CreateVirtualEventAsync(VirtualEventConfiguration settings)
+        {
+            if (settings.Title == null || settings.Subtitle == null || settings.Description == null) throw new InvalidOperationException("Title, Subtitle, and Description cannot be null!");
+            if (!settings.Category.HasValue || !settings.Visibility.HasValue) throw new InvalidOperationException("Category and Visibility must be provided!");
+            if (!settings.StartTime.HasValue || !settings.EndTime.HasValue)
+                throw new InvalidOperationException("StartTime and EndTime must be provided!");
+
+            string formattedCategory = settings.Category.Value.ToString().Substring(0, 1).ToLower() + settings.Category.Value.ToString().Substring(1);
+            ulong? groupid = (Experience.IsCommunityOwned ? Experience.OwnerId : null);
+            object body = new
+            {
+                title = settings.Title,
+                subtitle = settings.Subtitle,
+                description = settings.Description,
+                placeId = Id,
+                universeId = Experience.Id,
+                groupId = groupid,
+                eventTime = new { startTime = settings.StartTime.Value.ToString("s") + ".000Z", endTime = settings.EndTime.Value.ToString("s") + ".000Z" },
+                eventCategories = new[] { new { category = formattedCategory, rank = 0 } },
+                visibility = settings.Visibility.ToString().ToLower(),
+            };
+            HttpMessage payload = new(HttpMethod.Post, $"/virtual-events/v1/virtual-events/create", body)
+            {
+                AuthType = AuthType.RobloSecurity,
+                ApiName = nameof(CreateVirtualEventAsync)
+            };
+            HttpResponseMessage response = await SendAsync(payload, Constants.URL("apis"));
+            string responseData = await response.Content.ReadAsStringAsync();
+            dynamic data = JObject.Parse(responseData);
+            return await VirtualEvent.FromId(Convert.ToUInt64(data.id), session);
+        }
+
         /// <inheritdoc/>
         public new Place AttachSessionAndReturn(Session? session)
         {
@@ -130,5 +163,16 @@ namespace RoSharp.API.Assets.Experiences
                 AttachSession(session);
             return this;
         }
+    }
+
+    public sealed class VirtualEventConfiguration
+    {
+        public string? Title { get; set; }
+        public string? Subtitle { get; set; }
+        public string? Description { get; set; }
+        public DateTime? StartTime { get; set; }
+        public DateTime? EndTime { get; set; }
+        public VirtualEventCategory? Category { get; set; }
+        public VirtualEventVisibility? Visibility { get; set; }
     }
 }
