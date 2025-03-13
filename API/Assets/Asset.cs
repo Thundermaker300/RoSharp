@@ -111,6 +111,22 @@ namespace RoSharp.API.Assets
         /// </summary>
         public bool OnSale => purchaseInfo is not NotForSalePurchase;
 
+        private CollectibleItemData? collectibleItemData;
+
+        /// <summary>
+        /// Gets this asset's collectible data.
+        /// </summary>
+        /// <remarks>
+        /// This struct will be <see langword="null"/> for non-collectible items.
+        /// </remarks>
+        /// <seealso cref="IsCollectible"/>
+        public CollectibleItemData? CollectibleItemData => collectibleItemData;
+
+        /// <summary>
+        /// Indicates whether or not this asset is collectible.
+        /// </summary>
+        public bool IsCollectible => CollectibleItemData is not null;
+
         private int sales;
 
         /// <summary>
@@ -131,19 +147,17 @@ namespace RoSharp.API.Assets
         /// </summary>
         public int Remaining => remaining;
 
-        private int initialQuantity;
-
         /// <summary>
         /// For limited items, gets the initial quantity amount.
         /// </summary>
-        public int InitialQuantity => initialQuantity;
+        [Obsolete("See CollectibleItemData.TotalQuantity.")]
+        public int InitialQuantity => CollectibleItemData.HasValue ? CollectibleItemData.Value.TotalQuantity : -1;
 
-        private int quantityLimitPerUser;
-        
         /// <summary>
         /// For limited items, gets the total amount of copies one user is allowed to have.
         /// </summary>
-        public int QuantityLimitPerUser => quantityLimitPerUser;
+        [Obsolete("See CollectibleItemData.QuantityLimitPerUser.")]
+        public int QuantityLimitPerUser => CollectibleItemData.HasValue ? CollectibleItemData.Value.QuantityLimitPerUser : -1;
 
         private bool isLimited;
 
@@ -282,20 +296,32 @@ namespace RoSharp.API.Assets
 
             if (data.CollectiblesItemDetails != null)
             {
+                int initialQuantity = -1;
+                int quantityLimitPerUser = -1;
+                int lowestResalePrice = -1;
+
                 if (data.CollectiblesItemDetails.TotalQuantity != null)
                     initialQuantity = Convert.ToInt32(data.CollectiblesItemDetails.TotalQuantity);
-                else
-                    initialQuantity = -1;
 
                 if (data.CollectiblesItemDetails.CollectibleQuantityLimitPerUser != null)
                     quantityLimitPerUser = Convert.ToInt32(data.CollectiblesItemDetails.CollectibleQuantityLimitPerUser);
-                else
-                    quantityLimitPerUser = -1;
+
+                if (data.CollectiblesItemDetails.CollectibleLowestResalePrice != null)
+                    lowestResalePrice = Convert.ToInt32(data.CollectiblesItemDetails.CollectibleLowestResalePrice);
+
+                collectibleItemData = new CollectibleItemData()
+                {
+                    ItemId = data.CollectibleItemId,
+                    ProductId = data.CollectibleProductId,
+                    TotalQuantity = initialQuantity,
+                    QuantityLimitPerUser = quantityLimitPerUser,
+                    LowestResalePrice = lowestResalePrice,
+                    IsLimited = Convert.ToBoolean(data.CollectiblesItemDetails.IsLimited),
+                };
             }
             else
             {
-                initialQuantity = -1;
-                quantityLimitPerUser = -1;
+                collectibleItemData = null;
             }
 
             if (data.PriceInRobux != null)
