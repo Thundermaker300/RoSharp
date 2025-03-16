@@ -155,6 +155,70 @@ namespace RoSharp.API.Assets.Experiences
             };
         }
 
+        /// <summary>
+        /// Gets the total amount of users currently in this experience from the "Performance" tab of Roblox analytics.
+        /// <para>
+        /// For a potentially less-accurate number that any user can access without analytic access, see <seealso cref="Experience.PlayingNow"/>.
+        /// </para>
+        /// </summary>
+        /// <returns>A task containing an integer upon completion.</returns>
+        /// <seealso cref="Experience.PlayingNow"/>
+        public async Task<int> GetConcurrentUsersAsync()
+        {
+            var message = new HttpMessage(HttpMethod.Post, $"/universe-performance-raqi/v1/live-stats/universe/{experience.UniverseId}", new
+            {
+                breakdown = Array.Empty<string>(),
+                metric = "ConcurrentPlayers",
+            })
+            {
+                AuthType = AuthType.RobloSecurity,
+                ApiName = nameof(GetConcurrentUsersAsync),
+            };
+
+            var rawData = await experience.SendStringAsync(message, Constants.URL("apis"));
+            dynamic data = JObject.Parse(rawData);
+
+            if (data.values.Count == 0 || data.values[0].datapoints.Count == 0)
+                return 0;
+
+            return data.values[0].datapoints[0].value;
+        }
+
+        /// <summary>
+        /// Gets the total amount of users currently in this experience from the "Performance" tab of Roblox analytics, separated by playing device.
+        /// </summary>
+        /// <returns>A task containing a <see cref="ReadOnlyDictionary{TKey, TValue}"/> of <see cref="Device"/> and <see cref="ulong"/> upon completion.</returns>
+        public async Task<ReadOnlyDictionary<Device, ulong>> GetConcurrentUsersByDeviceAsync()
+        {
+            var message = new HttpMessage(HttpMethod.Post, $"/universe-performance-raqi/v1/live-stats/universe/{experience.UniverseId}", new
+            {
+                breakdown = new[] { "Platform" },
+                metric = "ConcurrentPlayers",
+            })
+            {
+                AuthType = AuthType.RobloSecurity,
+                ApiName = nameof(GetConcurrentUsersAsync),
+            };
+
+            var rawData = await experience.SendStringAsync(message, Constants.URL("apis"));
+            dynamic data = JObject.Parse(rawData);
+
+            Dictionary<Device, ulong> list = new();
+            foreach (var device in Enum.GetValues<Device>())
+                list[device] = 0;
+
+            if (data.values.Count == 0)
+                return list.AsReadOnly();
+
+            foreach (dynamic value in data.values)
+            {
+                Device deviceType = Enum.Parse<Device>(Convert.ToString(value.breakdowns[0].value));
+                list[deviceType] = Convert.ToUInt64(value.datapoints[0].value);
+            }
+
+            return list.AsReadOnly();
+        }
+
         private ReadOnlyCollection<ExperienceAuditLog>? history;
 
         /// <summary>
