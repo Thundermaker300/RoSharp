@@ -1036,6 +1036,16 @@ namespace RoSharp.API.Assets.Experiences
             await SendAsync(message, Constants.URL("apis"));
         }
 
+        public async Task VoteAsync(bool positive)
+        {
+            await SendAsync(HttpMethod.Post, $"/voting-api/vote/asset/{RootPlaceId.UniqueId}?vote={positive}", Constants.URL("apis"), null);
+        }
+
+        public async Task RemoveVoteAsync()
+        {
+            await SendAsync(HttpMethod.Post, $"/voting-api/vote/asset/{RootPlaceId.UniqueId}?vote=null", Constants.URL("apis"), null);
+        }
+
         /// <summary>
         /// Returns the URL to the experience's community wiki, if one exists.
         /// <para>
