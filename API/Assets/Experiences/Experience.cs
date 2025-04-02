@@ -1038,12 +1038,24 @@ namespace RoSharp.API.Assets.Experiences
 
         public async Task VoteAsync(bool positive)
         {
-            await SendAsync(HttpMethod.Post, $"/voting-api/vote/asset/{RootPlaceId.UniqueId}?vote={positive}", Constants.URL("apis"), null);
+            HttpMessage message = new(HttpMethod.Post, $"/voting-api/vote/asset/{RootPlaceId.UniqueId}?vote={positive}", null)
+            {
+                AuthType = AuthType.RobloSecurity,
+                ApiName = nameof(VoteAsync),
+            };
+
+            await SendAsync(message, Constants.URL("apis"));
         }
 
         public async Task RemoveVoteAsync()
         {
-            await SendAsync(HttpMethod.Post, $"/voting-api/vote/asset/{RootPlaceId.UniqueId}?vote=null", Constants.URL("apis"), null);
+            HttpMessage message = new(HttpMethod.Post, $"/voting-api/vote/asset/{RootPlaceId.UniqueId}?vote=null", null)
+            {
+                AuthType = AuthType.RobloSecurity,
+                ApiName = nameof(RemoveVoteAsync),
+            };
+
+            await SendAsync(message, Constants.URL("apis"));
         }
 
         /// <summary>
