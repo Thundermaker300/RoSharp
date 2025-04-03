@@ -1036,6 +1036,11 @@ namespace RoSharp.API.Assets.Experiences
             await SendAsync(message, Constants.URL("apis"));
         }
 
+        /// <summary>
+        /// Leaves a vote on the experience.
+        /// </summary>
+        /// <param name="positive">Whether to leave a positive or negative vote.</param>
+        /// <returns>A task that completes when the operation is finished.</returns>
         public async Task VoteAsync(bool positive)
         {
             HttpMessage message = new(HttpMethod.Post, $"/voting-api/vote/asset/{RootPlaceId.UniqueId}?vote={positive}", null)
@@ -1047,6 +1052,10 @@ namespace RoSharp.API.Assets.Experiences
             await SendAsync(message, Constants.URL("apis"));
         }
 
+        /// <summary>
+        /// Removes a previously placed vote.
+        /// </summary>
+        /// <returns>A task that completes when the operation is finished.</returns>
         public async Task RemoveVoteAsync()
         {
             HttpMessage message = new(HttpMethod.Post, $"/voting-api/vote/asset/{RootPlaceId.UniqueId}?vote=null", null)
@@ -1087,6 +1096,13 @@ namespace RoSharp.API.Assets.Experiences
             return null;
         }
 
+
+        /// <summary>
+        /// Gets a list of virtual events for this experience.
+        /// </summary>
+        /// <param name="includeFinished">Include events that have already finished.</param>
+        /// <param name="cursor">The cursor for the next page. Obtained by calling this API previously.</param>
+        /// <returns>A task containing a <see cref="PageResponse{T}"/> of <see cref="Id{T}"/> upon completion.</returns>
         public async Task<PageResponse<Id<VirtualEvent>>> GetVirtualEventsAsync(bool includeFinished = false, string? cursor = null)
         {
             string url = $"/virtual-events/v1/universes/{Id}/virtual-events" + (!includeFinished ? $"?fromUtc={DateTime.UtcNow.ToString("s") + ".000Z"}" : string.Empty);
@@ -1110,10 +1126,11 @@ namespace RoSharp.API.Assets.Experiences
         }
 
         /// <summary>
-        /// Creates a virtual event for this experience.
+        /// Creates a virtual event.
         /// </summary>
         /// <param name="settings">The settings for the virtual event.</param>
-        /// <returns>A task containing a <see cref="VirtualEvent"/> upon completion.</returns>
+        /// <returns>A task that contains a <see cref="VirtualEvent"/> upon completion.</returns>
+        /// <exception cref="InvalidOperationException">Missing any of the following properties: Title, Subtitle, Description, Category, Visibility, StartTime, EndTime.</exception>
         public async Task<VirtualEvent> CreateVirtualEventAsync(VirtualEventConfiguration settings)
         {
             Place p = await Place.FromId(RootPlaceId);

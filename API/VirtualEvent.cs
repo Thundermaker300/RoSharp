@@ -236,6 +236,11 @@ namespace RoSharp.API
             return new PageResponse<Id<User>>(rsvps, nextPage, previousPage);
         }
 
+        /// <summary>
+        /// Modifies a virtual event. Any properties not modified in the <see cref="VirtualEventConfiguration"/> class will not be modified on the site.
+        /// </summary>
+        /// <param name="settings">The new settings for the event.</param>
+        /// <returns>A task that completes when the operation has finished.</returns>
         public async Task ModifyAsync(VirtualEventConfiguration settings)
         {
             string formattedCategory = (settings.Category.HasValue ? settings.Category.Value : Category).ToString().Substring(0, 1).ToLower() + (settings.Category.HasValue ? settings.Category.Value : Category).ToString().Substring(1);
@@ -288,6 +293,7 @@ namespace RoSharp.API
             return this;
         }
 
+        /// <inheritdoc/>
         public override string ToString()
         {
             return $"[{Id}] '{Title}' {Subtitle} [{Category}] [From: {StartTime}] [To: {EndTime}] <{Status}> |{Visibility}|";

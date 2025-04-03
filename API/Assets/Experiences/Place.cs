@@ -122,6 +122,12 @@ namespace RoSharp.API.Assets.Experiences
             return new(list, nextPage, previousPage);
         }
 
+        /// <summary>
+        /// Creates a virtual event.
+        /// </summary>
+        /// <param name="settings">The settings for the virtual event.</param>
+        /// <returns>A task that contains a <see cref="VirtualEvent"/> upon completion.</returns>
+        /// <exception cref="InvalidOperationException">Missing any of the following properties: Title, Subtitle, Description, Category, Visibility, StartTime, EndTime.</exception>
         public async Task<VirtualEvent> CreateVirtualEventAsync(VirtualEventConfiguration settings)
         {
             if (settings.Title == null || settings.Subtitle == null || settings.Description == null) throw new InvalidOperationException("Title, Subtitle, and Description cannot be null!");
