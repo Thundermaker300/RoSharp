@@ -163,10 +163,17 @@ namespace RoSharp.API.Assets.Experiences
         /// <param name="voteTypeFilter">Whether to vote by positive (<see langword="true"/>) feedback, negative (<see langword="false"/>) feedback, or both (<see langword="null"/>).</param>
         /// <param name="cursor">The cursor for the next page. Obtained by calling this API previously.</param>
         /// <returns>A task containing a <see cref="PageResponse{T}"/> of <see cref="ExperienceReview"/> upon completion.</returns>
-        public async Task<PageResponse<ExperienceReview>> GetFeedbackAsync(DateTime startTime, DateTime endTime, FixedLimit limit = FixedLimit.Limit50, bool? voteTypeFilter = null, string? cursor = null)
+        public async Task<PageResponse<ExperienceReview>> GetFeedbackAsync(DateTime? startTime = null, DateTime? endTime = null, FixedLimit limit = FixedLimit.Limit50, bool? voteTypeFilter = null, string? cursor = null)
         {
             string url = $"/player-generated-reviews-service/v1/channels/experience-discovery-page/assets/{Id}/reviews?limit={limit.Limit()}&hasComment=false";
-            url += $"&startTime={startTime.ToString("s")}Z&endTime={endTime.ToString("s")}Z";
+            if (startTime.HasValue)
+            {
+                url += $"&startTime={startTime.Value.ToString("s")}Z";
+            }
+            if (endTime.HasValue)
+            {
+                url += $"&endTime={endTime.Value.ToString("s")}Z";
+            }
             if (voteTypeFilter.HasValue)
             {
                 url += $"&categoryType={(voteTypeFilter.Value == true ? "Upvote" : "Downvote")}";
