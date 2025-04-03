@@ -1110,6 +1110,17 @@ namespace RoSharp.API.Assets.Experiences
         }
 
         /// <summary>
+        /// Creates a virtual event for this experience.
+        /// </summary>
+        /// <param name="settings">The settings for the virtual event.</param>
+        /// <returns>A task containing a <see cref="VirtualEvent"/> upon completion.</returns>
+        public async Task<VirtualEvent> CreateVirtualEventAsync(VirtualEventConfiguration settings)
+        {
+            Place p = await Place.FromId(RootPlaceId);
+            return await p.CreateVirtualEventAsync(settings);
+        }
+
+        /// <summary>
         /// Gets feedback provided for this experience.
         /// </summary>
         /// <param name="startTime">The start time for the feedback search.</param>

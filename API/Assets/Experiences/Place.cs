@@ -218,14 +218,30 @@ namespace RoSharp.API.Assets.Experiences
         }
     }
 
+    /// <summary>
+    /// Configuration for a virtual event.
+    /// </summary>
     public sealed class VirtualEventConfiguration
     {
+        /// <inheritdoc cref="VirtualEvent.Title"/>
         public string? Title { get; set; }
+
+        /// <inheritdoc cref="VirtualEvent.Subtitle"/>
         public string? Subtitle { get; set; }
+
+        /// <inheritdoc cref="VirtualEvent.Description"/>
         public string? Description { get; set; }
+
+        /// <inheritdoc cref="VirtualEvent.StartTime"/>
         public DateTime? StartTime { get; set; }
+
+        /// <inheritdoc cref="VirtualEvent.EndTime"/>
         public DateTime? EndTime { get; set; }
+
+        /// <inheritdoc cref="VirtualEvent.Category"/>
         public VirtualEventCategory? Category { get; set; }
+
+        /// <inheritdoc cref="VirtualEvent.Visibility"/>
         public VirtualEventVisibility? Visibility { get; set; }
     }
 }
