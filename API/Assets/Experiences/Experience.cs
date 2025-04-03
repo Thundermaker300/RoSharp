@@ -1109,6 +1109,21 @@ namespace RoSharp.API.Assets.Experiences
             return new PageResponse<Id<VirtualEvent>>(list, nextPage, previousPage);
         }
 
+        /// <summary>
+        /// Gets feedback provided for this experience.
+        /// </summary>
+        /// <param name="startTime">The start time for the feedback search.</param>
+        /// <param name="endTime">The end time for the feedback search.</param>
+        /// <param name="limit">The limit of feedback to return.</param>
+        /// <param name="voteTypeFilter">Whether to vote by positive (<see langword="true"/>) feedback, negative (<see langword="false"/>) feedback, or both (<see langword="null"/>).</param>
+        /// <param name="cursor">The cursor for the next page. Obtained by calling this API previously.</param>
+        /// <returns>A task containing a <see cref="PageResponse{T}"/> of <see cref="ExperienceReview"/> upon completion.</returns>
+        public async Task<PageResponse<ExperienceReview>> GetFeedbackAsync(DateTime? startTime = null, DateTime? endTime = null, FixedLimit limit = FixedLimit.Limit50, bool? voteTypeFilter = null, string? cursor = null)
+        {
+            Place p = await Place.FromId(RootPlaceId, session);
+            return await p.GetFeedbackAsync(startTime, endTime, limit, voteTypeFilter, cursor);
+        }
+
         /// <inheritdoc/>
         public override string ToString()
         {

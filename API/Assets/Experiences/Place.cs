@@ -154,6 +154,52 @@ namespace RoSharp.API.Assets.Experiences
             return await VirtualEvent.FromId(Convert.ToUInt64(data.id), session);
         }
 
+        /// <summary>
+        /// Gets feedback provided for this place.
+        /// </summary>
+        /// <param name="startTime">The start time for the feedback search.</param>
+        /// <param name="endTime">The end time for the feedback search.</param>
+        /// <param name="limit">The limit of feedback to return.</param>
+        /// <param name="voteTypeFilter">Whether to vote by positive (<see langword="true"/>) feedback, negative (<see langword="false"/>) feedback, or both (<see langword="null"/>).</param>
+        /// <param name="cursor">The cursor for the next page. Obtained by calling this API previously.</param>
+        /// <returns>A task containing a <see cref="PageResponse{T}"/> of <see cref="ExperienceReview"/> upon completion.</returns>
+        public async Task<PageResponse<ExperienceReview>> GetFeedbackAsync(DateTime startTime, DateTime endTime, FixedLimit limit = FixedLimit.Limit50, bool? voteTypeFilter = null, string? cursor = null)
+        {
+            string url = $"/player-generated-reviews-service/v1/channels/experience-discovery-page/assets/{Id}/reviews?limit={limit.Limit()}&hasComment=false";
+            url += $"&startTime={startTime.ToString("s")}Z&endTime={endTime.ToString("s")}Z";
+            if (voteTypeFilter.HasValue)
+            {
+                url += $"&categoryType={(voteTypeFilter.Value == true ? "Upvote" : "Downvote")}";
+            }
+
+            HttpMessage message = new(HttpMethod.Get, url)
+            {
+                AuthType = AuthType.RobloSecurity,
+                ApiName = nameof(GetFeedbackAsync)
+            };
+
+            string rawData = await SendStringAsync(message, Constants.URL("apis"));
+            dynamic data = JObject.Parse(rawData);
+
+            List<ExperienceReview> list = [];
+            foreach (dynamic review in data.reviews)
+            {
+                list.Add(new()
+                {
+                    Id = review.id,
+                    TargetExperience = new Id<Experience>(Convert.ToUInt64(review.asset_id), session),
+                    TargetVersion = review.asset_version,
+                    Comment = review.comment,
+                    Positive = review.category_type == "Upvote",
+                    Created = DateTime.SpecifyKind(DateTimeOffset.FromUnixTimeMilliseconds(Convert.ToInt64(review.created_utc)).DateTime, DateTimeKind.Utc),
+                    DeviceType = Enum.Parse<Device>(Convert.ToString(review.metadata.device_type)),
+                    DeviceOS = review.metadata.operating_system_type,
+                });
+            }
+
+            return new(list, data.has_more == true ? Convert.ToString(data.next_cursor) : null, null);
+        }
+
         /// <inheritdoc/>
         public new Place AttachSessionAndReturn(Session? session)
         {
