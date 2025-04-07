@@ -129,16 +129,8 @@ namespace RoSharp.Utility
         /// <returns>A task containing the body upon completion.</returns>
         public static async Task<string> SendStringAsync(Session? session, HttpMessage message)
         {
-            bool doSilence = message.SilenceExceptions;
-            message.SilenceExceptions = true;
-
             var response = await SendAsync(session, message);
-            string body = await response.Content.ReadAsStringAsync();
-
-            if (!doSilence)
-                HttpVerify.ThrowIfNecessary(response, body);
-
-            return body;
+            return await response.Content.ReadAsStringAsync();
         }
     }
 }
