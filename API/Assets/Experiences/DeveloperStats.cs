@@ -256,5 +256,23 @@ namespace RoSharp.API.Assets.Experiences
             }
             return history;
         }
+
+        public async Task<DataStoreMetrics> GetDataStoreMetricsAsync()
+        {
+            var message = new HttpMessage(HttpMethod.Get, $"/data-stores/storage-metrics/v1/universes/{experience.UniverseId}")
+            {
+                AuthType = AuthType.RobloSecurity,
+                ApiName = nameof(GetDataStoreMetricsAsync),
+            };
+            string rawData = await experience.SendStringAsync(message, Constants.URL("apis"));
+            dynamic data = JObject.Parse(rawData);
+            return new DataStoreMetrics
+            {
+                TotalBytes = data.bytesTotalPermanent,
+                MaximumBytes = data.storageLimitBytes,
+                DataStores = data.numDataStores,
+                Keys = data.numKeys,
+            };
+        }
     }
 }
