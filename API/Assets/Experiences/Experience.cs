@@ -658,6 +658,14 @@ namespace RoSharp.API.Assets.Experiences
         /// <remarks>This value will always be <see langword="false"/> for experiences that the authenticated user does not have access to modify.</remarks>
         public bool StudioAccessToAPIsAllowed => studioAccessToAPIsAllowed;
 
+        private bool editableAPIEnabled;
+
+        /// <summary>
+        /// Gets whether or not APIs for EditableMesh and EditableImage APIs are enabled in the experience.
+        /// </summary>
+        /// <remarks>This value will always be <see langword="false"/> for experiences that the authenticated user does not have access to modify.</remarks>
+        public bool EditableAPIEnabled => editableAPIEnabled;
+
         private async Task UpdateConfigurationAsync()
         {
             var message = new HttpMessage(HttpMethod.Post, $"/v2/universes/{UniverseId}/configuration", new { })
@@ -676,6 +684,7 @@ namespace RoSharp.API.Assets.Experiences
 
             friendsOnly = data.isFriendsOnly;
             studioAccessToAPIsAllowed = Convert.ToBoolean(data.studioAccessToApisAllowed);
+            editableAPIEnabled = Convert.ToBoolean(data.isMeshTextureApiAccessAllowed);
 
         }
 
@@ -874,6 +883,7 @@ namespace RoSharp.API.Assets.Experiences
                 isFriendsOnly = options.FriendsOnly ?? FriendsOnly,
                 playableDevices = options.PlayableDevices ?? Devices.ToList(),
                 studioAccessToApisAllowed = options.StudioAccessToAPIsAllowed ?? null,
+                isMeshTextureApiAccessAllowed = options.EditableAPIEnabled ?? null,
             })
             {
                 AuthType = AuthType.RobloSecurity,
@@ -1337,6 +1347,8 @@ namespace RoSharp.API.Assets.Experiences
         /// Whether or not studio access to APIs is allowed.
         /// </summary>
         public bool? StudioAccessToAPIsAllowed { get; set; }
+
+        public bool? EditableAPIEnabled { get; set; }
 
         public bool? UseLocalizationTables { get; set; }
         public bool? LocalizationAutomaticEntries { get; set; }
