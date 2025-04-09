@@ -1198,6 +1198,25 @@ namespace RoSharp.API.Assets.Experiences
             return await p.GetFeedbackAsync(startTime, endTime, limit, voteTypeFilter, cursor);
         }
 
+        private string sourceLocale;
+
+        /// <summary>
+        /// Returns the two-digit language code of this experience's source language, eg. 'en'. 
+        /// </summary>
+        /// <returns>A task containing a <see cref="string"/> upon completion.</returns>
+        public async Task<string> GetSourceLocaleAsync()
+        {
+            if (sourceLocale is null)
+            {
+                var message = new HttpMessage(HttpMethod.Get, $"/v1/source-language/games/{UniverseId}");
+                string rawData = await SendStringAsync(message, Constants.URL("gameinternationalization"));
+                dynamic data = JObject.Parse(rawData);
+                sourceLocale = data.languageCode;
+            }
+
+            return sourceLocale;
+        }
+
         /// <summary>
         /// Adds a translator to this experience.
         /// </summary>
