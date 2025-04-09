@@ -1174,6 +1174,96 @@ namespace RoSharp.API.Assets.Experiences
             return await p.GetFeedbackAsync(startTime, endTime, limit, voteTypeFilter, cursor);
         }
 
+        /// <summary>
+        /// Adds a translator to this experience.
+        /// </summary>
+        /// <param name="userId">The unique Id of the user to add.</param>
+        /// <returns>A task that completes when the operation is finished.</returns>
+        public async Task AddTranslatorAsync(ulong userId)
+        {
+            var message = new HttpMessage(HttpMethod.Patch, $"/v1/game-localization-roles/games/{UniverseId}", new
+            {
+                assigneeId = userId,
+                assigneeType = "user",
+                role = "translator",
+            })
+            {
+                AuthType = AuthType.RobloSecurity,
+                ApiName = nameof(AddTranslatorAsync),
+            };
+            await SendAsync(message, Constants.URL("translationroles"));
+        }
+
+        /// <summary>
+        /// Adds a translator to this experience.
+        /// </summary>
+        /// <param name="user">The user to add.</param>
+        /// <returns>A task that completes when the operation is finished.</returns>
+        public async Task AddTranslatorAsync(User user) => await AddTranslatorAsync(user.Id);
+
+        /// <summary>
+        /// Adds a translator to this experience.
+        /// </summary>
+        /// <param name="username">The username of the user to add.</param>
+        /// <returns>A task that completes when the operation is finished.</returns>
+        public async Task AddTranslatorAsync(string username) => await AddTranslatorAsync(await UserUtility.GetUserIdAsync(username));
+
+        /// <summary>
+        /// Removes a translator from this experience.
+        /// </summary>
+        /// <param name="userId">The unique Id of the user to remove.</param>
+        /// <returns>A task that completes when the operation is finished.</returns>
+        public async Task RemoveTranslatorAsync(ulong userId)
+        {
+            var message = new HttpMessage(HttpMethod.Patch, $"/v1/game-localization-roles/games/{UniverseId}", new
+            {
+                assigneeId = userId,
+                assigneeType = "user",
+                role = "translator",
+                revoke = true,
+            })
+            {
+                AuthType = AuthType.RobloSecurity,
+                ApiName = nameof(AddTranslatorAsync),
+            };
+            await SendAsync(message, Constants.URL("translationroles"));
+        }
+
+        /// <summary>
+        /// Removes a translator from this experience.
+        /// </summary>
+        /// <param name="user">The user to remove.</param>
+        /// <returns>A task that completes when the operation is finished.</returns>
+        public async Task RemoveTranslatorAsync(User user) => await RemoveTranslatorAsync(user.Id);
+
+        /// <summary>
+        /// Removes a translator from this experience.
+        /// </summary>
+        /// <param name="username">The username of the user to remove.</param>
+        /// <returns>A task that completes when the operation is finished.</returns>
+        public async Task RemoveTranslatorAsync(string username) => await RemoveTranslatorAsync(await UserUtility.GetUserIdAsync(username));
+
+        /// <summary>
+        /// Clears automatically captured localization entries that have not been modified.
+        /// </summary>
+        /// <param name="timeframe">The timeframe, or <see langword="null"/> to remove ALL unmodified entries. Must be one of the following values: 1D, 3D, 7D, 30D, null.</param>
+        /// <returns>A task that completes when the operation is finished.</returns>
+        /// <exception cref="InvalidOperationException">Invalid input for the timeframe parameter.</exception>
+        public async Task ClearAutoCapturedLocalizationEntriesAsync(string timeframe = "1D")
+        {
+            if (timeframe != null && timeframe is not "1D" or "3D" or "7D" or "30D")
+                throw new InvalidOperationException($"The '{nameof(timeframe)}' parameter must be null or '1D', '3D', '7D', or '30D'.");
+
+            var message = new HttpMessage(HttpMethod.Post, $"/v1/auto-localization-table/games/{UniverseId}/auto-scrape-cleanup-request", new {
+                maxAgeForFlush = (timeframe != null ? $"P{timeframe}" : null)
+            })
+            {
+                AuthType = AuthType.RobloSecurity,
+                ApiName = nameof(ClearAutoCapturedLocalizationEntriesAsync)
+            };
+            await SendAsync(message, Constants.URL("localizationtables"));
+        }
+
         /// <inheritdoc/>
         public override string ToString()
         {
@@ -1348,10 +1438,24 @@ namespace RoSharp.API.Assets.Experiences
         /// </summary>
         public bool? StudioAccessToAPIsAllowed { get; set; }
 
+        /// <summary>
+        /// Whether or not EditableMesh and EditableImage APIs are allowed.
+        /// </summary>
         public bool? EditableAPIEnabled { get; set; }
 
+        /// <summary>
+        /// Whether or not to use translated content.
+        /// </summary>
         public bool? UseLocalizationTables { get; set; }
+        
+        /// <summary>
+        /// Whether or not to capture strings from UI automatically to add to the cloud translation tables.
+        /// </summary>
         public bool? LocalizationAutomaticEntries { get; set; }
+
+        /// <summary>
+        /// Whether or not to allow Roblox to remove stale entries from cloud localization tables.
+        /// </summary>
         public bool? LocalizationAutomaticDeletions { get; set; }
     }
 }
