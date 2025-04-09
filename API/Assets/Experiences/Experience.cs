@@ -873,7 +873,7 @@ namespace RoSharp.API.Assets.Experiences
                 price = options.Cost ?? Cost,
                 isFriendsOnly = options.FriendsOnly ?? FriendsOnly,
                 playableDevices = options.PlayableDevices ?? Devices.ToList(),
-                studioAccessToApisAllowed = options.StudioAccessToAPIsAllowed ?? StudioAccessToAPIsAllowed
+                studioAccessToApisAllowed = options.StudioAccessToAPIsAllowed ?? null,
             })
             {
                 AuthType = AuthType.RobloSecurity,
