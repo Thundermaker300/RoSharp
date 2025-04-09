@@ -851,6 +851,18 @@ namespace RoSharp.API.Assets.Experiences
         /// <seealso cref="SetPrivacyAsync(bool)"/>
         public async Task ModifyAsync(ExperienceModifyOptions options)
         {
+            if (options.LocalizationAutomaticDeletions.HasValue || options.LocalizationAutomaticEntries.HasValue || options.UseLocalizationTables.HasValue)
+            {
+                var localizationMessage = new HttpMessage(HttpMethod.Patch, $"/v1/autolocalization/games/{UniverseId}/settings", new
+                {
+                    isAutomaticEntriesSettingEnabled = options.LocalizationAutomaticEntries ?? null,
+                    isAutomaticEntriesDeletionsEnabled = options.LocalizationAutomaticDeletions ?? null,
+                    shouldUseLocalizationTable = options.UseLocalizationTables ?? null,
+                });
+
+                await SendAsync(localizationMessage, Constants.URL("localizationtables"));
+            }
+
             var message = new HttpMessage(HttpMethod.Patch, $"/v2/universes/{UniverseId}/configuration", new
             {
                 name = options.Name ?? Name,
@@ -1325,5 +1337,9 @@ namespace RoSharp.API.Assets.Experiences
         /// Whether or not studio access to APIs is allowed.
         /// </summary>
         public bool? StudioAccessToAPIsAllowed { get; set; }
+
+        public bool? UseLocalizationTables { get; set; }
+        public bool? LocalizationAutomaticEntries { get; set; }
+        public bool? LocalizationAutomaticDeletions { get; set; }
     }
 }
