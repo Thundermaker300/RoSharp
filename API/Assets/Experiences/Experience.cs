@@ -1218,6 +1218,102 @@ namespace RoSharp.API.Assets.Experiences
         }
 
         /// <summary>
+        /// Adds a <see cref="Community"/> translator, allowing anyone within the community to translate for this experience.
+        /// </summary>
+        /// <param name="communityId">The unique Id of the community.</param>
+        /// <returns>A task that completes when the operation is finished.</returns>
+        public async Task AddCommunityTranslatorAsync(ulong communityId)
+        {
+            var message = new HttpMessage(HttpMethod.Patch, $"/v1/game-localization-roles/games/{UniverseId}", new
+            {
+                assigneeId = communityId,
+                assigneeType = "group",
+                role = "translator",
+            })
+            {
+                AuthType = AuthType.RobloSecurity,
+                ApiName = nameof(AddCommunityTranslatorAsync),
+            };
+            await SendAsync(message, Constants.URL("translationroles"));
+        }
+
+        /// <summary>
+        /// Adds a <see cref="Community"/> translator, allowing anyone within the community to translate for this experience.
+        /// </summary>
+        /// <param name="community">The community.</param>
+        /// <returns>A task that completes when the operation is finished.</returns>
+        public async Task AddCommunityTranslatorAsync(Community community) => await AddCommunityTranslatorAsync(community.Id);
+
+        /// <summary>
+        /// Removes a <see cref="Community"/> translator.
+        /// </summary>
+        /// <param name="communityId">The unique Id of the community.</param>
+        /// <returns>A task that completes when the operation is finished.</returns>
+        public async Task RemoveCommunityTranslatorAsync(ulong communityId)
+        {
+            var message = new HttpMessage(HttpMethod.Patch, $"/v1/game-localization-roles/games/{UniverseId}", new
+            {
+                assigneeId = communityId,
+                assigneeType = "group",
+                role = "translator",
+                revoke = true,
+            })
+            {
+                AuthType = AuthType.RobloSecurity,
+                ApiName = nameof(AddCommunityTranslatorAsync),
+            };
+            await SendAsync(message, Constants.URL("translationroles"));
+        }
+
+        /// <summary>
+        /// Removes a <see cref="Community"/> translator.
+        /// </summary>
+        /// <param name="community">The community.</param>
+        /// <returns>A task that completes when the operation is finished.</returns>
+        public async Task RemoveCommunityTranslatorAsync(Community community) => await RemoveCommunityTranslatorAsync(community.Id);
+
+        /// <summary>
+        /// Adds a role-specific <see cref="Community"/> translator, allowing anyone within the provided role to translate for this experience.
+        /// </summary>
+        /// <param name="role">The role to add.</param>
+        /// <returns>A task that completes when the operation is finished.</returns>
+        public async Task AddCommunityTranslatorAsync(Role role)
+        {
+            var message = new HttpMessage(HttpMethod.Patch, $"/v1/game-localization-roles/games/{UniverseId}", new
+            {
+                assigneeId = role.Id,
+                assigneeType = "groupRole",
+                role = "translator",
+            })
+            {
+                AuthType = AuthType.RobloSecurity,
+                ApiName = nameof(AddCommunityTranslatorAsync),
+            };
+            await SendAsync(message, Constants.URL("translationroles"));
+        }
+
+        /// <summary>
+        /// Removes a role-specific <see cref="Community"/> translator.
+        /// </summary>
+        /// <param name="role">The role to remove.</param>
+        /// <returns>A task that completes when the operation is finished.</returns>
+        public async Task RemoveCommunityTranslatorAsync(Role role)
+        {
+            var message = new HttpMessage(HttpMethod.Patch, $"/v1/game-localization-roles/games/{UniverseId}", new
+            {
+                assigneeId = role.Id,
+                assigneeType = "groupRole",
+                role = "translator",
+                revoke = true,
+            })
+            {
+                AuthType = AuthType.RobloSecurity,
+                ApiName = nameof(AddCommunityTranslatorAsync),
+            };
+            await SendAsync(message, Constants.URL("translationroles"));
+        }
+
+        /// <summary>
         /// Adds a translator to this experience.
         /// </summary>
         /// <param name="userId">The unique Id of the user to add.</param>
