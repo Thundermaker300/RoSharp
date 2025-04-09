@@ -1160,6 +1160,30 @@ namespace RoSharp.API.Assets.Experiences
         }
 
         /// <summary>
+        /// Gets a <see cref="bool"/> indicating whether or not this experience qualifies for Immersive Ads.
+        /// </summary>
+        /// <returns>A task containing a <see cref="bool"/> upon completion.</returns>
+        /// <remarks>This value will always be <see langword="false"/> for experiences that the authenticated user does not have access to modify.</remarks>
+        public async Task<bool> IsEligibleForImmersiveAdsAsync()
+        {
+            var message = new HttpMessage(HttpMethod.Get, $"/developer-ads-stats-api/v1/universe-suitability-criteria/{UniverseId}")
+            {
+                AuthType = AuthType.RobloSecurity,
+                ApiName = nameof(IsEligibleForImmersiveAdsAsync),
+            };
+            string rawData = await SendStringAsync(message, Constants.URL("apis"));
+            dynamic data = JObject.Parse(rawData);
+
+            return data.isUniverseOwner == true
+                && data.isUniverseOwnerVerified == true
+                && data.isUniverseOwnerIsOver17 == true
+                && data.isUniverseOwner2FAEnabled == true
+                && data.isUniversePublic == true
+                && data.isExperienceGuidelinesCompleted == true
+                && data.isUniverseOverAnalyticsThreshold == true;
+        }
+
+        /// <summary>
         /// Gets feedback provided for this experience.
         /// </summary>
         /// <param name="startTime">The start time for the feedback search.</param>
