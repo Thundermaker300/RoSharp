@@ -2,6 +2,7 @@
 using RoSharp.API.Communities;
 using RoSharp.API.Pooling;
 using RoSharp.Enums;
+using RoSharp.Exceptions;
 using RoSharp.Extensions;
 using RoSharp.Interfaces;
 using RoSharp.Structures;
@@ -128,6 +129,7 @@ namespace RoSharp.API.Assets.Experiences
         /// <param name="settings">The settings for the virtual event.</param>
         /// <returns>A task that contains a <see cref="VirtualEvent"/> upon completion.</returns>
         /// <exception cref="InvalidOperationException">Missing any of the following properties: Title, Subtitle, Description, Category, Visibility, StartTime, EndTime.</exception>
+        /// <exception cref="RobloxAPIException">Roblox API failure or lack of permissions.</exception>
         public async Task<VirtualEvent> CreateVirtualEventAsync(VirtualEventConfiguration settings)
         {
             if (settings.Title == null || settings.Subtitle == null || settings.Description == null) throw new InvalidOperationException("Title, Subtitle, and Description cannot be null!");
@@ -169,6 +171,7 @@ namespace RoSharp.API.Assets.Experiences
         /// <param name="voteTypeFilter">Whether to vote by positive (<see langword="true"/>) feedback, negative (<see langword="false"/>) feedback, or both (<see langword="null"/>).</param>
         /// <param name="cursor">The cursor for the next page. Obtained by calling this API previously.</param>
         /// <returns>A task containing a <see cref="PageResponse{T}"/> of <see cref="ExperienceReview"/> upon completion.</returns>
+        /// <exception cref="RobloxAPIException">Roblox API failure or lack of permissions.</exception>
         public async Task<PageResponse<ExperienceReview>> GetFeedbackAsync(DateTime? startTime = null, DateTime? endTime = null, FixedLimit limit = FixedLimit.Limit50, bool? voteTypeFilter = null, string? cursor = null)
         {
             string url = $"/player-generated-reviews-service/v1/channels/experience-discovery-page/assets/{Id}/reviews?limit={limit.Limit()}&hasComment=false";

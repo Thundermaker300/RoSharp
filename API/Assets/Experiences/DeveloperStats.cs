@@ -1,5 +1,6 @@
 ﻿using Newtonsoft.Json.Linq;
 using RoSharp.Enums;
+using RoSharp.Exceptions;
 using RoSharp.Interfaces;
 using RoSharp.Structures;
 using RoSharp.Structures.DeveloperStats;
@@ -61,6 +62,7 @@ namespace RoSharp.API.Assets.Experiences
         /// <param name="date">The date.</param>
         /// <returns>A <see cref="MAUData"/> containing data about that day's monthly active users (MAU) amount.</returns>
         /// <remarks>This API method does not cache and will make a request each time it is called.</remarks>
+        /// <exception cref="RobloxAPIException">Roblox API failure or lack of permissions.</exception>
         public async Task<MAUData> GetMAUDataAsync(DateTime date)
         {
             // Total MAU
@@ -162,6 +164,7 @@ namespace RoSharp.API.Assets.Experiences
         /// </para>
         /// </summary>
         /// <returns>A task containing an integer upon completion.</returns>
+        /// <exception cref="RobloxAPIException">Roblox API failure or lack of permissions.</exception>
         /// <seealso cref="Experience.PlayingNow"/>
         public async Task<int> GetConcurrentUsersAsync()
         {
@@ -188,6 +191,7 @@ namespace RoSharp.API.Assets.Experiences
         /// Gets the total amount of users currently in this experience from the "Performance" tab of Roblox analytics, separated by playing device.
         /// </summary>
         /// <returns>A task containing a <see cref="ReadOnlyDictionary{TKey, TValue}"/> of <see cref="Device"/> and <see cref="ulong"/> upon completion.</returns>
+        /// <exception cref="RobloxAPIException">Roblox API failure or lack of permissions.</exception>
         public async Task<ReadOnlyDictionary<Device, ulong>> GetConcurrentUsersByDeviceAsync()
         {
             var message = new HttpMessage(HttpMethod.Post, $"/universe-performance-raqi/v1/live-stats/universe/{experience.UniverseId}", new
@@ -226,6 +230,7 @@ namespace RoSharp.API.Assets.Experiences
         /// </summary>
         /// <returns>A task containing a <see cref="ReadOnlyCollection{T}"/> of <see cref="ExperienceAuditLog"/> upon completion.</returns>
         /// <remarks>This API method does not cache and will make a request each time it is called.</remarks>
+        /// <exception cref="RobloxAPIException">Roblox API failure or lack of permissions.</exception>
         public async Task<ReadOnlyCollection<ExperienceAuditLog>> GetAuditLogsAsync()
         {
             if (history == null)
@@ -257,6 +262,11 @@ namespace RoSharp.API.Assets.Experiences
             return history;
         }
 
+        /// <summary>
+        /// Gets DataStore-related metrics for this experience.
+        /// </summary>
+        /// <returns>A task containing a <see cref="DataStoreMetrics"/> upon completion.</returns>
+        /// <exception cref="RobloxAPIException">Roblox API failure or lack of permissions.</exception>
         public async Task<DataStoreMetrics> GetDataStoreMetricsAsync()
         {
             var message = new HttpMessage(HttpMethod.Get, $"/data-stores/storage-metrics/v1/universes/{experience.UniverseId}")

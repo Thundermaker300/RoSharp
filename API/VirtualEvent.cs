@@ -4,6 +4,7 @@ using RoSharp.API.Assets.Experiences;
 using RoSharp.API.Communities;
 using RoSharp.API.Pooling;
 using RoSharp.Enums;
+using RoSharp.Exceptions;
 using RoSharp.Extensions;
 using RoSharp.Interfaces;
 using RoSharp.Structures;
@@ -215,6 +216,7 @@ namespace RoSharp.API
         /// <param name="cursor">The cursor for the next page. Obtained by calling this API previously.</param>
         /// <returns>A task containing a <see cref="PageResponse{T}"/> of <see cref="Id{T}"/> upon completion.</returns>
         /// <remarks>This API method does not cache and will make a request each time it is called.</remarks>
+        /// <exception cref="RobloxAPIException">Roblox API failure or lack of permissions.</exception>
         public async Task<PageResponse<Id<User>>> GetRSVPsAsync(string? cursor = null)
         {
             string url = $"/virtual-events/v1/virtual-events/{Id}/rsvps";
@@ -241,6 +243,7 @@ namespace RoSharp.API
         /// </summary>
         /// <param name="settings">The new settings for the event.</param>
         /// <returns>A task that completes when the operation has finished.</returns>
+        /// <exception cref="RobloxAPIException">Roblox API failure or lack of permissions.</exception>
         public async Task ModifyAsync(VirtualEventConfiguration settings)
         {
             string formattedCategory = (settings.Category.HasValue ? settings.Category.Value : Category).ToString().Substring(0, 1).ToLower() + (settings.Category.HasValue ? settings.Category.Value : Category).ToString().Substring(1);
@@ -265,6 +268,7 @@ namespace RoSharp.API
         /// Delete this virtual event.
         /// </summary>
         /// <returns>A task that completes when the operation is finished.</returns>
+        /// <exception cref="RobloxAPIException">Roblox API failure or lack of permissions.</exception>
         public async Task DeleteAsync()
         {
             await SendAsync(HttpMethod.Delete, $"/virtual-events/v1/virtual-events/{Id}", Constants.URL("apis"));
