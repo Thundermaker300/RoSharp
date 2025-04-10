@@ -43,8 +43,12 @@ namespace RoSharp.API
         internal PageResponse(List<T> list, string? nextPageCursor, string? previousPageCursor)
         {
             List = list.AsReadOnly();
-            NextPageCursor = nextPageCursor;
-            PreviousPageCursor = previousPageCursor;
+
+            if (!string.IsNullOrWhiteSpace(nextPageCursor))
+                NextPageCursor = nextPageCursor;
+
+            if (!string.IsNullOrWhiteSpace(previousPageCursor))
+                PreviousPageCursor = previousPageCursor;
         }
 
         /// <inheritdoc/>
