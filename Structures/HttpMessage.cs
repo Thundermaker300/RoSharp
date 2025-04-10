@@ -63,6 +63,11 @@ namespace RoSharp.Structures
         public bool EnableRetrying { get; set; } = true;
 
         /// <summary>
+        /// Gets or sets whether or not to force an X-CSRF-TOKEN retry, completely ignoring the value of <see cref="EnableRetrying"/>. This will retry to retrieve the X-CSRF-TOKEN regardless of the type of request and error code.
+        /// </summary>
+        public bool ForceXCSRFRetry { get; set; }
+
+        /// <summary>
         /// Gets or sets whether to silence <see cref="RobloxAPIException"/>s from this request.
         /// </summary>
         public bool SilenceExceptions { get; set; }

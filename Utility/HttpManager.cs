@@ -91,10 +91,12 @@ namespace RoSharp.Utility
             RoUtility.LogHTTP(session, message, resp, !message.EnableRetrying);
             Return(client);
 
-            if (resp.StatusCode == HttpStatusCode.Forbidden && message.EnableRetrying && session != null && messageToSend.Method != HttpMethod.Get)
+            if (session != null && ((!resp.IsSuccessStatusCode && message.ForceXCSRFRetry) || (resp.StatusCode == HttpStatusCode.Forbidden && message.EnableRetrying && messageToSend.Method != HttpMethod.Get)))
             {
+                RoLogger.Debug("ATTEMPTING RETRY WITH CSRF TOKEN");
                 if (resp.Headers.TryGetValues("x-csrf-token", out IEnumerable<string>? headers))
                 {
+                    RoLogger.Debug("CSRF TOKEN RETRIEVED SUCCESSFULLY");
                     session.xcsrfToken = headers.First();
                     message.EnableRetrying = false;
                     return await SendAsync(session, message);
