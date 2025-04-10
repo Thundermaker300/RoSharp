@@ -587,6 +587,21 @@ namespace RoSharp.API.Assets
         public async Task<bool> IsOwnedByAsync(string targetUsername) => await IsOwnedByAsync(await User.FromUsername(targetUsername, session));
 
         /// <summary>
+        /// Removes this asset from the authenticated user's inventory.
+        /// </summary>
+        /// <returns>A task that completes when the operation is finished.</returns>
+        /// <exception cref="RobloxAPIException">Roblox API failure or lack of permissions.</exception>
+        public async Task RemoveFromInventoryAsync()
+        {
+            var message = new HttpMessage(HttpMethod.Delete, $"/v2/inventory/asset/14102233829")
+            {
+                AuthType = AuthType.RobloSecurity,
+                ApiName = nameof(RemoveFromInventoryAsync)
+            };
+            await SendAsync(message, Constants.URL("inventory"));
+        }
+
+        /// <summary>
         /// Returns a list of assets that are shown under the "Recommended" section based on this asset.
         /// </summary>
         /// <param name="limit">The limit of assets to return. Maximum: 45.</param>
