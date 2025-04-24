@@ -1,5 +1,6 @@
 ﻿using Newtonsoft.Json.Linq;
 using RoSharp.API.Assets.Experiences;
+using RoSharp.API.Communities.Forum;
 using RoSharp.API.Pooling;
 using RoSharp.Enums;
 using RoSharp.Exceptions;
@@ -7,11 +8,9 @@ using RoSharp.Extensions;
 using RoSharp.Interfaces;
 using RoSharp.Structures;
 using RoSharp.Utility;
-using System;
 using System.Collections.ObjectModel;
 using System.Diagnostics;
 using System.Net;
-using static System.Net.Mime.MediaTypeNames;
 
 namespace RoSharp.API.Communities
 {
@@ -93,6 +92,8 @@ namespace RoSharp.API.Communities
 
         private MemberManager memberManager;
 
+        private CommunityForum forum;
+
         /// <inheritdoc/>
         public DateTime RefreshedAt { get; set; }
 
@@ -167,6 +168,14 @@ namespace RoSharp.API.Communities
 
             memberManager ??= new MemberManager(this);
             return memberManager;
+        }
+
+        public async Task<CommunityForum> GetForumAsync()
+        {
+            await Task.CompletedTask;
+
+            forum ??= new CommunityForum(this);
+            return forum;
         }
 
         /// <inheritdoc/>
