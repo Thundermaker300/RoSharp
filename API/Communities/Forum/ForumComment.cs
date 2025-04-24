@@ -30,6 +30,8 @@
         public DateTime Updated { get; init; }
         public int ReplyCount { get; init; }
 
+        public bool IsEdited => Created.Ticks != Updated.Ticks;
+
         // Todo: Add reactions
 
         // Todo: Implement when I figure out how the cursor system for forum comment replies works
