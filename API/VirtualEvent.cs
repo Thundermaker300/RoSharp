@@ -134,6 +134,11 @@ namespace RoSharp.API
         /// </summary>
         public DateTime Updated => updated;
 
+        /// <summary>
+        /// Gets whether or not this virtual event is less than 3 days old.
+        /// </summary>
+        public bool IsNew => (DateTime.UtcNow - Created) < TimeSpan.FromDays(3);
+
         private VirtualEventCategory category;
 
         /// <summary>

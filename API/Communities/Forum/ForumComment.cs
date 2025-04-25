@@ -32,6 +32,8 @@
 
         public bool IsEdited => Created.Ticks != Updated.Ticks;
 
+        public bool IsNew => (DateTime.UtcNow - Created) < TimeSpan.FromDays(3);
+
         // Todo: Add reactions
 
         // Todo: Implement when I figure out how the cursor system for forum comment replies works

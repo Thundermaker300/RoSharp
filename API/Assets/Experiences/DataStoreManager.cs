@@ -292,6 +292,11 @@ namespace RoSharp.API.Assets.Experiences
         public DateTime Created { get; init; }
 
         /// <summary>
+        /// Gets whether or not this data store is less than 3 days old.
+        /// </summary>
+        public bool IsNew => (DateTime.UtcNow - Created) < TimeSpan.FromDays(3);
+
+        /// <summary>
         /// Gets the scope of the datastore.
         /// </summary>
         public string Scope { get; init; }
@@ -365,6 +370,11 @@ namespace RoSharp.API.Assets.Experiences
         /// Gets the last time the key was updated.
         /// </summary>
         public DateTime Updated { get; init; }
+
+        /// <summary>
+        /// Gets whether or not this data store entry is less than 3 days old.
+        /// </summary>
+        public bool IsNew => (DateTime.UtcNow - Created) < TimeSpan.FromDays(3);
 
         /// <summary>
         /// Gets the current Roblox-defined version of the key.

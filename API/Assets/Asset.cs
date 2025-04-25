@@ -90,6 +90,11 @@ namespace RoSharp.API.Assets
         public DateTime LastUpdated => lastUpdated;
 
         /// <summary>
+        /// Gets whether or not this asset is less than 3 days old.
+        /// </summary>
+        public bool IsNew => (DateTime.UtcNow - Created) < TimeSpan.FromDays(3);
+
+        /// <summary>
         /// Gets the Robux price of this asset.
         /// </summary>
         [Obsolete("Use PurchaseInfo")]

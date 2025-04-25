@@ -74,5 +74,10 @@
         /// Gets whether or not this post was marked as the accepted answer.
         /// </summary>
         public bool AcceptedAnswer { get; init; }
+
+        /// <summary>
+        /// Gets whether or not this post is less than 3 days old.
+        /// </summary>
+        public readonly bool IsNew => (DateTime.UtcNow - Created) < TimeSpan.FromDays(3);
     }
 }

@@ -19,5 +19,10 @@
         /// Gets a <see cref="DateTime"/> representing the time the shout was posted.
         /// </summary>
         public DateTime PostedAt { get; init; }
+
+        /// <summary>
+        /// Gets whether or not this shout is less than 3 days old.
+        /// </summary>
+        public bool IsNew => (DateTime.UtcNow - PostedAt) < TimeSpan.FromDays(3);
     }
 }

@@ -46,5 +46,10 @@ namespace RoSharp.API.Assets.Experiences
         /// Gets a <see cref="DateTime"/> representing the creation date of the feedback.
         /// </summary>
         public DateTime Created { get; init; }
+
+        /// <summary>
+        /// Gets whether or not this experience review is less than 3 days old.
+        /// </summary>
+        public bool IsNew => (DateTime.UtcNow - Created) < TimeSpan.FromDays(3);
     }
 }

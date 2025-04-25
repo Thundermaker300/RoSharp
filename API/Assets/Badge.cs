@@ -60,6 +60,11 @@ namespace RoSharp.API.Assets
         /// </summary>
         public DateTime LastUpdated => lastUpdated;
 
+        /// <summary>
+        /// Gets whether or not this badge is less than 3 days old.
+        /// </summary>
+        public bool IsNew => (DateTime.UtcNow - Created) < TimeSpan.FromDays(3);
+
         private bool isEnabled;
 
         /// <summary>

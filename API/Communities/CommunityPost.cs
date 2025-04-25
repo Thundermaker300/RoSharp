@@ -31,5 +31,10 @@
         /// Gets the rank of the user that made the post. Can be <see langword="null"/>.
         /// </summary>
         public string? RankInCommunity { get; init; }
+
+        /// <summary>
+        /// Gets whether or not this post is less than 3 days old.
+        /// </summary>
+        public bool IsNew => (DateTime.UtcNow - PostedAt) < TimeSpan.FromDays(3);
     }
 }

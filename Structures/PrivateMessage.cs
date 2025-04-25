@@ -44,6 +44,11 @@ namespace RoSharp.Structures
         public DateTime Created { get; init; }
 
         /// <summary>
+        /// Gets whether or not this message is less than 3 days old.
+        /// </summary>
+        public readonly bool IsNew => (DateTime.UtcNow - Created) < TimeSpan.FromDays(3);
+
+        /// <summary>
         /// Gets whether or not this message is a system message, usually sent by the Roblox account.
         /// </summary>
         public bool IsSystemMessage { get; init; }

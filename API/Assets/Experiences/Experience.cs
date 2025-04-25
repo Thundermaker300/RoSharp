@@ -87,6 +87,11 @@ namespace RoSharp.API.Assets.Experiences
         public DateTime LastUpdated => lastUpdated;
 
         /// <summary>
+        /// Gets whether or not this experience is less than 3 days old.
+        /// </summary>
+        public bool IsNew => (DateTime.UtcNow - Created) < TimeSpan.FromDays(3);
+
+        /// <summary>
         /// Gets the price in Robux to play this experience, if it is paid access.
         /// </summary>
         [Obsolete("Use PurchaseInfo instead.")]
