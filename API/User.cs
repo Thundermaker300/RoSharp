@@ -807,20 +807,20 @@ namespace RoSharp.API
         /// <remarks>This API method does not cache and will make a request each time it is called. This API also does not work for Badges, Bundles, and GamePasses -- see their respective APIs.</remarks>
         public async Task<PageResponse<Id<Asset>>> GetFavoritesAsync(AssetType assetType, FixedLimit limit = FixedLimit.Limit100, string? cursor = null)
         {
-            string url = $"/users/favorites/list-json?userId={Id}&assetTypeId={(int)assetType}&itemsPerPage={limit.Limit()}";
+            string url = $"/v1/favorites/users/{Id}/favorites/{(int)assetType}/assets?limit={limit.Limit()}";
             if (cursor != null)
                 url += "&cursor=" + cursor;
 
-            string rawData = await SendStringAsync(HttpMethod.Get, url, Constants.ROBLOX_URL_WWW);
+            string rawData = await SendStringAsync(HttpMethod.Get, url, Constants.URL("catalog"));
             dynamic data = JObject.Parse(rawData);
 
             List<Id<Asset>> list = [];
             string? nextPage = data.nextPageCursor;
             string? previousPage = data.previousPageCursor;
 
-            foreach (dynamic item in data.Data.Items)
+            foreach (dynamic item in data.data)
             {
-                ulong id = Convert.ToUInt64(item.Item.AssetId);
+                ulong id = Convert.ToUInt64(item.id);
                 list.Add(new(id, session));
             }
 
