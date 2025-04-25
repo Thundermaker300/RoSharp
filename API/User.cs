@@ -305,6 +305,21 @@ namespace RoSharp.API
         public ReadOnlyCollection<string> RobloxBadges => robloxBadges;
 
         /// <summary>
+        /// Gets whether or not this user is a Roblox employee with the administrator badge.
+        /// </summary>
+        public bool IsAdministrator => RobloxBadges.Contains("Administrator");
+
+        /// <summary>
+        /// Gets whether or not this user is less than three days old.
+        /// </summary>
+        public bool IsNew => (DateTime.UtcNow - JoinDate) < TimeSpan.FromDays(3);
+
+        /// <summary>
+        /// Gets whether or not this user is at least one year old.
+        /// </summary>
+        public bool IsVeteran => (DateTime.UtcNow - JoinDate) > TimeSpan.FromDays(365);
+
+        /// <summary>
         /// Gets a <see cref="ReadOnlyCollection{T}"/> of Roblox badges this user has.
         /// </summary>
         /// <returns>A task containing a <see cref="ReadOnlyCollection{T}"/> of <see cref="string"/>s upon completion, each being the name of a Roblox badge.</returns>
