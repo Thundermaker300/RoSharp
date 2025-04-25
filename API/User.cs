@@ -145,7 +145,6 @@ namespace RoSharp.API
             profileHidden = data.isBanned;
             bio = data.description;
 
-            robloxBadges = null;
             primaryGroup = null;
             socialChannels = null;
             groups = null;
@@ -180,6 +179,16 @@ namespace RoSharp.API
                 isPremium = null;
                 privateInventory = true;
             }
+
+            // Badges
+            List<string> badges = [];
+            string rawData = await SendStringAsync(HttpMethod.Get, $"/v1/users/{Id}/roblox-badges", Constants.URL("accountinformation"));
+            JArray badgesData = JArray.Parse(rawData);
+            foreach (dynamic badgeData in badgesData.Children<JObject>())
+            {
+                badges.Add(badgeData.name.ToString());
+            }
+            robloxBadges = badges.AsReadOnly();
 
 
             // Updating data
@@ -288,25 +297,21 @@ namespace RoSharp.API
 
 
 
-        private ReadOnlyCollection<string>? robloxBadges;
+        private ReadOnlyCollection<string> robloxBadges;
+
+        /// <summary>
+        /// Gets the name of each Roblox bage this user has.
+        /// </summary>
+        public ReadOnlyCollection<string> RobloxBadges => robloxBadges;
 
         /// <summary>
         /// Gets a <see cref="ReadOnlyCollection{T}"/> of Roblox badges this user has.
         /// </summary>
         /// <returns>A task containing a <see cref="ReadOnlyCollection{T}"/> of <see cref="string"/>s upon completion, each being the name of a Roblox badge.</returns>
+        [Obsolete($"Use {nameof(RobloxBadges)}.")]
         public async Task<ReadOnlyCollection<string>> GetRobloxBadgesAsync()
         {
-            if (robloxBadges == null)
-            {
-                List<string> badges = [];
-                string rawData = await SendStringAsync(HttpMethod.Get, $"/v1/users/{Id}/roblox-badges", Constants.URL("accountinformation"));
-                JArray data = JArray.Parse(rawData);
-                foreach (dynamic badgeData in data.Children<JObject>())
-                {
-                    badges.Add(badgeData.name.ToString());
-                }
-                robloxBadges = badges.AsReadOnly();
-            }
+            await Task.CompletedTask;
 
             return robloxBadges;
         }
