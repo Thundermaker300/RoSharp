@@ -598,7 +598,7 @@ namespace RoSharp.API.Assets
         /// <exception cref="RobloxAPIException">Roblox API failure or lack of permissions.</exception>
         public async Task RemoveFromInventoryAsync()
         {
-            var message = new HttpMessage(HttpMethod.Delete, $"/v2/inventory/asset/14102233829")
+            var message = new HttpMessage(HttpMethod.Delete, $"/v2/inventory/asset/{Id}")
             {
                 AuthType = AuthType.RobloSecurity,
                 ApiName = nameof(RemoveFromInventoryAsync)
