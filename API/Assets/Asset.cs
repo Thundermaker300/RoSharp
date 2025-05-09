@@ -8,6 +8,7 @@ using RoSharp.Extensions;
 using RoSharp.Interfaces;
 using RoSharp.Structures;
 using RoSharp.Structures.PurchaseTypes;
+using RoSharp.Utility;
 using System.Collections.ObjectModel;
 using System.Net;
 
@@ -631,6 +632,58 @@ namespace RoSharp.API.Assets
             }
             return list.AsReadOnly();
         }
+
+        // Throws HTTP FORBIDDEN if trying to add a user that can't be added (todo add to doc)
+        public async Task ModifyCollaboratorAsync(AssetOwnerType collaboratorType, ulong id, AssetPermissionType permissionType, bool remove = false)
+        {
+            if (collaboratorType is AssetOwnerType.Community && permissionType is AssetPermissionType.Edit)
+                throw new InvalidOperationException("Communities cannot have 'Edit' permission on assets.");
+
+            string subjectType = collaboratorType is AssetOwnerType.Community ? "Group" : "User";
+            HttpMethod method = remove ? HttpMethod.Delete : HttpMethod.Patch;
+
+            var message = new HttpMessage(method, $"/asset-permissions-api/v1/assets/{Id}/permissions", new
+            {
+                requests = new[]
+                {
+                    new
+                    {
+                        subjectType = subjectType,
+                        subjectId = id.ToString(),
+                        action = permissionType.ToString()
+                    },
+                }
+            })
+            {
+                AuthType = AuthType.RobloSecurity,
+                ApiName = nameof(ModifyCollaboratorAsync)
+            };
+
+            await SendAsync(message, Constants.URL("apis"));
+        }
+
+        public async Task ModifyCollaboratorAsync(AssetOwnerType collaboratorType, string name, AssetPermissionType permissionType, bool remove = false)
+        {
+            ulong? id;
+
+            if (collaboratorType is AssetOwnerType.Community)
+                id = await CommunityUtility.GetCommunityIdAsync(name);
+            else
+                id = await UserUtility.GetUserIdAsync(name);
+
+            if (!id.HasValue)
+            {
+                throw new ArgumentException($"Invalid name '{name}' provided. No user or group matches.");
+            }
+
+            await ModifyCollaboratorAsync(collaboratorType, id.Value, permissionType, remove);
+        }
+
+        public async Task ModifyCollaboratorAsync(User user, AssetPermissionType permissionType, bool remove = false)
+            => await ModifyCollaboratorAsync(AssetOwnerType.User, user.Id, permissionType, remove);
+
+        public async Task ModifyCollaboratorAsync(Community community, AssetPermissionType permissionType, bool remove = false)
+            => await ModifyCollaboratorAsync(AssetOwnerType.Community, community.Id, permissionType, remove);
 
         /// <inheritdoc/>
         public override string ToString()
