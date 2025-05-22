@@ -1,9 +1,19 @@
-﻿namespace RoSharp.API.Communities.Forum
+﻿using System.Collections.ObjectModel;
+
+namespace RoSharp.API.Communities.Forum
 {
     public sealed class ForumComment
     {
-        internal static ForumComment Construct(CommunityForum manager, ForumCategory category, dynamic data)
+        internal static async Task<ForumComment> Construct(CommunityForum manager, ForumCategory category, dynamic data)
         {
+            Dictionary<ForumEmote, int> reactions = [];
+
+            foreach (dynamic emoteData in data.reactions)
+            {
+                var emote = await manager.GetEmoteAsync(Convert.ToString(emoteData.emoteId));
+                reactions.Add(emote, Convert.ToInt32(emoteData.reactionCount));
+            }
+
             return new ForumComment
             {
                 Id = data.id,
@@ -13,7 +23,8 @@
                 Poster = new(Convert.ToUInt64(data.createdBy), manager.community.session),
                 Created = data.createdAt,
                 Updated = data.updatedAt,
-                ReplyCount = data.threadCommentCount ?? 0,
+                ReplyCount = data.threadCommentCount == null ? 0 : Convert.ToUInt64(data.threadCommentCount),
+                Reactions = reactions.AsReadOnly(),
                 
                 manager = manager
             };
@@ -29,6 +40,8 @@
         public DateTime Created { get; init; }
         public DateTime Updated { get; init; }
         public int ReplyCount { get; init; }
+
+        public ReadOnlyDictionary<ForumEmote, int> Reactions { get; init; }
 
         public bool IsEdited => Created.Ticks != Updated.Ticks;
 

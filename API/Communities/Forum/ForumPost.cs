@@ -33,7 +33,7 @@ namespace RoSharp.API.Communities.Forum
 
             foreach (dynamic comment in data.data)
             {
-                comments.Add(ForumComment.Construct(manager, Category, comment));
+                comments.Add(await ForumComment.Construct(manager, Category, comment));
             }
 
             return new(comments, next, previous);
