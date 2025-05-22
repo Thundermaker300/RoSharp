@@ -1,4 +1,6 @@
-﻿using System.Collections.ObjectModel;
+﻿using RoSharp.Enums;
+using RoSharp.Structures;
+using System.Collections.ObjectModel;
 
 namespace RoSharp.API.Communities.Forum
 {
@@ -10,7 +12,7 @@ namespace RoSharp.API.Communities.Forum
 
             foreach (dynamic emoteData in data.reactions)
             {
-                var emote = await manager.GetEmoteAsync(Convert.ToString(emoteData.emoteId));
+                var emote = await manager.GetEmoteByIdAsync(Convert.ToString(emoteData.emoteId));
                 reactions.Add(emote, Convert.ToInt32(emoteData.reactionCount));
             }
 
@@ -47,7 +49,49 @@ namespace RoSharp.API.Communities.Forum
 
         public bool IsNew => (DateTime.UtcNow - Created) < TimeSpan.FromDays(3);
 
-        // Todo: Add reactions
+        public async Task ReactAsync(ForumEmote emote)
+        {
+            string url = $"/v1/groups/{manager.community.Id}/forums/channels/{ParentId}/comments/{Id}/reactions/{emote.Id}";
+            HttpMessage message = new(HttpMethod.Post, url)
+            {
+                AuthType = AuthType.RobloSecurity,
+                ApiName = nameof(ReactAsync),
+            };
+            await manager.community.SendAsync(message, Constants.URL("groups"));
+        }
+
+        public async Task ReactAsync(string reactionName)
+        {
+            ForumEmote? emote = await manager.GetEmoteAsync(reactionName);
+            if (emote != null)
+            {
+                await ReactAsync(emote);
+                return;
+            }
+            throw new ArgumentException("Invalid emote name.", nameof(reactionName));
+        }
+
+        public async Task RemoveReactionAsync(ForumEmote emote)
+        {
+            string url = $"/v1/groups/{manager.community.Id}/forums/channels/{ParentId}/comments/{Id}/reactions/{emote.Id}";
+            HttpMessage message = new(HttpMethod.Delete, url)
+            {
+                AuthType = AuthType.RobloSecurity,
+                ApiName = nameof(ReactAsync),
+            };
+            await manager.community.SendAsync(message, Constants.URL("groups"));
+        }
+
+        public async Task RemoveReactionAsync(string reactionName)
+        {
+            ForumEmote? emote = await manager.GetEmoteAsync(reactionName);
+            if (emote != null)
+            {
+                await RemoveReactionAsync(emote);
+                return;
+            }
+            throw new ArgumentException("Invalid emote name.", nameof(reactionName));
+        }
 
         // Todo: Implement when I figure out how the cursor system for forum comment replies works
         /*

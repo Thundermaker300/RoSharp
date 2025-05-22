@@ -59,8 +59,13 @@ namespace RoSharp.API.Communities.Forum
             }
             return emotes.AsReadOnly();
         }
+        public async Task<ForumEmote?> GetEmoteAsync(string name)
+        {
+            var emotes = await GetEmotesAsync();
+            return emotes.FirstOrDefault(emote => emote.Name.Equals(name));
+        }
 
-        public async Task<ForumEmote?> GetEmoteAsync(string id)
+        public async Task<ForumEmote?> GetEmoteByIdAsync(string id)
         {
             var emotes = await GetEmotesAsync();
             return emotes.FirstOrDefault(emote => emote.Id.Equals(id));
