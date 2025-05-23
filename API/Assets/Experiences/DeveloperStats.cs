@@ -11,9 +11,23 @@ namespace RoSharp.API.Assets.Experiences
     /// <summary>
     /// An API class that holds experience analytics-related API.
     /// </summary>
+    /// <remarks>Please note: Although this API member can be accessed for any experience, most properties will be unavailable and most methods will throw a <see cref="RobloxAPIException"/> if the authenticated user does not have access to an experience's analytics data.</remarks>
     public class DeveloperStats : IRefreshable
     {
         private Experience experience;
+
+        private int activePrivateServers;
+        private int activePrivateServerSubscriptions;
+
+        /// <summary>
+        /// Gets the amount of active private servers in this experience. Will be <c>-1</c> if private servers are disabled or if the authenticated user cannot view this data.
+        /// </summary>
+        public int ActivePrivateServers => activePrivateServers;
+
+        /// <summary>
+        /// Gets the amount of active private server subscriptions in this experience. Will be <c>-1</c> if private servers are disabled or if the authenticated user cannot view this data.
+        /// </summary>
+        public int ActivePrivateServerSubscriptions => activePrivateServerSubscriptions;
 
         /// <summary>
         /// Gets the primary URL to use for analytics for this experience.
@@ -33,7 +47,31 @@ namespace RoSharp.API.Assets.Experiences
         public async Task RefreshAsync()
         {
             history = null;
-            await Task.CompletedTask;
+
+            HttpMessage message = new(HttpMethod.Get, $"/v1/universes/{experience.Id}/configuration/vip-servers")
+            {
+                SilenceExceptions = true,
+            };
+            var result = await experience.SendAsync(message, Constants.URL("develop"));
+            if (result.IsSuccessStatusCode)
+            {
+                dynamic data = JObject.Parse(await result.Content.ReadAsStringAsync());
+                if (data.isEnabled == true)
+                {
+                    activePrivateServers = data.activeServersCount;
+                    activePrivateServerSubscriptions = data.activeSubscriptionsCount;
+                }
+                else
+                {
+                    activePrivateServers = -1;
+                    activePrivateServerSubscriptions = -1;
+                }
+            }
+            else
+            {
+                activePrivateServers = -1;
+                activePrivateServerSubscriptions = -1;
+            }
         }
 
         private object MakeGenericBody(DateTime date, string metric, object[] breakdown)
