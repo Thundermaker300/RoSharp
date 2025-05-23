@@ -633,7 +633,18 @@ namespace RoSharp.API.Assets
             return list.AsReadOnly();
         }
 
-        // Throws HTTP FORBIDDEN if trying to add a user that can't be added (todo add to doc)
+        /// <summary>
+        /// Modifies a collaborator's (user or community) access to this asset. By default, access will be added, but setting <paramref name="remove"/> to <see langword="true"/> will remove it.
+        /// <para>Note: Attempting to add an invalid user, such as a terminated user, will result in a Forbidden <see cref="RobloxAPIException"/>.</para>
+        /// <para>Note 2: Communities can only have 'Use' permission, NOT 'Edit' permissions. Attempting to do so will result in an <see cref="InvalidOperationException"/>.</para>
+        /// </summary>
+        /// <param name="collaboratorType">The type of collaborator.</param>
+        /// <param name="id">The unique Id of the collaborator.</param>
+        /// <param name="permissionType">The type of permission to modify.</param>
+        /// <param name="remove">True to remove access, False to grant it. Defaults to False.</param>
+        /// <returns></returns>
+        /// <exception cref="InvalidOperationException">Communities cannot have 'Edit' permission on assets.</exception>
+        /// <exception cref="RobloxAPIException">Roblox API failure or lack of permissions.</exception>
         public async Task ModifyCollaboratorAsync(AssetOwnerType collaboratorType, ulong id, AssetPermissionType permissionType, bool remove = false)
         {
             if (collaboratorType is AssetOwnerType.Community && permissionType is AssetPermissionType.Edit)
@@ -662,6 +673,18 @@ namespace RoSharp.API.Assets
             await SendAsync(message, Constants.URL("apis"));
         }
 
+        /// <summary>
+        /// Modifies a collaborator's (user or community) access to this asset. By default, access will be added, but setting <paramref name="remove"/> to <see langword="true"/> will remove it.
+        /// <para>Note: Attempting to add an invalid user, such as a terminated user, will result in a Forbidden <see cref="RobloxAPIException"/>.</para>
+        /// <para>Note 2: Communities can only have 'Use' permission, NOT 'Edit' permissions. Attempting to do so will result in an <see cref="InvalidOperationException"/>.</para>
+        /// </summary>
+        /// <param name="collaboratorType">The type of collaborator.</param>
+        /// <param name="name">The unique name (not display name for users) of the collaborator.</param>
+        /// <param name="permissionType">The type of permission to modify.</param>
+        /// <param name="remove">True to remove access, False to grant it. Defaults to False.</param>
+        /// <returns></returns>
+        /// <exception cref="InvalidOperationException">Communities cannot have 'Edit' permission on assets.</exception>
+        /// <exception cref="RobloxAPIException">Roblox API failure or lack of permissions.</exception>
         public async Task ModifyCollaboratorAsync(AssetOwnerType collaboratorType, string name, AssetPermissionType permissionType, bool remove = false)
         {
             ulong? id;
@@ -679,9 +702,28 @@ namespace RoSharp.API.Assets
             await ModifyCollaboratorAsync(collaboratorType, id.Value, permissionType, remove);
         }
 
+        /// <summary>
+        /// Modifies a user's access to this asset. By default, access will be added, but setting <paramref name="remove"/> to <see langword="true"/> will remove it.
+        /// <para>Note: Attempting to add an invalid user, such as a terminated user, will result in a Forbidden <see cref="RobloxAPIException"/>.</para>
+        /// </summary>
+        /// <param name="user">The <see cref="User"/> to modify.</param>
+        /// <param name="permissionType">The type of permission to modify.</param>
+        /// <param name="remove">True to remove access, False to grant it. Defaults to False.</param>
+        /// <returns></returns>
+        /// <exception cref="RobloxAPIException">Roblox API failure or lack of permissions.</exception>
         public async Task ModifyCollaboratorAsync(User user, AssetPermissionType permissionType, bool remove = false)
             => await ModifyCollaboratorAsync(AssetOwnerType.User, user.Id, permissionType, remove);
 
+        /// <summary>
+        /// Modifies a community's access to this asset. By default, access will be added, but setting <paramref name="remove"/> to <see langword="true"/> will remove it.
+        /// <para>Note: Communities can only have 'Use' permission, NOT 'Edit' permissions. Attempting to do so will result in an <see cref="InvalidOperationException"/>.</para>
+        /// </summary>
+        /// <param name="community">The <see cref="Communities.Community"/> to modify..</param>
+        /// <param name="permissionType">The type of permission to modify.</param>
+        /// <param name="remove">True to remove access, False to grant it. Defaults to False.</param>
+        /// <returns></returns>
+        /// <exception cref="InvalidOperationException">Communities cannot have 'Edit' permission on assets.</exception>
+        /// <exception cref="RobloxAPIException">Roblox API failure or lack of permissions.</exception>
         public async Task ModifyCollaboratorAsync(Community community, AssetPermissionType permissionType, bool remove = false)
             => await ModifyCollaboratorAsync(AssetOwnerType.Community, community.Id, permissionType, remove);
 

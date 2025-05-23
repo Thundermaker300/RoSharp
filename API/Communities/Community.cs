@@ -170,6 +170,12 @@ namespace RoSharp.API.Communities
             return memberManager;
         }
 
+        /// <summary>
+        /// Retrieves a <see cref="CommunityForum"/> representing this community's forum.
+        /// </summary>
+        /// <returns>A task containing a <see cref="CommunityForum"/> upon completion.</returns>
+        /// <exception cref="RobloxAPIException">Roblox API failure or lack of permissions.</exception>
+        /// <remarks>Please note: Community forums are a Roblox beta feature, and very few groups have them. This method will throw a <see cref="RobloxAPIException"/> if the specified community does not have access to this feature yet. Keep an eye out for the official release of this feature!</remarks>
         public async Task<CommunityForum> GetForumAsync()
         {
             if (forum == null)

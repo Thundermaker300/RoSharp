@@ -1,8 +1,12 @@
 ﻿using Newtonsoft.Json.Linq;
+using RoSharp.Exceptions;
 using System.Collections.ObjectModel;
 
 namespace RoSharp.API.Communities.Forum
 {
+    /// <summary>
+    /// Represents a <see cref="Communities.Community"/>'s public community forum.
+    /// </summary>
     public sealed class CommunityForum
     {
         internal Community community;
@@ -32,6 +36,11 @@ namespace RoSharp.API.Communities.Forum
             return categories;
         }
 
+        /// <summary>
+        /// Gets this forum's emote list.
+        /// </summary>
+        /// <returns>A task containing a <see cref="ReadOnlyCollection{T}"/> of <see cref="ForumEmote"/> upon completion.</returns>
+        /// <exception cref="RobloxAPIException">Roblox API failure or lack of permissions.</exception>
         public async Task<ReadOnlyCollection<ForumEmote>> GetEmotesAsync()
         {
             if (emotes == null)
@@ -59,18 +68,37 @@ namespace RoSharp.API.Communities.Forum
             }
             return emotes.AsReadOnly();
         }
+
+        /// <summary>
+        /// Gets a specified <see cref="ForumEmote"/> by name. Can be <see langword="null"/>.
+        /// </summary>
+        /// <param name="name">The name of the emote.</param>
+        /// <returns>A task containing a <see cref="ForumEmote"/> upon completion. Will be <see langword="null"/> if no emote with the given <paramref name="name"/> matches.</returns>
+        /// <exception cref="RobloxAPIException">Roblox API failure or lack of permissions.</exception>
         public async Task<ForumEmote?> GetEmoteAsync(string name)
         {
             var emotes = await GetEmotesAsync();
             return emotes.FirstOrDefault(emote => emote.Name.Equals(name));
         }
 
+        /// <summary>
+        /// Gets a specified <see cref="ForumEmote"/> by internal ID. Can be <see langword="null"/>.
+        /// </summary>
+        /// <param name="id">The ID of the emote.</param>
+        /// <returns>A task containing a <see cref="ForumEmote"/> upon completion. Will be <see langword="null"/> if no emote with the given <paramref name="id"/> matches.</returns>
+        /// <exception cref="RobloxAPIException">Roblox API failure or lack of permissions.</exception>
         public async Task<ForumEmote?> GetEmoteByIdAsync(string id)
         {
             var emotes = await GetEmotesAsync();
             return emotes.FirstOrDefault(emote => emote.Id.Equals(id));
         }
 
+        /// <summary>
+        /// Gets the categories contained in this forum.
+        /// </summary>
+        /// <param name="cursor">The cursor for the next page. Obtained by calling this API previously.</param>
+        /// <returns>A task containing a <see cref="PageResponse{T}"/> of <see cref="ForumCategory"/> upon completion.</returns>
+        /// <exception cref="RobloxAPIException">Roblox API failure or lack of permissions.</exception>
         public async Task<PageResponse<ForumCategory>> GetCategoriesAsync(string? cursor = null)
         {
             string url = $"/v1/groups/{community.Id}/forums";
@@ -103,7 +131,13 @@ namespace RoSharp.API.Communities.Forum
             return new(categories, next, previous);
         }
 
-
+        /// <summary>
+        /// Gets a <see cref="ForumCategory"/> by name. Can be <see langword="null"/>.
+        /// </summary>
+        /// <param name="categoryName">The name of the category.</param>
+        /// <param name="comparisonType">The comparison method to use when comparing the <paramref name="categoryName"/> with the actual name of the category.</param>
+        /// <returns>A task containing a <see cref="ForumCategory"/> upon completion. Will be <see langword="null"/> if no matches were found.</returns>
+        /// <exception cref="RobloxAPIException">Roblox API failure or lack of permissions.</exception>
         public async Task<ForumCategory?> GetCategoryAsync(string categoryName, StringComparison comparisonType = StringComparison.OrdinalIgnoreCase)
         {
             List<ForumCategory> cats = await getAllCategories();
@@ -116,6 +150,13 @@ namespace RoSharp.API.Communities.Forum
             }
             return null;
         }
+
+        /// <summary>
+        /// Gets a <see cref="ForumCategory"/> by internal ID. Can be <see langword="null"/>.
+        /// </summary>
+        /// <param name="categoryId">The internal ID of the category.</param>
+        /// <returns>A task containing a <see cref="ForumCategory"/> upon completion. Will be <see langword="null"/> if no matches were found.</returns>
+        /// <exception cref="RobloxAPIException">Roblox API failure or lack of permissions.</exception>
         public async Task<ForumCategory?> GetCategoryByIdAsync(string categoryId)
         {
             List<ForumCategory> cats = await getAllCategories();
