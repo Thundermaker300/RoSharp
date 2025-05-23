@@ -172,9 +172,19 @@ namespace RoSharp.API.Communities
 
         public async Task<CommunityForum> GetForumAsync()
         {
-            await Task.CompletedTask;
-
-            forum ??= new CommunityForum(this);
+            if (forum == null)
+            {
+                HttpMessage message = new(HttpMethod.Get, $"/v1/groups/{Id}/forums")
+                {
+                    SilenceExceptions = true,
+                };
+                var response = await SendAsync(message, Constants.URL("groups"));
+                if (response.StatusCode == HttpStatusCode.MethodNotAllowed)
+                {
+                    throw new RobloxAPIException($"The group '{Name}' (ID {Id}) does not have access to the community forums yet.");
+                }
+                forum = new(this);
+            }
             return forum;
         }
 
