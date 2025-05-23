@@ -885,12 +885,72 @@ namespace RoSharp.API.Assets.Experiences
                 description = options.Description ?? Description,
                 allowPrivateServers = options.EnablePrivateServers ?? PrivateServers,
                 privateServerPrice = options.PrivateServerPrice ?? PrivateServerCost,
-                isForSale = options.PurchaseRequired ?? PurchaseRequired,
-                price = options.Cost ?? Cost,
                 isFriendsOnly = options.FriendsOnly ?? FriendsOnly,
                 playableDevices = options.PlayableDevices ?? Devices.ToList(),
                 studioAccessToApisAllowed = options.StudioAccessToAPIsAllowed ?? null,
                 isMeshTextureApiAccessAllowed = options.EditableAPIEnabled ?? null,
+            })
+            {
+                AuthType = AuthType.RobloSecurity,
+                ApiName = nameof(ModifyAsync),
+            };
+
+            await SendAsync(message, Constants.URL("develop"));
+        }
+
+        /// <summary>
+        /// Sets the experience as free-to-play.
+        /// </summary>
+        /// <returns>A task that completes when the operation is finished.</returns>
+        /// <exception cref="RobloxAPIException">Roblox API failure or lack of permissions.</exception>
+        public async Task SetPaidAccessToFreeAsync()
+        {
+            var message = new HttpMessage(HttpMethod.Patch, $"/v2/universes/{UniverseId}/configuration", new
+            {
+                isForSale = false,
+            })
+            {
+                AuthType = AuthType.RobloSecurity,
+                ApiName = nameof(ModifyAsync),
+            };
+
+            await SendAsync(message, Constants.URL("develop"));
+        }
+
+        /// <summary>
+        /// Sets the experience as costing Robux to play.
+        /// </summary>
+        /// <param name="amount">The amount of Robux. Must be between <c>25-1000</c>.</param>
+        /// <returns>A task that completes when the operation is finished.</returns>
+        /// <exception cref="RobloxAPIException">Roblox API failure or lack of permissions.</exception>
+        public async Task SetPaidAccessToRobuxAsync(int amount = 25)
+        {
+            var message = new HttpMessage(HttpMethod.Patch, $"/v2/universes/{UniverseId}/configuration", new
+            {
+                isForSale = true,
+                price = amount.ToString(),
+            })
+            {
+                AuthType = AuthType.RobloSecurity,
+                ApiName = nameof(ModifyAsync),
+            };
+
+            await SendAsync(message, Constants.URL("develop"));
+        }
+
+        /// <summary>
+        /// Sets the experience as costing local currency to play.
+        /// </summary>
+        /// <remarks>Note: You should not be manually instantiating the <see cref="FiatPurchase"/> struct. Instead, use the <see cref="ExperienceUtility.GetFiatOptionsAsync(Session?)"/> method to retrieve the tier levels and use the returned structs as the parameter of this method.</remarks>
+        /// <param name="purchaseOption">Represents which tier of pricing to use.</param>
+        /// <returns>A task that completes when the operation is finished.</returns>
+        /// <exception cref="RobloxAPIException">Roblox API failure or lack of permissions.</exception>
+        public async Task SetPaidAccessToLocalCurrencyAsync(FiatPurchase purchaseOption)
+        {
+            var message = new HttpMessage(HttpMethod.Patch, $"/v2/universes/{UniverseId}/configuration", new
+            {
+                fiatBasePriceId = purchaseOption.Id,
+                fiatProductChangeType = "Activate",
             })
             {
                 AuthType = AuthType.RobloSecurity,
@@ -1586,11 +1646,13 @@ namespace RoSharp.API.Assets.Experiences
         /// <summary>
         /// Whether or not the experience is paid access.
         /// </summary>
+        [Obsolete($"This option no longer does anything. Please use one of the following methods instead: {nameof(Experience.SetPaidAccessToFreeAsync)}, {nameof(Experience.SetPaidAccessToRobuxAsync)}, {nameof(Experience.SetPaidAccessToLocalCurrencyAsync)}")]
         public bool? PurchaseRequired { get; set; }
 
         /// <summary>
         /// The cost to purchase the game.
         /// </summary>
+        [Obsolete($"This option no longer does anything. Please use one of the following methods instead: {nameof(Experience.SetPaidAccessToFreeAsync)}, {nameof(Experience.SetPaidAccessToRobuxAsync)}, {nameof(Experience.SetPaidAccessToLocalCurrencyAsync)}")]
         public int? Cost { get; set; }
 
         /// <summary>
