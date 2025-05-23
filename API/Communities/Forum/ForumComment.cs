@@ -100,5 +100,11 @@ namespace RoSharp.API.Communities.Forum
             return null;
         }*/
 
+        /// <inheritdoc/>
+        public override string ToString()
+        {
+            return $"ForumComment [{Id}] {{COMMUNITY:{manager.community.Id}}} <CREATOR:{Poster.UniqueId}> || {Text}";
+        }
+
     }
 }

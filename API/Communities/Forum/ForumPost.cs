@@ -38,5 +38,11 @@ namespace RoSharp.API.Communities.Forum
 
             return new(comments, next, previous);
         }
+
+        /// <inheritdoc/>
+        public override string ToString()
+        {
+            return $"ForumPost {Title} [{Id}] {{COMMUNITY:{manager.community.Id}}} <CREATOR:{MainComment.Poster.UniqueId}>";
+        }
     }
 }

@@ -56,5 +56,11 @@ namespace RoSharp.API.Assets
                 AttachSession(session);
             return this;
         }
+
+        /// <inheritdoc/>
+        public override string ToString()
+        {
+            return $"GamePass {Name} [{Id}] {{PLACE:{place.UniqueId}}}";
+        }
     }
 }

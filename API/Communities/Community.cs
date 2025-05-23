@@ -253,6 +253,8 @@ namespace RoSharp.API.Communities
                         Text = data.shout.body,
                         Poster = await User.FromId(posterId, session),
                         PostedAt = data.shout.updated,
+
+                        community = this,
                     };
                 }
             }

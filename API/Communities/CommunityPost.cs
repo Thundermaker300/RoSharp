@@ -36,5 +36,11 @@
         /// Gets whether or not this post is less than 3 days old.
         /// </summary>
         public bool IsNew => (DateTime.UtcNow - PostedAt) < TimeSpan.FromDays(3);
+
+        /// <inheritdoc/>
+        public override string ToString()
+        {
+            return $"CommunityPost [{PostId}] {{COMMUNITY:{group.Id}}} <CREATOR:{PosterId?.UniqueId.ToString() ?? "NONE"}> || {Text}";
+        }
     }
 }

@@ -14,5 +14,11 @@ namespace RoSharp.API.Communities.Forum
         public string Id { get; init; }
 
         internal ForumEmote() { }
+
+        /// <inheritdoc/>
+        public override string ToString()
+        {
+            return $"ForumEmote {Name} [{Id}] {{SET:{SetName} [{SetId}]}}";
+        }
     }
 }

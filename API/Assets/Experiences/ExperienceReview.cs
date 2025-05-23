@@ -51,5 +51,11 @@ namespace RoSharp.API.Assets.Experiences
         /// Gets whether or not this experience review is less than 3 days old.
         /// </summary>
         public bool IsNew => (DateTime.UtcNow - Created) < TimeSpan.FromDays(3);
+
+        /// <inheritdoc/>
+        public override string ToString()
+        {
+            return $"ExperienceReview {DeviceOS} [{Id}] POSITIVE: {Positive} {{EXP:{TargetExperience.UniqueId}}} || {Comment}";
+        }
     }
 }

@@ -116,6 +116,8 @@ namespace RoSharp.API.Assets.Experiences
                     Playing = item.playing,
                     AverageFps = item.fps,
                     AveragePing = item.ping,
+
+                    place = this,
                 };
                 list.Add(server);
             }
@@ -224,6 +226,12 @@ namespace RoSharp.API.Assets.Experiences
             else
                 AttachSession(session);
             return this;
+        }
+
+        /// <inheritdoc/>
+        public override string ToString()
+        {
+            return $"Place {Name} [{Id}] {{EXP:{experience.Id}}}";
         }
     }
 

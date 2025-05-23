@@ -5,6 +5,8 @@
     /// </summary>
     public readonly struct GameServer
     {
+        internal readonly Place place { get; init; }
+
         /// <summary>
         /// The unique Id of the server.
         /// </summary>
@@ -29,5 +31,11 @@
         /// The average FPS from all users within the place server.
         /// </summary>
         public double AverageFps { get; init; }
+
+        /// <inheritdoc/>
+        public override string ToString()
+        {
+            return $"GameServer {ServerId} {{PLACE:{place.Id}}} [{Playing}/{MaxPlayers}] [PING: {AveragePing}] [FPS: {AverageFps}]";
+        }
     }
 }

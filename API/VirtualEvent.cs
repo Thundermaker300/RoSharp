@@ -305,7 +305,7 @@ namespace RoSharp.API
         /// <inheritdoc/>
         public override string ToString()
         {
-            return $"[{Id}] '{Title}' {Subtitle} [{Category}] [From: {StartTime}] [To: {EndTime}] <{Status}> |{Visibility}|";
+            return $"VirtualEvent [{Id}] '{Title}' {Subtitle} [{Category}] [From: {StartTime}] [To: {EndTime}] <{Status}> |{Visibility}|";
         }
     }
 }

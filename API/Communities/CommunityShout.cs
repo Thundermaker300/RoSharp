@@ -5,6 +5,8 @@
     /// </summary>
     public readonly struct CommunityShout
     {
+        internal readonly Community community { get; init; }
+
         /// <summary>
         /// Gets the text of the shout.
         /// </summary>
@@ -24,5 +26,11 @@
         /// Gets whether or not this shout is less than 3 days old.
         /// </summary>
         public bool IsNew => (DateTime.UtcNow - PostedAt) < TimeSpan.FromDays(3);
+
+        /// <inheritdoc/>
+        public override string ToString()
+        {
+            return $"CommunityShout {{COMMUNITY:{community.Id}}} <CREATOR:{Poster.Id}> || {Text}";
+        }
     }
 }

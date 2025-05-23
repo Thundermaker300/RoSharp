@@ -70,5 +70,11 @@ namespace RoSharp.API.Communities.Forum
 
             return null;
         }
+
+        /// <inheritdoc/>
+        public override string ToString()
+        {
+            return $"ForumCategory {Name} [{Id}] {{COMMUNITY:{manager.community.Id}}}";
+        }
     }
 }
