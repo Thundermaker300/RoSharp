@@ -668,7 +668,7 @@ namespace RoSharp.API.Communities
                     PostedAt = post.updated,
                     Text = post.body,
                     RankInCommunity = post.poster == null ? null : post.poster.role.name,
-                    PosterId = post.poster == null ? null : new Id<User>(Convert.ToUInt64(post.poster.userId)),
+                    PosterId = post.poster == null ? null : new Id<User>(Convert.ToUInt64(post.poster.user.userId)),
 
                     group = this,
                 });
