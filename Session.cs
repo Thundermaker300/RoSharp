@@ -85,6 +85,12 @@ namespace RoSharp
         }
 
         /// <summary>
+        /// Gets or sets a proxy URL to use that will replace 'roblox.com', or <see langword="null"/> to use no proxy. Defaults to <see langword="null"/>.
+        /// </summary>
+        /// <remarks>This property can be set and used even if the session <see cref="LoggedIn">is not authenticated</see>.</remarks>
+        public string? ProxyUrl { get; set; } = null;
+
+        /// <summary>
         /// Authenticates this session using the provided .ROBLOSECURITY token.
         /// </summary>
         /// <param name="roblosecurity">The .ROBLOSECURITY token to use for authentication.</param>

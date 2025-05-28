@@ -58,6 +58,10 @@ namespace RoSharp.Utility
             if (message.AuthType is AuthType.ApiKey or AuthType.RobloSecurityAndApiKey && !message.SilenceExceptions)
                 SessionVerify.ThrowAPIKeyIfNecessary(session, message.ApiName ?? "UNKNOWN - MESSAGE DEV", message.ApiKeyPermission ?? "UNKNOWN - MESSAGE DEV");
 
+            // Proxy
+            if (session is not null && session.ProxyUrl is not null)
+                message.Url = message.Url.Replace("roblox.com", session.ProxyUrl);
+
             HttpClient client = GetClient();
             HttpRequestMessage messageToSend = new HttpRequestMessage(message.Method, message.Url);
 
