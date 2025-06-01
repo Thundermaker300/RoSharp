@@ -1,5 +1,6 @@
 ﻿using Newtonsoft.Json.Linq;
 using RoSharp.Exceptions;
+using RoSharp.Http;
 using RoSharp.Structures;
 using System.Collections.ObjectModel;
 using System.Net.Http.Json;
@@ -17,7 +18,7 @@ namespace RoSharp.Utility
         /// <param name="groupName">The name of the community.</param>
         /// <returns>The matching community Id.</returns>
         /// <exception cref="RobloxAPIException">Roblox API failure.</exception>
-        public static async Task<ulong?> GetCommunityIdAsync(string groupName)
+        public static async Task<HttpResult<ulong?>> GetCommunityIdAsync(string groupName)
         {
             HttpMessage payload = new(HttpMethod.Get, $"{Constants.URL("groups")}/v1/groups/search/lookup?groupName={groupName}");
 
@@ -28,10 +29,10 @@ namespace RoSharp.Utility
             foreach (dynamic item in data.data)
             {
                 if (Convert.ToString(item.name).ToLower().Equals(groupName, StringComparison.CurrentCultureIgnoreCase))
-                    return Convert.ToUInt64(item.id);
+                    return new(response, Convert.ToUInt64(item.id));
             }
 
-            return null;
+            return new(response, null);
         }
     }
 }
