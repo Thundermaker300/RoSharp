@@ -350,7 +350,7 @@ namespace RoSharp.API.Communities
         /// <remarks>This API method does not cache and will make a request each time it is called.</remarks>
         public async Task<string> GetIconAsync(ThumbnailSize size = ThumbnailSize.S420x420)
         {
-            string url = $"/v1/groups/icons?communityIds={Id}&size={size.ToString().Substring(1)}&format=Png&isCircular=false";
+            string url = $"/v1/groups/icons?groupIds={Id}&size={size.ToString().Substring(1)}&format=Png&isCircular=false";
             string rawData = await SendStringAsync(HttpMethod.Get, url, Constants.URL("thumbnails"));
             dynamic data = JObject.Parse(rawData);
             if (data.data.Count == 0)
