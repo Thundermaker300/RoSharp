@@ -1,4 +1,5 @@
 ﻿using Newtonsoft.Json.Linq;
+using RoSharp.Http;
 using RoSharp.Structures;
 using RoSharp.Utility;
 using System.Collections.ObjectModel;

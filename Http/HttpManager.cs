@@ -1,12 +1,13 @@
 ﻿using RoSharp.Enums;
 using RoSharp.Extensions;
 using RoSharp.Structures;
+using RoSharp.Utility;
 using System;
 using System.Collections.Concurrent;
 using System.Net;
 using System.Net.Http.Json;
 
-namespace RoSharp.Utility
+namespace RoSharp.Http
 {
     /// <summary>
     /// The static class responsible for storing <see cref="HttpClient"/>s and sending requests to Roblox.
@@ -80,7 +81,7 @@ namespace RoSharp.Utility
                     if (!messageToSend.Headers.Contains(header.Key))
                         messageToSend.Headers.Add(header.Key, header.Value);
                 }
-            }    
+            }
 
             if (!string.IsNullOrWhiteSpace(session?.RobloSecurity))
                 messageToSend.Headers.Add("Cookie", $".ROBLOSECURITY={session.RobloSecurity}");
@@ -95,7 +96,7 @@ namespace RoSharp.Utility
             RoUtility.LogHTTP(session, message, resp, !message.EnableRetrying);
             Return(client);
 
-            if (session != null && ((!resp.IsSuccessStatusCode && message.ForceXCSRFRetry) || (resp.StatusCode == HttpStatusCode.Forbidden && message.EnableRetrying && messageToSend.Method != HttpMethod.Get)))
+            if (session != null && (!resp.IsSuccessStatusCode && message.ForceXCSRFRetry || resp.StatusCode == HttpStatusCode.Forbidden && message.EnableRetrying && messageToSend.Method != HttpMethod.Get))
             {
                 RoLogger.Debug("ATTEMPTING RETRY WITH CSRF TOKEN");
                 if (resp.Headers.TryGetValues("x-csrf-token", out IEnumerable<string>? headers))

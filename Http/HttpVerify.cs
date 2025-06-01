@@ -2,7 +2,7 @@
 using RoSharp.Exceptions;
 using System.Net;
 
-namespace RoSharp
+namespace RoSharp.Http
 {
     /// <summary>
     /// Class used to verify the response from Roblox APIs
