@@ -1,8 +1,8 @@
 ﻿using Newtonsoft.Json.Linq;
 using RoSharp.API.Assets.Experiences;
 using RoSharp.Enums;
+using RoSharp.Http;
 using RoSharp.Structures;
-using RoSharp.Utility;
 using System;
 using System.Collections.Generic;
 using System.Linq;

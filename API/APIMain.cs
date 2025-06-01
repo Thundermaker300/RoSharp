@@ -1,6 +1,6 @@
-﻿using RoSharp.Interfaces;
+﻿using RoSharp.Http;
+using RoSharp.Interfaces;
 using RoSharp.Structures;
-using RoSharp.Utility;
 using System.Net;
 using System.Net.Http.Json;
 

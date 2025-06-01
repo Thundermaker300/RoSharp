@@ -1,7 +1,7 @@
 ﻿using Newtonsoft.Json.Linq;
 using RoSharp.Enums;
+using RoSharp.Http;
 using RoSharp.Structures;
-using RoSharp.Utility;
 
 namespace RoSharp.Extensions
 {

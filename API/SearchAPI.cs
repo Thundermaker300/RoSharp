@@ -5,8 +5,8 @@ using RoSharp.API.Communities;
 using RoSharp.Enums;
 using RoSharp.Exceptions;
 using RoSharp.Extensions;
+using RoSharp.Http;
 using RoSharp.Structures;
-using RoSharp.Utility;
 
 namespace RoSharp.API
 {

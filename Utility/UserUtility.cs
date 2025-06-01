@@ -1,5 +1,6 @@
 ﻿using Newtonsoft.Json.Linq;
 using RoSharp.Exceptions;
+using RoSharp.Http;
 using RoSharp.Structures;
 using System.Collections.ObjectModel;
 using System.Net.Http.Json;

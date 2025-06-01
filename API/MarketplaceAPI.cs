@@ -3,8 +3,8 @@ using RoSharp.API.Assets;
 using RoSharp.Enums;
 using RoSharp.Exceptions;
 using RoSharp.Extensions;
+using RoSharp.Http;
 using RoSharp.Structures;
-using RoSharp.Utility;
 using System.Collections.ObjectModel;
 
 namespace RoSharp.API

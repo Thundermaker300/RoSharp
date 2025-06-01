@@ -1,6 +1,7 @@
 ﻿using Newtonsoft.Json.Linq;
 using RoSharp.Enums;
 using RoSharp.Extensions;
+using RoSharp.Http;
 using RoSharp.Structures;
 using RoSharp.Structures.PurchaseTypes;
 using System.Collections.ObjectModel;
