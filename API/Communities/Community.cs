@@ -360,7 +360,7 @@ namespace RoSharp.API.Communities
             dynamic data = JObject.Parse(rawData);
             if (data.data.Count == 0)
                 throw new UnreachableException("Invalid group to get icon for.");
-            return new(response, data.data[0].imageUrl);
+            return new(response, Convert.ToString(data.data[0].imageUrl));
         }
 
         /// <summary>
