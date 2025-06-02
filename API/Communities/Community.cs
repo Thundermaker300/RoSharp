@@ -5,6 +5,7 @@ using RoSharp.API.Pooling;
 using RoSharp.Enums;
 using RoSharp.Exceptions;
 using RoSharp.Extensions;
+using RoSharp.Http;
 using RoSharp.Interfaces;
 using RoSharp.Structures;
 using RoSharp.Utility;
@@ -137,13 +138,13 @@ namespace RoSharp.API.Communities
         /// <returns>A task containing the <see cref="Community"/> upon completion.</returns>
         /// <exception cref="ArgumentException">If the community name is invalid.</exception>
         /// <exception cref="RobloxAPIException">Roblox API failure.</exception>
-        public static async Task<Community> FromName(string communityName, Session? session = null)
+        public static async Task<HttpResult<Community>> FromName(string communityName, Session? session = null)
         {
-            ulong? groupId = await CommunityUtility.GetCommunityIdAsync(communityName);
-            if (!groupId.HasValue)
+            var groupId = await CommunityUtility.GetCommunityIdAsync(communityName);
+            if (!groupId.Value.HasValue)
                 throw new ArgumentException($"Invalid group name '{communityName}'.");
 
-            return await FromId(groupId.Value, session);
+            return new(groupId.HttpResponse, await FromId(groupId.Value.Value, session));
         }
 
         /// <summary>
@@ -248,42 +249,43 @@ namespace RoSharp.API.Communities
             RefreshedAt = DateTime.Now;
         }
 
-        private CommunityShout? shout;
+        private HttpResult<CommunityShout>? shout;
 
         /// <summary>
         /// Gets the community's current shout.
         /// </summary>
         /// <returns>A task containing a <see cref="CommunityShout"/> representing the shout upon completion. Can be <see langword="null"/> if there is no current shout.</returns>
-        public async Task<CommunityShout?> GetShoutAsync()
+        public async Task<HttpResult<CommunityShout>?> GetShoutAsync()
         {
             if (shout == null)
             {
-                string rawData = await SendStringAsync(HttpMethod.Get, $"/v1/groups/{Id}");
+                var response = await SendAsync(HttpMethod.Get, $"/v1/groups/{Id}");
+                string rawData = await response.Content.ReadAsStringAsync();
                 dynamic data = JObject.Parse(rawData);
                 if (data.shout != null)
                 {
                     ulong posterId = Convert.ToUInt64(data.shout.poster.userId);
 
-                    shout = new CommunityShout
+                    shout = new(response, new CommunityShout
                     {
                         Text = data.shout.body,
                         Poster = await User.FromId(posterId, session),
                         PostedAt = data.shout.updated,
 
                         community = this,
-                    };
+                    });
                 }
             }
             return shout;
         }
 
-        private GuildedShout? shoutGuilded;
+        private HttpResult<GuildedShout>? shoutGuilded;
 
         /// <summary>
         /// Gets the community's guilded shout, if it has a Guilded server linked.
         /// </summary>
         /// <returns>A task containing a <see cref="GuildedShout"/> if the community has one.</returns>
-        public async Task<GuildedShout?> GetGuildedShoutAsync()
+        public async Task<HttpResult<GuildedShout>?> GetGuildedShoutAsync()
         {
             if (shoutGuilded == null)
             {
@@ -294,7 +296,7 @@ namespace RoSharp.API.Communities
                     dynamic data = JObject.Parse(rawData);
                     ulong posterId = Convert.ToUInt64(data.createdBy);
 
-                    shoutGuilded = new GuildedShout
+                    shoutGuilded = new(response, new GuildedShout
                     {
                         GuildedId = data.communityId,
                         ShoutId = data.announcementId,
@@ -307,9 +309,10 @@ namespace RoSharp.API.Communities
                         PostedAt = data.createdAt,
                         UpdatedAt = data.updatedAt,
                         ReactionsVisible = data.areReactionCountsVisible,
-                    };
+                    });
                 }
             }
+
             return shoutGuilded;
         }
 
@@ -329,7 +332,8 @@ namespace RoSharp.API.Communities
             if (socialChannels == null)
             {
                 Dictionary<string, string> dict = [];
-                string rawData = await SendStringAsync(HttpMethod.Get, $"/v1/groups/{Id}/social-links");
+                var response = await SendAsync(HttpMethod.Get, $"/v1/groups/{Id}/social-links");
+                string rawData = await response.Content.ReadAsStringAsync();
                 dynamic data = JObject.Parse(rawData);
                 foreach (dynamic media in data.data)
                 {
@@ -348,14 +352,15 @@ namespace RoSharp.API.Communities
         /// <returns>Task that contains a URL to the icon, upon completion.</returns>
         /// <exception cref="RobloxAPIException">Roblox API failure.</exception>
         /// <remarks>This API method does not cache and will make a request each time it is called.</remarks>
-        public async Task<string> GetIconAsync(ThumbnailSize size = ThumbnailSize.S420x420)
+        public async Task<HttpResult<string>> GetIconAsync(ThumbnailSize size = ThumbnailSize.S420x420)
         {
             string url = $"/v1/groups/icons?groupIds={Id}&size={size.ToString().Substring(1)}&format=Png&isCircular=false";
-            string rawData = await SendStringAsync(HttpMethod.Get, url, Constants.URL("thumbnails"));
+            var response = await SendAsync(HttpMethod.Get, url, Constants.URL("thumbnails"));
+            string rawData = await response.Content.ReadAsStringAsync();
             dynamic data = JObject.Parse(rawData);
             if (data.data.Count == 0)
                 throw new UnreachableException("Invalid group to get icon for.");
-            return data.data[0].imageUrl;
+            return new(response, data.data[0].imageUrl);
         }
 
         /// <summary>
@@ -374,14 +379,14 @@ namespace RoSharp.API.Communities
         /// <param name="text">The text for the shout.</param>
         /// <returns>Task that completes when the operation is finished.</returns>
         /// <exception cref="RobloxAPIException">Roblox API failure or lack of permissions.</exception>
-        public async Task ShoutAsync(string text)
+        public async Task<HttpResult> ShoutAsync(string text)
         {
             var message = new HttpMessage(HttpMethod.Patch, $"/v1/groups/{Id}/status", new { message = text })
             {
                 AuthType = AuthType.RobloSecurity,
                 ApiName = nameof(ShoutAsync)
             };
-            await SendAsync(message);
+            return new(await SendAsync(message));
         }
 
         /// <summary>
@@ -393,7 +398,7 @@ namespace RoSharp.API.Communities
         /// <returns>A task containing a <see cref="PageResponse{T}"/> of <see cref="Id{T}"/> upon completion.</returns>
         /// <exception cref="RobloxAPIException">Roblox API failure or lack of permissions to see experiences.</exception>
         /// <remarks>This API method does not cache and will make a request each time it is called.</remarks>
-        public async Task<PageResponse<Id<Experience>>> GetExperiencesAsync(FixedLimit limit = FixedLimit.Limit100, RequestSortOrder sortOrder = RequestSortOrder.Desc, string? cursor = null)
+        public async Task<HttpResult<PageResponse<Id<Experience>>>> GetExperiencesAsync(FixedLimit limit = FixedLimit.Limit100, RequestSortOrder sortOrder = RequestSortOrder.Desc, string? cursor = null)
         {
             string url = $"/v2/groups/{Id}/games?accessFilter=Public&limit={limit.Limit()}&sortOrder={sortOrder}";
             if (cursor != null)
@@ -412,7 +417,7 @@ namespace RoSharp.API.Communities
             nextPage = data.nextPageCursor;
             previousPage = data.previousPageCursor;
 
-            return new(list, nextPage, previousPage);
+            return new(response, new(list, nextPage, previousPage));
         }
 
         /// <summary>
@@ -424,7 +429,7 @@ namespace RoSharp.API.Communities
         /// <returns>A task containing a <see cref="PageResponse{T}"/> of <see cref="CommunityAuditLog"/> upon completion.</returns>
         /// <exception cref="RobloxAPIException">Roblox API failure or lack of permissions.</exception>
         /// <remarks>This API method does not cache and will make a request each time it is called.</remarks>
-        public async Task<PageResponse<CommunityAuditLog>> GetAuditLogsAsync(FixedLimit limit = FixedLimit.Limit100, RequestSortOrder sortOrder = RequestSortOrder.Desc, string? cursor = null)
+        public async Task<HttpResult<PageResponse<CommunityAuditLog>>> GetAuditLogsAsync(FixedLimit limit = FixedLimit.Limit100, RequestSortOrder sortOrder = RequestSortOrder.Desc, string? cursor = null)
         {
             string url = $"/v1/groups/{Id}/audit-log?limit={limit.Limit()}&sortOrder={sortOrder}";
             if (cursor != null)
@@ -435,8 +440,9 @@ namespace RoSharp.API.Communities
                 AuthType = AuthType.RobloSecurity,
                 ApiName = nameof(GetAuditLogsAsync)
             };
-
-            string rawData = await SendStringAsync(message);
+            
+            var response = await SendAsync(message);
+            string rawData = await response.Content.ReadAsStringAsync();
             dynamic data = JObject.Parse(rawData);
 
             List<CommunityAuditLog> list = [];
@@ -459,7 +465,7 @@ namespace RoSharp.API.Communities
                 list.Add(log);
             }
 
-            return new PageResponse<CommunityAuditLog>(list, nextPage, previousPage);
+            return new(response, new PageResponse<CommunityAuditLog>(list, nextPage, previousPage));
         }
 
         /// <summary>
@@ -470,7 +476,7 @@ namespace RoSharp.API.Communities
         /// <param name="startRowIndex">The amount of items to skip before returning data, or <c>0</c> to skip none.</param>
         /// <returns>A task containing a <see cref="PageResponse{T}"/> of <see cref="Id{T}"/> upon completion.</returns>
         [Obsolete("Use GetRelationshipsAsync()")]
-        public async Task<PageResponse<Id<Community>>> GetAlliesAsync(int limit = 50, RequestSortOrder sortOrder = RequestSortOrder.Desc, int startRowIndex = 0)
+        public async Task<HttpResult<PageResponse<Id<Community>>>> GetAlliesAsync(int limit = 50, RequestSortOrder sortOrder = RequestSortOrder.Desc, int startRowIndex = 0)
             => await GetRelationshipsAsync(CommunityRelationship.Allies, limit, sortOrder, startRowIndex);
 
         /// <summary>
@@ -481,7 +487,7 @@ namespace RoSharp.API.Communities
         /// <param name="startRowIndex">The amount of items to skip before returning data, or <c>0</c> to skip none.</param>
         /// <returns>A task containing a <see cref="PageResponse{T}"/> of <see cref="Id{T}"/> upon completion.</returns>
         [Obsolete("Use GetRelationshipsAsync()")]
-        public async Task<PageResponse<Id<Community>>> GetEnemiesAsync(int limit = 50, RequestSortOrder sortOrder = RequestSortOrder.Desc, int startRowIndex = 0)
+        public async Task<HttpResult<PageResponse<Id<Community>>>> GetEnemiesAsync(int limit = 50, RequestSortOrder sortOrder = RequestSortOrder.Desc, int startRowIndex = 0)
             => await GetRelationshipsAsync(CommunityRelationship.Enemies, limit, sortOrder, startRowIndex);
 
         /// <summary>
@@ -492,11 +498,12 @@ namespace RoSharp.API.Communities
         /// <param name="sortOrder">The sort order.</param>
         /// <param name="startRowIndex">The amount of items to skip before returning data, or <c>0</c> to skip none.</param>
         /// <returns>A task containing a <see cref="PageResponse{T}"/> of <see cref="Id{T}"/> upon completion.</returns>
-        public async Task<PageResponse<Id<Community>>> GetRelationshipsAsync(CommunityRelationship relationshipType, int limit = 50, RequestSortOrder sortOrder = RequestSortOrder.Desc, int startRowIndex = 0)
+        public async Task<HttpResult<PageResponse<Id<Community>>>> GetRelationshipsAsync(CommunityRelationship relationshipType, int limit = 50, RequestSortOrder sortOrder = RequestSortOrder.Desc, int startRowIndex = 0)
         {
             string url = $"/v1/groups/{Id}/relationships/{relationshipType.ToString().ToLower()}?maxRows={limit}&sortOrder={sortOrder}&startRowIndex={startRowIndex}";
 
-            string rawData = await SendStringAsync(HttpMethod.Get, url);
+            var response = await SendAsync(HttpMethod.Get, url);
+            string rawData = await response.Content.ReadAsStringAsync();
             dynamic data = JObject.Parse(rawData);
 
             List<Id<Community>> list = [];
@@ -507,7 +514,7 @@ namespace RoSharp.API.Communities
                 list.Add(new(Convert.ToUInt64(item.id), session));
             }
 
-            return new PageResponse<Id<Community>>(list, nextPage, null);
+            return new(response, new PageResponse<Id<Community>>(list, nextPage, null));
         }
 
         /// <summary>
@@ -516,10 +523,10 @@ namespace RoSharp.API.Communities
         /// <param name="communityId">The Id of the community to send the request to.</param>
         /// <param name="relationshipType">The type of relationship.</param>
         /// <returns>A task that completes when the operation is finished.</returns>
-        public async Task SendRelationshipRequest(ulong communityId, CommunityRelationship relationshipType = CommunityRelationship.Allies)
+        public async Task<HttpResult> SendRelationshipRequest(ulong communityId, CommunityRelationship relationshipType = CommunityRelationship.Allies)
         {
             string url = $"/v1/groups/{Id}/relationships/{relationshipType.ToString().ToLower()}/{communityId}";
-            await SendAsync(HttpMethod.Post, url, body: new { });
+            return new(await SendAsync(HttpMethod.Post, url, body: new { }));
         }
 
         /// <summary>
@@ -528,8 +535,8 @@ namespace RoSharp.API.Communities
         /// <param name="community">The community to send the request to.</param>
         /// <param name="relationshipType">The type of relationship.</param>
         /// <returns>A task that completes when the operation is finished.</returns>
-        public async Task SendRelationshipRequest(Community community, CommunityRelationship relationshipType = CommunityRelationship.Allies)
-            => await SendRelationshipRequest(community.Id, relationshipType);
+        public async Task<HttpResult> SendRelationshipRequest(Community community, CommunityRelationship relationshipType = CommunityRelationship.Allies)
+            => new(await SendRelationshipRequest(community.Id, relationshipType));
 
         /// <summary>
         /// Removes a relationship between this community and another.
@@ -537,10 +544,10 @@ namespace RoSharp.API.Communities
         /// <param name="communityId">The Id of the community whose relationship to delete.</param>
         /// <param name="relationshipType">The type of relationship.</param>
         /// <returns>A task that completes when the operation is finished.</returns>
-        public async Task RemoveRelationshipAsync(ulong communityId, CommunityRelationship relationshipType = CommunityRelationship.Allies)
+        public async Task<HttpResult> RemoveRelationshipAsync(ulong communityId, CommunityRelationship relationshipType = CommunityRelationship.Allies)
         {
             string url = $"/v1/groups/{Id}/relationships/{relationshipType.ToString().ToLower()}/{communityId}";
-            await SendAsync(HttpMethod.Delete, url, body: new { });
+            return new(await SendAsync(HttpMethod.Delete, url, body: new { }));
         }
 
         /// <summary>
@@ -549,8 +556,8 @@ namespace RoSharp.API.Communities
         /// <param name="community">The community whose relationship to delete.</param>
         /// <param name="relationshipType">The type of relationship.</param>
         /// <returns>A task that completes when the operation is finished.</returns>
-        public async Task RemoveRelationshipAsync(Community community, CommunityRelationship relationshipType = CommunityRelationship.Allies)
-            => await RemoveRelationshipAsync(community.Id, relationshipType);
+        public async Task<HttpResult> RemoveRelationshipAsync(Community community, CommunityRelationship relationshipType = CommunityRelationship.Allies)
+            => new(await RemoveRelationshipAsync(community.Id, relationshipType));
 
         /// <summary>
         /// Modifies a relationship request to this group.
@@ -559,7 +566,7 @@ namespace RoSharp.API.Communities
         /// <param name="relationshipType">The type of relationship.</param>
         /// <param name="action">Whether to accept or decline the relationship request.</param>
         /// <returns>A task that completes when the operation is finished.</returns>
-        public async Task ModifyRelationshipRequest(ulong communityId, JoinRequestAction action, CommunityRelationship relationshipType = CommunityRelationship.Allies)
+        public async Task<HttpResult> ModifyRelationshipRequest(ulong communityId, JoinRequestAction action, CommunityRelationship relationshipType = CommunityRelationship.Allies)
         {
             string url = $"/v1/groups/{Id}/relationships/{relationshipType.ToString().ToLower()}/requests/{communityId}";
 
@@ -574,7 +581,7 @@ namespace RoSharp.API.Communities
                 ApiName = nameof(ModifyRelationshipRequest)
             };
 
-            await SendAsync(message);
+            return new(await SendAsync(message));
         }
 
         /// <summary>
@@ -584,8 +591,8 @@ namespace RoSharp.API.Communities
         /// <param name="relationshipType">The type of relationship.</param>
         /// <param name="action">Whether to accept or decline the relationship request.</param>
         /// <returns>A task that completes when the operation is finished.</returns>
-        public async Task ModifyRelationshipRequest(Community community, JoinRequestAction action, CommunityRelationship relationshipType = CommunityRelationship.Allies)
-            => await ModifyRelationshipRequest(community.Id, action, relationshipType);
+        public async Task<HttpResult> ModifyRelationshipRequest(Community community, JoinRequestAction action, CommunityRelationship relationshipType = CommunityRelationship.Allies)
+            => new(await ModifyRelationshipRequest(community.Id, action, relationshipType));
 
         /// <summary>
         /// Gets this community's income statistics for the given <paramref name="timeLength"/>.
@@ -594,7 +601,7 @@ namespace RoSharp.API.Communities
         /// <returns>A task containing a <see cref="EconomyBreakdown"/> upon completion.</returns>
         /// <remarks>This API method does not cache and will make a request each time it is called.</remarks>
         /// <exception cref="RobloxAPIException">Roblox API failure or lack of permissions.</exception>
-        public async Task<EconomyBreakdown> GetIncomeAsync(AnalyticTimeLength timeLength = AnalyticTimeLength.Day)
+        public async Task<HttpResult<EconomyBreakdown>> GetIncomeAsync(AnalyticTimeLength timeLength = AnalyticTimeLength.Day)
         {
             var url = $"/v1/groups/{Id}/revenue/summary/{timeLength.ToString().ToLower()}";
             var message = new HttpMessage(HttpMethod.Delete, url)
@@ -603,7 +610,8 @@ namespace RoSharp.API.Communities
                 ApiName = nameof(GetIncomeAsync)
             };
 
-            string rawData = await SendStringAsync(message, Constants.URL("economy"));
+            var response = await SendAsync(message, Constants.URL("economy"));
+            string rawData = await response.Content.ReadAsStringAsync();
             dynamic data = JObject.Parse(rawData);
 
             int amount = 0;
@@ -630,7 +638,7 @@ namespace RoSharp.API.Communities
                 }
             }
 
-            return new EconomyBreakdown(timeLength, amount, breakdown, pending);
+            return new(response, new EconomyBreakdown(timeLength, amount, breakdown, pending));
         }
 
         /// <summary>
@@ -642,7 +650,7 @@ namespace RoSharp.API.Communities
         /// <returns>A task containing a <see cref="PageResponse{T}"/> of <see cref="CommunityPost"/> upon completion.</returns>
         /// <exception cref="RobloxAPIException">Roblox API failure or lack of permissions to see the community wall.</exception>
         /// <remarks>This API method does not cache and will make a request each time it is called.</remarks>
-        public async Task<PageResponse<CommunityPost>> GetPostsAsync(FixedLimit limit = FixedLimit.Limit100, RequestSortOrder sortOrder = RequestSortOrder.Desc, string? cursor = null)
+        public async Task<HttpResult<PageResponse<CommunityPost>>> GetPostsAsync(FixedLimit limit = FixedLimit.Limit100, RequestSortOrder sortOrder = RequestSortOrder.Desc, string? cursor = null)
         {
             string url = $"/v2/groups/{Id}/wall/posts?limit={limit.Limit()}&sortOrder={sortOrder}";
             if (cursor != null)
@@ -676,7 +684,7 @@ namespace RoSharp.API.Communities
             nextPage = data.nextPageCursor;
             previousPage = data.previousPageCursor;
 
-            return new(list, nextPage, previousPage);
+            return new(response, new(list, nextPage, previousPage));
         }
 
         /// <summary>
@@ -685,7 +693,7 @@ namespace RoSharp.API.Communities
         /// <param name="userId">The user Id of the posts to delete.</param>
         /// <returns>A task that completes when the operation is finished.</returns>
         /// <exception cref="RobloxAPIException">Roblox API failure or lack of permissions.</exception>
-        public async Task DeletePostsFromMemberAsync(ulong userId)
+        public async Task<HttpResult> DeletePostsFromMemberAsync(ulong userId)
         {
             var message = new HttpMessage(HttpMethod.Delete, $"/v1/groups/{Id}/wall/users/{userId}/posts")
             {
@@ -693,7 +701,7 @@ namespace RoSharp.API.Communities
                 ApiName = nameof(DeletePostsFromMemberAsync)
             };
 
-            await SendAsync(message);
+            return new(await SendAsync(message));
         }
 
         /// <summary>
@@ -711,8 +719,8 @@ namespace RoSharp.API.Communities
         /// <param name="username">The user name of the posts to delete.</param>
         /// <returns>A task that completes when the operation is finished.</returns>
         /// <exception cref="RobloxAPIException">Roblox API failure or lack of permissions.</exception>
-        public async Task DeletePostsFromMemberAsync(string username)
-            => await DeletePostsFromMemberAsync(await UserUtility.GetUserIdAsync(username));
+        public async Task<HttpResult> DeletePostsFromMemberAsync(string username)
+            => new(await DeletePostsFromMemberAsync(await UserUtility.GetUserIdAsync(username)));
 
         /// <summary>
         /// Deletes the wall post with the given Id.
@@ -720,7 +728,7 @@ namespace RoSharp.API.Communities
         /// <param name="postId">The post Id to delete. Can be obtained from <see cref="GetPostsAsync(FixedLimit, RequestSortOrder, string?)"/>.</param>
         /// <returns>A task that completes when the operation is finished.</returns>
         /// <exception cref="RobloxAPIException">Roblox API failure or lack of permissions.</exception>
-        public async Task DeletePostAsync(ulong postId)
+        public async Task<HttpResult> DeletePostAsync(ulong postId)
         {
             var message = new HttpMessage(HttpMethod.Delete, $"/v1/groups/{Id}/wall/posts/{postId}")
             {
@@ -728,7 +736,7 @@ namespace RoSharp.API.Communities
                 ApiName = nameof(DeletePostAsync)
             };
 
-            await SendAsync(message);
+            return new(await SendAsync(message));
         }
 
         /// <summary>
@@ -737,15 +745,15 @@ namespace RoSharp.API.Communities
         /// <param name="post">The post to delete. Can be obtained from <see cref="GetPostsAsync(FixedLimit, RequestSortOrder, string?)"/>.</param>
         /// <returns>A task that completes when the operation is finished.</returns>
         /// <exception cref="RobloxAPIException">Roblox API failure or lack of permissions.</exception>
-        public async Task DeletePostAsync(CommunityPost post)
-            => await DeletePostAsync(post.PostId);
+        public async Task<HttpResult> DeletePostAsync(CommunityPost post)
+            => new(await DeletePostAsync(post.PostId));
 
         /// <summary>
         /// Modifies the community.
         /// </summary>
         /// <param name="options">The options to use.</param>
         /// <returns>A task that completes when the operation is finished.</returns>
-        public async Task ModifyAsync(CommunityModifyOptions options)
+        public async Task<HttpResult> ModifyAsync(CommunityModifyOptions options)
         {
             var message = new HttpMessage(HttpMethod.Patch, $"/v1/groups/{Id}/settings", new
             {
@@ -759,8 +767,9 @@ namespace RoSharp.API.Communities
                 ApiName = nameof(ModifyAsync),
             };
 
-            await SendAsync(message);
+            var res = await SendAsync(message);
 
+            // Todo: Separate description to its own method
             if (!string.IsNullOrWhiteSpace(options.Description))
             {
                 var message2 = new HttpMessage(HttpMethod.Patch, $"/v1/groups/{Id}/description", new { description = options.Description })
@@ -770,20 +779,21 @@ namespace RoSharp.API.Communities
                 };
                 await SendAsync(message2);
             }
+            return new(res);
         }
 
         /// <summary>
         /// Leaves the community if the authenticated user is in it.
         /// </summary>
         /// <returns>A task that completes when the operation is finished.</returns>
-        public async Task LeaveAsync()
+        public async Task<HttpResult> LeaveAsync()
         {
             HttpMessage payload = new(HttpMethod.Delete, $"/v1/groups/{Id}/users/{session?.AuthUser?.Id}")
             {
                 AuthType = AuthType.RobloSecurity,
                 ApiName = nameof(LeaveAsync),
             };
-            await SendAsync(payload);
+            return new(await SendAsync(payload));
         }
 
         /// <inheritdoc/>
