@@ -138,13 +138,13 @@ namespace RoSharp.API.Communities
         /// <returns>A task containing the <see cref="Community"/> upon completion.</returns>
         /// <exception cref="ArgumentException">If the community name is invalid.</exception>
         /// <exception cref="RobloxAPIException">Roblox API failure.</exception>
-        public static async Task<HttpResult<Community>> FromName(string communityName, Session? session = null)
+        public static async Task<Community> FromName(string communityName, Session? session = null)
         {
-            var groupId = await CommunityUtility.GetCommunityIdAsync(communityName);
-            if (!groupId.Value.HasValue)
+            ulong? groupId = await CommunityUtility.GetCommunityIdAsync(communityName);
+            if (!groupId.HasValue)
                 throw new ArgumentException($"Invalid group name '{communityName}'.");
 
-            return new(groupId.HttpResponse, await FromId(groupId.Value.Value, session));
+            return await FromId(groupId.Value, session);
         }
 
         /// <summary>
