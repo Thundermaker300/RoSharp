@@ -8,11 +8,22 @@ namespace RoSharp.Exceptions
     public class RobloxAPIException : Exception
     {
         internal HttpStatusCode code;
+        internal int? retryIn;
 
         /// <summary>
         /// The HTTP Code of the error.
         /// </summary>
         public HttpStatusCode Code => code;
+
+        /// <summary>
+        /// Gets whether or not this API exception is the result of Too Many Requests to the Roblox API.
+        /// </summary>
+        public bool IsTooManyRequests => Code is HttpStatusCode.TooManyRequests;
+
+        /// <summary>
+        /// If <see cref="IsTooManyRequests"/> is <see langword="true"/>, gets the amount of seconds until the request should be retried. Can be <see langword="null"/> if certain Roblox APIs do not provide it.
+        /// </summary>
+        public int? RetryIn => retryIn;
 
         /// <summary>
         /// Initializes a new <see cref="RobloxAPIException"/>.

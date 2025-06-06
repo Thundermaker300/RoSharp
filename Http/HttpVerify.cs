@@ -21,7 +21,20 @@ namespace RoSharp.Http
                 return;
 
             if (message.StatusCode == HttpStatusCode.TooManyRequests)
-                throw new RobloxAPIException($"Too many requests to the Roblox API. Request url: {message.RequestMessage?.RequestUri} Request method: {message.RequestMessage?.Method}", HttpStatusCode.TooManyRequests);
+            {
+                var exp = new RobloxAPIException($"Too many requests to the Roblox API. Request url: {message.RequestMessage?.RequestUri} Request method: {message.RequestMessage?.Method}", HttpStatusCode.TooManyRequests);
+
+                if (message.Headers.TryGetValues("x-ratelimit-reset", out var values))
+                {
+                    string value = values.First();
+                    if (int.TryParse(value, out int result))
+                    {
+                        exp.retryIn = result;
+                    }
+                }
+
+                throw exp;
+            }
 
             body ??= message.Content.ReadAsStringAsync().Result;
 
