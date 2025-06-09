@@ -88,6 +88,25 @@ namespace RoSharp.API.Communities
         /// </summary>
         public bool IsLocked => isLocked;
 
+        private bool isPending;
+        private bool isMember;
+        private bool isPrimary;
+
+        /// <summary>
+        /// Gets whether or not the authenticated user has a pending request to join this community.
+        /// </summary>
+        public bool IsPending => isPending;
+
+        /// <summary>
+        /// Gets whether or not the authenticated user is in the community.
+        /// </summary>
+        public bool IsMember => isMember;
+
+        /// <summary>
+        /// Gets whether or not this community is the authenticated user's primary community.
+        /// </summary>
+        public bool IsPrimary => isPrimary;
+
 
         private RoleManager roleManager;
 
@@ -236,6 +255,22 @@ namespace RoSharp.API.Communities
             else
             {
                 robux = -1;
+            }
+
+            // Membership
+            HttpMessage membershipMessage = new(HttpMethod.Get, $"/v1/groups/{Id}/membership")
+            {
+                AuthType = AuthType.None,
+                ApiName = nameof(RefreshAsync)+"-GetMembership",
+                SilenceExceptions = true,
+            };
+            HttpResponseMessage membershipResponse = await SendAsync(membershipMessage);
+            if (currencyResponse.IsSuccessStatusCode)
+            {
+                dynamic data7 = JObject.Parse(await membershipResponse.Content.ReadAsStringAsync());
+                isMember = data7.userRole.role.rank != 0;
+                isPending = data7.isPendingJoin;
+                isPrimary = data7.isPrimary;
             }
 
             // Reset properties
