@@ -28,7 +28,7 @@ namespace RoSharp.API
         /// <returns>A task containing a <see cref="PageResponse{T}"/> of <see cref="Id{T}"/> upon completion.</returns>
         /// <exception cref="RobloxAPIException">Error from the Roblox API.</exception>
         /// <remarks>This API method does not cache and will make a request each time it is called.</remarks>
-        public static async Task<PageResponse<Id<Experience>>> SearchExperiencesAsync(string query, Session? session = null, bool exactMatchSearch = false, string? cursor = null)
+        public static async Task<EnumerableHttpResult<PageResponse<Id<Experience>>>> SearchExperiencesAsync(string query, Session? session = null, bool exactMatchSearch = false, string? cursor = null)
         {
             if (exactMatchSearch)
                 query = $"\"{query}\"";
@@ -38,7 +38,8 @@ namespace RoSharp.API
                 url += $"&pageToken={cursor}";
 
             HttpMessage message = new(HttpMethod.Get, url);
-            string body = await HttpManager.SendStringAsync(session, message);
+            var response = await HttpManager.SendAsync(session, message);
+            string body = await response.Content.ReadAsStringAsync();
 
             List<Id<Experience>> list = [];
             dynamic data = JObject.Parse(body);
@@ -52,7 +53,7 @@ namespace RoSharp.API
             }
 
             string token = data.nextPageToken;
-            return new(list, token, null);
+            return new(response, new(list, token, null));
         }
 
         /// <summary>
@@ -148,7 +149,7 @@ namespace RoSharp.API
         /// <seealso cref="MarketplaceAPI.GetCategoriesAsync"/>
         /// <seealso cref="MarketplaceAPI.GetCategoryAsync(string)"/>
         /// <seealso cref="MarketplaceCategory.SearchAsync(string, Session?, byte, string?)"/>
-        public static async Task<PageResponse<Id<Asset>>> SearchMarketplaceAsync(MarketplaceCategory category, string? query, Session? session = null, byte limit = 30, string? cursor = null, MarketplaceSearchOptions? options = null)
+        public static async Task<EnumerableHttpResult<PageResponse<Id<Asset>>>> SearchMarketplaceAsync(MarketplaceCategory category, string? query, Session? session = null, byte limit = 30, string? cursor = null, MarketplaceSearchOptions? options = null)
         {
             ArgumentNullException.ThrowIfNull(category, nameof(category));
 
@@ -184,7 +185,8 @@ namespace RoSharp.API
             }
 
             HttpMessage message = new(HttpMethod.Get, url);
-            string rawData = await HttpManager.SendStringAsync(session, message);
+            var response = await HttpManager.SendAsync(session, message);
+            string rawData = await response.Content.ReadAsStringAsync();
             dynamic data = JObject.Parse(rawData);
 
             List<Id<Asset>> list = [];
@@ -200,7 +202,7 @@ namespace RoSharp.API
                 list.Add(new(id, session));
             }
 
-            return new PageResponse<Id<Asset>>(list, nextPage, previousPage);
+            return new(response, new PageResponse<Id<Asset>>(list, nextPage, previousPage));
         }
 
         /// <summary>

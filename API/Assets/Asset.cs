@@ -5,6 +5,7 @@ using RoSharp.API.Pooling;
 using RoSharp.Enums;
 using RoSharp.Exceptions;
 using RoSharp.Extensions;
+using RoSharp.Http;
 using RoSharp.Interfaces;
 using RoSharp.Structures;
 using RoSharp.Structures.PurchaseTypes;
@@ -433,16 +434,17 @@ namespace RoSharp.API.Assets
         /// <exception cref="ArgumentException">Invalid asset to get thumbnail for.</exception>
         /// <exception cref="RobloxAPIException">Roblox API failure.</exception>
         /// <remarks>This API method does not cache and will make a request each time it is called.</remarks>
-        public async Task<string> GetThumbnailAsync(ThumbnailSize size = ThumbnailSize.S420x420)
+        public async Task<HttpResult<string>> GetThumbnailAsync(ThumbnailSize size = ThumbnailSize.S420x420)
         {
             if (ImageAsset != null && ImageAsset.UniqueId != 0)
                 return await (await ImageAsset.GetInstanceAsync()).GetThumbnailAsync(size);
             string url = $"/v1/assets?assetIds={Id}&returnPolicy=PlaceHolder&size={size.ToString().Substring(1)}&format=Png&isCircular=false";
-            string rawData = await SendStringAsync(HttpMethod.Get, url, Constants.URL("thumbnails"));
+            var response = await SendAsync(HttpMethod.Get, url, Constants.URL("thumbnails"));
+            string rawData = await response.Content.ReadAsStringAsync();
             dynamic data = JObject.Parse(rawData);
             if (data.data.Count == 0)
                 throw new ArgumentException("Invalid asset to get thumbnail for.");
-            return data.data[0].imageUrl;
+            return new(response, Convert.ToString(data.data[0].imageUrl));
         }
 
         /// <summary>
@@ -451,7 +453,7 @@ namespace RoSharp.API.Assets
         /// <param name="options">The options.</param>
         /// <returns>A task that completes when the operation is finished.</returns>
         /// <exception cref="RobloxAPIException">Roblox API failure or lack of permissions.</exception>
-        public async Task ModifyAsync(AssetModifyOptions options)
+        public async Task<HttpResult> ModifyAsync(AssetModifyOptions options)
         {
             object body = new
             {
@@ -465,7 +467,7 @@ namespace RoSharp.API.Assets
                 ApiName = nameof(ModifyAsync),
             };
 
-            await SendAsync(message, Constants.URL("develop"));
+            return new(await SendAsync(message, Constants.URL("develop")));
         }
 
         /// <summary>
@@ -476,7 +478,7 @@ namespace RoSharp.API.Assets
         /// <returns>A task that completes when the operation is finished.</returns>
         /// <exception cref="RobloxAPIException">Roblox API failure or lack of permissions.</exception>
         /// <exception cref="InvalidOperationException">Use <c>Experience.ModifyAsync</c> to modify the experience's sale status.</exception>
-        public async Task SetSaleStatusAsync(bool isOnSale, int cost)
+        public async Task<HttpResult> SetSaleStatusAsync(bool isOnSale, int cost)
         {
             if (AssetType is AssetType.Place)
                 throw new InvalidOperationException($"Use {nameof(Experience.ModifyAsync)} to modify the experience's sale status.");
@@ -499,7 +501,7 @@ namespace RoSharp.API.Assets
                 AuthType = AuthType.RobloSecurity,
                 ApiName = nameof(SetSaleStatusAsync),
             };
-            await SendAsync(message, Constants.URL("itemconfiguration"));
+            return new(await SendAsync(message, Constants.URL("itemconfiguration")));
         }
 
         /// <summary>
@@ -509,16 +511,17 @@ namespace RoSharp.API.Assets
         /// <param name="cursor">The cursor for the next page. Obtained by calling this API previously.</param>
         /// <returns>A task containing a <see cref="PageResponse{T}"/> of <see cref="AssetReview"/> upon completion.</returns>
         /// <remarks>This method will return an empty <see cref="PageResponse{T}"/> if <see cref="IsCreatorHubAsset"/> is <see langword="false"/>.</remarks>
-        public async Task<PageResponse<AssetReview>> GetReviewsAsync(int limit = 50, string? cursor = null)
+        public async Task<EnumerableHttpResult<PageResponse<AssetReview>>> GetReviewsAsync(int limit = 50, string? cursor = null)
         {
             if (!IsCreatorHubAsset)
-                return PageResponse<AssetReview>.Empty;
+                return new(null, PageResponse<AssetReview>.Empty);
 
             string url = $"/asset-reviews-api/v1/assets/{Id}/comments?hideAuthenticatedUserComment=true&limit={limit}&sortByHelpfulCount=true";
             if (cursor != null)
                 url += $"&cursor={cursor}";
 
-            string rawData = await SendStringAsync(HttpMethod.Get, url, Constants.URL("apis"));
+            var response = await SendAsync(HttpMethod.Get, url, Constants.URL("apis"));
+            string rawData = await response.Content.ReadAsStringAsync();
             dynamic data = JObject.Parse(rawData);
             string? nextPage = data.nextCursor;
 
@@ -540,19 +543,20 @@ namespace RoSharp.API.Assets
                 reviews.Add(yes);
             }
 
-            return new PageResponse<AssetReview>(reviews, nextPage, null);
+            return new(response, new PageResponse<AssetReview>(reviews, nextPage, null));
         }
 
         /// <summary>
         /// Gets this asset's tags.
         /// </summary>
         /// <returns>A task containing a <see cref="ReadOnlyCollection{T}"/> of <see cref="AssetTag"/> upon completion.</returns>
-        public async Task<ReadOnlyCollection<AssetTag>> GetTagsAsync()
+        public async Task<EnumerableHttpResult<ReadOnlyCollection<AssetTag>>> GetTagsAsync()
         {
             if (assetTypeOverride != null)
-                return new(new List<AssetTag>().AsReadOnly());
+                return new(null, new(new List<AssetTag>().AsReadOnly()));
 
-            string rawData = await SendStringAsync(HttpMethod.Get, $"/v1/item-tags?itemIds=AssetId%3A{Id}", Constants.URL("itemconfiguration"));
+            var response = await SendAsync(HttpMethod.Get, $"/v1/item-tags?itemIds=AssetId%3A{Id}", Constants.URL("itemconfiguration"));
+            string rawData = await response.Content.ReadAsStringAsync();
             dynamic data = JObject.Parse(rawData);
 
             List<AssetTag> tags = [];
@@ -565,7 +569,7 @@ namespace RoSharp.API.Assets
                 };
                 tags.Add(newTag);
             }
-            return tags.AsReadOnly();
+            return new(response, tags.AsReadOnly());
         }
 
         /// <summary>
@@ -574,7 +578,7 @@ namespace RoSharp.API.Assets
         /// <param name="target">The user to target.</param>
         /// <returns>A task containing a bool upon completion.</returns>
         /// <remarks>This API method does not cache and will make a request each time it is called.</remarks>
-        public async Task<bool> IsOwnedByAsync(User target) => await target.OwnsAssetAsync(this);
+        public async Task<HttpResult<bool>> IsOwnedByAsync(User target) => await target.OwnsAssetAsync(this);
 
         /// <summary>
         /// Gets whether or not the user with the provided Id owns this asset.
@@ -582,7 +586,7 @@ namespace RoSharp.API.Assets
         /// <param name="targetId">The user Id.</param>
         /// <returns>A task containing a bool upon completion.</returns>
         /// <remarks>This API method does not cache and will make a request each time it is called.</remarks>
-        public async Task<bool> IsOwnedByAsync(ulong targetId) => await IsOwnedByAsync(await User.FromId(targetId, session));
+        public async Task<HttpResult<bool>> IsOwnedByAsync(ulong targetId) => await IsOwnedByAsync(await User.FromId(targetId, session));
 
         /// <summary>
         /// Gets whether or not the user with the provided name owns this asset.
@@ -590,21 +594,21 @@ namespace RoSharp.API.Assets
         /// <param name="targetUsername">The username.</param>
         /// <returns>A task containing a bool upon completion.</returns>
         /// <remarks>This API method does not cache and will make a request each time it is called.</remarks>
-        public async Task<bool> IsOwnedByAsync(string targetUsername) => await IsOwnedByAsync(await User.FromUsername(targetUsername, session));
+        public async Task<HttpResult<bool>> IsOwnedByAsync(string targetUsername) => await IsOwnedByAsync(await User.FromUsername(targetUsername, session));
 
         /// <summary>
         /// Removes this asset from the authenticated user's inventory.
         /// </summary>
         /// <returns>A task that completes when the operation is finished.</returns>
         /// <exception cref="RobloxAPIException">Roblox API failure or lack of permissions.</exception>
-        public async Task RemoveFromInventoryAsync()
+        public async Task<HttpResult> RemoveFromInventoryAsync()
         {
             var message = new HttpMessage(HttpMethod.Delete, $"/v2/inventory/asset/{Id}")
             {
                 AuthType = AuthType.RobloSecurity,
                 ApiName = nameof(RemoveFromInventoryAsync)
             };
-            await SendAsync(message, Constants.URL("inventory"));
+            return new(await SendAsync(message, Constants.URL("inventory")));
         }
 
         /// <summary>
@@ -613,9 +617,10 @@ namespace RoSharp.API.Assets
         /// <param name="limit">The limit of assets to return. Maximum: 45.</param>
         /// <returns>A task representing a list of assets shown as recommended.</returns>
         /// <remarks>This API method does not cache and will make a request each time it is called. Occasionally, Roblox's API will produce a 'bad recommendation' that leads to an asset that doesn't exist (either deleted or hidden). If this is the case, RoSharp will skip over it automatically. However, if the limit is set to Roblox's maximum of 45, this will result in less than 45 assets being returned.</remarks>
-        public async Task<ReadOnlyCollection<Id<Asset>>> GetRecommendedAsync(int limit = 7)
+        public async Task<EnumerableHttpResult<ReadOnlyCollection<Id<Asset>>>> GetRecommendedAsync(int limit = 7)
         {
-            string rawData = await SendStringAsync(HttpMethod.Get, $"/v2/recommendations/assets?assetId={Id}&assetTypeId={(int)AssetType}&numItems=45");
+            var response = await SendAsync(HttpMethod.Get, $"/v2/recommendations/assets?assetId={Id}&assetTypeId={(int)AssetType}&numItems=45");
+            string rawData = await response.Content.ReadAsStringAsync();
             dynamic data = JObject.Parse(rawData);
             List<Id<Asset>> list = [];
             foreach (dynamic item in data.data)
@@ -630,7 +635,7 @@ namespace RoSharp.API.Assets
                 if (list.Count >= limit)
                     break;
             }
-            return list.AsReadOnly();
+            return new(response, list.AsReadOnly());
         }
 
         /// <summary>
@@ -645,7 +650,7 @@ namespace RoSharp.API.Assets
         /// <returns></returns>
         /// <exception cref="InvalidOperationException">Communities cannot have 'Edit' permission on assets.</exception>
         /// <exception cref="RobloxAPIException">Roblox API failure or lack of permissions.</exception>
-        public async Task ModifyCollaboratorAsync(AssetOwnerType collaboratorType, ulong id, AssetPermissionType permissionType, bool remove = false)
+        public async Task<HttpResult> ModifyCollaboratorAsync(AssetOwnerType collaboratorType, ulong id, AssetPermissionType permissionType, bool remove = false)
         {
             if (collaboratorType is AssetOwnerType.Community && permissionType is AssetPermissionType.Edit)
                 throw new InvalidOperationException("Communities cannot have 'Edit' permission on assets.");
@@ -670,7 +675,7 @@ namespace RoSharp.API.Assets
                 ApiName = nameof(ModifyCollaboratorAsync)
             };
 
-            await SendAsync(message, Constants.URL("apis"));
+            return new(await SendAsync(message, Constants.URL("apis")));
         }
 
         /// <summary>
@@ -685,7 +690,7 @@ namespace RoSharp.API.Assets
         /// <returns></returns>
         /// <exception cref="InvalidOperationException">Communities cannot have 'Edit' permission on assets.</exception>
         /// <exception cref="RobloxAPIException">Roblox API failure or lack of permissions.</exception>
-        public async Task ModifyCollaboratorAsync(AssetOwnerType collaboratorType, string name, AssetPermissionType permissionType, bool remove = false)
+        public async Task<HttpResult> ModifyCollaboratorAsync(AssetOwnerType collaboratorType, string name, AssetPermissionType permissionType, bool remove = false)
         {
             ulong? id;
 
@@ -699,7 +704,7 @@ namespace RoSharp.API.Assets
                 throw new ArgumentException($"Invalid name '{name}' provided. No user or group matches.");
             }
 
-            await ModifyCollaboratorAsync(collaboratorType, id.Value, permissionType, remove);
+            return await ModifyCollaboratorAsync(collaboratorType, id.Value, permissionType, remove);
         }
 
         /// <summary>
@@ -711,7 +716,7 @@ namespace RoSharp.API.Assets
         /// <param name="remove">True to remove access, False to grant it. Defaults to False.</param>
         /// <returns></returns>
         /// <exception cref="RobloxAPIException">Roblox API failure or lack of permissions.</exception>
-        public async Task ModifyCollaboratorAsync(User user, AssetPermissionType permissionType, bool remove = false)
+        public async Task<HttpResult> ModifyCollaboratorAsync(User user, AssetPermissionType permissionType, bool remove = false)
             => await ModifyCollaboratorAsync(AssetOwnerType.User, user.Id, permissionType, remove);
 
         /// <summary>
@@ -724,7 +729,7 @@ namespace RoSharp.API.Assets
         /// <returns></returns>
         /// <exception cref="InvalidOperationException">Communities cannot have 'Edit' permission on assets.</exception>
         /// <exception cref="RobloxAPIException">Roblox API failure or lack of permissions.</exception>
-        public async Task ModifyCollaboratorAsync(Community community, AssetPermissionType permissionType, bool remove = false)
+        public async Task<HttpResult> ModifyCollaboratorAsync(Community community, AssetPermissionType permissionType, bool remove = false)
             => await ModifyCollaboratorAsync(AssetOwnerType.Community, community.Id, permissionType, remove);
 
         /// <inheritdoc/>

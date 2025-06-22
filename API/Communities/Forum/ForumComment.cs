@@ -1,5 +1,6 @@
 ﻿using RoSharp.Enums;
 using RoSharp.Exceptions;
+using RoSharp.Http;
 using RoSharp.Structures;
 using System.Collections.ObjectModel;
 
@@ -99,7 +100,7 @@ namespace RoSharp.API.Communities.Forum
         /// <param name="emote">The emote to react with.</param>
         /// <returns>A task that completes when the operation has finished.</returns>
         /// <exception cref="RobloxAPIException">Roblox API failure or lack of permissions.</exception>
-        public async Task ReactAsync(ForumEmote emote)
+        public async Task<HttpResult> ReactAsync(ForumEmote emote)
         {
             string url = $"/v1/groups/{manager.community.Id}/forums/channels/{ParentId}/comments/{Id}/reactions/{emote.Id}";
             HttpMessage message = new(HttpMethod.Post, url)
@@ -107,7 +108,7 @@ namespace RoSharp.API.Communities.Forum
                 AuthType = AuthType.RobloSecurity,
                 ApiName = nameof(ReactAsync),
             };
-            await manager.community.SendAsync(message, Constants.URL("groups"));
+            return new(await manager.community.SendAsync(message, Constants.URL("groups")));
         }
 
         /// <summary>
@@ -116,13 +117,12 @@ namespace RoSharp.API.Communities.Forum
         /// <param name="reactionName">The name of the emote to react with.</param>
         /// <returns>A task that completes when the operation has finished.</returns>
         /// <exception cref="RobloxAPIException">Roblox API failure or lack of permissions.</exception>
-        public async Task ReactAsync(string reactionName)
+        public async Task<HttpResult> ReactAsync(string reactionName)
         {
             ForumEmote? emote = await manager.GetEmoteAsync(reactionName);
             if (emote != null)
             {
-                await ReactAsync(emote);
-                return;
+                return new(await ReactAsync(emote));
             }
             throw new ArgumentException("Invalid emote name.", nameof(reactionName));
         }
@@ -133,7 +133,7 @@ namespace RoSharp.API.Communities.Forum
         /// <param name="emote">The emote to remove.</param>
         /// <returns>A task that completes when the operation has finished.</returns>
         /// <exception cref="RobloxAPIException">Roblox API failure or lack of permissions.</exception>
-        public async Task RemoveReactionAsync(ForumEmote emote)
+        public async Task<HttpResult> RemoveReactionAsync(ForumEmote emote)
         {
             string url = $"/v1/groups/{manager.community.Id}/forums/channels/{ParentId}/comments/{Id}/reactions/{emote.Id}";
             HttpMessage message = new(HttpMethod.Delete, url)
@@ -141,7 +141,7 @@ namespace RoSharp.API.Communities.Forum
                 AuthType = AuthType.RobloSecurity,
                 ApiName = nameof(ReactAsync),
             };
-            await manager.community.SendAsync(message, Constants.URL("groups"));
+            return new(await manager.community.SendAsync(message, Constants.URL("groups")));
         }
 
         /// <summary>
@@ -150,13 +150,12 @@ namespace RoSharp.API.Communities.Forum
         /// <param name="reactionName">The name of the emote to remove.</param>
         /// <returns>A task that completes when the operation has finished.</returns>
         /// <exception cref="RobloxAPIException">Roblox API failure or lack of permissions.</exception>
-        public async Task RemoveReactionAsync(string reactionName)
+        public async Task<HttpResult> RemoveReactionAsync(string reactionName)
         {
             ForumEmote? emote = await manager.GetEmoteAsync(reactionName);
             if (emote != null)
             {
-                await RemoveReactionAsync(emote);
-                return;
+                return new(await RemoveReactionAsync(emote));
             }
             throw new ArgumentException("Invalid emote name.", nameof(reactionName));
         }

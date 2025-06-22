@@ -6,6 +6,7 @@ using RoSharp.API.Pooling;
 using RoSharp.Enums;
 using RoSharp.Exceptions;
 using RoSharp.Extensions;
+using RoSharp.Http;
 using RoSharp.Interfaces;
 using RoSharp.Structures;
 using RoSharp.Utility;
@@ -339,21 +340,22 @@ namespace RoSharp.API
         /// <param name="cursor">The cursor for the next page. Obtained by calling this API previously.</param>
         /// <returns>A task containing a <see cref="ReadOnlyCollection{T}"/> of strings when completed.</returns>
         /// <remarks>This API method does not cache and will make a request each time it is called.</remarks>
-        public async Task<ReadOnlyCollection<string>> GetRenameHistoryAsync(FixedLimit limit = FixedLimit.Limit100, RequestSortOrder sortOrder = RequestSortOrder.Desc, string? cursor = null)
+        public async Task<EnumerableHttpResult<ReadOnlyCollection<string>>> GetRenameHistoryAsync(FixedLimit limit = FixedLimit.Limit100, RequestSortOrder sortOrder = RequestSortOrder.Desc, string? cursor = null)
         {
             string url = $"/v1/users/{Id}/username-history?limit={limit.Limit()}&sortOrder={sortOrder}";
             if (cursor != null)
                 url += "&cursor=" + cursor;
 
             List<string> history = [];
-            string rawData = await SendStringAsync(HttpMethod.Get, url);
+            var response = await SendAsync(HttpMethod.Get, url);
+            string rawData = await response.Content.ReadAsStringAsync();
             dynamic data = JObject.Parse(rawData);
             foreach (dynamic historyData in data.data)
             {
                 history.Add(historyData.name.ToString());
             }
 
-            return history.AsReadOnly();
+            return new(response, history.AsReadOnly());
         }
 
         private Community? primaryGroup;
@@ -469,9 +471,10 @@ namespace RoSharp.API
         /// <remarks>This API method does not cache and will make a request each time it is called.</remarks>
         /// <exception cref="RobloxAPIException">Roblox API failure.</exception>
         /// <exception cref="ArgumentException">Invalid user.</exception>
-        public async Task<ReadOnlyCollection<Id<Asset>>> GetCollectionItemsAsync()
+        public async Task<EnumerableHttpResult<ReadOnlyCollection<Id<Asset>>>> GetCollectionItemsAsync()
         {
-            string rawData = await SendStringAsync(HttpMethod.Get, $"/users/profile/robloxcollections-json?userId={Id}", Constants.ROBLOX_URL_WWW);
+            var response = await SendAsync(HttpMethod.Get, $"/users/profile/robloxcollections-json?userId={Id}", Constants.ROBLOX_URL_WWW);
+            string rawData = await response.Content.ReadAsStringAsync();
             if (rawData.Contains("Invalid user"))
                 throw new ArgumentException("Invalid user.");
             Console.WriteLine(rawData);
@@ -483,7 +486,7 @@ namespace RoSharp.API
                 ulong assetId = Convert.ToUInt64(item.Id);
                 list.Add(new(assetId, session));
             }
-            return list.AsReadOnly();
+            return new(response, list.AsReadOnly());
         }
 
         /// <summary>
@@ -493,9 +496,10 @@ namespace RoSharp.API
         /// <returns><see cref="ReadOnlyCollection{T}"/></returns>
         /// <exception cref="RobloxAPIException">Roblox API failure.</exception>
         /// <remarks>This API method does not cache and will make a request each time it is called.</remarks>
-        public async Task<ReadOnlyCollection<Id<User>>> GetFriendsAsync(int limit = 50)
+        public async Task<EnumerableHttpResult<ReadOnlyCollection<Id<User>>>> GetFriendsAsync(int limit = 50)
         {
-            string rawData = await SendStringAsync(HttpMethod.Get, $"/v1/users/{Id}/friends", Constants.URL("friends"));
+            var response = await SendAsync(HttpMethod.Get, $"/v1/users/{Id}/friends", Constants.URL("friends"));
+            string rawData = await response.Content.ReadAsStringAsync();
             dynamic data = JObject.Parse(rawData);
             List<Id<User>> friends = [];
             int count = 0;
@@ -510,7 +514,7 @@ namespace RoSharp.API
                     break;
             }
 
-            return friends.AsReadOnly();
+            return new(response, friends.AsReadOnly());
         }
 
         /// <summary>
@@ -521,7 +525,7 @@ namespace RoSharp.API
         /// <param name="cursor">The cursor for the next page. Obtained by calling this API previously.</param>
         /// <returns>A task containing a <see cref="PageResponse{T}"/> of <see cref="Id{T}"/> upon completion.</returns>
         /// <exception cref="RobloxAPIException">Roblox API failure or lack of permissions.</exception>
-        public async Task<PageResponse<Id<User>>> GetFollowingAsync(FixedLimit limit = FixedLimit.Limit100, RequestSortOrder sortOrder = RequestSortOrder.Desc, string? cursor = null)
+        public async Task<EnumerableHttpResult<PageResponse<Id<User>>>> GetFollowingAsync(FixedLimit limit = FixedLimit.Limit100, RequestSortOrder sortOrder = RequestSortOrder.Desc, string? cursor = null)
         {
             string url = $"/v1/users/{Id}/followings?limit={limit.Limit()}&sortOrder={sortOrder}";
             if (cursor != null)
@@ -539,7 +543,7 @@ namespace RoSharp.API
                 list.Add(new(id, session));
             }
 
-            return new PageResponse<Id<User>>(list, nextPage, previousPage);
+            return new(response, new PageResponse<Id<User>>(list, nextPage, previousPage));
         }
 
         /// <summary>
@@ -550,7 +554,7 @@ namespace RoSharp.API
         /// <param name="cursor">The cursor for the next page. Obtained by calling this API previously.</param>
         /// <returns>A task containing a <see cref="PageResponse{T}"/> of <see cref="Id{T}"/> upon completion.</returns>
         /// <exception cref="RobloxAPIException">Roblox API failure or lack of permissions.</exception>
-        public async Task<PageResponse<Id<User>>> GetFollowersAsync(FixedLimit limit = FixedLimit.Limit100, RequestSortOrder sortOrder = RequestSortOrder.Desc, string? cursor = null)
+        public async Task<EnumerableHttpResult<PageResponse<Id<User>>>> GetFollowersAsync(FixedLimit limit = FixedLimit.Limit100, RequestSortOrder sortOrder = RequestSortOrder.Desc, string? cursor = null)
         {
             string url = $"/v1/users/{Id}/followers?limit={limit.Limit()}&sortOrder={sortOrder}";
             if (cursor != null)
@@ -568,7 +572,7 @@ namespace RoSharp.API
                 list.Add(new(id, session));
             }
 
-            return new PageResponse<Id<User>>(list, nextPage, previousPage);
+            return new(response, new PageResponse<Id<User>>(list, nextPage, previousPage));
         }
 
         private string? customName;
@@ -607,7 +611,7 @@ namespace RoSharp.API
         /// <param name="name"></param>
         /// <returns></returns>
         /// <exception cref="RobloxAPIException">Roblox API failure or lack of permissions.</exception>
-        public async Task SetCustomName(string name)
+        public async Task<HttpResult> SetCustomName(string name)
         {
             ArgumentNullException.ThrowIfNull(name, nameof(name));
 
@@ -621,7 +625,7 @@ namespace RoSharp.API
                 ApiName = nameof(SetCustomName),
             };
 
-            await SendAsync(message, Constants.URL("contacts"));
+            return new(await SendAsync(message, Constants.URL("contacts")));
         }
 
         /// <summary>
@@ -629,14 +633,14 @@ namespace RoSharp.API
         /// </summary>
         /// <param name="community">The community.</param>
         /// <returns>A task containing a bool.</returns>
-        public async Task<bool> IsInGroupAsync(Community community) => await (await community.GetMemberManagerAsync()).IsInCommunityAsync(Id);
+        public async Task<HttpResult<bool>> IsInGroupAsync(Community community) => await (await community.GetMemberManagerAsync()).IsInCommunityAsync(Id);
 
         /// <summary>
         /// Gets whether or not this user is in the community with the given Id.
         /// </summary>
         /// <param name="communityId">The communityId.</param>
         /// <returns>A task containing a bool.</returns>
-        public async Task<bool> IsInGroupAsync(ulong communityId) => await (await (await Community.FromId(communityId)).GetMemberManagerAsync()).IsInCommunityAsync(Id);
+        public async Task<HttpResult<bool>> IsInGroupAsync(ulong communityId) => await (await (await Community.FromId(communityId)).GetMemberManagerAsync()).IsInCommunityAsync(Id);
         
         // Thumbnails
         /// <summary>
@@ -648,7 +652,7 @@ namespace RoSharp.API
         /// <remarks>This API method does not cache and will make a request each time it is called.</remarks>
         /// <exception cref="ArgumentException">Invalid user to get thumbnail for.</exception>
         /// <exception cref="RobloxAPIException">Roblox API failure.</exception>
-        public async Task<string> GetThumbnailAsync(ThumbnailType type = ThumbnailType.Full, ThumbnailSize size = ThumbnailSize.S420x420)
+        public async Task<HttpResult<string>> GetThumbnailAsync(ThumbnailType type = ThumbnailType.Full, ThumbnailSize size = ThumbnailSize.S420x420)
         {
             string url = "/v1/users/avatar" + type switch
             {
@@ -656,11 +660,12 @@ namespace RoSharp.API
                 ThumbnailType.Headshot => "-headshot",
                 _ => string.Empty,
             } + $"?userIds={Id}&size={size.ToString().Substring(1)}&format=Png&isCircular=false";
-            string rawData = await SendStringAsync(HttpMethod.Get, url, Constants.URL("thumbnails"));
+            var response = await SendAsync(HttpMethod.Get, url, Constants.URL("thumbnails"));
+            string rawData = await response.Content.ReadAsStringAsync();
             dynamic data = JObject.Parse(rawData);
             if (data.data.Count == 0)
                 throw new ArgumentException("Invalid user to get thumbnail for.");
-            return data.data[0].imageUrl;
+            return new(response, Convert.ToString(data.data[0].imageUrl));
         }
 
         private ReadOnlyCollection<Id<Experience>>? experiences;
@@ -695,10 +700,11 @@ namespace RoSharp.API
         /// <param name="assetItemType">The assetItemType. For most assets this value should be <c>0</c>.</param>
         /// <returns>A task containing a bool upon completion.</returns>
         /// <remarks>This API method does not cache and will make a request each time it is called.</remarks>
-        public async Task<bool> OwnsAssetAsync(ulong assetId, int assetItemType = 0)
+        public async Task<HttpResult<bool>> OwnsAssetAsync(ulong assetId, int assetItemType = 0)
         {
-            string result = await SendStringAsync(HttpMethod.Get, $"/v1/users/{Id}/items/{assetItemType}/{assetId}/is-owned", Constants.URL("inventory"));
-            return Convert.ToBoolean(result);
+            var response = await SendAsync(HttpMethod.Get, $"/v1/users/{Id}/items/{assetItemType}/{assetId}/is-owned", Constants.URL("inventory"));
+            string rawData = await response.Content.ReadAsStringAsync();
+            return new(response, Convert.ToBoolean(rawData));
         }
 
         /// <summary>
@@ -707,7 +713,7 @@ namespace RoSharp.API
         /// <param name="asset">The asset.</param>
         /// <returns>A task containing a bool upon completion.</returns>
         /// <remarks>This API method does not cache and will make a request each time it is called.</remarks>
-        public async Task<bool> OwnsAssetAsync(Asset asset)
+        public async Task<HttpResult<bool>> OwnsAssetAsync(Asset asset)
             => await OwnsAssetAsync(asset.Id);
 
         /// <summary>
@@ -716,12 +722,13 @@ namespace RoSharp.API
         /// <param name="badgeId">The badge Id.</param>
         /// <returns>A task containing a bool upon completion.</returns>
         /// <remarks>This API method does not cache and will make a request each time it is called.</remarks>
-        public async Task<bool> HasBadgeAsync(ulong badgeId)
+        public async Task<HttpResult<bool>> HasBadgeAsync(ulong badgeId)
         {
-            string rawData = await SendStringAsync(HttpMethod.Get, $"/v1/users/{Id}/badges/awarded-dates?badgeIds={badgeId}", Constants.URL("badges"));
+            var response = await SendAsync(HttpMethod.Get, $"/v1/users/{Id}/badges/awarded-dates?badgeIds={badgeId}", Constants.URL("badges"));
+            string rawData = await response.Content.ReadAsStringAsync();
             dynamic data = JObject.Parse(rawData);
 
-            return data.data.Count > 0;
+            return new(response, data.data.Count > 0);
         }
 
         /// <summary>
@@ -730,7 +737,7 @@ namespace RoSharp.API
         /// <param name="badge">The badge.</param>
         /// <returns>A task containing a bool upon completion.</returns>
         /// <remarks>This API method does not cache and will make a request each time it is called.</remarks>
-        public async Task<bool> HasBadgeAsync(Badge badge)
+        public async Task<HttpResult<bool>> HasBadgeAsync(Badge badge)
             => await HasBadgeAsync(badge.Id);
 
         /// <summary>
@@ -741,13 +748,14 @@ namespace RoSharp.API
         /// <param name="cursor">The cursor for the next page. Obtained by calling this API previously.</param>
         /// <returns>A task containing a <see cref="PageResponse{T}"/> of <see cref="Id{T}"/> upon completion.</returns>
         /// <remarks>This API method does not cache and will make a request each time it is called.</remarks>
-        public async Task<PageResponse<Id<Badge>>> GetBadgesAsync(FixedLimit limit = FixedLimit.Limit100, RequestSortOrder sortOrder = RequestSortOrder.Desc, string? cursor = null)
+        public async Task<EnumerableHttpResult<PageResponse<Id<Badge>>>> GetBadgesAsync(FixedLimit limit = FixedLimit.Limit100, RequestSortOrder sortOrder = RequestSortOrder.Desc, string? cursor = null)
         {
             string url = $"/v1/users/{Id}/badges?sortOrder={sortOrder}&limit={limit.Limit()}";
             if (cursor != null)
                 url += "&cursor=" + cursor;
 
-            string rawData = await SendStringAsync(HttpMethod.Get, url, Constants.URL("badges"));
+            var response = await SendAsync(HttpMethod.Get, url, Constants.URL("badges"));
+            string rawData = await response.Content.ReadAsStringAsync();
             dynamic data = JObject.Parse(rawData);
 
             List<Id<Badge>> list = [];
@@ -760,7 +768,7 @@ namespace RoSharp.API
                 list.Add(new(id, session));
             }
 
-            return new PageResponse<Id<Badge>>(list, nextPage, previousPage);
+            return new(response, new PageResponse<Id<Badge>>(list, nextPage, previousPage));
         }
 
         /// <summary>
@@ -775,13 +783,14 @@ namespace RoSharp.API
         /// <seealso cref="PrivateInventory"/>
         /// <seealso cref="GetBadgesAsync(FixedLimit, RequestSortOrder, string?)"/>
         /// <exception cref="RobloxAPIException">Roblox API failure or the authenticated user cannot see this user's inventory.</exception>
-        public async Task<PageResponse<Id<Asset>>> GetInventoryAsync(AssetType assetType, FixedLimit limit = FixedLimit.Limit100, RequestSortOrder sortOrder = RequestSortOrder.Desc, string? cursor = null)
+        public async Task<EnumerableHttpResult<PageResponse<Id<Asset>>>> GetInventoryAsync(AssetType assetType, FixedLimit limit = FixedLimit.Limit100, RequestSortOrder sortOrder = RequestSortOrder.Desc, string? cursor = null)
         {
             string url = $"/v2/users/{Id}/inventory/{(int)assetType}?limit={limit.Limit()}&sortOrder={sortOrder}";
             if (cursor != null)
                 url += "&cursor=" + cursor;
 
-            string rawData = await SendStringAsync(HttpMethod.Get, url, Constants.URL("inventory"));
+            var response = await SendAsync(HttpMethod.Get, url, Constants.URL("inventory"));
+            string rawData = await response.Content.ReadAsStringAsync();
             dynamic data = JObject.Parse(rawData);
 
             List<Id<Asset>> list = [];
@@ -794,7 +803,7 @@ namespace RoSharp.API
                 list.Add(new(id, session));
             }
 
-            return new PageResponse<Id<Asset>>(list, nextPage, previousPage);
+            return new(response, new PageResponse<Id<Asset>>(list, nextPage, previousPage));
         }
 
         /// <summary>
@@ -805,13 +814,14 @@ namespace RoSharp.API
         /// <param name="cursor">The cursor for the next page. Obtained by calling this API previously.</param>
         /// <returns>A task containing a <see cref="PageResponse{T}"/> of <see cref="Id{T}"/> upon completion.</returns>
         /// <remarks>This API method does not cache and will make a request each time it is called. This API also does not work for Badges, Bundles, and GamePasses -- see their respective APIs.</remarks>
-        public async Task<PageResponse<Id<Asset>>> GetFavoritesAsync(AssetType assetType, FixedLimit limit = FixedLimit.Limit100, string? cursor = null)
+        public async Task<EnumerableHttpResult<PageResponse<Id<Asset>>>> GetFavoritesAsync(AssetType assetType, FixedLimit limit = FixedLimit.Limit100, string? cursor = null)
         {
             string url = $"/v1/favorites/users/{Id}/favorites/{(int)assetType}/assets?limit={limit.Limit()}";
             if (cursor != null)
                 url += "&cursor=" + cursor;
 
-            string rawData = await SendStringAsync(HttpMethod.Get, url, Constants.URL("catalog"));
+            var response = await SendAsync(HttpMethod.Get, url, Constants.URL("catalog"));
+            string rawData = await response.Content.ReadAsStringAsync();
             dynamic data = JObject.Parse(rawData);
 
             List<Id<Asset>> list = [];
@@ -824,7 +834,7 @@ namespace RoSharp.API
                 list.Add(new(id, session));
             }
 
-            return new PageResponse<Id<Asset>>(list, nextPage, previousPage);
+            return new(response, new PageResponse<Id<Asset>>(list, nextPage, previousPage));
         }
 
         /// <summary>
@@ -833,7 +843,7 @@ namespace RoSharp.API
         /// <returns>A task containing a <see cref="UserPresence"/>, when completed.</returns>
         /// <remarks>This API method does not cache and will make a request each time it is called. Authentication is not required for this API, however providing an authenticated session may return more data.</remarks>
         /// <exception cref="RobloxAPIException">Failed to retrieve presence information, please try again later.</exception>
-        public async Task<UserPresence> GetPresenceAsync()
+        public async Task<HttpResult<UserPresence>> GetPresenceAsync()
         {
             object body = new
             {
@@ -847,22 +857,22 @@ namespace RoSharp.API
             UserLocationType type = (UserLocationType)Convert.ToInt32(data.userPresenceType);
             Experience? exp = data.universeId != null ? await Experience.FromId(Convert.ToUInt64(data.universeId)) : null;
             DateTime lastOnline = data.lastOnline;
-            return new UserPresence(type, exp, lastOnline);
+            return new(response, new UserPresence(type, exp, lastOnline));
         }
 
         /// <summary>
-        /// Sends a friend request to the user.
+        /// Sends a friend request to the user from the authenticated user.
         /// </summary>
         /// <returns>A task that completes when the operation is finished.</returns>
-        public async Task SendFriendRequestAsync()
-            => await SendAsync(HttpMethod.Post, $"/v1/contacts/{Id}/request-friendship", body: new { });
+        public async Task<HttpResult> SendFriendRequestAsync() =>
+            new(await SendAsync(HttpMethod.Post, $"/v1/contacts/{Id}/request-friendship", body: new { }));
 
         /// <summary>
-        /// Unfriends the user.
+        /// Unfriends the user from the authenticated user.
         /// </summary>
         /// <returns>A task that completes when the operation is finished.</returns>
-        public async Task UnfriendAsync() =>
-            await SendAsync(HttpMethod.Post, $"/v1/users/{Id}/unfriend", body: new { });
+        public async Task<HttpResult> UnfriendAsync() =>
+            new(await SendAsync(HttpMethod.Post, $"/v1/users/{Id}/unfriend", body: new { }));
 
 
         /// <inheritdoc/>

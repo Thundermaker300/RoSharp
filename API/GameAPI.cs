@@ -29,7 +29,7 @@ namespace RoSharp.API
         /// <returns>A task containing a <see cref="ChartsResponse"/> upon completion.</returns>
         /// <exception cref="RobloxAPIException">Error from the Roblox API.</exception>
         /// <remarks>This API method does not cache and will make a request each time it is called.</remarks>
-        public static async Task<ChartsResponse> GetFrontPageExperiencesAsync(Session? session = null, ChartsFilterOptions? options = null, string? cursor = null)
+        public static async Task<HttpResult<ChartsResponse>> GetFrontPageExperiencesAsync(Session? session = null, ChartsFilterOptions? options = null, string? cursor = null)
         {
             options ??= new ChartsFilterOptions();
 
@@ -53,7 +53,8 @@ namespace RoSharp.API
 
 
             HttpMessage message = new(HttpMethod.Get, url);
-            string body = await HttpManager.SendStringAsync(session, message);
+            var response = await HttpManager.SendAsync(session, message);
+            string body = await response.Content.ReadAsStringAsync();
 
             List<ChartCategory> categories = [];
             dynamic data = JObject.Parse(body);
@@ -81,11 +82,11 @@ namespace RoSharp.API
             }
 
             string token = data.nextSortsPageToken;
-            return new()
+            return new(response, new()
             {
                 NextPageToken = token == string.Empty ? null : token,
                 Categories = categories.AsReadOnly(),
-            };
+            });
         }
 
         /// <summary>
@@ -102,7 +103,7 @@ namespace RoSharp.API
         /// <exception cref="RobloxAPIException">Error from the Roblox API.</exception>
         /// <remarks>This API method does not cache and will make a request each time it is called.</remarks>
         [Obsolete("Use SearchAPI.SearchExperiencesAsync()")]
-        public static async Task<PageResponse<Id<Experience>>> SearchAsync(string query, Session? session = null, bool exactMatchSearch = false, string? cursor = null)
+        public static async Task<EnumerableHttpResult<PageResponse<Id<Experience>>>> SearchAsync(string query, Session? session = null, bool exactMatchSearch = false, string? cursor = null)
             => await SearchAPI.SearchExperiencesAsync(query, session, exactMatchSearch, cursor);
 
         /// <summary>
@@ -111,7 +112,7 @@ namespace RoSharp.API
         /// <param name="session">Logged in session. Required but can be replaced with <see langword="null"/> if there is a global session assigned.</param>
         /// <returns>A task containing a <see cref="ReadOnlyCollection{T}"/> of <see cref="Id{T}"/> upon completion.</returns>
         /// <exception cref="RobloxAPIException">Roblox API failure or lack of permissions (must be authenticated to access).</exception>
-        public static async Task<ReadOnlyCollection<Id<Experience>>> GetTodaysPicksAsync(Session? session)
+        public static async Task<EnumerableHttpResult<ReadOnlyCollection<Id<Experience>>>> GetTodaysPicksAsync(Session? session)
         {
             object payload = new
             {
@@ -120,7 +121,8 @@ namespace RoSharp.API
             };
             HttpMessage message = new(HttpMethod.Post, $"{Constants.URL("apis")}/discovery-api/omni-recommendation", payload);
 
-            string body = await HttpManager.SendStringAsync(session, message);
+            var response = await HttpManager.SendAsync(session, message);
+            string body = await response.Content.ReadAsStringAsync();
             dynamic data = JObject.Parse(body);
 
             List<Id<Experience>> list = [];
@@ -139,7 +141,7 @@ namespace RoSharp.API
                 }
             }
 
-            return list.AsReadOnly();
+            return new(response, list.AsReadOnly());
         }
 
         /// <summary>
@@ -148,10 +150,11 @@ namespace RoSharp.API
         /// <param name="query">The query to return suggestions for.</param>
         /// <param name="session">Logged in session, optional.</param>
         /// <returns>A task containing a <see cref="ReadOnlyCollection{T}"/> of <see cref="string"/>s upon completion.</returns>
-        public static async Task<ReadOnlyCollection<string>> GetAutocompleteSuggestionsAsync(string query, Session? session = null)
+        public static async Task<EnumerableHttpResult<ReadOnlyCollection<string>>> GetAutocompleteSuggestionsAsync(string query, Session? session = null)
         {
             HttpMessage message = new(HttpMethod.Get, $"/games-autocomplete/v1/get-suggestion/{query}");
-            string body = await HttpManager.SendStringAsync(session, message);
+            var response = await HttpManager.SendAsync(session, message);
+            string body = await response.Content.ReadAsStringAsync();
             dynamic data = JObject.Parse(body);
 
             List<string> list = [];
@@ -160,7 +163,7 @@ namespace RoSharp.API
                 string newItem = item.searchQuery;
                 list.Add(newItem);
             }
-            return list.AsReadOnly();
+            return new(response, list.AsReadOnly());
         }
     }
 }

@@ -19,7 +19,7 @@ namespace RoSharp.API
         /// </summary>
         /// <param name="session">Logged in session. Required but can be replaced with <see langword="null"/> if there is a global session assigned.</param>
         /// <returns>A task containing the <see cref="ReadOnlyDictionary{TKey, TValue}"/> upon completion.</returns>
-        public static async Task<ReadOnlyDictionary<AssetType, int>> GetPriceFloorsAsync(Session? session)
+        public static async Task<EnumerableHttpResult<ReadOnlyDictionary<AssetType, int>>> GetPriceFloorsAsync(Session? session)
         {
 
             HttpMessage message = new(HttpMethod.Get, $"{Constants.URL("itemconfiguration")}/v1/collectibles/metadata")
@@ -28,7 +28,8 @@ namespace RoSharp.API
                 ApiName = nameof(GetPriceFloorsAsync)
             };
 
-            string body = await HttpManager.SendStringAsync(session, message);
+            var response = await HttpManager.SendAsync(session, message);
+            string body = await response.Content.ReadAsStringAsync();
 
             var dict = new Dictionary<AssetType, int>();
             dynamic data = JObject.Parse(body);
@@ -41,7 +42,7 @@ namespace RoSharp.API
                     dict.Add(result, value);
             }
 
-            return dict.AsReadOnly();
+            return new(response, dict.AsReadOnly());
         }
 
         /// <summary>
@@ -50,13 +51,13 @@ namespace RoSharp.API
         /// <param name="assetType">The <see cref="AssetType"/> to get the price floor of.</param>
         /// <param name="session">Logged in session. Required but can be replaced with <see langword="null"/> if there is a global session assigned.</param>
         /// <returns>A task containing the price floor as an <see cref="int"/>. Will be <see langword="null"/> if the provided <see cref="AssetType"/> does not have a price floor.</returns>
-        public static async Task<int?> GetPriceFloorForTypeAsync(AssetType assetType, Session? session)
+        public static async Task<HttpResult<int?>> GetPriceFloorForTypeAsync(AssetType assetType, Session? session)
         {
             var priceFloors = await GetPriceFloorsAsync(session);
-            if (priceFloors.TryGetValue(assetType, out int value))
-                return value;
+            if (priceFloors.Value.TryGetValue(assetType, out int value))
+                return new(priceFloors, value);
 
-            return null;
+            return new(priceFloors, null);
         }
 
         private static ReadOnlyCollection<MarketplaceCategory> categories;
@@ -261,7 +262,7 @@ namespace RoSharp.API
         /// <seealso cref="MarketplaceAPI.GetCategoriesAsync"/>
         /// <seealso cref="MarketplaceAPI.GetCategoryAsync(string)"/>
         /// <seealso cref="SearchAPI.SearchMarketplaceAsync(MarketplaceCategory, string, Session?, byte, string?, MarketplaceSearchOptions)"/>
-        public async Task<PageResponse<Id<Asset>>> SearchAsync(string? query, Session? session = null, byte limit = 30, string? cursor = null)
+        public async Task<EnumerableHttpResult<PageResponse<Id<Asset>>>> SearchAsync(string? query, Session? session = null, byte limit = 30, string? cursor = null)
             => await SearchAPI.SearchMarketplaceAsync(this, query, session, limit, cursor);
 
         internal MarketplaceCategory() { }

@@ -6,6 +6,7 @@ using RoSharp.API.Pooling;
 using RoSharp.Enums;
 using RoSharp.Exceptions;
 using RoSharp.Extensions;
+using RoSharp.Http;
 using RoSharp.Interfaces;
 using RoSharp.Structures;
 
@@ -222,13 +223,14 @@ namespace RoSharp.API
         /// <returns>A task containing a <see cref="PageResponse{T}"/> of <see cref="Id{T}"/> upon completion.</returns>
         /// <remarks>This API method does not cache and will make a request each time it is called.</remarks>
         /// <exception cref="RobloxAPIException">Roblox API failure or lack of permissions.</exception>
-        public async Task<PageResponse<Id<User>>> GetRSVPsAsync(string? cursor = null)
+        public async Task<EnumerableHttpResult<PageResponse<Id<User>>>> GetRSVPsAsync(string? cursor = null)
         {
             string url = $"/virtual-events/v1/virtual-events/{Id}/rsvps";
             if (cursor != null)
                 url += $"?cursor={cursor}";
 
-            string rawData = await SendStringAsync(HttpMethod.Get, url, Constants.URL("apis"));
+            var response = await SendAsync(HttpMethod.Get, url, Constants.URL("apis"));
+            string rawData = await response.Content.ReadAsStringAsync();
             dynamic data = JObject.Parse(rawData);
             string? nextPage = data.nextPageCursor;
             string? previousPage = data.previousPageCursor;
@@ -240,7 +242,7 @@ namespace RoSharp.API
                 rsvps.Add(new(Convert.ToUInt64(comment.userId), session));
             }
 
-            return new PageResponse<Id<User>>(rsvps, nextPage, previousPage);
+            return new(response, new PageResponse<Id<User>>(rsvps, nextPage, previousPage));
         }
 
         /// <summary>
@@ -249,7 +251,7 @@ namespace RoSharp.API
         /// <param name="settings">The new settings for the event.</param>
         /// <returns>A task that completes when the operation has finished.</returns>
         /// <exception cref="RobloxAPIException">Roblox API failure or lack of permissions.</exception>
-        public async Task ModifyAsync(VirtualEventConfiguration settings)
+        public async Task<HttpResult> ModifyAsync(VirtualEventConfiguration settings)
         {
             string formattedCategory = (settings.Category.HasValue ? settings.Category.Value : Category).ToString().Substring(0, 1).ToLower() + (settings.Category.HasValue ? settings.Category.Value : Category).ToString().Substring(1);
             object body = new
@@ -266,7 +268,7 @@ namespace RoSharp.API
                 AuthType = AuthType.RobloSecurity,
                 ApiName = nameof(ModifyAsync),
             };
-            await SendAsync(payload, Constants.URL("apis"));
+            return new(await SendAsync(payload, Constants.URL("apis")));
         }
 
         /// <summary>
@@ -274,10 +276,8 @@ namespace RoSharp.API
         /// </summary>
         /// <returns>A task that completes when the operation is finished.</returns>
         /// <exception cref="RobloxAPIException">Roblox API failure or lack of permissions.</exception>
-        public async Task DeleteAsync()
-        {
-            await SendAsync(HttpMethod.Delete, $"/virtual-events/v1/virtual-events/{Id}", Constants.URL("apis"));
-        }
+        public async Task<HttpResult> DeleteAsync() =>
+            new(await SendAsync(HttpMethod.Delete, $"/virtual-events/v1/virtual-events/{Id}", Constants.URL("apis")));
 
         /// <summary>
         /// Returns the host of this event.

@@ -16,12 +16,13 @@ namespace RoSharp.API
     /// </summary>
     public static class DeveloperAPI
     {
-        private static async Task<string> getQuotaData(Session? session, AssetType assetType)
+        private static async Task<HttpResult<string>> getQuotaData(Session? session, AssetType assetType)
         {
             HttpMessage payload = new(HttpMethod.Get, $"{Constants.URL("publish")}/v1/asset-quotas?resourceType=RateLimitUpload&assetType={assetType}");
-            string rawData = await HttpManager.SendStringAsync(session, payload);
+            var response = await HttpManager.SendAsync(session, payload);
+            string rawData = await response.Content.ReadAsStringAsync();
 
-            return rawData;
+            return new(response, rawData);
         }
 
         /// <summary>
@@ -30,16 +31,16 @@ namespace RoSharp.API
         /// <param name="assetType">The asset type to get the quota of.</param>
         /// <param name="session">Logged in session. Required but can be replaced with <see langword="null"/> if there is a global session assigned.</param>
         /// <returns>A task containing the quota upon completion.</returns>
-        public static async Task<int> GetUploadQuotaAsync(AssetType assetType, Session? session)
+        public static async Task<HttpResult<int>> GetUploadQuotaAsync(AssetType assetType, Session? session)
         {
-            string rawData = await getQuotaData(session, assetType);
-            dynamic data = JObject.Parse(rawData);
+            var response = await getQuotaData(session, assetType);
+            dynamic data = JObject.Parse(response.Value);
 
             if (data.quotas.Count == 0)
-                return 0;
+                return new(response, 0);
 
             dynamic quota = data.quotas[0];
-            return quota.capacity;
+            return new(response, Convert.ToInt32(quota.capacity));
         }
 
         /// <summary>
@@ -48,16 +49,16 @@ namespace RoSharp.API
         /// <param name="assetType">The asset type to get the quota usage of.</param>
         /// <param name="session">Logged in session. Required but can be replaced with <see langword="null"/> if there is a global session assigned.</param>
         /// <returns>A task containing the quota's usage upon completion.</returns>
-        public static async Task<int> GetUploadQuotaUsageAsync(AssetType assetType, Session? session)
+        public static async Task<HttpResult<int>> GetUploadQuotaUsageAsync(AssetType assetType, Session? session)
         {
-            string rawData = await getQuotaData(session, assetType);
-            dynamic data = JObject.Parse(rawData);
+            var response = await getQuotaData(session, assetType);
+            dynamic data = JObject.Parse(response.Value);
 
             if (data.quotas.Count == 0)
-                return 0;
+                return new(response, 0);
 
             dynamic quota = data.quotas[0];
-            return quota.usage;
+            return new(response, Convert.ToInt32(quota.usage));
         }
     }
 }

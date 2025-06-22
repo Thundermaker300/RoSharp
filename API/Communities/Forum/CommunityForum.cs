@@ -1,5 +1,6 @@
 ﻿using Newtonsoft.Json.Linq;
 using RoSharp.Exceptions;
+using RoSharp.Http;
 using System.Collections.ObjectModel;
 
 namespace RoSharp.API.Communities.Forum
@@ -30,7 +31,7 @@ namespace RoSharp.API.Communities.Forum
                     categories.Add(cat);
                 }
 
-                nextPage = response.NextPageCursor;
+                nextPage = response.Value.NextPageCursor;
             }
 
             return categories;
@@ -99,13 +100,14 @@ namespace RoSharp.API.Communities.Forum
         /// <param name="cursor">The cursor for the next page. Obtained by calling this API previously.</param>
         /// <returns>A task containing a <see cref="PageResponse{T}"/> of <see cref="ForumCategory"/> upon completion.</returns>
         /// <exception cref="RobloxAPIException">Roblox API failure or lack of permissions.</exception>
-        public async Task<PageResponse<ForumCategory>> GetCategoriesAsync(string? cursor = null)
+        public async Task<EnumerableHttpResult<PageResponse<ForumCategory>>> GetCategoriesAsync(string? cursor = null)
         {
             string url = $"/v1/groups/{community.Id}/forums";
             if (cursor is not null)
                 url += $"?cursor={cursor}";
 
-            string rawData = await community.SendStringAsync(HttpMethod.Get, url, Constants.URL("groups"));
+            var response = await community.SendAsync(HttpMethod.Get, url, Constants.URL("groups"));
+            string rawData = await response.Content.ReadAsStringAsync();
             dynamic data = JObject.Parse(rawData);
 
             string? next = data.nextPageCursor;
@@ -128,7 +130,7 @@ namespace RoSharp.API.Communities.Forum
                 });
             }
 
-            return new(categories, next, previous);
+            return new(response, new(categories, next, previous));
         }
 
         /// <summary>

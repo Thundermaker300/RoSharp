@@ -1,6 +1,7 @@
 ﻿using Newtonsoft.Json.Linq;
 using RoSharp.API.Assets.Experiences;
 using RoSharp.Enums;
+using RoSharp.Http;
 using RoSharp.Interfaces;
 using RoSharp.Structures;
 using System.Collections.ObjectModel;
@@ -94,7 +95,7 @@ namespace RoSharp.API
         /// </summary>
         /// <param name="timeLength">The time length of the data.</param>
         /// <returns>The data in the form of an <see cref="EconomyBreakdown"/> struct.</returns>
-        public async Task<EconomyBreakdown> GetIncomeAsync(AnalyticTimeLength timeLength = AnalyticTimeLength.Day)
+        public async Task<HttpResult<EconomyBreakdown>> GetIncomeAsync(AnalyticTimeLength timeLength = AnalyticTimeLength.Day)
         {
             if (session == null)
                 throw new InvalidOperationException("Session cannot be null.");
@@ -104,7 +105,8 @@ namespace RoSharp.API
                 AuthType = AuthType.RobloSecurity,
                 ApiName = nameof(GetIncomeAsync)
             };
-            string rawData = await SendStringAsync(message, Constants.URL("economy"));
+            var response = await SendAsync(message, Constants.URL("economy"));
+            string rawData = await response.Content.ReadAsStringAsync();
             dynamic data = JObject.Parse(rawData);
 
             int amount = 0;
@@ -131,7 +133,7 @@ namespace RoSharp.API
                 }
             }
 
-            return new EconomyBreakdown(timeLength, amount, breakdown, pending);
+            return new(response, new EconomyBreakdown(timeLength, amount, breakdown, pending));
         }
 
         /// <summary>
@@ -141,7 +143,7 @@ namespace RoSharp.API
         /// <param name="pageSize">The size of each page.</param>
         /// <param name="tab">The tab to search on.</param>
         /// <returns>A task containing a <see cref="ReadOnlyCollection{T}"/> of <see cref="PrivateMessage"/> upon completion.</returns>
-        public async Task<ReadOnlyCollection<PrivateMessage>> GetPrivateMessagesAsync(int pageNumber = 0, int pageSize = 20, MessagesPageTab tab = MessagesPageTab.Inbox)
+        public async Task<EnumerableHttpResult<ReadOnlyCollection<PrivateMessage>>> GetPrivateMessagesAsync(int pageNumber = 0, int pageSize = 20, MessagesPageTab tab = MessagesPageTab.Inbox)
         {
             string url = tab is MessagesPageTab.News
                 ? "/v1/announcements"
@@ -153,7 +155,8 @@ namespace RoSharp.API
                 ApiName = nameof(GetPrivateMessagesAsync)
             };
 
-            string rawData = await SendStringAsync(message, Constants.URL("privatemessages"));
+            var response = await SendAsync(message, Constants.URL("privatemessages"));
+            string rawData = await response.Content.ReadAsStringAsync();
             dynamic data = JObject.Parse(rawData);
 
             List<PrivateMessage> messages = [];
@@ -173,7 +176,7 @@ namespace RoSharp.API
                 };
                 messages.Add(privateMessage);
             }
-            return messages.AsReadOnly();
+            return new(response, messages.AsReadOnly());
         }
 
         /// <summary>
@@ -181,7 +184,7 @@ namespace RoSharp.API
         /// </summary>
         /// <param name="messageId">The unique Id of the message.</param>
         /// <returns>A task that completes when the operation is finished.</returns>
-        public async Task MarkReadAsync(ulong messageId)
+        public async Task<HttpResult> MarkReadAsync(ulong messageId)
         {
             var message = new HttpMessage(HttpMethod.Post, "/v1/messages/mark-read", new
             {
@@ -192,7 +195,7 @@ namespace RoSharp.API
                 ApiName = nameof(MarkReadAsync),
             };
 
-            await SendAsync(message, Constants.URL("privatemessages"));
+            return new(await SendAsync(message, Constants.URL("privatemessages")));
         }
 
         /// <summary>
@@ -200,7 +203,7 @@ namespace RoSharp.API
         /// </summary>
         /// <param name="message">The message.</param>
         /// <returns>A task that completes when the operation is finished.</returns>
-        public async Task MarkReadAsync(PrivateMessage message)
+        public async Task<HttpResult> MarkReadAsync(PrivateMessage message)
             => await MarkReadAsync(message.Id);
 
         /// <summary>
@@ -208,7 +211,7 @@ namespace RoSharp.API
         /// </summary>
         /// <param name="messageId">The unique Id of the message.</param>
         /// <returns>A task that completes when the operation is finished.</returns>
-        public async Task MarkUnreadAsync(ulong messageId)
+        public async Task<HttpResult> MarkUnreadAsync(ulong messageId)
         {
             var message = new HttpMessage(HttpMethod.Post, "/v1/messages/mark-unread", new
             {
@@ -219,7 +222,7 @@ namespace RoSharp.API
                 ApiName = nameof(MarkUnreadAsync),
             };
 
-            await SendAsync(message, Constants.URL("privatemessages"));
+            return new(await SendAsync(message, Constants.URL("privatemessages")));
         }
 
         /// <summary>
@@ -227,7 +230,7 @@ namespace RoSharp.API
         /// </summary>
         /// <param name="message">The message.</param>
         /// <returns>A task that completes when the operation is finished.</returns>
-        public async Task MarkUnreadAsync(PrivateMessage message)
+        public async Task<HttpResult> MarkUnreadAsync(PrivateMessage message)
             => await MarkUnreadAsync(message.Id);
 
         /// <summary>
@@ -235,7 +238,7 @@ namespace RoSharp.API
         /// </summary>
         /// <param name="messageId">The unique Id of the message.</param>
         /// <returns>A task that completes when the operation is finished.</returns>
-        public async Task ArchiveAsync(ulong messageId)
+        public async Task<HttpResult> ArchiveAsync(ulong messageId)
         {
             var message = new HttpMessage(HttpMethod.Post, "/v1/messages/archive", new
             {
@@ -246,7 +249,7 @@ namespace RoSharp.API
                 ApiName = nameof(ArchiveAsync),
             };
 
-            await SendAsync(message, Constants.URL("privatemessages"));
+            return new(await SendAsync(message, Constants.URL("privatemessages")));
         }
 
         /// <summary>
@@ -254,7 +257,7 @@ namespace RoSharp.API
         /// </summary>
         /// <param name="message">The message.</param>
         /// <returns>A task that completes when the operation is finished.</returns>
-        public async Task ArchiveAsync(PrivateMessage message)
+        public async Task<HttpResult> ArchiveAsync(PrivateMessage message)
             => await ArchiveAsync(message.Id);
 
         /// <summary>
@@ -262,7 +265,7 @@ namespace RoSharp.API
         /// </summary>
         /// <param name="messageId">The unique Id of the message.</param>
         /// <returns>A task that completes when the operation is finished.</returns>
-        public async Task UnarchiveAsync(ulong messageId)
+        public async Task<HttpResult> UnarchiveAsync(ulong messageId)
         {
             var message = new HttpMessage(HttpMethod.Post, "/v1/messages/unarchive", new
             {
@@ -273,7 +276,7 @@ namespace RoSharp.API
                 ApiName = nameof(UnarchiveAsync),
             };
 
-            await SendAsync(message, Constants.URL("privatemessages"));
+            return new(await SendAsync(message, Constants.URL("privatemessages")));
         }
 
         /// <summary>
@@ -281,7 +284,7 @@ namespace RoSharp.API
         /// </summary>
         /// <param name="message">The message.</param>
         /// <returns>A task that completes when the operation is finished.</returns>
-        public async Task UnarchiveAsync(PrivateMessage message)
+        public async Task<HttpResult> UnarchiveAsync(PrivateMessage message)
             => await UnarchiveAsync(message.Id);
     }
 }

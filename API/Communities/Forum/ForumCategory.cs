@@ -2,6 +2,7 @@
 using RoSharp.Enums;
 using RoSharp.Exceptions;
 using RoSharp.Extensions;
+using RoSharp.Http;
 
 namespace RoSharp.API.Communities.Forum
 {
@@ -69,13 +70,14 @@ namespace RoSharp.API.Communities.Forum
         /// <param name="cursor">The cursor for the next page. Obtained by calling this API previously.</param>
         /// <returns>A task containing a <see cref="PageResponse{T}"/> of <see cref="ForumPost"/> upon completion.</returns>
         /// <exception cref="RobloxAPIException">Roblox API failure or lack of permissions.</exception>
-        public async Task<PageResponse<ForumPost>> GetPostsAsync(FixedLimit limit = FixedLimit.Limit10, string? cursor = null)
+        public async Task<EnumerableHttpResult<PageResponse<ForumPost>>> GetPostsAsync(FixedLimit limit = FixedLimit.Limit10, string? cursor = null)
         {
             string url = $"/v1/groups/{manager.community.Id}/forums/{Id}/posts?includeCommentCount=true&limit={limit.Limit()}";
             if (cursor is not null)
                 url += $"&cursor={cursor}";
 
-            string rawData = await manager.community.SendStringAsync(HttpMethod.Get, url, Constants.URL("groups"));
+            var response = await manager.community.SendAsync(HttpMethod.Get, url, Constants.URL("groups"));
+            string rawData = await response.Content.ReadAsStringAsync();
             dynamic data = JObject.Parse(rawData);
 
             string? next = data.nextPageCursor;
@@ -88,7 +90,7 @@ namespace RoSharp.API.Communities.Forum
                 comments.Add(await ConstructPost(comment));
             }
 
-            return new(comments, next, previous);
+            return new(response, new(comments, next, previous));
         }
 
         /// <summary>
@@ -97,18 +99,19 @@ namespace RoSharp.API.Communities.Forum
         /// <param name="postId">The unique Id of the post.</param>
         /// <returns>A task containing a <see cref="ForumPost"/> upon completion. Can be <see langword="null"/> if no matches are found.</returns>
         /// <exception cref="RobloxAPIException">Roblox API failure or lack of permissions.</exception>
-        public async Task<ForumPost?> GetPostAsync(string postId)
+        public async Task<HttpResult<ForumPost?>> GetPostAsync(string postId)
         {
-            string rawData = await manager.community.SendStringAsync(HttpMethod.Get, $"/v1/groups/{manager.community.Id}/forums/{Id}/posts?postIds={postId}");
+            var response = await manager.community.SendAsync(HttpMethod.Get, $"/v1/groups/{manager.community.Id}/forums/{Id}/posts?postIds={postId}");
+            string rawData = await response.Content.ReadAsStringAsync();
             dynamic data = JObject.Parse(rawData);
 
             if (data.data.Count > 0)
             {
                 var comment = data.data[0];
-                return await ConstructPost(comment);
+                return new(response, await ConstructPost(comment));
             }
 
-            return null;
+            return new(response, null);
         }
 
         /// <inheritdoc/>

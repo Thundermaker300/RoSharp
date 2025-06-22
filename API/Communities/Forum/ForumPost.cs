@@ -2,6 +2,7 @@
 using RoSharp.Enums;
 using RoSharp.Exceptions;
 using RoSharp.Extensions;
+using RoSharp.Http;
 
 namespace RoSharp.API.Communities.Forum
 {
@@ -59,13 +60,14 @@ namespace RoSharp.API.Communities.Forum
         /// <param name="cursor">The cursor for the next page. Obtained by calling this API previously.</param>
         /// <returns>A task containing a <see cref="PageResponse{T}"/> of <see cref="ForumComment"/> upon completion.</returns>
         /// <exception cref="RobloxAPIException">Roblox API failure or lack of permissions.</exception>
-        public async Task<PageResponse<ForumComment>> GetCommentsAsync(FixedLimit limit = FixedLimit.Limit10, string? cursor = null)
+        public async Task<EnumerableHttpResult<PageResponse<ForumComment>>> GetCommentsAsync(FixedLimit limit = FixedLimit.Limit10, string? cursor = null)
         {
             string url = $"/v1/groups/{manager.community.Id}/forums/{CategoryId}/posts/{Id}/comments?limit={limit.Limit()}";
             if (cursor is not null)
                 url += $"&cursor={cursor}";
 
-            string rawData = await manager.community.SendStringAsync(HttpMethod.Get, url, Constants.URL("groups"));
+            var response = await manager.community.SendAsync(HttpMethod.Get, url, Constants.URL("groups"));
+            string rawData = await response.Content.ReadAsStringAsync();
             dynamic data = JObject.Parse(rawData);
 
             string? next = data.nextPageCursor;
@@ -78,7 +80,7 @@ namespace RoSharp.API.Communities.Forum
                 comments.Add(await ForumComment.Construct(manager, Category, comment));
             }
 
-            return new(comments, next, previous);
+            return new(response, new(comments, next, previous));
         }
 
         /// <inheritdoc/>
