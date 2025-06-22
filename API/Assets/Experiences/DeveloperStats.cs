@@ -1,6 +1,7 @@
 ﻿using Newtonsoft.Json.Linq;
 using RoSharp.Enums;
 using RoSharp.Exceptions;
+using RoSharp.Http;
 using RoSharp.Interfaces;
 using RoSharp.Structures;
 using RoSharp.Structures.DeveloperStats;
@@ -204,7 +205,7 @@ namespace RoSharp.API.Assets.Experiences
         /// <returns>A task containing an integer upon completion.</returns>
         /// <exception cref="RobloxAPIException">Roblox API failure or lack of permissions.</exception>
         /// <seealso cref="Experience.PlayingNow"/>
-        public async Task<int> GetConcurrentUsersAsync()
+        public async Task<HttpResult<int>> GetConcurrentUsersAsync()
         {
             var message = new HttpMessage(HttpMethod.Post, $"/universe-performance-raqi/v1/live-stats/universe/{experience.UniverseId}", new
             {
@@ -216,13 +217,14 @@ namespace RoSharp.API.Assets.Experiences
                 ApiName = nameof(GetConcurrentUsersAsync),
             };
 
-            var rawData = await experience.SendStringAsync(message, Constants.URL("apis"));
+            var response = await experience.SendAsync(message, Constants.URL("apis"));
+            string rawData = await response.Content.ReadAsStringAsync();
             dynamic data = JObject.Parse(rawData);
 
             if (data.values.Count == 0 || data.values[0].datapoints.Count == 0)
-                return 0;
+                return new(response, 0);
 
-            return data.values[0].datapoints[0].value;
+            return new(response, Convert.ToInt32(data.values[0].datapoints[0].value));
         }
 
         /// <summary>
@@ -230,7 +232,7 @@ namespace RoSharp.API.Assets.Experiences
         /// </summary>
         /// <returns>A task containing a <see cref="ReadOnlyDictionary{TKey, TValue}"/> of <see cref="Device"/> and <see cref="ulong"/> upon completion.</returns>
         /// <exception cref="RobloxAPIException">Roblox API failure or lack of permissions.</exception>
-        public async Task<ReadOnlyDictionary<Device, ulong>> GetConcurrentUsersByDeviceAsync()
+        public async Task<EnumerableHttpResult<ReadOnlyDictionary<Device, ulong>>> GetConcurrentUsersByDeviceAsync()
         {
             var message = new HttpMessage(HttpMethod.Post, $"/universe-performance-raqi/v1/live-stats/universe/{experience.UniverseId}", new
             {
@@ -242,7 +244,8 @@ namespace RoSharp.API.Assets.Experiences
                 ApiName = nameof(GetConcurrentUsersAsync),
             };
 
-            var rawData = await experience.SendStringAsync(message, Constants.URL("apis"));
+            var response = await experience.SendAsync(message, Constants.URL("apis"));
+            string rawData = await response.Content.ReadAsStringAsync();
             dynamic data = JObject.Parse(rawData);
 
             Dictionary<Device, ulong> list = new();
@@ -250,7 +253,7 @@ namespace RoSharp.API.Assets.Experiences
                 list[device] = 0;
 
             if (data.values.Count == 0)
-                return list.AsReadOnly();
+                return new(response, list.AsReadOnly());
 
             foreach (dynamic value in data.values)
             {
@@ -258,7 +261,7 @@ namespace RoSharp.API.Assets.Experiences
                 list[deviceType] = Convert.ToUInt64(value.datapoints[0].value);
             }
 
-            return list.AsReadOnly();
+            return new(response, list.AsReadOnly());
         }
 
         private ReadOnlyCollection<ExperienceAuditLog>? history;
@@ -305,22 +308,23 @@ namespace RoSharp.API.Assets.Experiences
         /// </summary>
         /// <returns>A task containing a <see cref="DataStoreMetrics"/> upon completion.</returns>
         /// <exception cref="RobloxAPIException">Roblox API failure or lack of permissions.</exception>
-        public async Task<DataStoreMetrics> GetDataStoreMetricsAsync()
+        public async Task<HttpResult<DataStoreMetrics>> GetDataStoreMetricsAsync()
         {
             var message = new HttpMessage(HttpMethod.Get, $"/data-stores/storage-metrics/v1/universes/{experience.UniverseId}")
             {
                 AuthType = AuthType.RobloSecurity,
                 ApiName = nameof(GetDataStoreMetricsAsync),
             };
-            string rawData = await experience.SendStringAsync(message, Constants.URL("apis"));
+            var response = await experience.SendAsync(message, Constants.URL("apis"));
+            string rawData = await response.Content.ReadAsStringAsync();
             dynamic data = JObject.Parse(rawData);
-            return new DataStoreMetrics
+            return new(response, new DataStoreMetrics
             {
                 TotalBytes = data.bytesTotalPermanent,
                 MaximumBytes = data.storageLimitBytes,
                 DataStores = data.numDataStores,
                 Keys = data.numKeys,
-            };
+            });
         }
     }
 }

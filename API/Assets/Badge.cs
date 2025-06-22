@@ -4,6 +4,7 @@ using RoSharp.API.Pooling;
 using RoSharp.Enums;
 using RoSharp.Exceptions;
 using RoSharp.Extensions;
+using RoSharp.Http;
 using RoSharp.Interfaces;
 using RoSharp.Structures;
 
@@ -157,14 +158,15 @@ namespace RoSharp.API.Assets
         /// <exception cref="ArgumentException">Invalid asset to get thumbnail for.</exception>
         /// <exception cref="RobloxAPIException">Roblox API failure.</exception>
         /// <remarks>This API method does not cache and will make a request each time it is called.</remarks>
-        public async Task<string> GetThumbnailAsync()
+        public async Task<HttpResult<string>> GetThumbnailAsync()
         {
             string url = $"/v1/badges/icons?badgeIds={Id}&size=150x150&format=Png&isCircular=false";
-            string rawData = await SendStringAsync(HttpMethod.Get, url, Constants.URL("thumbnails"));
+            var response = await SendAsync(HttpMethod.Get, url, Constants.URL("thumbnails"));
+            string rawData = await response.Content.ReadAsStringAsync();
             dynamic data = JObject.Parse(rawData);
             if (data.data.Count == 0)
                 throw new ArgumentException("Invalid badge to get thumbnail for.");
-            return data.data[0].imageUrl;
+            return new(response, Convert.ToString(data.data[0].imageUrl));
         }
 
         /// <summary>
@@ -173,7 +175,7 @@ namespace RoSharp.API.Assets
         /// <param name="options">A class representing the options to use to modify the badge.</param>
         /// <returns>A task that completes when the operation is finished.</returns>
         /// <exception cref="RobloxAPIException">Roblox API failure or lack of permissions.</exception>
-        public async Task ModifyAsync(BadgeModifyOptions options)
+        public async Task<HttpResult> ModifyAsync(BadgeModifyOptions options)
         {
             var message = new HttpMessage(HttpMethod.Patch, $"/v1/badges/{Id}", new
             {
@@ -186,7 +188,7 @@ namespace RoSharp.API.Assets
                 ApiName = nameof(ModifyAsync),
             };
 
-            await SendAsync(message);
+            return new(await SendAsync(message));
         }
 
         /// <summary>
@@ -197,7 +199,7 @@ namespace RoSharp.API.Assets
         /// <remarks>This API method does not cache and will make a request each time it is called.</remarks>
         /// <seealso cref="User.HasBadgeAsync(Badge)"/>
         /// <seealso cref="User.HasBadgeAsync(ulong)"/>
-        public async Task<bool> IsOwnedByAsync(User target) => await target.HasBadgeAsync(this);
+        public async Task<HttpResult<bool>> IsOwnedByAsync(User target) => await target.HasBadgeAsync(this);
 
         /// <summary>
         /// Gets whether or not this badge is owned by the user with the given user Id.
@@ -207,7 +209,7 @@ namespace RoSharp.API.Assets
         /// <remarks>This API method does not cache and will make a request each time it is called.</remarks>
         /// <seealso cref="User.HasBadgeAsync(Badge)"/>
         /// <seealso cref="User.HasBadgeAsync(ulong)"/>
-        public async Task<bool> IsOwnedByAsync(ulong targetId) => await IsOwnedByAsync(await User.FromId(targetId, session));
+        public async Task<HttpResult<bool>> IsOwnedByAsync(ulong targetId) => await IsOwnedByAsync(await User.FromId(targetId, session));
 
         /// <summary>
         /// Gets whether or not this badge is owned by the user with the given username.
@@ -217,7 +219,7 @@ namespace RoSharp.API.Assets
         /// <remarks>This API method does not cache and will make a request each time it is called.</remarks>
         /// <seealso cref="User.HasBadgeAsync(Badge)"/>
         /// <seealso cref="User.HasBadgeAsync(ulong)"/>
-        public async Task<bool> IsOwnedByAsync(string targetUsername) => await IsOwnedByAsync(await User.FromUsername(targetUsername, session));
+        public async Task<HttpResult<bool>> IsOwnedByAsync(string targetUsername) => await IsOwnedByAsync(await User.FromUsername(targetUsername, session));
 
         /// <inheritdoc/>
         public override string ToString()

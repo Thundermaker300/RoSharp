@@ -2,6 +2,7 @@
 using Newtonsoft.Json.Linq;
 using RoSharp.Enums;
 using RoSharp.Exceptions;
+using RoSharp.Http;
 using RoSharp.Structures;
 using RoSharp.Utility;
 using System;
@@ -38,7 +39,7 @@ namespace RoSharp.API.Assets.Experiences
         /// <param name="scope">The scope of the request. Defaults to <c>global</c>.</param>
         /// <returns>A task containing a <see cref="PageResponse{T}"/> of <see cref="DataStore"/> upon completion.</returns>
         /// <exception cref="RobloxAPIException">Roblox API failure or lack of permissions.</exception>
-        public async Task<PageResponse<DataStore>> ListDataStoresAsync(string? cursor = null, string scope = "global")
+        public async Task<EnumerableHttpResult<PageResponse<DataStore>>> ListDataStoresAsync(string? cursor = null, string scope = "global")
         {
             string url = $"/datastores/v1/universes/{experience.UniverseId}/standard-datastores?limit=10&scope={scope}";
             if (cursor != null)
@@ -51,7 +52,8 @@ namespace RoSharp.API.Assets.Experiences
                 ApiKeyPermission = "universe-datastores.objects:list"
             };
 
-            string rawData = await experience.SendStringAsync(message, Constants.URL("apis"));
+            var response = await experience.SendAsync(message, Constants.URL("apis"));
+            string rawData = await response.Content.ReadAsStringAsync();
             dynamic data = JObject.Parse(rawData);
 
             string? nextPage = data.nextPageCursor;
@@ -66,7 +68,7 @@ namespace RoSharp.API.Assets.Experiences
                     Scope = scope,
                 });
             }
-            return new(dataStores, nextPage, null);
+            return new(response, new(dataStores, nextPage, null));
         }
 
         /// <summary>
@@ -115,7 +117,7 @@ namespace RoSharp.API.Assets.Experiences
         /// <returns>A task containing <see cref="DataStoreEntry"/> upon completion. Can be <see langword="null"/> if there is no data.</returns>
         /// <exception cref="RobloxAPIException">Roblox API failure or lack of permissions.</exception>
         /// <exception cref="ArgumentNullException">dataStoreName and key cannot be null.</exception>
-        public async Task<DataStoreEntry?> GetKeyAsync(string dataStoreName, string key, string scope = "global")
+        public async Task<HttpResult<DataStoreEntry?>> GetKeyAsync(string dataStoreName, string key, string scope = "global")
         {
             ArgumentNullException.ThrowIfNullOrWhiteSpace(dataStoreName, nameof(dataStoreName));
             ArgumentNullException.ThrowIfNullOrWhiteSpace(key, nameof(key));
@@ -135,7 +137,7 @@ namespace RoSharp.API.Assets.Experiences
             HttpResponseMessage res = await experience.SendAsync(message, Constants.URL("apis"));
 
             if (res.StatusCode == HttpStatusCode.NoContent)
-                return null;
+                return new(res, null);
 
             string rawData = await res.Content.ReadAsStringAsync();
 
@@ -159,7 +161,7 @@ namespace RoSharp.API.Assets.Experiences
                 }
             }
 
-            return new DataStoreEntry(this)
+            return new(res, new DataStoreEntry(this)
             {
                 Key = key,
                 Created = created,
@@ -167,7 +169,7 @@ namespace RoSharp.API.Assets.Experiences
                 Version = res.Headers.GetValues("roblox-entry-version")?.FirstOrDefault() ?? "0",
                 UserIds = ids.AsReadOnly(),
                 Content = rawData,
-            };
+            });
         }
 
         /// <summary>
@@ -184,7 +186,7 @@ namespace RoSharp.API.Assets.Experiences
         /// <returns>A task that completes when the operation is finished.</returns>
         /// <exception cref="RobloxAPIException">Roblox API failure or lack of permissions.</exception>
         /// <exception cref="ArgumentNullException">dataStoreName, key, and newContent cannot be null.</exception>
-        public async Task SetKeyAsync(string dataStoreName, string key, object newContent, IList<ulong> userIds, string scope = "global")
+        public async Task<HttpResult> SetKeyAsync(string dataStoreName, string key, object newContent, IList<ulong> userIds, string scope = "global")
         {
             ArgumentNullException.ThrowIfNullOrWhiteSpace(dataStoreName, nameof(dataStoreName));
             ArgumentNullException.ThrowIfNullOrWhiteSpace(key, nameof(key));
@@ -205,7 +207,7 @@ namespace RoSharp.API.Assets.Experiences
             if (userIds.Count > 0)
                 message.Headers.Add("roblox-entry-userids", [JsonConvert.SerializeObject(userIds)] );
 
-            await experience.SendAsync(message, Constants.URL("apis"));
+            return new(await experience.SendAsync(message, Constants.URL("apis")));
         }
 
         /// <summary>
@@ -221,7 +223,7 @@ namespace RoSharp.API.Assets.Experiences
         /// <returns>A task that completes when the operation is finished.</returns>
         /// <exception cref="RobloxAPIException">Roblox API failure or lack of permissions.</exception>
         /// <exception cref="ArgumentNullException">dataStoreName and key cannot be null.</exception>
-        public async Task SetKeyAsync(string dataStoreName, string key, object newContent, string scope = "global")
+        public async Task<HttpResult> SetKeyAsync(string dataStoreName, string key, object newContent, string scope = "global")
             => await SetKeyAsync(dataStoreName, key, newContent, new List<ulong>(0), scope);
 
         /// <summary>
@@ -238,7 +240,7 @@ namespace RoSharp.API.Assets.Experiences
         /// <returns>A task that completes when the operation is finished.</returns>
         /// <exception cref="RobloxAPIException">Roblox API failure or lack of permissions.</exception>
         /// <exception cref="ArgumentNullException">dataStoreName and key cannot be null.</exception>
-        public async Task SetKeyAsync(string dataStoreName, string key, object newContent, IList<User> users, string scope = "global")
+        public async Task<HttpResult> SetKeyAsync(string dataStoreName, string key, object newContent, IList<User> users, string scope = "global")
             => await SetKeyAsync(dataStoreName, key, newContent, users.Select(u => u.Id).ToList(), scope);
 
         /// <summary>
@@ -253,7 +255,7 @@ namespace RoSharp.API.Assets.Experiences
         /// <returns>A task that completes when the operation is finished.</returns>
         /// <exception cref="RobloxAPIException">Roblox API failure or lack of permissions.</exception>
         /// <exception cref="ArgumentNullException">dataStoreName and key cannot be null.</exception>
-        public async Task DeleteKeyAsync(string dataStoreName, string key, string scope = "global")
+        public async Task<HttpResult> DeleteKeyAsync(string dataStoreName, string key, string scope = "global")
         {
             ArgumentNullException.ThrowIfNullOrWhiteSpace(dataStoreName, nameof(dataStoreName));
             ArgumentNullException.ThrowIfNullOrWhiteSpace(key, nameof(key));
@@ -270,7 +272,7 @@ namespace RoSharp.API.Assets.Experiences
                 ApiKeyPermission = "universe-datastores.objects:delete"
             };
 
-            await experience.SendAsync(message, Constants.URL("apis"));
+            return new(await experience.SendAsync(message, Constants.URL("apis")));
         }
     }
 
@@ -308,7 +310,7 @@ namespace RoSharp.API.Assets.Experiences
         /// </summary>
         /// <param name="key">The key.</param>
         /// <returns>A task containing a <see cref="DataStoreEntry"/> representing the key. Can be <see langword="null"/>.</returns>
-        public async Task<DataStoreEntry?> GetAsync(string key)
+        public async Task<HttpResult<DataStoreEntry?>> GetAsync(string key)
             => await manager.GetKeyAsync(Name, key, Scope);
 
         /// <summary>
@@ -317,7 +319,7 @@ namespace RoSharp.API.Assets.Experiences
         /// <param name="key">The key.</param>
         /// <param name="value">The new value. Can be any type except <see langword="null"/> and will be converted automatically</param>
         /// <returns>A task that completes when the operation is finished.</returns>
-        public async Task SetAsync(string key, object value)
+        public async Task<HttpResult> SetAsync(string key, object value)
             => await manager.SetKeyAsync(Name, key, value, Scope);
 
         /// <summary>
@@ -327,7 +329,7 @@ namespace RoSharp.API.Assets.Experiences
         /// <param name="value">The new value.</param>
         /// <param name="userIds">A list of user Ids to associate with the datastore.</param>
         /// <returns>A task that completes when the operation is finished.</returns>
-        public async Task SetAsync(string key, object value, IList<ulong> userIds)
+        public async Task<HttpResult> SetAsync(string key, object value, IList<ulong> userIds)
             => await manager.SetKeyAsync(Name, key, value, userIds, Scope);
 
         /// <summary>
@@ -337,7 +339,7 @@ namespace RoSharp.API.Assets.Experiences
         /// <param name="value">The new value.</param>
         /// <param name="users">A list of users to associate with the datastore.</param>
         /// <returns>A task that completes when the operation is finished.</returns>
-        public async Task SetAsync(string key, object value, IList<User> users)
+        public async Task<HttpResult> SetAsync(string key, object value, IList<User> users)
             => await manager.SetKeyAsync(Name, key, value, users, Scope);
 
         /// <summary>
@@ -345,7 +347,7 @@ namespace RoSharp.API.Assets.Experiences
         /// </summary>
         /// <param name="key">The key to delete.</param>
         /// <returns>A task that completes when the operation is finished.</returns>
-        public async Task DeleteAsync(string key)
+        public async Task<HttpResult> DeleteAsync(string key)
             => await manager.DeleteKeyAsync(Name, key, Scope);
     }
 
