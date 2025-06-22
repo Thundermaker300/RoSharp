@@ -2,6 +2,7 @@
 using RoSharp.Enums;
 using RoSharp.Exceptions;
 using RoSharp.Extensions;
+using RoSharp.Http;
 using RoSharp.Interfaces;
 using RoSharp.Structures;
 using System;
@@ -79,7 +80,7 @@ namespace RoSharp.API.Communities
         /// <returns></returns>
         /// <exception cref="RobloxAPIException">Roblox API failure or lack of permissions.</exception>
         /// <remarks>This method will call <see cref="RefreshAsync"/> upon completion, forcing <see cref="Roles"/> to be updated automatically. As of November 16th, 2024, roles cost R$25 to make. This method will bypass a confirmation prompt and purchase the role immediately. Use caution in order to not accidentally create roles and burn through money!</remarks>
-        public async Task<Role> CreateRoleAsync(string name, string description, byte rank, bool purchaseWithCommunityFunds)
+        public async Task<HttpResult<Role>> CreateRoleAsync(string name, string description, byte rank, bool purchaseWithCommunityFunds)
         {
             var message = new HttpMessage(HttpMethod.Post, $"/v1/groups/{group.Id}/rolesets/create", new
             {
@@ -96,10 +97,10 @@ namespace RoSharp.API.Communities
             HttpResponseMessage response = await group.SendAsync(message);
             dynamic data = JObject.Parse(await response.Content.ReadAsStringAsync());
             await RefreshAsync();
-            return GetRole(Convert.ToByte(data.rank));
+            return new(response, GetRole(Convert.ToByte(data.rank)));
         }
 
-        internal async Task RequestDeleteRole(ulong roleId)
+        internal async Task<HttpResult> RequestDeleteRole(ulong roleId)
         {
             var message = new HttpMessage(HttpMethod.Delete, $"/v1/groups/{group.Id}/rolesets/{roleId}")
             {
@@ -107,10 +108,10 @@ namespace RoSharp.API.Communities
                 ApiName = nameof(Role.DeleteAsync)
             };
 
-            await group.SendAsync(message);
+            return new(await group.SendAsync(message));
         }
 
-        internal async Task RequestUpdateRole(Role roleId, string newName)
+        internal async Task<HttpResult> RequestUpdateRole(Role roleId, string newName)
         {
             object body = new { name = newName, description = roleId.Description, rank = roleId.Rank };
             var message = new HttpMessage(HttpMethod.Patch, $"/v1/groups/{group.Id}/rolesets/{roleId.Id}", body)
@@ -118,10 +119,10 @@ namespace RoSharp.API.Communities
                 AuthType = AuthType.RobloSecurity,
                 ApiName = nameof(Role.UpdateAsync)
             };
-            await group.SendAsync(message);
+            return new(await group.SendAsync(message));
         }
 
-        internal async Task RequestUpdateRole(Role roleId, int newRank)
+        internal async Task<HttpResult> RequestUpdateRole(Role roleId, int newRank)
         {
             object body = new { name = roleId.Name, description = roleId.Description, rank = newRank };
             var message = new HttpMessage(HttpMethod.Patch, $"/v1/groups/{group.Id}/rolesets/{roleId.Id}", body)
@@ -130,7 +131,7 @@ namespace RoSharp.API.Communities
                 ApiName = nameof(Role.UpdateAsync)
             };
 
-            await group.SendAsync(message);
+            return new(await group.SendAsync(message));
         }
 
         /// <inheritdoc/>
@@ -273,7 +274,7 @@ namespace RoSharp.API.Communities
         /// <returns>A task containing a <see cref="PageResponse{T}"/> of <see cref="Id{T}"/> upon completion.</returns>
         /// <exception cref="RobloxAPIException">Roblox API failure or lack of permissions.</exception>
         /// <remarks>This API method does not cache and will make a request each time it is called.</remarks>
-        public async Task<PageResponse<Id<User>>> GetMembersAsync(FixedLimit limit = FixedLimit.Limit100, RequestSortOrder sortOrder = RequestSortOrder.Asc, string? cursor = null)
+        public async Task<EnumerableHttpResult<PageResponse<Id<User>>>> GetMembersAsync(FixedLimit limit = FixedLimit.Limit100, RequestSortOrder sortOrder = RequestSortOrder.Asc, string? cursor = null)
         {
             string url = $"/v1/groups/{roleManager.group.Id}/roles/{Id}/users?limit={limit.Limit()}&sortOrder={sortOrder}";
             if (cursor != null)
@@ -299,7 +300,7 @@ namespace RoSharp.API.Communities
             nextPage = data.nextPageCursor;
             previousPage = data.previousPageCursor;
 
-            return new(list, nextPage, previousPage);
+            return new(response, new(list, nextPage, previousPage));
         }
 
 
@@ -309,10 +310,7 @@ namespace RoSharp.API.Communities
         /// <param name="newName">The new name.</param>
         /// <returns>A task that completes when the operation is finished.</returns>
         /// <exception cref="RobloxAPIException">Roblox API failure or lack of permissions.</exception>
-        public async Task UpdateAsync(string newName)
-        {
-            await roleManager.RequestUpdateRole(this, newName);
-        }
+        public async Task<HttpResult> UpdateAsync(string newName) => new(await roleManager.RequestUpdateRole(this, newName));
 
         /// <summary>
         /// Changes the rank of the role.
@@ -320,10 +318,7 @@ namespace RoSharp.API.Communities
         /// <param name="newRank">The new rank.</param>
         /// <returns>A task that completes when the operation is finished.</returns>
         /// <exception cref="RobloxAPIException">Roblox API failure or lack of permissions.</exception>
-        public async Task UpdateAsync(int newRank)
-        {
-            await roleManager.RequestUpdateRole(this, newRank);
-        }
+        public async Task<HttpResult> UpdateAsync(int newRank) => new(await roleManager.RequestUpdateRole(this, newRank));
 
 
         /// <summary>
@@ -331,9 +326,6 @@ namespace RoSharp.API.Communities
         /// </summary>
         /// <returns>A task that completes when the operation is finished.</returns>
         /// <exception cref="RobloxAPIException">Roblox API failure or lack of permissions.</exception>
-        public async Task DeleteAsync()
-        {
-            await roleManager.RequestDeleteRole(Id);
-        }
+        public async Task<HttpResult> DeleteAsync() => await roleManager.RequestDeleteRole(Id);
     }
 }

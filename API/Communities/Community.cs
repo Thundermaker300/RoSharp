@@ -433,7 +433,7 @@ namespace RoSharp.API.Communities
         /// <returns>A task containing a <see cref="PageResponse{T}"/> of <see cref="Id{T}"/> upon completion.</returns>
         /// <exception cref="RobloxAPIException">Roblox API failure or lack of permissions to see experiences.</exception>
         /// <remarks>This API method does not cache and will make a request each time it is called.</remarks>
-        public async Task<HttpResult<PageResponse<Id<Experience>>>> GetExperiencesAsync(FixedLimit limit = FixedLimit.Limit100, RequestSortOrder sortOrder = RequestSortOrder.Desc, string? cursor = null)
+        public async Task<EnumerableHttpResult<PageResponse<Id<Experience>>>> GetExperiencesAsync(FixedLimit limit = FixedLimit.Limit100, RequestSortOrder sortOrder = RequestSortOrder.Desc, string? cursor = null)
         {
             string url = $"/v2/groups/{Id}/games?accessFilter=Public&limit={limit.Limit()}&sortOrder={sortOrder}";
             if (cursor != null)
@@ -464,7 +464,7 @@ namespace RoSharp.API.Communities
         /// <returns>A task containing a <see cref="PageResponse{T}"/> of <see cref="CommunityAuditLog"/> upon completion.</returns>
         /// <exception cref="RobloxAPIException">Roblox API failure or lack of permissions.</exception>
         /// <remarks>This API method does not cache and will make a request each time it is called.</remarks>
-        public async Task<HttpResult<PageResponse<CommunityAuditLog>>> GetAuditLogsAsync(FixedLimit limit = FixedLimit.Limit100, RequestSortOrder sortOrder = RequestSortOrder.Desc, string? cursor = null)
+        public async Task<EnumerableHttpResult<PageResponse<CommunityAuditLog>>> GetAuditLogsAsync(FixedLimit limit = FixedLimit.Limit100, RequestSortOrder sortOrder = RequestSortOrder.Desc, string? cursor = null)
         {
             string url = $"/v1/groups/{Id}/audit-log?limit={limit.Limit()}&sortOrder={sortOrder}";
             if (cursor != null)
@@ -511,7 +511,7 @@ namespace RoSharp.API.Communities
         /// <param name="startRowIndex">The amount of items to skip before returning data, or <c>0</c> to skip none.</param>
         /// <returns>A task containing a <see cref="PageResponse{T}"/> of <see cref="Id{T}"/> upon completion.</returns>
         [Obsolete("Use GetRelationshipsAsync()")]
-        public async Task<HttpResult<PageResponse<Id<Community>>>> GetAlliesAsync(int limit = 50, RequestSortOrder sortOrder = RequestSortOrder.Desc, int startRowIndex = 0)
+        public async Task<EnumerableHttpResult<PageResponse<Id<Community>>>> GetAlliesAsync(int limit = 50, RequestSortOrder sortOrder = RequestSortOrder.Desc, int startRowIndex = 0)
             => await GetRelationshipsAsync(CommunityRelationship.Allies, limit, sortOrder, startRowIndex);
 
         /// <summary>
@@ -522,7 +522,7 @@ namespace RoSharp.API.Communities
         /// <param name="startRowIndex">The amount of items to skip before returning data, or <c>0</c> to skip none.</param>
         /// <returns>A task containing a <see cref="PageResponse{T}"/> of <see cref="Id{T}"/> upon completion.</returns>
         [Obsolete("Use GetRelationshipsAsync()")]
-        public async Task<HttpResult<PageResponse<Id<Community>>>> GetEnemiesAsync(int limit = 50, RequestSortOrder sortOrder = RequestSortOrder.Desc, int startRowIndex = 0)
+        public async Task<EnumerableHttpResult<PageResponse<Id<Community>>>> GetEnemiesAsync(int limit = 50, RequestSortOrder sortOrder = RequestSortOrder.Desc, int startRowIndex = 0)
             => await GetRelationshipsAsync(CommunityRelationship.Enemies, limit, sortOrder, startRowIndex);
 
         /// <summary>
@@ -533,7 +533,7 @@ namespace RoSharp.API.Communities
         /// <param name="sortOrder">The sort order.</param>
         /// <param name="startRowIndex">The amount of items to skip before returning data, or <c>0</c> to skip none.</param>
         /// <returns>A task containing a <see cref="PageResponse{T}"/> of <see cref="Id{T}"/> upon completion.</returns>
-        public async Task<HttpResult<PageResponse<Id<Community>>>> GetRelationshipsAsync(CommunityRelationship relationshipType, int limit = 50, RequestSortOrder sortOrder = RequestSortOrder.Desc, int startRowIndex = 0)
+        public async Task<EnumerableHttpResult<PageResponse<Id<Community>>>> GetRelationshipsAsync(CommunityRelationship relationshipType, int limit = 50, RequestSortOrder sortOrder = RequestSortOrder.Desc, int startRowIndex = 0)
         {
             string url = $"/v1/groups/{Id}/relationships/{relationshipType.ToString().ToLower()}?maxRows={limit}&sortOrder={sortOrder}&startRowIndex={startRowIndex}";
 
@@ -685,7 +685,7 @@ namespace RoSharp.API.Communities
         /// <returns>A task containing a <see cref="PageResponse{T}"/> of <see cref="CommunityPost"/> upon completion.</returns>
         /// <exception cref="RobloxAPIException">Roblox API failure or lack of permissions to see the community wall.</exception>
         /// <remarks>This API method does not cache and will make a request each time it is called.</remarks>
-        public async Task<HttpResult<PageResponse<CommunityPost>>> GetPostsAsync(FixedLimit limit = FixedLimit.Limit100, RequestSortOrder sortOrder = RequestSortOrder.Desc, string? cursor = null)
+        public async Task<EnumerableHttpResult<PageResponse<CommunityPost>>> GetPostsAsync(FixedLimit limit = FixedLimit.Limit100, RequestSortOrder sortOrder = RequestSortOrder.Desc, string? cursor = null)
         {
             string url = $"/v2/groups/{Id}/wall/posts?limit={limit.Limit()}&sortOrder={sortOrder}";
             if (cursor != null)

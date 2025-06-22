@@ -64,7 +64,7 @@ namespace RoSharp.API.DevForum
         /// <param name="excludeSystemReplies">Exclude system replies within topics.</param>
         /// <returns>A task containing a <see cref="DevForumTopic"/> upon completion.</returns>
         /// <exception cref="ArgumentException">Invalid topic Id.</exception>
-        public static async Task<DevForumTopic> GetTopicAsync(ulong topicId, bool excludeSystemReplies = true)
+        public static async Task<HttpResult<DevForumTopic>> GetTopicAsync(ulong topicId, bool excludeSystemReplies = true)
         {
             HttpMessage message = new(HttpMethod.Get, $"https://devforum.roblox.com/t/{topicId}.json");
             HttpResponseMessage response = await HttpManager.SendAsync(null, message);
@@ -104,7 +104,7 @@ namespace RoSharp.API.DevForum
                 if (excludeSystemReplies)
                     replies.RemoveAll(reply => reply.PosterName == "system");
 
-                return new()
+                return new(response, new()
                 {
                     Title = data.title,
                     CategoryId = data.category_id,
@@ -120,7 +120,7 @@ namespace RoSharp.API.DevForum
                     Participants = participants.AsReadOnly(),
                     RecommendedTopicsIds = recommended.AsReadOnly(),
                     Tags = tags.AsReadOnly(),
-                };
+                });
 
             }
 
@@ -149,7 +149,7 @@ namespace RoSharp.API.DevForum
         /// <exception cref="ArgumentException">Unknown error.</exception>
         /// <remarks>This API does not include subcategories, use <see cref="DevForumCategory.SubcategoryIds"/> in conjunction with <see cref="GetCategoryAsync(ushort)"/>.</remarks>
         public static async Task<ReadOnlyCollection<DevForumCategory>> GetCategoriesAsync()
-        {
+        { // TODO: Convert to HttpResult (cached)
             if (catCache == null)
             {
                 HttpMessage message = new(HttpMethod.Get, $"https://devforum.roblox.com/categories.json");
