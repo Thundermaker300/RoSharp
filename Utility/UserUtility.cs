@@ -19,10 +19,10 @@ namespace RoSharp.Utility
         /// <returns>The matching User Id.</returns>
         /// <exception cref="ArgumentException">Invalid username provided.</exception>
         /// <exception cref="RobloxAPIException">Roblox API failure.</exception>
-        public static async Task<ulong> GetUserIdAsync(string username)
+        public static async Task<HttpResult<ulong>> GetUserIdAsync(string username)
         {
             var list = await GetUserIdsAsync([username]);
-            return list.First().Value;
+            return new(list, list.Value.First().Value);
         }
 
         /// <summary>
@@ -32,7 +32,7 @@ namespace RoSharp.Utility
         /// <returns>A task containing a <see cref="ReadOnlyDictionary{TKey, TValue}"/> upon completion.</returns>
         /// <exception cref="ArgumentException">No valid usernames.</exception>
         /// <exception cref="RobloxAPIException">Roblox API failure.</exception>
-        public static async Task<ReadOnlyDictionary<string, ulong>> GetUserIdsAsync(params string[] usernames)
+        public static async Task<EnumerableHttpResult<ReadOnlyDictionary<string, ulong>>> GetUserIdsAsync(params string[] usernames)
         {
             object content = new
             {
@@ -56,7 +56,7 @@ namespace RoSharp.Utility
                 ulong id = item.id;
                 dict.Add(name, id);
             }
-            return dict.AsReadOnly();
+            return new(response, dict.AsReadOnly());
         }
 
         /// <summary>
@@ -66,13 +66,14 @@ namespace RoSharp.Utility
         /// <returns>A task containing a <see cref="ReadOnlyDictionary{TKey, TValue}"/> upon completion.</returns>
         /// <exception cref="ArgumentException">No valid usernames.</exception>
         /// <exception cref="RobloxAPIException">Roblox API failure.</exception>
-        public static async Task<ReadOnlyDictionary<string, ulong>> GetUserIdsAsync(IEnumerable<string> usernames)
+        public static async Task<EnumerableHttpResult<ReadOnlyDictionary<string, ulong>>> GetUserIdsAsync(IEnumerable<string> usernames)
             => await GetUserIdsAsync(usernames.ToArray());
 
-        private static async Task<ReadOnlyCollection<Color>> GetColors(string key)
+        private static async Task<EnumerableHttpResult<ReadOnlyCollection<Color>>> GetColors(string key)
         {
             HttpMessage payload = new(HttpMethod.Get, $"{Constants.URL("avatar")}/v1/avatar-rules");
-            string rawData = await HttpManager.SendStringAsync(null, payload);
+            var response = await HttpManager.SendAsync(null, payload);
+            string rawData = await response.Content.ReadAsStringAsync();
             dynamic data = JObject.Parse(rawData);
             
             List<Color> colors = new List<Color>();
@@ -80,21 +81,21 @@ namespace RoSharp.Utility
             {
                 colors.Add(Color.FromHex(Convert.ToString(item.hexColor)));
             }
-            return colors.AsReadOnly();
+            return new(response, colors.AsReadOnly());
         }
 
         /// <summary>
         /// Gets a list of colors that are listed in the basic body colors in the avatar editor.
         /// </summary>
         /// <returns>A task containing a <see cref="ReadOnlyCollection{T}"/> of <see cref="Color"/> upon completion.</returns>
-        public static async Task<ReadOnlyCollection<Color>> GetBasicBodyColorOptionsAsync()
+        public static async Task<EnumerableHttpResult<ReadOnlyCollection<Color>>> GetBasicBodyColorOptionsAsync()
             => await GetColors("basicBodyColorsPalette");
 
         /// <summary>
         /// Gets a list of colors that are listed in the advanced body colors in the avatar editor.
         /// </summary>
         /// <returns>A task containing a <see cref="ReadOnlyCollection{T}"/> of <see cref="Color"/> upon completion.</returns>
-        public static async Task<ReadOnlyCollection<Color>> GetAdvancedBodyColorOptionsAsync()
+        public static async Task<EnumerableHttpResult<ReadOnlyCollection<Color>>> GetAdvancedBodyColorOptionsAsync()
             => await GetColors("bodyColorsPalette");
     }
 }

@@ -4,6 +4,7 @@ using RoSharp.API.Pooling;
 using RoSharp.Enums;
 using RoSharp.Exceptions;
 using RoSharp.Extensions;
+using RoSharp.Http;
 using RoSharp.Interfaces;
 using RoSharp.Structures;
 using RoSharp.Structures.PurchaseTypes;
@@ -262,7 +263,7 @@ namespace RoSharp.API.Assets.Experiences
                 string fiatDisplay = data.localizedFiatPrice;
                 double cost = Convert.ToDouble(fiatDisplay.Replace("$", string.Empty));
                 bool found = false;
-                foreach (var fiatOption in await ExperienceUtility.GetFiatOptionsAsync(session))
+                foreach (var fiatOption in (await ExperienceUtility.GetFiatOptionsAsync(session)).Value)
                 {
                     if (fiatOption.Price == cost)
                     {
@@ -701,13 +702,14 @@ namespace RoSharp.API.Assets.Experiences
         /// <param name="cursor">The cursor for the next page. Obtained by calling this API previously.</param>
         /// <returns>A task containing a <see cref="PageResponse{T}"/> of <see cref="Id{T}"/> upon completion.</returns>
         /// <remarks>This API method does not cache and will make a request each time it is called.</remarks>
-        public async Task<PageResponse<Id<Place>>> GetPlacesAsync(FixedLimit limit = FixedLimit.Limit100, RequestSortOrder sortOrder = RequestSortOrder.Asc, string? cursor = null)
+        public async Task<EnumerableHttpResult<PageResponse<Id<Place>>>> GetPlacesAsync(FixedLimit limit = FixedLimit.Limit100, RequestSortOrder sortOrder = RequestSortOrder.Asc, string? cursor = null)
         {
             string url = $"/v1/universes/{Id}/places?sortOrder={sortOrder}&limit={limit.Limit()}&isUniverseCreation=false";
             if (cursor != null)
                 url += "&cursor=" + cursor;
 
-            string rawData = await SendStringAsync(HttpMethod.Get, url, Constants.URL("develop"));
+            var response = await SendAsync(HttpMethod.Get, url, Constants.URL("develop"));
+            string rawData = await response.Content.ReadAsStringAsync();
             dynamic data = JObject.Parse(rawData);
 
             List<Id<Place>> list = [];
@@ -720,7 +722,7 @@ namespace RoSharp.API.Assets.Experiences
                 list.Add(new(id, session));
             }
 
-            return new PageResponse<Id<Place>>(list, nextPage, previousPage);
+            return new(response, new PageResponse<Id<Place>>(list, nextPage, previousPage));
         }
 
         /// <summary>
@@ -730,9 +732,10 @@ namespace RoSharp.API.Assets.Experiences
         /// <param name="limit">The limit of assets to return. Maximum: 45.</param>
         /// <returns>A task representing a list of assets shown as recommended.</returns>
         /// <remarks>Occasionally, Roblox's API will produce a 'bad recommendation' that leads to an asset that doesn't exist (either deleted or hidden). If this is the case, RoSharp will skip over it automatically. However, if the limit is set to Roblox's maximum of 45, this will result in less than 45 assets being returned.</remarks>
-        public async Task<ReadOnlyCollection<Experience>> GetRecommendedAsync(int limit = 6)
+        public async Task<EnumerableHttpResult<ReadOnlyCollection<Experience>>> GetRecommendedAsync(int limit = 6)
         {
-            string rawData = await SendStringAsync(HttpMethod.Get, $"/v1/games/recommendations/game/{UniverseId}?maxRows={limit}");
+            var response = await SendAsync(HttpMethod.Get, $"/v1/games/recommendations/game/{UniverseId}?maxRows={limit}");
+            string rawData = await response.Content.ReadAsStringAsync();
             dynamic data = JObject.Parse(rawData);
             List<Experience> list = [];
             foreach (dynamic item in data.games)
@@ -748,7 +751,7 @@ namespace RoSharp.API.Assets.Experiences
                 if (list.Count >= limit)
                     break;
             }
-            return list.AsReadOnly();
+            return new(response, list.AsReadOnly());
         }
 
         /// <summary>
@@ -756,7 +759,7 @@ namespace RoSharp.API.Assets.Experiences
         /// </summary>
         /// <param name="size">The size to use for the icon.</param>
         /// <returns>A task containing the string URL for the icon upon completion.</returns>
-        public async Task<string> GetIconAsync(IconSize size = IconSize.S512x512)
+        public async Task<HttpResult<string>> GetIconAsync(IconSize size = IconSize.S512x512)
             => await (await RootPlaceId.GetInstanceAsync()).GetIconAsync(size);
 
         /// <summary>
@@ -767,13 +770,14 @@ namespace RoSharp.API.Assets.Experiences
         /// <param name="cursor">The cursor for the next page. Obtained by calling this API previously.</param>
         /// <returns>A task containing a <see cref="PageResponse{T}"/> of <see cref="Id{T}"/> upon completion.</returns>
         /// <remarks>This API method does not cache and will make a request each time it is called.</remarks>
-        public async Task<PageResponse<Id<Badge>>> GetBadgesAsync(FixedLimit limit = FixedLimit.Limit100, RequestSortOrder sortOrder = RequestSortOrder.Asc, string? cursor = null)
+        public async Task<HttpResult<PageResponse<Id<Badge>>>> GetBadgesAsync(FixedLimit limit = FixedLimit.Limit100, RequestSortOrder sortOrder = RequestSortOrder.Asc, string? cursor = null)
         {
             string url = $"/v1/universes/{UniverseId}/badges?limit={limit.Limit()}&sortOrder={sortOrder}";
             if (cursor != null)
                 url += "&cursor=" + cursor;
 
-            string rawData = await SendStringAsync(HttpMethod.Get, url, Constants.URL("badges"));
+            var response = await SendAsync(HttpMethod.Get, url, Constants.URL("badges"));
+            string rawData = await response.Content.ReadAsStringAsync();
             dynamic data = JObject.Parse(rawData);
 
             List<Id<Badge>> list = [];
@@ -786,7 +790,7 @@ namespace RoSharp.API.Assets.Experiences
                 list.Add(new(id, session));
             }
 
-            return new PageResponse<Id<Badge>>(list, nextPage, previousPage);
+            return new(response, new PageResponse<Id<Badge>>(list, nextPage, previousPage));
         }
 
         /// <summary>
@@ -795,14 +799,15 @@ namespace RoSharp.API.Assets.Experiences
         /// <returns>A <see cref="ReadOnlyCollection{T}"/> of <see cref="ExperienceThumbnail"/>s that are the experience's thumbnails.</returns>
         /// <exception cref="ArgumentException">Invalid experience to get thumbnails for.</exception>
         /// <remarks>This API method does not cache and will make a request each time it is called.</remarks>
-        public async Task<ReadOnlyCollection<ExperienceThumbnail>> GetThumbnailsAsync()
+        public async Task<EnumerableHttpResult<ReadOnlyCollection<ExperienceThumbnail>>> GetThumbnailsAsync()
         {
             string url = $"/v2/games/{UniverseId}/media";
-            string rawData = await SendStringAsync(HttpMethod.Get, url);
+            var response = await SendAsync(HttpMethod.Get, url);
+            string rawData = await response.Content.ReadAsStringAsync();
             dynamic data = JObject.Parse(rawData);
             List<ExperienceThumbnail> thumbnails = [];
             if (data.data.Count == 0)
-                return thumbnails.AsReadOnly();
+                return new(response, thumbnails.AsReadOnly());
 
             foreach (dynamic thumbnail in data.data)
             {
@@ -815,17 +820,18 @@ namespace RoSharp.API.Assets.Experiences
                 thumbnails.Add(new() { Asset = a, AltText = thumbnail.altText });
             }
 
-            return thumbnails.AsReadOnly();
+            return new(response, thumbnails.AsReadOnly());
         }
 
         /// <summary>
         /// Returns a youtu.be URL to the experience's video trailer.
         /// </summary>
         /// <returns>A task containing a <see cref="string"/> upon completion. Will be <see langword="null"/> if the experience does not have a video.</returns>
-        public async Task<string?> GetVideoAsync()
+        public async Task<HttpResult<string?>> GetVideoAsync()
         {
             string url = $"/v2/games/{UniverseId}/media";
-            string rawData = await SendStringAsync(HttpMethod.Get, url);
+            var response = await SendAsync(HttpMethod.Get, url);
+            string rawData = await response.Content.ReadAsStringAsync();
             dynamic data = JObject.Parse(rawData);
 
             foreach (dynamic thumbnail in data.data)
@@ -833,10 +839,10 @@ namespace RoSharp.API.Assets.Experiences
                 if (thumbnail.assetType != "YouTubeVideo")
                     continue;
 
-                return $"https://www.youtu.be/{thumbnail.videoHash}";
+                return new(response, $"https://www.youtu.be/{thumbnail.videoHash}");
             }
 
-            return null;
+            return new(response, null);
         }
 
         /// <summary>
@@ -846,7 +852,7 @@ namespace RoSharp.API.Assets.Experiences
         /// <returns>A task that completes when the operation is finished.</returns>
         /// <seealso cref="ModifyAsync(ExperienceModifyOptions)"/>
         /// <exception cref="RobloxAPIException">Roblox API failure or lack of permissions.</exception>
-        public async Task SetPrivacyAsync(bool isPublic)
+        public async Task<HttpResult> SetPrivacyAsync(bool isPublic)
         {
             string url = $"/v1/universes/{Id}/{(isPublic == false ? "de" : string.Empty)}activate";
             var message = new HttpMessage(HttpMethod.Post, url, new { })
@@ -855,7 +861,7 @@ namespace RoSharp.API.Assets.Experiences
                 ApiName = nameof(SetPrivacyAsync)
             };
 
-            await SendAsync(message, Constants.URL("develop"));
+            return new(await SendAsync(message, Constants.URL("develop")));
         }
 
         /// <summary>
@@ -865,7 +871,7 @@ namespace RoSharp.API.Assets.Experiences
         /// <returns>A task that completes when the operation is finished.</returns>
         /// <seealso cref="SetPrivacyAsync(bool)"/>
         /// <exception cref="RobloxAPIException">Roblox API failure or lack of permissions.</exception>
-        public async Task ModifyAsync(ExperienceModifyOptions options)
+        public async Task ModifyAsync(ExperienceModifyOptions options) // TODO: HttpResult, Split into two apis?
         {
             if (options.LocalizationAutomaticDeletions.HasValue || options.LocalizationAutomaticEntries.HasValue || options.UseLocalizationTables.HasValue)
             {
@@ -903,7 +909,7 @@ namespace RoSharp.API.Assets.Experiences
         /// </summary>
         /// <returns>A task that completes when the operation is finished.</returns>
         /// <exception cref="RobloxAPIException">Roblox API failure or lack of permissions.</exception>
-        public async Task SetPaidAccessToFreeAsync()
+        public async Task<HttpResult> SetPaidAccessToFreeAsync()
         {
             var message = new HttpMessage(HttpMethod.Patch, $"/v2/universes/{UniverseId}/configuration", new
             {
@@ -914,7 +920,7 @@ namespace RoSharp.API.Assets.Experiences
                 ApiName = nameof(ModifyAsync),
             };
 
-            await SendAsync(message, Constants.URL("develop"));
+            return new(await SendAsync(message, Constants.URL("develop")));
         }
 
         /// <summary>
@@ -923,7 +929,7 @@ namespace RoSharp.API.Assets.Experiences
         /// <param name="amount">The amount of Robux. Must be between <c>25-1000</c>.</param>
         /// <returns>A task that completes when the operation is finished.</returns>
         /// <exception cref="RobloxAPIException">Roblox API failure or lack of permissions.</exception>
-        public async Task SetPaidAccessToRobuxAsync(int amount = 25)
+        public async Task<HttpResult> SetPaidAccessToRobuxAsync(int amount = 25)
         {
             var message = new HttpMessage(HttpMethod.Patch, $"/v2/universes/{UniverseId}/configuration", new
             {
@@ -935,7 +941,7 @@ namespace RoSharp.API.Assets.Experiences
                 ApiName = nameof(ModifyAsync),
             };
 
-            await SendAsync(message, Constants.URL("develop"));
+            return new(await SendAsync(message, Constants.URL("develop")));
         }
 
         /// <summary>
@@ -945,7 +951,7 @@ namespace RoSharp.API.Assets.Experiences
         /// <param name="purchaseOption">Represents which tier of pricing to use.</param>
         /// <returns>A task that completes when the operation is finished.</returns>
         /// <exception cref="RobloxAPIException">Roblox API failure or lack of permissions.</exception>
-        public async Task SetPaidAccessToLocalCurrencyAsync(FiatPurchase purchaseOption)
+        public async Task<HttpResult> SetPaidAccessToLocalCurrencyAsync(FiatPurchase purchaseOption)
         {
             var message = new HttpMessage(HttpMethod.Patch, $"/v2/universes/{UniverseId}/configuration", new
             {
@@ -957,7 +963,7 @@ namespace RoSharp.API.Assets.Experiences
                 ApiName = nameof(ModifyAsync),
             };
 
-            await SendAsync(message, Constants.URL("develop"));
+            return new(await SendAsync(message, Constants.URL("develop")));
         }
 
         /// <summary>
@@ -967,7 +973,7 @@ namespace RoSharp.API.Assets.Experiences
         /// <returns>A task that completes when the operation is finished.</returns>
         /// <remarks>Genres can only be changed ONCE every three months.</remarks>
         /// <exception cref="RobloxAPIException">Roblox API failure or lack of permissions.</exception>
-        public async Task ModifyGenreAsync(Genre newGenre)
+        public async Task<HttpResult> ModifyGenreAsync(Genre newGenre)
         {
             var message = new HttpMessage(HttpMethod.Post, "/experience-genre-api/v1/Creator/ExperienceGenre", new
             {
@@ -984,7 +990,7 @@ namespace RoSharp.API.Assets.Experiences
                 ApiName = nameof(ModifyGenreAsync)
             };
 
-            await SendAsync(message, Constants.URL("apis"));
+            return new(await SendAsync(message, Constants.URL("apis")));
             
         }
 
@@ -1000,7 +1006,7 @@ namespace RoSharp.API.Assets.Experiences
         /// <returns>A task that completes when the operation is finished.</returns>
         /// <exception cref="InvalidOperationException">length cannot be null if permanent is false.</exception>
         /// <exception cref="RobloxAPIException">Roblox API failure or lack of permissions.</exception>
-        public async Task BanUserAsync(ulong userId, string displayReason, string privateReason, bool permanent, TimeSpan? length = null, bool excludeAlts = true)
+        public async Task<HttpResult> BanUserAsync(ulong userId, string displayReason, string privateReason, bool permanent, TimeSpan? length = null, bool excludeAlts = true)
         {
             if (permanent == false && !length.HasValue)
                 throw new InvalidOperationException("length cannot be null if permanent is false.");
@@ -1021,7 +1027,7 @@ namespace RoSharp.API.Assets.Experiences
                 ApiName = nameof(BanUserAsync),
             };
 
-            await SendAsync(message, Constants.URL("apis"));
+            return new(await SendAsync(message, Constants.URL("apis")));
         }
 
         /// <summary>
@@ -1036,7 +1042,7 @@ namespace RoSharp.API.Assets.Experiences
         /// <returns>A task that completes when the operation is finished.</returns>
         /// <exception cref="InvalidOperationException">length cannot be null if permanent is false.</exception>
         /// <exception cref="RobloxAPIException">Roblox API failure or lack of permissions.</exception>
-        public async Task BanUserAsync(User user, string displayReason, string privateReason, bool permanent, TimeSpan? length = null, bool excludeAlts = true)
+        public async Task<HttpResult> BanUserAsync(User user, string displayReason, string privateReason, bool permanent, TimeSpan? length = null, bool excludeAlts = true)
             => await BanUserAsync(user.Id, displayReason, privateReason, permanent, length, excludeAlts);
 
         /// <summary>
@@ -1051,7 +1057,7 @@ namespace RoSharp.API.Assets.Experiences
         /// <returns>A task that completes when the operation is finished.</returns>
         /// <exception cref="InvalidOperationException">length cannot be null if permanent is false.</exception>
         /// <exception cref="RobloxAPIException">Roblox API failure or lack of permissions.</exception>
-        public async Task BanUserAsync(string username, string displayReason, string privateReason, bool permanent, TimeSpan? length = null, bool excludeAlts = true)
+        public async Task<HttpResult> BanUserAsync(string username, string displayReason, string privateReason, bool permanent, TimeSpan? length = null, bool excludeAlts = true)
             => await BanUserAsync(await User.FromUsername(username, session), displayReason, privateReason, permanent, length, excludeAlts);
 
         /// <summary>
@@ -1060,7 +1066,7 @@ namespace RoSharp.API.Assets.Experiences
         /// <param name="userId">The user Id to unban.</param>
         /// <returns>A task that completes when the task is finished.</returns>
         /// <exception cref="RobloxAPIException">Roblox API failure or lack of permissions.</exception>
-        public async Task UnbanUserAsync(ulong userId)
+        public async Task<HttpResult> UnbanUserAsync(ulong userId)
         {
             var message = new HttpMessage(HttpMethod.Patch, $"/user/cloud/v2/universes/{UniverseId}/user-restrictions/{userId}?", new
             {
@@ -1074,7 +1080,7 @@ namespace RoSharp.API.Assets.Experiences
                 ApiName = nameof(UnbanUserAsync),
             };
 
-            await SendAsync(message, Constants.URL("apis"));
+            return new(await SendAsync(message, Constants.URL("apis")));
         }
 
         /// <summary>
@@ -1083,7 +1089,7 @@ namespace RoSharp.API.Assets.Experiences
         /// <param name="user">The user to unban.</param>
         /// <returns>A task that completes when the task is finished.</returns>
         /// <exception cref="RobloxAPIException">Roblox API failure or lack of permissions.</exception>
-        public async Task UnbanUserAsync(User user)
+        public async Task<HttpResult> UnbanUserAsync(User user)
             => await UnbanUserAsync(user.Id);
 
         /// <summary>
@@ -1092,7 +1098,7 @@ namespace RoSharp.API.Assets.Experiences
         /// <param name="username">The username of the user to unban.</param>
         /// <returns>A task that completes when the task is finished.</returns>
         /// <exception cref="RobloxAPIException">Roblox API failure or lack of permissions.</exception>
-        public async Task UnbanUserAsync(string username)
+        public async Task<HttpResult> UnbanUserAsync(string username)
             => await UnbanUserAsync(await User.FromUsername(username, session));
 
         /// <summary>
@@ -1101,10 +1107,8 @@ namespace RoSharp.API.Assets.Experiences
         /// <param name="text">The text of the post.</param>
         /// <returns>A task that completes when the operation is finished.</returns>
         /// <exception cref="RobloxAPIException">Roblox API failure or lack of permissions.</exception>
-        public async Task PostUpdateAsync(string text)
-        {
-            await SendAsync(HttpMethod.Post, $"/game-update-notifications/v1/publish/{UniverseId}", Constants.URL("apis"), text);
-        }
+        public async Task<HttpResult> PostUpdateAsync(string text) =>
+            new(await SendAsync(HttpMethod.Post, $"/game-update-notifications/v1/publish/{UniverseId}", Constants.URL("apis"), text));
 
         /// <summary>
         /// Publishes a message through <c>MessagingService</c> to the experience.
@@ -1114,7 +1118,7 @@ namespace RoSharp.API.Assets.Experiences
         /// <returns>A task that completes when the operation is finished.</returns>
         /// <remarks>This API member requires a session with an API key, and the API key must have the <c>universe-messaging-service:publish</c> permission.</remarks>
         /// <exception cref="RobloxAPIException">Roblox API failure or lack of permissions.</exception>
-        public async Task PublishMessageAsync(string topic, string data)
+        public async Task<HttpResult> PublishMessageAsync(string topic, string data)
         {
             var message = new HttpMessage(HttpMethod.Post, $"/cloud/v2/universes/{UniverseId}:publishMessage", new
             {
@@ -1127,7 +1131,7 @@ namespace RoSharp.API.Assets.Experiences
                 ApiKeyPermission = "universe-messaging-service:publish",
             };
 
-            await SendAsync(message, Constants.URL("apis"));
+            return new(await SendAsync(message, Constants.URL("apis")));
         }
 
         /// <summary>
@@ -1136,7 +1140,7 @@ namespace RoSharp.API.Assets.Experiences
         /// <param name="positive">Whether to leave a positive or negative vote.</param>
         /// <returns>A task that completes when the operation is finished.</returns>
         /// <exception cref="RobloxAPIException">Roblox API failure or lack of permissions.</exception>
-        public async Task VoteAsync(bool positive)
+        public async Task<HttpResult> VoteAsync(bool positive)
         {
             HttpMessage message = new(HttpMethod.Post, $"/voting-api/vote/asset/{RootPlaceId.UniqueId}?vote={positive}", null)
             {
@@ -1144,7 +1148,7 @@ namespace RoSharp.API.Assets.Experiences
                 ApiName = nameof(VoteAsync),
             };
 
-            await SendAsync(message, Constants.URL("apis"));
+            return new(await SendAsync(message, Constants.URL("apis")));
         }
 
         /// <summary>
@@ -1152,7 +1156,7 @@ namespace RoSharp.API.Assets.Experiences
         /// </summary>
         /// <returns>A task that completes when the operation is finished.</returns>
         /// <exception cref="RobloxAPIException">Roblox API failure or lack of permissions.</exception>
-        public async Task RemoveVoteAsync()
+        public async Task<HttpResult> RemoveVoteAsync()
         {
             HttpMessage message = new(HttpMethod.Post, $"/voting-api/vote/asset/{RootPlaceId.UniqueId}?vote=null", null)
             {
@@ -1160,7 +1164,7 @@ namespace RoSharp.API.Assets.Experiences
                 ApiName = nameof(RemoveVoteAsync),
             };
 
-            await SendAsync(message, Constants.URL("apis"));
+            return new(await SendAsync(message, Constants.URL("apis")));
         }
 
         /// <summary>
@@ -1170,9 +1174,10 @@ namespace RoSharp.API.Assets.Experiences
         /// </para>
         /// </summary>
         /// <returns>A task containing a <see cref="Uri"/> upon completion.</returns>
-        public async Task<Uri?> GetCommunityWikiUrlAsync()
+        public async Task<HttpResult<Uri?>> GetCommunityWikiUrlAsync()
         {
-            string rawData = await SendStringAsync(HttpMethod.Get, "/v2/experience-links.json", "https://data.roseal.live");
+            var response = await SendAsync(HttpMethod.Get, "/v2/experience-links.json", "https://data.roseal.live");
+            string rawData = await response.Content.ReadAsStringAsync();
             JArray data = JArray.Parse(rawData);
             foreach (JToken item in data.Children())
             {
@@ -1183,13 +1188,13 @@ namespace RoSharp.API.Assets.Experiences
                     foreach (JToken link in item["links"].Children())
                     {
                         if (link["type"].ToString() == "communityWiki")
-                            return new Uri("https://" + link["url"].ToString());
+                            return new(response, new Uri("https://" + link["url"].ToString()));
                     }
                 }
             }
 #pragma warning restore CS8602
 #pragma warning restore CS8604
-            return null;
+            return new(response, null);
         }
 
 
@@ -1200,13 +1205,14 @@ namespace RoSharp.API.Assets.Experiences
         /// <param name="cursor">The cursor for the next page. Obtained by calling this API previously.</param>
         /// <returns>A task containing a <see cref="PageResponse{T}"/> of <see cref="Id{T}"/> upon completion.</returns>
         /// <exception cref="RobloxAPIException">Roblox API failure or lack of permissions.</exception>
-        public async Task<PageResponse<Id<VirtualEvent>>> GetVirtualEventsAsync(bool includeFinished = false, string? cursor = null)
+        public async Task<EnumerableHttpResult<PageResponse<Id<VirtualEvent>>>> GetVirtualEventsAsync(bool includeFinished = false, string? cursor = null)
         {
             string url = $"/virtual-events/v1/universes/{Id}/virtual-events" + (!includeFinished ? $"?fromUtc={DateTime.UtcNow.ToString("s") + ".000Z"}" : string.Empty);
             if (cursor != null)
                 url += "&cursor=" + cursor;
 
-            string rawData = await SendStringAsync(HttpMethod.Get, url, Constants.URL("apis"));
+            var response = await SendAsync(HttpMethod.Get, url, Constants.URL("apis"));
+            string rawData = await response.Content.ReadAsStringAsync();
             dynamic data = JObject.Parse(rawData);
 
             List<Id<VirtualEvent>> list = [];
@@ -1219,7 +1225,7 @@ namespace RoSharp.API.Assets.Experiences
                 list.Add(new(id, session));
             }
 
-            return new PageResponse<Id<VirtualEvent>>(list, nextPage, previousPage);
+            return new(response, new PageResponse<Id<VirtualEvent>>(list, nextPage, previousPage));
         }
 
         /// <summary>
@@ -1229,7 +1235,7 @@ namespace RoSharp.API.Assets.Experiences
         /// <returns>A task that contains a <see cref="VirtualEvent"/> upon completion.</returns>
         /// <exception cref="InvalidOperationException">Missing any of the following properties: Title, Subtitle, Description, Category, Visibility, StartTime, EndTime.</exception>
         /// <exception cref="RobloxAPIException">Roblox API failure or lack of permissions.</exception>
-        public async Task<VirtualEvent> CreateVirtualEventAsync(VirtualEventConfiguration settings)
+        public async Task<HttpResult<VirtualEvent>> CreateVirtualEventAsync(VirtualEventConfiguration settings)
         {
             Place p = await Place.FromId(RootPlaceId);
             return await p.CreateVirtualEventAsync(settings);
@@ -1241,23 +1247,26 @@ namespace RoSharp.API.Assets.Experiences
         /// <returns>A task containing a <see cref="bool"/> upon completion.</returns>
         /// <remarks>This value will always be <see langword="false"/> for experiences that the authenticated user does not have access to modify.</remarks>
         /// <exception cref="RobloxAPIException">Roblox API failure or lack of permissions.</exception>
-        public async Task<bool> IsEligibleForImmersiveAdsAsync()
+        public async Task<HttpResult<bool>> IsEligibleForImmersiveAdsAsync()
         {
             var message = new HttpMessage(HttpMethod.Get, $"/developer-ads-stats-api/v1/universe-suitability-criteria/{UniverseId}")
             {
                 AuthType = AuthType.RobloSecurity,
                 ApiName = nameof(IsEligibleForImmersiveAdsAsync),
             };
-            string rawData = await SendStringAsync(message, Constants.URL("apis"));
+            var response = await SendAsync(message, Constants.URL("apis"));
+            string rawData = await response.Content.ReadAsStringAsync();
             dynamic data = JObject.Parse(rawData);
 
-            return data.isUniverseOwner == true
+            bool isLiterallyAwesome = data.isUniverseOwner == true
                 && data.isUniverseOwnerVerified == true
                 && data.isUniverseOwnerIsOver17 == true
                 && data.isUniverseOwner2FAEnabled == true
                 && data.isUniversePublic == true
                 && data.isExperienceGuidelinesCompleted == true
                 && data.isUniverseOverAnalyticsThreshold == true;
+
+            return new(response, isLiterallyAwesome);
         }
 
         /// <summary>
@@ -1270,7 +1279,7 @@ namespace RoSharp.API.Assets.Experiences
         /// <param name="cursor">The cursor for the next page. Obtained by calling this API previously.</param>
         /// <returns>A task containing a <see cref="PageResponse{T}"/> of <see cref="ExperienceReview"/> upon completion.</returns>
         /// <exception cref="RobloxAPIException">Roblox API failure or lack of permissions.</exception>
-        public async Task<PageResponse<ExperienceReview>> GetFeedbackAsync(DateTime? startTime = null, DateTime? endTime = null, FixedLimit limit = FixedLimit.Limit50, bool? voteTypeFilter = null, string? cursor = null)
+        public async Task<EnumerableHttpResult<PageResponse<ExperienceReview>>> GetFeedbackAsync(DateTime? startTime = null, DateTime? endTime = null, FixedLimit limit = FixedLimit.Limit50, bool? voteTypeFilter = null, string? cursor = null)
         {
             Place p = await Place.FromId(RootPlaceId, session);
             return await p.GetFeedbackAsync(startTime, endTime, limit, voteTypeFilter, cursor);
@@ -1301,7 +1310,7 @@ namespace RoSharp.API.Assets.Experiences
         /// <param name="communityId">The unique Id of the community.</param>
         /// <returns>A task that completes when the operation is finished.</returns>
         /// <exception cref="RobloxAPIException">Roblox API failure or lack of permissions.</exception>
-        public async Task AddCommunityTranslatorAsync(ulong communityId)
+        public async Task<HttpResult> AddCommunityTranslatorAsync(ulong communityId)
         {
             var message = new HttpMessage(HttpMethod.Patch, $"/v1/game-localization-roles/games/{UniverseId}", new
             {
@@ -1313,7 +1322,7 @@ namespace RoSharp.API.Assets.Experiences
                 AuthType = AuthType.RobloSecurity,
                 ApiName = nameof(AddCommunityTranslatorAsync),
             };
-            await SendAsync(message, Constants.URL("translationroles"));
+            return new(await SendAsync(message, Constants.URL("translationroles")));
         }
 
         /// <summary>
@@ -1322,7 +1331,7 @@ namespace RoSharp.API.Assets.Experiences
         /// <param name="community">The community.</param>
         /// <returns>A task that completes when the operation is finished.</returns>
         /// <exception cref="RobloxAPIException">Roblox API failure or lack of permissions.</exception>
-        public async Task AddCommunityTranslatorAsync(Community community) => await AddCommunityTranslatorAsync(community.Id);
+        public async Task<HttpResult> AddCommunityTranslatorAsync(Community community) => await AddCommunityTranslatorAsync(community.Id);
 
         /// <summary>
         /// Removes a <see cref="Community"/> translator.
@@ -1330,7 +1339,7 @@ namespace RoSharp.API.Assets.Experiences
         /// <param name="communityId">The unique Id of the community.</param>
         /// <returns>A task that completes when the operation is finished.</returns>
         /// <exception cref="RobloxAPIException">Roblox API failure or lack of permissions.</exception>
-        public async Task RemoveCommunityTranslatorAsync(ulong communityId)
+        public async Task<HttpResult> RemoveCommunityTranslatorAsync(ulong communityId)
         {
             var message = new HttpMessage(HttpMethod.Patch, $"/v1/game-localization-roles/games/{UniverseId}", new
             {
@@ -1343,7 +1352,7 @@ namespace RoSharp.API.Assets.Experiences
                 AuthType = AuthType.RobloSecurity,
                 ApiName = nameof(AddCommunityTranslatorAsync),
             };
-            await SendAsync(message, Constants.URL("translationroles"));
+            return new(await SendAsync(message, Constants.URL("translationroles")));
         }
 
         /// <summary>
@@ -1352,7 +1361,7 @@ namespace RoSharp.API.Assets.Experiences
         /// <param name="community">The community.</param>
         /// <returns>A task that completes when the operation is finished.</returns>
         /// <exception cref="RobloxAPIException">Roblox API failure or lack of permissions.</exception>
-        public async Task RemoveCommunityTranslatorAsync(Community community) => await RemoveCommunityTranslatorAsync(community.Id);
+        public async Task<HttpResult> RemoveCommunityTranslatorAsync(Community community) => await RemoveCommunityTranslatorAsync(community.Id);
 
         /// <summary>
         /// Adds a role-specific <see cref="Community"/> translator, allowing anyone within the provided role to translate for this experience.
@@ -1360,7 +1369,7 @@ namespace RoSharp.API.Assets.Experiences
         /// <param name="role">The role to add.</param>
         /// <returns>A task that completes when the operation is finished.</returns>
         /// <exception cref="RobloxAPIException">Roblox API failure or lack of permissions.</exception>
-        public async Task AddCommunityTranslatorAsync(Role role)
+        public async Task<HttpResult> AddCommunityTranslatorAsync(Role role)
         {
             var message = new HttpMessage(HttpMethod.Patch, $"/v1/game-localization-roles/games/{UniverseId}", new
             {
@@ -1372,7 +1381,7 @@ namespace RoSharp.API.Assets.Experiences
                 AuthType = AuthType.RobloSecurity,
                 ApiName = nameof(AddCommunityTranslatorAsync),
             };
-            await SendAsync(message, Constants.URL("translationroles"));
+            return new(await SendAsync(message, Constants.URL("translationroles")));
         }
 
         /// <summary>
@@ -1381,7 +1390,7 @@ namespace RoSharp.API.Assets.Experiences
         /// <param name="role">The role to remove.</param>
         /// <returns>A task that completes when the operation is finished.</returns>
         /// <exception cref="RobloxAPIException">Roblox API failure or lack of permissions.</exception>
-        public async Task RemoveCommunityTranslatorAsync(Role role)
+        public async Task<HttpResult> RemoveCommunityTranslatorAsync(Role role)
         {
             var message = new HttpMessage(HttpMethod.Patch, $"/v1/game-localization-roles/games/{UniverseId}", new
             {
@@ -1394,7 +1403,7 @@ namespace RoSharp.API.Assets.Experiences
                 AuthType = AuthType.RobloSecurity,
                 ApiName = nameof(AddCommunityTranslatorAsync),
             };
-            await SendAsync(message, Constants.URL("translationroles"));
+            return new(await SendAsync(message, Constants.URL("translationroles")));
         }
 
         /// <summary>
@@ -1403,7 +1412,7 @@ namespace RoSharp.API.Assets.Experiences
         /// <param name="userId">The unique Id of the user to add.</param>
         /// <returns>A task that completes when the operation is finished.</returns>
         /// <exception cref="RobloxAPIException">Roblox API failure or lack of permissions.</exception>
-        public async Task AddTranslatorAsync(ulong userId)
+        public async Task<HttpResult> AddTranslatorAsync(ulong userId)
         {
             var message = new HttpMessage(HttpMethod.Patch, $"/v1/game-localization-roles/games/{UniverseId}", new
             {
@@ -1415,7 +1424,7 @@ namespace RoSharp.API.Assets.Experiences
                 AuthType = AuthType.RobloSecurity,
                 ApiName = nameof(AddTranslatorAsync),
             };
-            await SendAsync(message, Constants.URL("translationroles"));
+            return new(await SendAsync(message, Constants.URL("translationroles")));
         }
 
         /// <summary>
@@ -1424,7 +1433,7 @@ namespace RoSharp.API.Assets.Experiences
         /// <param name="user">The user to add.</param>
         /// <returns>A task that completes when the operation is finished.</returns>
         /// <exception cref="RobloxAPIException">Roblox API failure or lack of permissions.</exception>
-        public async Task AddTranslatorAsync(User user) => await AddTranslatorAsync(user.Id);
+        public async Task<HttpResult> AddTranslatorAsync(User user) => await AddTranslatorAsync(user.Id);
 
         /// <summary>
         /// Adds a translator to this experience.
@@ -1432,7 +1441,7 @@ namespace RoSharp.API.Assets.Experiences
         /// <param name="username">The username of the user to add.</param>
         /// <returns>A task that completes when the operation is finished.</returns>
         /// <exception cref="RobloxAPIException">Roblox API failure or lack of permissions.</exception>
-        public async Task AddTranslatorAsync(string username) => await AddTranslatorAsync(await UserUtility.GetUserIdAsync(username));
+        public async Task<HttpResult> AddTranslatorAsync(string username) => await AddTranslatorAsync(await UserUtility.GetUserIdAsync(username));
 
         /// <summary>
         /// Removes a translator from this experience.
@@ -1440,7 +1449,7 @@ namespace RoSharp.API.Assets.Experiences
         /// <param name="userId">The unique Id of the user to remove.</param>
         /// <returns>A task that completes when the operation is finished.</returns>
         /// <exception cref="RobloxAPIException">Roblox API failure or lack of permissions.</exception>
-        public async Task RemoveTranslatorAsync(ulong userId)
+        public async Task<HttpResult> RemoveTranslatorAsync(ulong userId)
         {
             var message = new HttpMessage(HttpMethod.Patch, $"/v1/game-localization-roles/games/{UniverseId}", new
             {
@@ -1453,7 +1462,7 @@ namespace RoSharp.API.Assets.Experiences
                 AuthType = AuthType.RobloSecurity,
                 ApiName = nameof(AddTranslatorAsync),
             };
-            await SendAsync(message, Constants.URL("translationroles"));
+            return new(await SendAsync(message, Constants.URL("translationroles")));
         }
 
         /// <summary>
@@ -1462,7 +1471,7 @@ namespace RoSharp.API.Assets.Experiences
         /// <param name="user">The user to remove.</param>
         /// <returns>A task that completes when the operation is finished.</returns>
         /// <exception cref="RobloxAPIException">Roblox API failure or lack of permissions.</exception>
-        public async Task RemoveTranslatorAsync(User user) => await RemoveTranslatorAsync(user.Id);
+        public async Task<HttpResult> RemoveTranslatorAsync(User user) => await RemoveTranslatorAsync(user.Id);
 
         /// <summary>
         /// Removes a translator from this experience.
@@ -1470,7 +1479,7 @@ namespace RoSharp.API.Assets.Experiences
         /// <param name="username">The username of the user to remove.</param>
         /// <returns>A task that completes when the operation is finished.</returns>
         /// <exception cref="RobloxAPIException">Roblox API failure or lack of permissions.</exception>
-        public async Task RemoveTranslatorAsync(string username) => await RemoveTranslatorAsync(await UserUtility.GetUserIdAsync(username));
+        public async Task<HttpResult> RemoveTranslatorAsync(string username) => await RemoveTranslatorAsync(await UserUtility.GetUserIdAsync(username));
 
         /// <summary>
         /// Clears automatically captured localization entries that have not been modified.
@@ -1479,7 +1488,7 @@ namespace RoSharp.API.Assets.Experiences
         /// <returns>A task that completes when the operation is finished.</returns>
         /// <exception cref="InvalidOperationException">Invalid input for the timeframe parameter.</exception>
         /// <exception cref="RobloxAPIException">Roblox API failure or lack of permissions.</exception>
-        public async Task ClearAutoCapturedLocalizationEntriesAsync(string timeframe = "1D")
+        public async Task<HttpResult> ClearAutoCapturedLocalizationEntriesAsync(string timeframe = "1D")
         {
             if (timeframe != null && timeframe is not "1D" or "3D" or "7D" or "30D")
                 throw new InvalidOperationException($"The '{nameof(timeframe)}' parameter must be null or '1D', '3D', '7D', or '30D'.");
@@ -1491,7 +1500,7 @@ namespace RoSharp.API.Assets.Experiences
                 AuthType = AuthType.RobloSecurity,
                 ApiName = nameof(ClearAutoCapturedLocalizationEntriesAsync)
             };
-            await SendAsync(message, Constants.URL("localizationtables"));
+            return new(await SendAsync(message, Constants.URL("localizationtables")));
         }
 
         /// <inheritdoc/>

@@ -4,6 +4,7 @@ using RoSharp.API.Pooling;
 using RoSharp.Enums;
 using RoSharp.Exceptions;
 using RoSharp.Extensions;
+using RoSharp.Http;
 using RoSharp.Interfaces;
 using RoSharp.Structures;
 
@@ -77,14 +78,15 @@ namespace RoSharp.API.Assets.Experiences
         /// </summary>
         /// <returns>A task containing the string URL for the icon upon completion.</returns>
         /// <exception cref="ArgumentException">Invalid asset to get thumbnail for.</exception>
-        public async Task<string> GetIconAsync(IconSize size = IconSize.S420x420)
+        public async Task<HttpResult<string>> GetIconAsync(IconSize size = IconSize.S420x420)
         {
-            string rawData = await SendStringAsync(HttpMethod.Get, $"/v1/places/gameicons?placeIds={Id}&returnPolicy=PlaceHolder&size={size.ToString().Substring(1)}&format=Png&isCircular=false", Constants.URL("thumbnails"));
+            var response = await SendAsync(HttpMethod.Get, $"/v1/places/gameicons?placeIds={Id}&returnPolicy=PlaceHolder&size={size.ToString().Substring(1)}&format=Png&isCircular=false", Constants.URL("thumbnails"));
+            string rawData = await response.Content.ReadAsStringAsync();
             dynamic data = JObject.Parse(rawData);
 
             if (data.data.Count == 0)
                 throw new ArgumentException("Invalid asset to get thumbnail for.");
-            return data.data[0].imageUrl;
+            return new(response, Convert.ToString(data.data[0].imageUrl));
         }
 
         /// <summary>
@@ -94,13 +96,14 @@ namespace RoSharp.API.Assets.Experiences
         /// <param name="sortOrder">Sort order. <c>1</c> = Least to most players, <c>2</c> = Most to least players. Any other input will be treated as <c>2</c>.</param>
         /// <param name="cursor">The cursor for the next page. Obtained by calling this API previously.</param>
         /// <returns></returns>
-        public async Task<PageResponse<GameServer>> GetLiveServersAsync(FixedLimit limit = FixedLimit.Limit50, int sortOrder = 2, string? cursor = null)
+        public async Task<EnumerableHttpResult<PageResponse<GameServer>>> GetLiveServersAsync(FixedLimit limit = FixedLimit.Limit50, int sortOrder = 2, string? cursor = null)
         {
             string url = $"/v1/games/{Id}/servers/0?sortOrder={sortOrder}&excludeFullGames=false&limit={limit.Limit()}";
             if (cursor != null)
                 url += $"&cursor={cursor}";
 
-            string rawData = await SendStringAsync(HttpMethod.Get, url);
+            var response = await SendAsync(HttpMethod.Get, url);
+            string rawData = await response.Content.ReadAsStringAsync();
             dynamic data = JObject.Parse(rawData);
 
             List<GameServer> list = [];
@@ -122,7 +125,7 @@ namespace RoSharp.API.Assets.Experiences
                 list.Add(server);
             }
 
-            return new(list, nextPage, previousPage);
+            return new(response, new(list, nextPage, previousPage));
         }
 
         /// <summary>
@@ -132,7 +135,7 @@ namespace RoSharp.API.Assets.Experiences
         /// <returns>A task that contains a <see cref="VirtualEvent"/> upon completion.</returns>
         /// <exception cref="InvalidOperationException">Missing any of the following properties: Title, Subtitle, Description, Category, Visibility, StartTime, EndTime.</exception>
         /// <exception cref="RobloxAPIException">Roblox API failure or lack of permissions.</exception>
-        public async Task<VirtualEvent> CreateVirtualEventAsync(VirtualEventConfiguration settings)
+        public async Task<HttpResult<VirtualEvent>> CreateVirtualEventAsync(VirtualEventConfiguration settings)
         {
             if (settings.Title == null || settings.Subtitle == null || settings.Description == null) throw new InvalidOperationException("Title, Subtitle, and Description cannot be null!");
             if (!settings.Category.HasValue || !settings.Visibility.HasValue) throw new InvalidOperationException("Category and Visibility must be provided!");
@@ -161,7 +164,7 @@ namespace RoSharp.API.Assets.Experiences
             HttpResponseMessage response = await SendAsync(payload, Constants.URL("apis"));
             string responseData = await response.Content.ReadAsStringAsync();
             dynamic data = JObject.Parse(responseData);
-            return await VirtualEvent.FromId(Convert.ToUInt64(data.id), session);
+            return new(response, await VirtualEvent.FromId(Convert.ToUInt64(data.id), session));
         }
 
         /// <summary>
@@ -174,7 +177,7 @@ namespace RoSharp.API.Assets.Experiences
         /// <param name="cursor">The cursor for the next page. Obtained by calling this API previously.</param>
         /// <returns>A task containing a <see cref="PageResponse{T}"/> of <see cref="ExperienceReview"/> upon completion.</returns>
         /// <exception cref="RobloxAPIException">Roblox API failure or lack of permissions.</exception>
-        public async Task<PageResponse<ExperienceReview>> GetFeedbackAsync(DateTime? startTime = null, DateTime? endTime = null, FixedLimit limit = FixedLimit.Limit50, bool? voteTypeFilter = null, string? cursor = null)
+        public async Task<EnumerableHttpResult<PageResponse<ExperienceReview>>> GetFeedbackAsync(DateTime? startTime = null, DateTime? endTime = null, FixedLimit limit = FixedLimit.Limit50, bool? voteTypeFilter = null, string? cursor = null)
         {
             string url = $"/player-generated-reviews-service/v1/channels/experience-discovery-page/assets/{Id}/reviews?limit={limit.Limit()}&hasComment=false";
             if (startTime.HasValue)
@@ -196,7 +199,8 @@ namespace RoSharp.API.Assets.Experiences
                 ApiName = nameof(GetFeedbackAsync)
             };
 
-            string rawData = await SendStringAsync(message, Constants.URL("apis"));
+            var response = await SendAsync(message, Constants.URL("apis"));
+            string rawData = await response.Content.ReadAsStringAsync();
             dynamic data = JObject.Parse(rawData);
 
             List<ExperienceReview> list = [];
@@ -215,7 +219,7 @@ namespace RoSharp.API.Assets.Experiences
                 });
             }
 
-            return new(list, data.has_more == true ? Convert.ToString(data.next_cursor) : null, null);
+            return new(response, new(list, data.has_more == true ? Convert.ToString(data.next_cursor) : null, null));
         }
 
         /// <inheritdoc/>

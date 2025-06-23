@@ -19,7 +19,7 @@ namespace RoSharp.Utility
         /// <param name="placeId">The place Id.</param>
         /// <returns>The universe Id.</returns>
         /// <exception cref="ArgumentException">Invalid place ID provided.</exception>
-        public static async Task<ulong> GetUniverseIdAsync(ulong placeId)
+        public static async Task<HttpResult<ulong>> GetUniverseIdAsync(ulong placeId)
         {
             HttpMessage payload = new(HttpMethod.Get, $"{Constants.URL("apis")}/universes/v1/places/{placeId}/universe");
             HttpResponseMessage response = await HttpManager.SendAsync(null, payload);
@@ -27,7 +27,7 @@ namespace RoSharp.Utility
             dynamic universeData = JObject.Parse(raw);
             if (universeData.universeId != null)
             {
-                return universeData.universeId;
+                return new(response, Convert.ToUInt64(universeData.universeId));
             }
             
             throw new ArgumentException("Invalid place ID provided.", nameof(placeId));
@@ -38,7 +38,7 @@ namespace RoSharp.Utility
         /// </summary>
         /// <param name="session">An authenticated session, required.</param>
         /// <returns>A task containing a <see cref="ReadOnlyCollection{T}"/> of <see cref="FiatPurchase"/> upon completion.</returns>
-        public static async Task<ReadOnlyCollection<FiatPurchase>> GetFiatOptionsAsync(Session? session)
+        public static async Task<EnumerableHttpResult<ReadOnlyCollection<FiatPurchase>>> GetFiatOptionsAsync(Session? session)
         {
             HttpMessage payload = new(HttpMethod.Get, $"{Constants.URL("apis")}/fiat-paid-access-service/v1/product/prices")
             {
@@ -46,7 +46,8 @@ namespace RoSharp.Utility
                 ApiName = nameof(GetFiatOptionsAsync),
             };
 
-            string rawData = await HttpManager.SendStringAsync(session.Global(), payload);
+            var response = await HttpManager.SendAsync(session.Global(), payload);
+            string rawData = await response.Content.ReadAsStringAsync();
             dynamic data = JObject.Parse(rawData);
             List<FiatPurchase> list = [];
             foreach (dynamic item in data.prices)
@@ -60,7 +61,7 @@ namespace RoSharp.Utility
                     PayoutPercent = Convert.ToDouble(item.payoutPercentage),
                 });
             }
-            return list.AsReadOnly();
+            return new(response, list.AsReadOnly());
         }
 
         /// <summary>

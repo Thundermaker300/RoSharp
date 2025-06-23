@@ -20,7 +20,7 @@ namespace RoSharp.API.DevForum
                 if (item.username != null)
                     usernames.Add(Convert.ToString(item.username));
             }
-            var ids = await UserUtility.GetUserIdsAsync(usernames);
+            var ids = (await UserUtility.GetUserIdsAsync(usernames)).Value;
 
             List<DevForumPost> posts = new();
             foreach (dynamic item in data.Children())
