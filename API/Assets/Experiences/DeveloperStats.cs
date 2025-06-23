@@ -272,35 +272,32 @@ namespace RoSharp.API.Assets.Experiences
         /// <returns>A task containing a <see cref="ReadOnlyCollection{T}"/> of <see cref="ExperienceAuditLog"/> upon completion.</returns>
         /// <remarks>This API method does not cache and will make a request each time it is called.</remarks>
         /// <exception cref="RobloxAPIException">Roblox API failure or lack of permissions.</exception>
-        public async Task<ReadOnlyCollection<ExperienceAuditLog>> GetAuditLogsAsync()
+        public async Task<EnumerableHttpResult<ReadOnlyCollection<ExperienceAuditLog>>> GetAuditLogsAsync()
         {
-            if (history == null)
+            var message = new HttpMessage(HttpMethod.Get, $"/activity-feed-api/v1/history?clientType=1&universeId={experience.UniverseId}")
             {
-                var message = new HttpMessage(HttpMethod.Get, $"/activity-feed-api/v1/history?clientType=1&universeId={experience.UniverseId}")
-                {
-                    AuthType = AuthType.RobloSecurity,
-                    ApiName = nameof(GetAuditLogsAsync),
-                };
-                string rawData = await experience.SendStringAsync(message, Constants.URL("apis"));
-                dynamic data = JObject.Parse(rawData);
+                AuthType = AuthType.RobloSecurity,
+                ApiName = nameof(GetAuditLogsAsync),
+            };
+            var response = await experience.SendAsync(message, Constants.URL("apis"));
+            string rawData = await response.Content.ReadAsStringAsync();
+            dynamic data = JObject.Parse(rawData);
 
-                List<ExperienceAuditLog> list = [];
-                foreach (dynamic ev in data.events)
+            List<ExperienceAuditLog> list = [];
+            foreach (dynamic ev in data.events)
+            {
+                list.Add(new()
                 {
-                    list.Add(new()
-                    {
-                        Id = ev.id,
-                        Type = (ExperienceAuditLogType)ev.eventType,
-                        UniverseId = new Id<Experience>(Convert.ToUInt64(ev.universeId)),
-                        PlaceId = ev.placeId,
-                        UserId = new Id<User>(Convert.ToUInt64(ev.userId)),
-                        Time = DateTime.UnixEpoch.AddMilliseconds(Convert.ToInt64(ev.createdUnixTimeMs)),
-                    });
-                }
-
-                history = list.AsReadOnly();
+                    Id = ev.id,
+                    Type = (ExperienceAuditLogType)ev.eventType,
+                    UniverseId = new Id<Experience>(Convert.ToUInt64(ev.universeId)),
+                    PlaceId = ev.placeId,
+                    UserId = new Id<User>(Convert.ToUInt64(ev.userId)),
+                    Time = DateTime.UnixEpoch.AddMilliseconds(Convert.ToInt64(ev.createdUnixTimeMs)),
+                });
             }
-            return history;
+
+            return new(response, list.AsReadOnly());
         }
 
         /// <summary>
