@@ -1,6 +1,7 @@
 ﻿using Newtonsoft.Json.Linq;
 using RoSharp.API.Assets.Experiences;
 using RoSharp.Enums;
+using RoSharp.Exceptions;
 using RoSharp.Http;
 using RoSharp.Interfaces;
 using RoSharp.Structures;
@@ -286,5 +287,37 @@ namespace RoSharp.API
         /// <returns>A task that completes when the operation is finished.</returns>
         public async Task<HttpResult> UnarchiveAsync(PrivateMessage message)
             => await UnarchiveAsync(message.Id);
+
+        /// <summary>
+        /// Gets whether or not the authenticated user is eligible for Extended Services.
+        /// </summary>
+        /// <returns>A task containing a bool upon completion.</returns>
+        /// <exception cref="RobloxAPIException">Roblox API failure or lack of permissions.</exception>
+        public async Task<HttpResult<bool>> IsEligibleForExtendedServicesAsync()
+        {
+            var payload = new HttpMessage(HttpMethod.Get, $"/service-efficiency-api/v1/eligibility/users/{session?.AuthUser?.Id ?? 0}")
+            {
+                AuthType = AuthType.RobloSecurity,
+                ApiName = nameof(IsEligibleForExtendedServicesAsync),
+            };
+            var response = await SendAsync(payload, Constants.URL("apis"));
+            string rawData = await response.Content.ReadAsStringAsync();
+
+            if (rawData == "\"Unauthorized.\"")
+            {
+                throw new RobloxAPIException("Unauthorized.", System.Net.HttpStatusCode.Unauthorized);
+            }
+
+            dynamic data = JObject.Parse(rawData);
+            bool eligible = true;
+
+            foreach (dynamic group in data.eligibilityRequirementResults)
+            {
+                if (group.eligible == false && group.eligibilityRequirement != "UserAgreement")
+                    eligible = false;
+            }
+
+            return new(response, eligible);
+        }
     }
 }
