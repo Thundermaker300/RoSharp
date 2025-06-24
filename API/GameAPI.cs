@@ -27,7 +27,7 @@ namespace RoSharp.API
         /// <param name="options">Options to filter the charts API by.</param>
         /// <param name="cursor">The cursor to use to advance to the next page. Obtained by calling this API previously.</param>
         /// <returns>A task containing a <see cref="ChartsResponse"/> upon completion.</returns>
-        /// <exception cref="RobloxAPIException">Error from the Roblox API.</exception>
+        /// <exception cref="RobloxAPIException">Roblox API failure or lack of permissions.</exception>
         /// <remarks>This API method does not cache and will make a request each time it is called.</remarks>
         public static async Task<HttpResult<ChartsResponse>> GetFrontPageExperiencesAsync(Session? session = null, ChartsFilterOptions? options = null, string? cursor = null)
         {
@@ -100,7 +100,7 @@ namespace RoSharp.API
         /// <param name="exactMatchSearch">Indicates whether or not to perform an 'exact search', which will match results by name alone and no other criteria. In other words, the returned results are guaranteed to contain the <paramref name="query"/> within their title.</param>
         /// <param name="cursor">The cursor to use to advance to the next page. Obtained by calling this API previously.</param>
         /// <returns>A task containing a <see cref="PageResponse{T}"/> of <see cref="Id{T}"/> upon completion.</returns>
-        /// <exception cref="RobloxAPIException">Error from the Roblox API.</exception>
+        /// <exception cref="RobloxAPIException">Roblox API failure or lack of permissions.</exception>
         /// <remarks>This API method does not cache and will make a request each time it is called.</remarks>
         [Obsolete("Use SearchAPI.SearchExperiencesAsync()")]
         public static async Task<EnumerableHttpResult<PageResponse<Id<Experience>>>> SearchAsync(string query, Session? session = null, bool exactMatchSearch = false, string? cursor = null)

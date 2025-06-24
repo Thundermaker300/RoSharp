@@ -1,4 +1,6 @@
-﻿namespace RoSharp.Interfaces
+﻿using RoSharp.Exceptions;
+
+namespace RoSharp.Interfaces
 {
     /// <summary>
     /// Interface for classes that have an Id parameter.
@@ -17,11 +19,12 @@
         public string Url { get; }
 
         /// <summary>
-        /// Gets the instance from the provided Id.
+        /// Gets an instance of <typeparamref name="T"/> from the provided Id. The returned class represents a <typeparamref name="T"/> from the Roblox API.
         /// </summary>
-        /// <param name="id">The Id.</param>
+        /// <param name="id">The unique Id of the <typeparamref name="T"/>.</param>
         /// <param name="session">Session. Optional.</param>
         /// <returns>A task containing the <typeparamref name="T"/>.</returns>
+        /// <exception cref="RobloxAPIException">Roblox API failure or lack of permissions.</exception>
         public abstract static Task<T> FromId(ulong id, Session? session);
 
         /// <summary>

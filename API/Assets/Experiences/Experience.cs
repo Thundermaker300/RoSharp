@@ -206,7 +206,7 @@ namespace RoSharp.API.Assets.Experiences
         /// <param name="session">The session, optional.</param>
         /// <returns></returns>
         /// <exception cref="ArgumentException">If the place Id is invalid or is a UniverseId (see <see cref="FromId(ulong, Session?)"/>.</exception>
-        /// <exception cref="RobloxAPIException">Roblox API failure.</exception>
+        /// <exception cref="RobloxAPIException">Roblox API failure or lack of permissions.</exception>
         /// <remarks>This is the most common method as the Place ID is present in the URL when going to any general experience page.</remarks>
         public static async Task<Experience> FromPlaceId(ulong placeId, Session? session = null)
             => await FromId(await ExperienceUtility.GetUniverseIdAsync(placeId), session);
@@ -218,7 +218,7 @@ namespace RoSharp.API.Assets.Experiences
         /// <param name="session">The session, optional.</param>
         /// <returns></returns>
         /// <exception cref="ArgumentException">If the universe Id is invalid or is a PlaceId (see <see cref="FromPlaceId(ulong, Session?)"/>.</exception>
-        /// <exception cref="RobloxAPIException">Roblox API failure.</exception>
+        /// <exception cref="RobloxAPIException">Roblox API failure or lack of permissions.</exception>
         /// <remarks>If you have a Place Id, which is most common, see <see cref="FromPlaceId(ulong, Session?)"/>.</remarks>
         public static async Task<Experience> FromId(ulong universeId, Session? session = null)
         {

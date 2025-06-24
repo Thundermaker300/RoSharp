@@ -16,7 +16,7 @@ namespace RoSharp.Interfaces
         /// Forces this member's API that is retrieved from Roblox.
         /// </summary>
         /// <returns>A task that completes when API has been fully updated.</returns>
-        /// <exception cref="RobloxAPIException">Roblox API failure.</exception>
+        /// <exception cref="RobloxAPIException">Roblox API failure or lack of permissions.</exception>
         public Task RefreshAsync();
     }
 }

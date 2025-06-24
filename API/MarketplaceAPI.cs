@@ -66,7 +66,7 @@ namespace RoSharp.API
         /// Gets all the categories on the marketplace.
         /// </summary>
         /// <returns>A task containing a <see cref="ReadOnlyCollection{T}"/> of <see cref="MarketplaceCategory"/> upon completion.</returns>
-        /// <exception cref="RobloxAPIException">Roblox API failure.</exception>
+        /// <exception cref="RobloxAPIException">Roblox API failure or lack of permissions.</exception>
         public static async Task<ReadOnlyCollection<MarketplaceCategory>> GetCategoriesAsync()
         {
             if (categories == null)
@@ -116,7 +116,7 @@ namespace RoSharp.API
         /// </summary>
         /// <param name="categoryId">The unique category Id.</param>
         /// <returns>A task containing a <see cref="MarketplaceCategory"/> if found successfully.</returns>
-        /// <exception cref="RobloxAPIException">Roblox API failure.</exception>
+        /// <exception cref="RobloxAPIException">Roblox API failure or lack of permissions.</exception>
         public static async Task<MarketplaceCategory?> GetCategoryAsync(int categoryId)
         {
             foreach (MarketplaceCategory category in await GetCategoriesAsync())
@@ -132,7 +132,7 @@ namespace RoSharp.API
         /// </summary>
         /// <param name="categoryName">The unique category name.</param>
         /// <returns>A task containing a <see cref="MarketplaceCategory"/> if found successfully.</returns>
-        /// <exception cref="RobloxAPIException">Roblox API failure.</exception>
+        /// <exception cref="RobloxAPIException">Roblox API failure or lack of permissions.</exception>
         public static async Task<MarketplaceCategory?> GetCategoryAsync(string categoryName)
         {
             foreach (MarketplaceCategory category in await GetCategoriesAsync())
@@ -148,7 +148,7 @@ namespace RoSharp.API
         /// </summary>
         /// <param name="categoryId">The unique subcategory Id.</param>
         /// <returns>A task containing a <see cref="MarketplaceCategory"/> if found successfully.</returns>
-        /// <exception cref="RobloxAPIException">Roblox API failure.</exception>
+        /// <exception cref="RobloxAPIException">Roblox API failure or lack of permissions.</exception>
         public static async Task<MarketplaceCategory?> GetSubCategoryAsync(int categoryId)
         {
             foreach (MarketplaceCategory category in await GetCategoriesAsync())
@@ -167,7 +167,7 @@ namespace RoSharp.API
         /// </summary>
         /// <param name="categoryName">The unique subcategory name.</param>
         /// <returns>A task containing a <see cref="MarketplaceCategory"/> if found successfully.</returns>
-        /// <exception cref="RobloxAPIException">Roblox API failure.</exception>
+        /// <exception cref="RobloxAPIException">Roblox API failure or lack of permissions.</exception>
         public static async Task<MarketplaceCategory?> GetSubCategoryAsync(string categoryName)
         {
             foreach (MarketplaceCategory category in await GetCategoriesAsync())
@@ -186,7 +186,7 @@ namespace RoSharp.API
         /// </summary>
         /// <param name="assetType">The asset type.</param>
         /// <returns>A task containing a <see cref="MarketplaceCategory"/> if found successfully.</returns>
-        /// <exception cref="RobloxAPIException">Roblox API failure.</exception>
+        /// <exception cref="RobloxAPIException">Roblox API failure or lack of permissions.</exception>
         public static async Task<MarketplaceCategory?> GetSubCategoryAsync(AssetType assetType)
         {
             int? id = await assetType.GetCategoryIdAsync();

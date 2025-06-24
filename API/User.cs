@@ -108,7 +108,7 @@ namespace RoSharp.API
         /// <param name="session">The session, optional.</param>
         /// <returns>A task containing the <see cref="User"/> upon completion.</returns>
         /// <exception cref="ArgumentException">If the asset Id invalid.</exception>
-        /// <exception cref="RobloxAPIException">Roblox API failure.</exception>
+        /// <exception cref="RobloxAPIException">Roblox API failure or lack of permissions.</exception>
         public static async Task<User> FromId(ulong userId, Session? session = null)
         {
             if (RoPool<User>.Contains(userId))
@@ -127,7 +127,7 @@ namespace RoSharp.API
         /// <param name="session">The session, optional.</param>
         /// <returns>A task containing the <see cref="User"/> upon completion.</returns>
         /// <exception cref="ArgumentException">If the asset Id invalid.</exception>
-        /// <exception cref="RobloxAPIException">Roblox API failure.</exception>
+        /// <exception cref="RobloxAPIException">Roblox API failure or lack of permissions.</exception>
         public static async Task<User> FromUsername(string username, Session? session = null)
             => await FromId(await UserUtility.GetUserIdAsync(username), session);
 
@@ -427,7 +427,7 @@ namespace RoSharp.API
         /// </summary>
         /// <returns>A task containing a <see cref="ReadOnlyDictionary{TKey, TValue}"/> when complete.</returns>
         /// <remarks>The keys of the dictionary are the social media type, the value is the URL.</remarks>
-        /// <exception cref="RobloxAPIException">Roblox API failure.</exception>
+        /// <exception cref="RobloxAPIException">Roblox API failure or lack of permissions.</exception>
         public async Task<ReadOnlyDictionary<string, string>> GetSocialChannelsAsync()
         {
             if (socialChannels == null)
@@ -459,7 +459,7 @@ namespace RoSharp.API
         /// </summary>
         /// <returns>A task containing a <see cref="ReadOnlyCollection{T}"/> of <see cref="Id{T}"/> upon completion.</returns>
         /// <remarks>This API method does not cache and will make a request each time it is called.</remarks>
-        /// <exception cref="RobloxAPIException">Roblox API failure.</exception>
+        /// <exception cref="RobloxAPIException">Roblox API failure or lack of permissions.</exception>
         [Obsolete("Use User.CurrentlyWearing.")]
         public async Task<ReadOnlyCollection<Id<Asset>>> GetCurrentlyWearingAsync()
             => CurrentlyWearing;
@@ -469,7 +469,7 @@ namespace RoSharp.API
         /// </summary>
         /// <returns>A task containing a <see cref="ReadOnlyCollection{T}"/> of <see cref="Id{T}"/> upon completion.</returns>
         /// <remarks>This API method does not cache and will make a request each time it is called.</remarks>
-        /// <exception cref="RobloxAPIException">Roblox API failure.</exception>
+        /// <exception cref="RobloxAPIException">Roblox API failure or lack of permissions.</exception>
         /// <exception cref="ArgumentException">Invalid user.</exception>
         public async Task<EnumerableHttpResult<ReadOnlyCollection<Id<Asset>>>> GetCollectionItemsAsync()
         {
@@ -494,7 +494,7 @@ namespace RoSharp.API
         /// </summary>
         /// <param name="limit">The maximum amount of friends to return.</param>
         /// <returns><see cref="ReadOnlyCollection{T}"/></returns>
-        /// <exception cref="RobloxAPIException">Roblox API failure.</exception>
+        /// <exception cref="RobloxAPIException">Roblox API failure or lack of permissions.</exception>
         /// <remarks>This API method does not cache and will make a request each time it is called.</remarks>
         public async Task<EnumerableHttpResult<ReadOnlyCollection<Id<User>>>> GetFriendsAsync(int limit = 50)
         {
@@ -641,7 +641,7 @@ namespace RoSharp.API
         /// <param name="communityId">The communityId.</param>
         /// <returns>A task containing a bool.</returns>
         public async Task<HttpResult<bool>> IsInGroupAsync(ulong communityId) => await (await (await Community.FromId(communityId)).GetMemberManagerAsync()).IsInCommunityAsync(Id);
-        
+
         // Thumbnails
         /// <summary>
         /// Returns a thumbnail of the given user.
@@ -651,7 +651,7 @@ namespace RoSharp.API
         /// <returns>A task containing a string URL to the thumbnail upon completion.</returns>
         /// <remarks>This API method does not cache and will make a request each time it is called.</remarks>
         /// <exception cref="ArgumentException">Invalid user to get thumbnail for.</exception>
-        /// <exception cref="RobloxAPIException">Roblox API failure.</exception>
+        /// <exception cref="RobloxAPIException">Roblox API failure or lack of permissions.</exception>
         public async Task<HttpResult<string>> GetThumbnailAsync(ThumbnailType type = ThumbnailType.Full, ThumbnailSize size = ThumbnailSize.S420x420)
         {
             string url = "/v1/users/avatar" + type switch
@@ -674,7 +674,7 @@ namespace RoSharp.API
         /// Returns experiences that are owned by the user and shown on their profile.
         /// </summary>
         /// <returns>A task containing a <see cref="ReadOnlyCollection{T}"/> of <see cref="Id{T}"/> upon completion.</returns>
-        /// <exception cref="RobloxAPIException">Roblox API failure.</exception>
+        /// <exception cref="RobloxAPIException">Roblox API failure or lack of permissions.</exception>
         public async Task<ReadOnlyCollection<Id<Experience>>> GetExperiencesAsync()
         {
             if (experiences == null)

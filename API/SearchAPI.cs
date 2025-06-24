@@ -26,7 +26,7 @@ namespace RoSharp.API
         /// <param name="exactMatchSearch">Indicates whether or not to perform an 'exact search', which will match results by name alone and no other criteria. In other words, the returned results are guaranteed to contain the <paramref name="query"/> within their title.</param>
         /// <param name="cursor">The cursor to use to advance to the next page. Obtained by calling this API previously.</param>
         /// <returns>A task containing a <see cref="PageResponse{T}"/> of <see cref="Id{T}"/> upon completion.</returns>
-        /// <exception cref="RobloxAPIException">Error from the Roblox API.</exception>
+        /// <exception cref="RobloxAPIException">Roblox API failure or lack of permissions.</exception>
         /// <remarks>This API method does not cache and will make a request each time it is called.</remarks>
         public static async Task<EnumerableHttpResult<PageResponse<Id<Experience>>>> SearchExperiencesAsync(string query, Session? session = null, bool exactMatchSearch = false, string? cursor = null)
         {
@@ -66,7 +66,7 @@ namespace RoSharp.API
         /// <param name="session">Logged in session, optional.</param>
         /// <param name="cursor">The cursor to use to advance to the next page. Obtained by calling this API previously.</param>
         /// <returns>A task containing a <see cref="PageResponse{T}"/> of <see cref="Id{T}"/> upon completion.</returns>
-        /// <exception cref="RobloxAPIException">Error from the Roblox API.</exception>
+        /// <exception cref="RobloxAPIException">Roblox API failure or lack of permissions.</exception>
         /// <remarks>This API method does not cache and will make a request each time it is called.</remarks>
         public static async Task<PageResponse<Id<User>>> SearchUsersAsync(string query, Session? session = null, string? cursor = null)
         {
@@ -110,7 +110,7 @@ namespace RoSharp.API
         /// <param name="prioritizeExactMatch">Indicates whether or not to prioritize exact matches first.</param>
         /// <param name="cursor">The cursor to use to advance to the next page. Obtained by calling this API previously.</param>
         /// <returns>A task containing a <see cref="PageResponse{T}"/> of <see cref="Id{T}"/> upon completion.</returns>
-        /// <exception cref="RobloxAPIException">Error from the Roblox API.</exception>
+        /// <exception cref="RobloxAPIException">Roblox API failure or lack of permissions.</exception>
         /// <remarks>This API method does not cache and will make a request each time it is called.</remarks>
         public static async Task<PageResponse<Id<Community>>> SearchCommunitiesAsync(string query, Session? session = null, FixedLimit limit = FixedLimit.Limit100, bool prioritizeExactMatch = false, string? cursor = null)
         {

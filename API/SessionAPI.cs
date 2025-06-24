@@ -96,6 +96,7 @@ namespace RoSharp.API
         /// </summary>
         /// <param name="timeLength">The time length of the data.</param>
         /// <returns>The data in the form of an <see cref="EconomyBreakdown"/> struct.</returns>
+        /// <exception cref="RobloxAPIException">Roblox API failure or lack of permissions.</exception>
         public async Task<HttpResult<EconomyBreakdown>> GetIncomeAsync(AnalyticTimeLength timeLength = AnalyticTimeLength.Day)
         {
             if (session == null)
@@ -144,6 +145,7 @@ namespace RoSharp.API
         /// <param name="pageSize">The size of each page.</param>
         /// <param name="tab">The tab to search on.</param>
         /// <returns>A task containing a <see cref="ReadOnlyCollection{T}"/> of <see cref="PrivateMessage"/> upon completion.</returns>
+        /// <exception cref="RobloxAPIException">Roblox API failure or lack of permissions.</exception>
         public async Task<EnumerableHttpResult<ReadOnlyCollection<PrivateMessage>>> GetPrivateMessagesAsync(int pageNumber = 0, int pageSize = 20, MessagesPageTab tab = MessagesPageTab.Inbox)
         {
             string url = tab is MessagesPageTab.News
@@ -185,6 +187,7 @@ namespace RoSharp.API
         /// </summary>
         /// <param name="messageId">The unique Id of the message.</param>
         /// <returns>A task that completes when the operation is finished.</returns>
+        /// <exception cref="RobloxAPIException">Roblox API failure or lack of permissions.</exception>
         public async Task<HttpResult> MarkReadAsync(ulong messageId)
         {
             var message = new HttpMessage(HttpMethod.Post, "/v1/messages/mark-read", new
@@ -204,6 +207,7 @@ namespace RoSharp.API
         /// </summary>
         /// <param name="message">The message.</param>
         /// <returns>A task that completes when the operation is finished.</returns>
+        /// <exception cref="RobloxAPIException">Roblox API failure or lack of permissions.</exception>
         public async Task<HttpResult> MarkReadAsync(PrivateMessage message)
             => await MarkReadAsync(message.Id);
 
@@ -212,6 +216,7 @@ namespace RoSharp.API
         /// </summary>
         /// <param name="messageId">The unique Id of the message.</param>
         /// <returns>A task that completes when the operation is finished.</returns>
+        /// <exception cref="RobloxAPIException">Roblox API failure or lack of permissions.</exception>
         public async Task<HttpResult> MarkUnreadAsync(ulong messageId)
         {
             var message = new HttpMessage(HttpMethod.Post, "/v1/messages/mark-unread", new
@@ -231,6 +236,7 @@ namespace RoSharp.API
         /// </summary>
         /// <param name="message">The message.</param>
         /// <returns>A task that completes when the operation is finished.</returns>
+        /// <exception cref="RobloxAPIException">Roblox API failure or lack of permissions.</exception>
         public async Task<HttpResult> MarkUnreadAsync(PrivateMessage message)
             => await MarkUnreadAsync(message.Id);
 
@@ -239,6 +245,7 @@ namespace RoSharp.API
         /// </summary>
         /// <param name="messageId">The unique Id of the message.</param>
         /// <returns>A task that completes when the operation is finished.</returns>
+        /// <exception cref="RobloxAPIException">Roblox API failure or lack of permissions.</exception>
         public async Task<HttpResult> ArchiveAsync(ulong messageId)
         {
             var message = new HttpMessage(HttpMethod.Post, "/v1/messages/archive", new
@@ -258,6 +265,7 @@ namespace RoSharp.API
         /// </summary>
         /// <param name="message">The message.</param>
         /// <returns>A task that completes when the operation is finished.</returns>
+        /// <exception cref="RobloxAPIException">Roblox API failure or lack of permissions.</exception>
         public async Task<HttpResult> ArchiveAsync(PrivateMessage message)
             => await ArchiveAsync(message.Id);
 
@@ -266,6 +274,7 @@ namespace RoSharp.API
         /// </summary>
         /// <param name="messageId">The unique Id of the message.</param>
         /// <returns>A task that completes when the operation is finished.</returns>
+        /// <exception cref="RobloxAPIException">Roblox API failure or lack of permissions.</exception>
         public async Task<HttpResult> UnarchiveAsync(ulong messageId)
         {
             var message = new HttpMessage(HttpMethod.Post, "/v1/messages/unarchive", new
@@ -285,6 +294,7 @@ namespace RoSharp.API
         /// </summary>
         /// <param name="message">The message.</param>
         /// <returns>A task that completes when the operation is finished.</returns>
+        /// <exception cref="RobloxAPIException">Roblox API failure or lack of permissions.</exception>
         public async Task<HttpResult> UnarchiveAsync(PrivateMessage message)
             => await UnarchiveAsync(message.Id);
 

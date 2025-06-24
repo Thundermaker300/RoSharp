@@ -42,7 +42,7 @@ namespace RoSharp.API.Assets.Experiences
         /// <returns>A task containing the <see cref="Place"/> upon completion.</returns>
         /// <remarks>For a quicker way to get stats on an entire universe, see <see cref="Experience.FromPlaceId(ulong, Session?)"/>.</remarks>
         /// <exception cref="ArgumentException">Invalid place Id provided.</exception>
-        /// <exception cref="Exceptions.RobloxAPIException">Roblox API failure.</exception>
+        /// <exception cref="RobloxAPIException">Roblox API failure or lack of permissions.</exception>
         public new static async Task<Place> FromId(ulong id, Session? session = null)
         {
             if (RoPool<Place>.Contains(id))

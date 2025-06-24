@@ -257,7 +257,7 @@ namespace RoSharp.API.Assets
         /// <param name="session">The session, optional.</param>
         /// <returns>A task containing the <see cref="Asset"/> upon completion.</returns>
         /// <exception cref="ArgumentException">If the asset Id invalid.</exception>
-        /// <exception cref="RobloxAPIException">Roblox API failure.</exception>
+        /// <exception cref="RobloxAPIException">Roblox API failure or lack of permissions.</exception>
         /// <remarks>Authentication is not required but suggested as the Economy API hits ratelimits fast without user authentication.</remarks>
         public static async Task<Asset> FromId(ulong assetId, Session? session = null)
         {
@@ -432,7 +432,7 @@ namespace RoSharp.API.Assets
         /// <param name="size">The size of the thumbnail.</param>
         /// <returns>A task containing a thumbnail URL.</returns>
         /// <exception cref="ArgumentException">Invalid asset to get thumbnail for.</exception>
-        /// <exception cref="RobloxAPIException">Roblox API failure.</exception>
+        /// <exception cref="RobloxAPIException">Roblox API failure or lack of permissions.</exception>
         /// <remarks>This API method does not cache and will make a request each time it is called.</remarks>
         public async Task<HttpResult<string>> GetThumbnailAsync(ThumbnailSize size = ThumbnailSize.S420x420)
         {
