@@ -60,6 +60,46 @@ namespace RoSharp.API
             return new(priceFloors, null);
         }
 
+        /// <summary>
+        /// Gets a list of country codes that can sell products with local currency. Requires an authenticated session.
+        /// </summary>
+        /// <param name="session">Logged in session. Required but can be replaced with <see langword="null"/> if there is a global session assigned.</param>
+        /// <returns>A task containing a <see cref="ReadOnlyCollection{T}"/> of authorized country codes.</returns>
+        /// <exception cref="RobloxAPIException">Roblox API failure or lack of permissions.</exception>
+        public static async Task<EnumerableHttpResult<ReadOnlyCollection<string>>> GetAuthorizedFiatCountriesAsync(Session? session)
+        {
+            HttpMessage message = new(HttpMethod.Get, $"{Constants.URL("apis")}/marketplace-fiat-service/v1/seller/authorized-country-codes")
+            {
+                AuthType = AuthType.RobloSecurity,
+                ApiName = nameof(GetPriceFloorsAsync)
+            };
+
+            var response = await HttpManager.SendAsync(session, message);
+            string body = await response.Content.ReadAsStringAsync();
+
+            var list = new List<string>();
+            dynamic data = JObject.Parse(body);
+            foreach (dynamic item in data.countryCodes)
+            {
+                list.Add(Convert.ToString(item));
+            }
+
+            return new(response, list.AsReadOnly());
+        }
+
+        /// <summary>
+        /// Gets whether or not a specific country can sell products with local currency. Requires an authenticated session.
+        /// </summary>
+        /// <param name="countryCode">The country code to check. Case-insensitive.</param>
+        /// <param name="session">Logged in session. Required but can be replaced with <see langword="null"/> if there is a global session assigned.</param>
+        /// <returns>A task containing a bool upon completion.</returns>
+        /// <exception cref="RobloxAPIException">Roblox API failure or lack of permissions.</exception>
+        public static async Task<HttpResult<bool>> IsCountryFiatAuthorized(string countryCode, Session? session)
+        {
+            var data = await GetAuthorizedFiatCountriesAsync(session);
+            return new(data.HttpResponse, data.Value.Contains(countryCode.ToUpper()));
+        }
+
         private static ReadOnlyCollection<MarketplaceCategory> categories;
 
         /// <summary>
