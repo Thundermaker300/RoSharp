@@ -1285,6 +1285,31 @@ namespace RoSharp.API.Assets.Experiences
             return await p.GetFeedbackAsync(startTime, endTime, limit, voteTypeFilter, cursor);
         }
 
+        public async Task<EnumerableHttpResult<PageResponse<Id<Asset>>>> GetAllowedAssetsAsync(string? cursor = null)
+        {
+            string url = $"/asset-permissions-api/v1/universes/{UniverseId}/assets?maxPageSize=50&pageToken=";
+            if (cursor != null)
+                url += cursor;
+
+            var message = new HttpMessage(HttpMethod.Get, url)
+            {
+                AuthType = AuthType.RobloSecurity,
+                ApiName = nameof(GetAllowedAssetsAsync),
+            };
+            var response = await SendAsync(message, Constants.URL("apis"));
+            string rawData = await response.Content.ReadAsStringAsync();
+            dynamic data = JObject.Parse(rawData);
+
+            List<Id<Asset>> list = [];
+            foreach (dynamic item in data.results)
+            {
+                ulong id = item.assetId;
+                list.Add(new(id, session));
+            }
+
+            return new(response, new(list, Convert.ToString(data.nextPageToken), null));
+        }
+
         private string sourceLocale;
 
         /// <summary>

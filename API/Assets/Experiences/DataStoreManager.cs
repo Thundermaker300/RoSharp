@@ -18,6 +18,9 @@ namespace RoSharp.API.Assets.Experiences
 {
     /// <summary>
     /// Manager class for reading and modifying data within an experience's <c>DataStoreService</c>.
+    /// <para>
+    /// This class uses Roblox's Cloud API and its API methods require an authentication token to use.
+    /// </para>
     /// </summary>
     public class DataStoreManager
     {
