@@ -29,7 +29,7 @@ namespace RoSharp.API.Communities
         public ulong Id { get; }
 
         /// <inheritdoc/>
-        public string Url => $"{Constants.ROBLOX_URL}/groups/{Id}/";
+        public string Url => $"{Constants.ROBLOX_URL}/communities/{Id}";
 
         /// <inheritdoc/>
         public AssetOwnerType OwnerType => AssetOwnerType.Community;
