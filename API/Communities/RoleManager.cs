@@ -274,7 +274,7 @@ namespace RoSharp.API.Communities
         /// <returns>A task containing a <see cref="PageResponse{T}"/> of <see cref="Id{T}"/> upon completion.</returns>
         /// <exception cref="RobloxAPIException">Roblox API failure or lack of permissions.</exception>
         /// <remarks>This API method does not cache and will make a request each time it is called.</remarks>
-        public async Task<EnumerableHttpResult<PageResponse<Id<User>>>> GetMembersAsync(FixedLimit limit = FixedLimit.Limit100, RequestSortOrder sortOrder = RequestSortOrder.Asc, string? cursor = null)
+        public async Task<HttpResult<PageResponse<Id<User>>>> GetMembersAsync(FixedLimit limit = FixedLimit.Limit100, RequestSortOrder sortOrder = RequestSortOrder.Asc, string? cursor = null)
         {
             string url = $"/v1/groups/{roleManager.group.Id}/roles/{Id}/users?limit={limit.Limit()}&sortOrder={sortOrder}";
             if (cursor != null)

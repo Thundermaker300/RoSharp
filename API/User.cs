@@ -340,7 +340,7 @@ namespace RoSharp.API
         /// <param name="cursor">The cursor for the next page. Obtained by calling this API previously.</param>
         /// <returns>A task containing a <see cref="ReadOnlyCollection{T}"/> of strings when completed.</returns>
         /// <remarks>This API method does not cache and will make a request each time it is called.</remarks>
-        public async Task<EnumerableHttpResult<ReadOnlyCollection<string>>> GetRenameHistoryAsync(FixedLimit limit = FixedLimit.Limit100, RequestSortOrder sortOrder = RequestSortOrder.Desc, string? cursor = null)
+        public async Task<HttpResult<ReadOnlyCollection<string>>> GetRenameHistoryAsync(FixedLimit limit = FixedLimit.Limit100, RequestSortOrder sortOrder = RequestSortOrder.Desc, string? cursor = null)
         {
             string url = $"/v1/users/{Id}/username-history?limit={limit.Limit()}&sortOrder={sortOrder}";
             if (cursor != null)
@@ -471,7 +471,7 @@ namespace RoSharp.API
         /// <remarks>This API method does not cache and will make a request each time it is called.</remarks>
         /// <exception cref="RobloxAPIException">Roblox API failure or lack of permissions.</exception>
         /// <exception cref="ArgumentException">Invalid user.</exception>
-        public async Task<EnumerableHttpResult<ReadOnlyCollection<Id<Asset>>>> GetCollectionItemsAsync()
+        public async Task<HttpResult<ReadOnlyCollection<Id<Asset>>>> GetCollectionItemsAsync()
         {
             var response = await SendAsync(HttpMethod.Get, $"/users/profile/robloxcollections-json?userId={Id}", Constants.ROBLOX_URL_WWW);
             string rawData = await response.Content.ReadAsStringAsync();
@@ -496,7 +496,7 @@ namespace RoSharp.API
         /// <returns><see cref="ReadOnlyCollection{T}"/></returns>
         /// <exception cref="RobloxAPIException">Roblox API failure or lack of permissions.</exception>
         /// <remarks>This API method does not cache and will make a request each time it is called.</remarks>
-        public async Task<EnumerableHttpResult<ReadOnlyCollection<Id<User>>>> GetFriendsAsync(int limit = 50)
+        public async Task<HttpResult<ReadOnlyCollection<Id<User>>>> GetFriendsAsync(int limit = 50)
         {
             var response = await SendAsync(HttpMethod.Get, $"/v1/users/{Id}/friends", Constants.URL("friends"));
             string rawData = await response.Content.ReadAsStringAsync();
@@ -525,7 +525,7 @@ namespace RoSharp.API
         /// <param name="cursor">The cursor for the next page. Obtained by calling this API previously.</param>
         /// <returns>A task containing a <see cref="PageResponse{T}"/> of <see cref="Id{T}"/> upon completion.</returns>
         /// <exception cref="RobloxAPIException">Roblox API failure or lack of permissions.</exception>
-        public async Task<EnumerableHttpResult<PageResponse<Id<User>>>> GetFollowingAsync(FixedLimit limit = FixedLimit.Limit100, RequestSortOrder sortOrder = RequestSortOrder.Desc, string? cursor = null)
+        public async Task<HttpResult<PageResponse<Id<User>>>> GetFollowingAsync(FixedLimit limit = FixedLimit.Limit100, RequestSortOrder sortOrder = RequestSortOrder.Desc, string? cursor = null)
         {
             string url = $"/v1/users/{Id}/followings?limit={limit.Limit()}&sortOrder={sortOrder}";
             if (cursor != null)
@@ -554,7 +554,7 @@ namespace RoSharp.API
         /// <param name="cursor">The cursor for the next page. Obtained by calling this API previously.</param>
         /// <returns>A task containing a <see cref="PageResponse{T}"/> of <see cref="Id{T}"/> upon completion.</returns>
         /// <exception cref="RobloxAPIException">Roblox API failure or lack of permissions.</exception>
-        public async Task<EnumerableHttpResult<PageResponse<Id<User>>>> GetFollowersAsync(FixedLimit limit = FixedLimit.Limit100, RequestSortOrder sortOrder = RequestSortOrder.Desc, string? cursor = null)
+        public async Task<HttpResult<PageResponse<Id<User>>>> GetFollowersAsync(FixedLimit limit = FixedLimit.Limit100, RequestSortOrder sortOrder = RequestSortOrder.Desc, string? cursor = null)
         {
             string url = $"/v1/users/{Id}/followers?limit={limit.Limit()}&sortOrder={sortOrder}";
             if (cursor != null)
@@ -670,6 +670,11 @@ namespace RoSharp.API
 
         private ReadOnlyCollection<Id<Experience>>? experiences;
 
+        public async Task<HttpResult<PageResponse<string>>> Test()
+        {
+            return null;
+        }
+
         /// <summary>
         /// Returns experiences that are owned by the user and shown on their profile.
         /// </summary>
@@ -748,7 +753,7 @@ namespace RoSharp.API
         /// <param name="cursor">The cursor for the next page. Obtained by calling this API previously.</param>
         /// <returns>A task containing a <see cref="PageResponse{T}"/> of <see cref="Id{T}"/> upon completion.</returns>
         /// <remarks>This API method does not cache and will make a request each time it is called.</remarks>
-        public async Task<EnumerableHttpResult<PageResponse<Id<Badge>>>> GetBadgesAsync(FixedLimit limit = FixedLimit.Limit100, RequestSortOrder sortOrder = RequestSortOrder.Desc, string? cursor = null)
+        public async Task<HttpResult<PageResponse<Id<Badge>>>> GetBadgesAsync(FixedLimit limit = FixedLimit.Limit100, RequestSortOrder sortOrder = RequestSortOrder.Desc, string? cursor = null)
         {
             string url = $"/v1/users/{Id}/badges?sortOrder={sortOrder}&limit={limit.Limit()}";
             if (cursor != null)
@@ -783,7 +788,7 @@ namespace RoSharp.API
         /// <seealso cref="PrivateInventory"/>
         /// <seealso cref="GetBadgesAsync(FixedLimit, RequestSortOrder, string?)"/>
         /// <exception cref="RobloxAPIException">Roblox API failure or the authenticated user cannot see this user's inventory.</exception>
-        public async Task<EnumerableHttpResult<PageResponse<Id<Asset>>>> GetInventoryAsync(AssetType assetType, FixedLimit limit = FixedLimit.Limit100, RequestSortOrder sortOrder = RequestSortOrder.Desc, string? cursor = null)
+        public async Task<HttpResult<PageResponse<Id<Asset>>>> GetInventoryAsync(AssetType assetType, FixedLimit limit = FixedLimit.Limit100, RequestSortOrder sortOrder = RequestSortOrder.Desc, string? cursor = null)
         {
             string url = $"/v2/users/{Id}/inventory/{(int)assetType}?limit={limit.Limit()}&sortOrder={sortOrder}";
             if (cursor != null)
@@ -814,7 +819,7 @@ namespace RoSharp.API
         /// <param name="cursor">The cursor for the next page. Obtained by calling this API previously.</param>
         /// <returns>A task containing a <see cref="PageResponse{T}"/> of <see cref="Id{T}"/> upon completion.</returns>
         /// <remarks>This API method does not cache and will make a request each time it is called. This API also does not work for Badges, Bundles, and GamePasses -- see their respective APIs.</remarks>
-        public async Task<EnumerableHttpResult<PageResponse<Id<Asset>>>> GetFavoritesAsync(AssetType assetType, FixedLimit limit = FixedLimit.Limit100, string? cursor = null)
+        public async Task<HttpResult<PageResponse<Id<Asset>>>> GetFavoritesAsync(AssetType assetType, FixedLimit limit = FixedLimit.Limit100, string? cursor = null)
         {
             string url = $"/v1/favorites/users/{Id}/favorites/{(int)assetType}/assets?limit={limit.Limit()}";
             if (cursor != null)

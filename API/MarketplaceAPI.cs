@@ -19,7 +19,7 @@ namespace RoSharp.API
         /// </summary>
         /// <param name="session">Logged in session. Required but can be replaced with <see langword="null"/> if there is a global session assigned.</param>
         /// <returns>A task containing the <see cref="ReadOnlyDictionary{TKey, TValue}"/> upon completion.</returns>
-        public static async Task<EnumerableHttpResult<ReadOnlyDictionary<AssetType, int>>> GetPriceFloorsAsync(Session? session)
+        public static async Task<HttpResult<ReadOnlyDictionary<AssetType, int>>> GetPriceFloorsAsync(Session? session)
         {
 
             HttpMessage message = new(HttpMethod.Get, $"{Constants.URL("itemconfiguration")}/v1/collectibles/metadata")
@@ -66,7 +66,7 @@ namespace RoSharp.API
         /// <param name="session">Logged in session. Required but can be replaced with <see langword="null"/> if there is a global session assigned.</param>
         /// <returns>A task containing a <see cref="ReadOnlyCollection{T}"/> of authorized country codes.</returns>
         /// <exception cref="RobloxAPIException">Roblox API failure or lack of permissions.</exception>
-        public static async Task<EnumerableHttpResult<ReadOnlyCollection<string>>> GetAuthorizedFiatCountriesAsync(Session? session)
+        public static async Task<HttpResult<ReadOnlyCollection<string>>> GetAuthorizedFiatCountriesAsync(Session? session)
         {
             HttpMessage message = new(HttpMethod.Get, $"{Constants.URL("apis")}/marketplace-fiat-service/v1/seller/authorized-country-codes")
             {
@@ -302,7 +302,7 @@ namespace RoSharp.API
         /// <seealso cref="MarketplaceAPI.GetCategoriesAsync"/>
         /// <seealso cref="MarketplaceAPI.GetCategoryAsync(string)"/>
         /// <seealso cref="SearchAPI.SearchMarketplaceAsync(MarketplaceCategory, string, Session?, byte, string?, MarketplaceSearchOptions)"/>
-        public async Task<EnumerableHttpResult<PageResponse<Id<Asset>>>> SearchAsync(string? query, Session? session = null, byte limit = 30, string? cursor = null)
+        public async Task<HttpResult<PageResponse<Id<Asset>>>> SearchAsync(string? query, Session? session = null, byte limit = 30, string? cursor = null)
             => await SearchAPI.SearchMarketplaceAsync(this, query, session, limit, cursor);
 
         internal MarketplaceCategory() { }

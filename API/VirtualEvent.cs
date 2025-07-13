@@ -223,7 +223,7 @@ namespace RoSharp.API
         /// <returns>A task containing a <see cref="PageResponse{T}"/> of <see cref="Id{T}"/> upon completion.</returns>
         /// <remarks>This API method does not cache and will make a request each time it is called.</remarks>
         /// <exception cref="RobloxAPIException">Roblox API failure or lack of permissions.</exception>
-        public async Task<EnumerableHttpResult<PageResponse<Id<User>>>> GetRSVPsAsync(string? cursor = null)
+        public async Task<HttpResult<PageResponse<Id<User>>>> GetRSVPsAsync(string? cursor = null)
         {
             string url = $"/virtual-events/v1/virtual-events/{Id}/rsvps";
             if (cursor != null)

@@ -96,7 +96,7 @@ namespace RoSharp.API.Assets.Experiences
         /// <param name="sortOrder">Sort order. <c>1</c> = Least to most players, <c>2</c> = Most to least players. Any other input will be treated as <c>2</c>.</param>
         /// <param name="cursor">The cursor for the next page. Obtained by calling this API previously.</param>
         /// <returns></returns>
-        public async Task<EnumerableHttpResult<PageResponse<GameServer>>> GetLiveServersAsync(FixedLimit limit = FixedLimit.Limit50, int sortOrder = 2, string? cursor = null)
+        public async Task<HttpResult<PageResponse<GameServer>>> GetLiveServersAsync(FixedLimit limit = FixedLimit.Limit50, int sortOrder = 2, string? cursor = null)
         {
             string url = $"/v1/games/{Id}/servers/0?sortOrder={sortOrder}&excludeFullGames=false&limit={limit.Limit()}";
             if (cursor != null)
@@ -177,7 +177,7 @@ namespace RoSharp.API.Assets.Experiences
         /// <param name="cursor">The cursor for the next page. Obtained by calling this API previously.</param>
         /// <returns>A task containing a <see cref="PageResponse{T}"/> of <see cref="ExperienceReview"/> upon completion.</returns>
         /// <exception cref="RobloxAPIException">Roblox API failure or lack of permissions.</exception>
-        public async Task<EnumerableHttpResult<PageResponse<ExperienceReview>>> GetFeedbackAsync(DateTime? startTime = null, DateTime? endTime = null, FixedLimit limit = FixedLimit.Limit50, bool? voteTypeFilter = null, string? cursor = null)
+        public async Task<HttpResult<PageResponse<ExperienceReview>>> GetFeedbackAsync(DateTime? startTime = null, DateTime? endTime = null, FixedLimit limit = FixedLimit.Limit50, bool? voteTypeFilter = null, string? cursor = null)
         {
             string url = $"/player-generated-reviews-service/v1/channels/experience-discovery-page/assets/{Id}/reviews?limit={limit.Limit()}&hasComment=false";
             if (startTime.HasValue)

@@ -32,7 +32,7 @@ namespace RoSharp.Utility
         /// <returns>A task containing a <see cref="ReadOnlyDictionary{TKey, TValue}"/> upon completion.</returns>
         /// <exception cref="ArgumentException">No valid usernames.</exception>
         /// <exception cref="RobloxAPIException">Roblox API failure.</exception>
-        public static async Task<EnumerableHttpResult<ReadOnlyDictionary<string, ulong>>> GetUserIdsAsync(params string[] usernames)
+        public static async Task<HttpResult<ReadOnlyDictionary<string, ulong>>> GetUserIdsAsync(params string[] usernames)
         {
             object content = new
             {
@@ -66,10 +66,10 @@ namespace RoSharp.Utility
         /// <returns>A task containing a <see cref="ReadOnlyDictionary{TKey, TValue}"/> upon completion.</returns>
         /// <exception cref="ArgumentException">No valid usernames.</exception>
         /// <exception cref="RobloxAPIException">Roblox API failure.</exception>
-        public static async Task<EnumerableHttpResult<ReadOnlyDictionary<string, ulong>>> GetUserIdsAsync(IEnumerable<string> usernames)
+        public static async Task<HttpResult<ReadOnlyDictionary<string, ulong>>> GetUserIdsAsync(IEnumerable<string> usernames)
             => await GetUserIdsAsync(usernames.ToArray());
 
-        private static async Task<EnumerableHttpResult<ReadOnlyCollection<Color>>> GetColors(string key)
+        private static async Task<HttpResult<ReadOnlyCollection<Color>>> GetColors(string key)
         {
             HttpMessage payload = new(HttpMethod.Get, $"{Constants.URL("avatar")}/v1/avatar-rules");
             var response = await HttpManager.SendAsync(null, payload);
@@ -88,14 +88,14 @@ namespace RoSharp.Utility
         /// Gets a list of colors that are listed in the basic body colors in the avatar editor.
         /// </summary>
         /// <returns>A task containing a <see cref="ReadOnlyCollection{T}"/> of <see cref="Color"/> upon completion.</returns>
-        public static async Task<EnumerableHttpResult<ReadOnlyCollection<Color>>> GetBasicBodyColorOptionsAsync()
+        public static async Task<HttpResult<ReadOnlyCollection<Color>>> GetBasicBodyColorOptionsAsync()
             => await GetColors("basicBodyColorsPalette");
 
         /// <summary>
         /// Gets a list of colors that are listed in the advanced body colors in the avatar editor.
         /// </summary>
         /// <returns>A task containing a <see cref="ReadOnlyCollection{T}"/> of <see cref="Color"/> upon completion.</returns>
-        public static async Task<EnumerableHttpResult<ReadOnlyCollection<Color>>> GetAdvancedBodyColorOptionsAsync()
+        public static async Task<HttpResult<ReadOnlyCollection<Color>>> GetAdvancedBodyColorOptionsAsync()
             => await GetColors("bodyColorsPalette");
     }
 }

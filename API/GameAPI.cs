@@ -103,7 +103,7 @@ namespace RoSharp.API
         /// <exception cref="RobloxAPIException">Roblox API failure or lack of permissions.</exception>
         /// <remarks>This API method does not cache and will make a request each time it is called.</remarks>
         [Obsolete("Use SearchAPI.SearchExperiencesAsync()")]
-        public static async Task<EnumerableHttpResult<PageResponse<Id<Experience>>>> SearchAsync(string query, Session? session = null, bool exactMatchSearch = false, string? cursor = null)
+        public static async Task<HttpResult<PageResponse<Id<Experience>>>> SearchAsync(string query, Session? session = null, bool exactMatchSearch = false, string? cursor = null)
             => await SearchAPI.SearchExperiencesAsync(query, session, exactMatchSearch, cursor);
 
         /// <summary>
@@ -112,7 +112,7 @@ namespace RoSharp.API
         /// <param name="session">Logged in session. Required but can be replaced with <see langword="null"/> if there is a global session assigned.</param>
         /// <returns>A task containing a <see cref="ReadOnlyCollection{T}"/> of <see cref="Id{T}"/> upon completion.</returns>
         /// <exception cref="RobloxAPIException">Roblox API failure or lack of permissions (must be authenticated to access).</exception>
-        public static async Task<EnumerableHttpResult<ReadOnlyCollection<Id<Experience>>>> GetTodaysPicksAsync(Session? session)
+        public static async Task<HttpResult<ReadOnlyCollection<Id<Experience>>>> GetTodaysPicksAsync(Session? session)
         {
             object payload = new
             {
@@ -150,7 +150,7 @@ namespace RoSharp.API
         /// <param name="query">The query to return suggestions for.</param>
         /// <param name="session">Logged in session, optional.</param>
         /// <returns>A task containing a <see cref="ReadOnlyCollection{T}"/> of <see cref="string"/>s upon completion.</returns>
-        public static async Task<EnumerableHttpResult<ReadOnlyCollection<string>>> GetAutocompleteSuggestionsAsync(string query, Session? session = null)
+        public static async Task<HttpResult<ReadOnlyCollection<string>>> GetAutocompleteSuggestionsAsync(string query, Session? session = null)
         {
             HttpMessage message = new(HttpMethod.Get, $"/games-autocomplete/v1/get-suggestion/{query}");
             var response = await HttpManager.SendAsync(session, message);

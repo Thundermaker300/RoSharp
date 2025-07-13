@@ -32,7 +32,7 @@ namespace RoSharp.API.Communities
         /// <param name="cursor">The cursor for the next page. Obtained by calling this API previously.</param>
         /// <returns>A task containing a <see cref="PageResponse{T}"/> of <see cref="Id{T}"/> upon completion.</returns>
         /// <exception cref="RobloxAPIException">Roblox API failure or lack of permissions.</exception>
-        public async Task<EnumerableHttpResult<PageResponse<Id<User>>>> GetPendingRequestsAsync(FixedLimit limit = FixedLimit.Limit100, RequestSortOrder sortOrder = RequestSortOrder.Desc, string? cursor = null)
+        public async Task<HttpResult<PageResponse<Id<User>>>> GetPendingRequestsAsync(FixedLimit limit = FixedLimit.Limit100, RequestSortOrder sortOrder = RequestSortOrder.Desc, string? cursor = null)
         {
             string url = $"/v1/groups/{community.Id}/join-requests?limit={limit.Limit()}&sortOrder={sortOrder}";
             if (cursor != null)
@@ -69,7 +69,7 @@ namespace RoSharp.API.Communities
         /// <param name="cursor">The cursor for the next page. Obtained by calling this API previously.</param>
         /// <returns>A task containing a <see cref="PageResponse{T}"/> of <see cref="Id{T}"/> upon completion.</returns>
         /// <exception cref="RobloxAPIException">Roblox API failure or lack of permissions.</exception>
-        public async Task<EnumerableHttpResult<PageResponse<Id<User>>>> GetMembersAsync(FixedLimit limit = FixedLimit.Limit100, RequestSortOrder sortOrder = RequestSortOrder.Asc, string? cursor = null)
+        public async Task<HttpResult<PageResponse<Id<User>>>> GetMembersAsync(FixedLimit limit = FixedLimit.Limit100, RequestSortOrder sortOrder = RequestSortOrder.Asc, string? cursor = null)
         {
             string url = $"/v1/groups/{community.Id}/users?limit={limit.Limit()}&sortOrder={sortOrder}";
             if (cursor != null)
@@ -106,7 +106,7 @@ namespace RoSharp.API.Communities
         /// <param name="cursor">The cursor for the next page. Obtained by calling this API previously.</param>
         /// <returns>A task containing a <see cref="PageResponse{T}"/> of <see cref="Id{T}"/> upon completion.</returns>
         /// <exception cref="RobloxAPIException">Roblox API failure or lack of permissions.</exception>
-        public async Task<EnumerableHttpResult<PageResponse<Id<User>>>> GetBannedMembersAsync(FixedLimit limit = FixedLimit.Limit100, RequestSortOrder sortOrder = RequestSortOrder.Asc, string? cursor = null)
+        public async Task<HttpResult<PageResponse<Id<User>>>> GetBannedMembersAsync(FixedLimit limit = FixedLimit.Limit100, RequestSortOrder sortOrder = RequestSortOrder.Asc, string? cursor = null)
         {
             string url = $"/v1/groups/{community.Id}/bans?limit={limit.Limit()}&sortOrder={sortOrder}";
             if (cursor != null)

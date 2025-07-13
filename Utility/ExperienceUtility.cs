@@ -38,7 +38,7 @@ namespace RoSharp.Utility
         /// </summary>
         /// <param name="session">An authenticated session, required.</param>
         /// <returns>A task containing a <see cref="ReadOnlyCollection{T}"/> of <see cref="FiatPurchase"/> upon completion.</returns>
-        public static async Task<EnumerableHttpResult<ReadOnlyCollection<FiatPurchase>>> GetFiatOptionsAsync(Session? session)
+        public static async Task<HttpResult<ReadOnlyCollection<FiatPurchase>>> GetFiatOptionsAsync(Session? session)
         {
             HttpMessage payload = new(HttpMethod.Get, $"{Constants.URL("apis")}/fiat-paid-access-service/v1/product/prices")
             {

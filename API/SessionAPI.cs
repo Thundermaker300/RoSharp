@@ -146,7 +146,7 @@ namespace RoSharp.API
         /// <param name="tab">The tab to search on.</param>
         /// <returns>A task containing a <see cref="ReadOnlyCollection{T}"/> of <see cref="PrivateMessage"/> upon completion.</returns>
         /// <exception cref="RobloxAPIException">Roblox API failure or lack of permissions.</exception>
-        public async Task<EnumerableHttpResult<ReadOnlyCollection<PrivateMessage>>> GetPrivateMessagesAsync(int pageNumber = 0, int pageSize = 20, MessagesPageTab tab = MessagesPageTab.Inbox)
+        public async Task<HttpResult<ReadOnlyCollection<PrivateMessage>>> GetPrivateMessagesAsync(int pageNumber = 0, int pageSize = 20, MessagesPageTab tab = MessagesPageTab.Inbox)
         {
             string url = tab is MessagesPageTab.News
                 ? "/v1/announcements"

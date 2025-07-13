@@ -42,7 +42,7 @@ namespace RoSharp.API.Assets.Experiences
         /// <param name="scope">The scope of the request. Defaults to <c>global</c>.</param>
         /// <returns>A task containing a <see cref="PageResponse{T}"/> of <see cref="DataStore"/> upon completion.</returns>
         /// <exception cref="RobloxAPIException">Roblox API failure or lack of permissions.</exception>
-        public async Task<EnumerableHttpResult<PageResponse<DataStore>>> ListDataStoresAsync(string? cursor = null, string scope = "global")
+        public async Task<HttpResult<PageResponse<DataStore>>> ListDataStoresAsync(string? cursor = null, string scope = "global")
         {
             string url = $"/datastores/v1/universes/{experience.UniverseId}/standard-datastores?limit=10&scope={scope}";
             if (cursor != null)

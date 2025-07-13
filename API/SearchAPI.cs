@@ -28,7 +28,7 @@ namespace RoSharp.API
         /// <returns>A task containing a <see cref="PageResponse{T}"/> of <see cref="Id{T}"/> upon completion.</returns>
         /// <exception cref="RobloxAPIException">Roblox API failure or lack of permissions.</exception>
         /// <remarks>This API method does not cache and will make a request each time it is called.</remarks>
-        public static async Task<EnumerableHttpResult<PageResponse<Id<Experience>>>> SearchExperiencesAsync(string query, Session? session = null, bool exactMatchSearch = false, string? cursor = null)
+        public static async Task<HttpResult<PageResponse<Id<Experience>>>> SearchExperiencesAsync(string query, Session? session = null, bool exactMatchSearch = false, string? cursor = null)
         {
             if (exactMatchSearch)
                 query = $"\"{query}\"";
@@ -149,7 +149,7 @@ namespace RoSharp.API
         /// <seealso cref="MarketplaceAPI.GetCategoriesAsync"/>
         /// <seealso cref="MarketplaceAPI.GetCategoryAsync(string)"/>
         /// <seealso cref="MarketplaceCategory.SearchAsync(string, Session?, byte, string?)"/>
-        public static async Task<EnumerableHttpResult<PageResponse<Id<Asset>>>> SearchMarketplaceAsync(MarketplaceCategory category, string? query, Session? session = null, byte limit = 30, string? cursor = null, MarketplaceSearchOptions? options = null)
+        public static async Task<HttpResult<PageResponse<Id<Asset>>>> SearchMarketplaceAsync(MarketplaceCategory category, string? query, Session? session = null, byte limit = 30, string? cursor = null, MarketplaceSearchOptions? options = null)
         {
             ArgumentNullException.ThrowIfNull(category, nameof(category));
 

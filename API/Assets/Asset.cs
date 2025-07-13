@@ -511,7 +511,7 @@ namespace RoSharp.API.Assets
         /// <param name="cursor">The cursor for the next page. Obtained by calling this API previously.</param>
         /// <returns>A task containing a <see cref="PageResponse{T}"/> of <see cref="AssetReview"/> upon completion.</returns>
         /// <remarks>This method will return an empty <see cref="PageResponse{T}"/> if <see cref="IsCreatorHubAsset"/> is <see langword="false"/>.</remarks>
-        public async Task<EnumerableHttpResult<PageResponse<AssetReview>>> GetReviewsAsync(int limit = 50, string? cursor = null)
+        public async Task<HttpResult<PageResponse<AssetReview>>> GetReviewsAsync(int limit = 50, string? cursor = null)
         {
             if (!IsCreatorHubAsset)
                 return new(null, PageResponse<AssetReview>.Empty);
@@ -550,7 +550,7 @@ namespace RoSharp.API.Assets
         /// Gets this asset's tags.
         /// </summary>
         /// <returns>A task containing a <see cref="ReadOnlyCollection{T}"/> of <see cref="AssetTag"/> upon completion.</returns>
-        public async Task<EnumerableHttpResult<ReadOnlyCollection<AssetTag>>> GetTagsAsync()
+        public async Task<HttpResult<ReadOnlyCollection<AssetTag>>> GetTagsAsync()
         {
             if (assetTypeOverride != null)
                 return new(null, new(new List<AssetTag>().AsReadOnly()));
@@ -617,7 +617,7 @@ namespace RoSharp.API.Assets
         /// <param name="limit">The limit of assets to return. Maximum: 45.</param>
         /// <returns>A task representing a list of assets shown as recommended.</returns>
         /// <remarks>This API method does not cache and will make a request each time it is called. Occasionally, Roblox's API will produce a 'bad recommendation' that leads to an asset that doesn't exist (either deleted or hidden). If this is the case, RoSharp will skip over it automatically. However, if the limit is set to Roblox's maximum of 45, this will result in less than 45 assets being returned.</remarks>
-        public async Task<EnumerableHttpResult<ReadOnlyCollection<Id<Asset>>>> GetRecommendedAsync(int limit = 7)
+        public async Task<HttpResult<ReadOnlyCollection<Id<Asset>>>> GetRecommendedAsync(int limit = 7)
         {
             var response = await SendAsync(HttpMethod.Get, $"/v2/recommendations/assets?assetId={Id}&assetTypeId={(int)AssetType}&numItems=45");
             string rawData = await response.Content.ReadAsStringAsync();

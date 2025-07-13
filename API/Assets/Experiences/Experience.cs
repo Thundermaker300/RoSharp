@@ -702,7 +702,7 @@ namespace RoSharp.API.Assets.Experiences
         /// <param name="cursor">The cursor for the next page. Obtained by calling this API previously.</param>
         /// <returns>A task containing a <see cref="PageResponse{T}"/> of <see cref="Id{T}"/> upon completion.</returns>
         /// <remarks>This API method does not cache and will make a request each time it is called.</remarks>
-        public async Task<EnumerableHttpResult<PageResponse<Id<Place>>>> GetPlacesAsync(FixedLimit limit = FixedLimit.Limit100, RequestSortOrder sortOrder = RequestSortOrder.Asc, string? cursor = null)
+        public async Task<HttpResult<PageResponse<Id<Place>>>> GetPlacesAsync(FixedLimit limit = FixedLimit.Limit100, RequestSortOrder sortOrder = RequestSortOrder.Asc, string? cursor = null)
         {
             string url = $"/v1/universes/{Id}/places?sortOrder={sortOrder}&limit={limit.Limit()}&isUniverseCreation=false";
             if (cursor != null)
@@ -732,7 +732,7 @@ namespace RoSharp.API.Assets.Experiences
         /// <param name="limit">The limit of assets to return. Maximum: 45.</param>
         /// <returns>A task representing a list of assets shown as recommended.</returns>
         /// <remarks>Occasionally, Roblox's API will produce a 'bad recommendation' that leads to an asset that doesn't exist (either deleted or hidden). If this is the case, RoSharp will skip over it automatically. However, if the limit is set to Roblox's maximum of 45, this will result in less than 45 assets being returned.</remarks>
-        public async Task<EnumerableHttpResult<ReadOnlyCollection<Experience>>> GetRecommendedAsync(int limit = 6)
+        public async Task<HttpResult<ReadOnlyCollection<Experience>>> GetRecommendedAsync(int limit = 6)
         {
             var response = await SendAsync(HttpMethod.Get, $"/v1/games/recommendations/game/{UniverseId}?maxRows={limit}");
             string rawData = await response.Content.ReadAsStringAsync();
@@ -799,7 +799,7 @@ namespace RoSharp.API.Assets.Experiences
         /// <returns>A <see cref="ReadOnlyCollection{T}"/> of <see cref="ExperienceThumbnail"/>s that are the experience's thumbnails.</returns>
         /// <exception cref="ArgumentException">Invalid experience to get thumbnails for.</exception>
         /// <remarks>This API method does not cache and will make a request each time it is called.</remarks>
-        public async Task<EnumerableHttpResult<ReadOnlyCollection<ExperienceThumbnail>>> GetThumbnailsAsync()
+        public async Task<HttpResult<ReadOnlyCollection<ExperienceThumbnail>>> GetThumbnailsAsync()
         {
             string url = $"/v2/games/{UniverseId}/media";
             var response = await SendAsync(HttpMethod.Get, url);
@@ -1205,7 +1205,7 @@ namespace RoSharp.API.Assets.Experiences
         /// <param name="cursor">The cursor for the next page. Obtained by calling this API previously.</param>
         /// <returns>A task containing a <see cref="PageResponse{T}"/> of <see cref="Id{T}"/> upon completion.</returns>
         /// <exception cref="RobloxAPIException">Roblox API failure or lack of permissions.</exception>
-        public async Task<EnumerableHttpResult<PageResponse<Id<VirtualEvent>>>> GetVirtualEventsAsync(bool includeFinished = false, string? cursor = null)
+        public async Task<HttpResult<PageResponse<Id<VirtualEvent>>>> GetVirtualEventsAsync(bool includeFinished = false, string? cursor = null)
         {
             string url = $"/virtual-events/v1/universes/{Id}/virtual-events" + (!includeFinished ? $"?fromUtc={DateTime.UtcNow.ToString("s") + ".000Z"}" : string.Empty);
             if (cursor != null)
@@ -1279,13 +1279,13 @@ namespace RoSharp.API.Assets.Experiences
         /// <param name="cursor">The cursor for the next page. Obtained by calling this API previously.</param>
         /// <returns>A task containing a <see cref="PageResponse{T}"/> of <see cref="ExperienceReview"/> upon completion.</returns>
         /// <exception cref="RobloxAPIException">Roblox API failure or lack of permissions.</exception>
-        public async Task<EnumerableHttpResult<PageResponse<ExperienceReview>>> GetFeedbackAsync(DateTime? startTime = null, DateTime? endTime = null, FixedLimit limit = FixedLimit.Limit50, bool? voteTypeFilter = null, string? cursor = null)
+        public async Task<HttpResult<PageResponse<ExperienceReview>>> GetFeedbackAsync(DateTime? startTime = null, DateTime? endTime = null, FixedLimit limit = FixedLimit.Limit50, bool? voteTypeFilter = null, string? cursor = null)
         {
             Place p = await Place.FromId(RootPlaceId, session);
             return await p.GetFeedbackAsync(startTime, endTime, limit, voteTypeFilter, cursor);
         }
 
-        public async Task<EnumerableHttpResult<PageResponse<Id<Asset>>>> GetAllowedAssetsAsync(string? cursor = null)
+        public async Task<HttpResult<PageResponse<Id<Asset>>>> GetAllowedAssetsAsync(string? cursor = null)
         {
             string url = $"/asset-permissions-api/v1/universes/{UniverseId}/assets?maxPageSize=50&pageToken=";
             if (cursor != null)

@@ -232,7 +232,7 @@ namespace RoSharp.API.Assets.Experiences
         /// </summary>
         /// <returns>A task containing a <see cref="ReadOnlyDictionary{TKey, TValue}"/> of <see cref="Device"/> and <see cref="ulong"/> upon completion.</returns>
         /// <exception cref="RobloxAPIException">Roblox API failure or lack of permissions.</exception>
-        public async Task<EnumerableHttpResult<ReadOnlyDictionary<Device, ulong>>> GetConcurrentUsersByDeviceAsync()
+        public async Task<HttpResult<ReadOnlyDictionary<Device, ulong>>> GetConcurrentUsersByDeviceAsync()
         {
             var message = new HttpMessage(HttpMethod.Post, $"/universe-performance-raqi/v1/live-stats/universe/{experience.UniverseId}", new
             {
@@ -272,7 +272,7 @@ namespace RoSharp.API.Assets.Experiences
         /// <returns>A task containing a <see cref="ReadOnlyCollection{T}"/> of <see cref="ExperienceAuditLog"/> upon completion.</returns>
         /// <remarks>This API method does not cache and will make a request each time it is called.</remarks>
         /// <exception cref="RobloxAPIException">Roblox API failure or lack of permissions.</exception>
-        public async Task<EnumerableHttpResult<ReadOnlyCollection<ExperienceAuditLog>>> GetAuditLogsAsync()
+        public async Task<HttpResult<ReadOnlyCollection<ExperienceAuditLog>>> GetAuditLogsAsync()
         {
             var message = new HttpMessage(HttpMethod.Get, $"/activity-feed-api/v1/history?clientType=1&universeId={experience.UniverseId}")
             {

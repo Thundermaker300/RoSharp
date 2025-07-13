@@ -26,7 +26,7 @@ namespace RoSharp.API.Communities.Forum
             {
                 var response = await GetCategoriesAsync(nextPage);
 
-                foreach (ForumCategory cat in response)
+                foreach (ForumCategory cat in response.Value)
                 {
                     categories.Add(cat);
                 }
@@ -100,7 +100,7 @@ namespace RoSharp.API.Communities.Forum
         /// <param name="cursor">The cursor for the next page. Obtained by calling this API previously.</param>
         /// <returns>A task containing a <see cref="PageResponse{T}"/> of <see cref="ForumCategory"/> upon completion.</returns>
         /// <exception cref="RobloxAPIException">Roblox API failure or lack of permissions.</exception>
-        public async Task<EnumerableHttpResult<PageResponse<ForumCategory>>> GetCategoriesAsync(string? cursor = null)
+        public async Task<HttpResult<PageResponse<ForumCategory>>> GetCategoriesAsync(string? cursor = null)
         {
             string url = $"/v1/groups/{community.Id}/forums";
             if (cursor is not null)

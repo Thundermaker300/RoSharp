@@ -70,7 +70,7 @@ namespace RoSharp.API.Communities.Forum
         /// <param name="cursor">The cursor for the next page. Obtained by calling this API previously.</param>
         /// <returns>A task containing a <see cref="PageResponse{T}"/> of <see cref="ForumPost"/> upon completion.</returns>
         /// <exception cref="RobloxAPIException">Roblox API failure or lack of permissions.</exception>
-        public async Task<EnumerableHttpResult<PageResponse<ForumPost>>> GetPostsAsync(FixedLimit limit = FixedLimit.Limit10, string? cursor = null)
+        public async Task<HttpResult<PageResponse<ForumPost>>> GetPostsAsync(FixedLimit limit = FixedLimit.Limit10, string? cursor = null)
         {
             string url = $"/v1/groups/{manager.community.Id}/forums/{Id}/posts?includeCommentCount=true&limit={limit.Limit()}";
             if (cursor is not null)
