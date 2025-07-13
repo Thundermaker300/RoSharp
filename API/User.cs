@@ -670,11 +670,6 @@ namespace RoSharp.API
 
         private ReadOnlyCollection<Id<Experience>>? experiences;
 
-        public async Task<HttpResult<PageResponse<string>>> Test()
-        {
-            return null;
-        }
-
         /// <summary>
         /// Returns experiences that are owned by the user and shown on their profile.
         /// </summary>
