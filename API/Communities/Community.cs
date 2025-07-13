@@ -831,6 +831,63 @@ namespace RoSharp.API.Communities
             return new(await SendAsync(payload));
         }
 
+        /// <summary>
+        /// Gets blocked keywords in this community.
+        /// </summary>
+        /// <param name="limit">The maximum amount of words to return.</param>
+        /// <param name="cursor">The cursor for the next page. Obtained by calling this API previously.</param>
+        /// <returns></returns>
+        public async Task<EnumerableHttpResult<PageResponse<CommunityBlockedWord>>> GetBlockedWordsAsync(FixedLimit limit = FixedLimit.Limit50, string? cursor = null)
+        {
+            string url = $"/v1/groups/{Id}/blocked-keywords?limit={limit.Limit()}";
+            if (cursor != null)
+                url += $"&cursor={cursor}";
+
+            var response = await SendAsync(HttpMethod.Get, url);
+            string rawData = await response.Content.ReadAsStringAsync();
+            dynamic data = JObject.Parse(rawData);
+
+            List<CommunityBlockedWord> list = [];
+            string? nextPage = data.nextPageCursor;
+            string? previousPage = data.previousPageCursor;
+
+            foreach (dynamic item in data.data)
+            {
+                CommunityBlockedWord word = new()
+                {
+                    Id = item.id,
+                    Keyword = item.keyword,
+                    UserId = new(Convert.ToUInt64(item.createdBy), session),
+                    IsPrivate = item.isPrivate,
+                    Created = item.createdAt,
+                    Updated = item.updatedAt,
+                };
+                list.Add(word);
+            }
+
+            return new(response, new(list, nextPage, previousPage));
+        }
+
+        /// <summary>
+        /// Adds blocked words to a community.
+        /// </summary>
+        /// <param name="keywords">The words to block.</param>
+        /// <returns>A task that completes when the operation has finished.</returns>
+        // TODO: Return an Enumerable with the response body.
+        public async Task<HttpResult> AddBlockedWordsAsync(params string[] keywords)
+        {
+            HttpMessage payload = new(HttpMethod.Post, $"/v1/groups/{Id}/blocked-keywords", new
+            {
+                isPrivate = false,
+                keywords = string.Join(',', keywords),
+            })
+            {
+                AuthType = AuthType.RobloSecurity,
+                ApiName = nameof(AddBlockedWordsAsync),
+            };
+            return new(await SendAsync(payload));
+        }
+
         /// <inheritdoc/>
         public override string ToString()
         {
