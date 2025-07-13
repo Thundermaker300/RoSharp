@@ -60,8 +60,8 @@ namespace RoSharp.Http
                 SessionVerify.ThrowAPIKeyIfNecessary(session, message.ApiName ?? "UNKNOWN - MESSAGE DEV", message.ApiKeyPermission ?? "UNKNOWN - MESSAGE DEV");
 
             // Proxy
-            if (session is not null && session.ProxyUrl is not null)
-                message.Url = message.Url.Replace("roblox.com", session.ProxyUrl);
+            if (session is not null && session.Options?.ProxyUrl is not null)
+                message.Url = message.Url.Replace("roblox.com", session.Options?.ProxyUrl);
 
             HttpClient client = GetClient();
             HttpRequestMessage messageToSend = new HttpRequestMessage(message.Method, message.Url);
