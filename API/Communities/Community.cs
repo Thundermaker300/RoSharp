@@ -409,14 +409,14 @@ namespace RoSharp.API.Communities
             => await ModifyAsync(new() { Description = text });
 
         /// <summary>
-        /// Creates a community shout.
+        /// Sets the community shout. Providing <see langword="null"/> as the text will clear the shout.
         /// </summary>
-        /// <param name="text">The text for the shout.</param>
+        /// <param name="text">The text for the shout, or <see langword="null"/> to clear the shout.</param>
         /// <returns>Task that completes when the operation is finished.</returns>
         /// <exception cref="RobloxAPIException">Roblox API failure or lack of permissions.</exception>
-        public async Task<HttpResult> ShoutAsync(string text)
+        public async Task<HttpResult> ShoutAsync(string? text)
         {
-            var message = new HttpMessage(HttpMethod.Patch, $"/v1/groups/{Id}/status", new { message = text })
+            var message = new HttpMessage(HttpMethod.Patch, $"/v1/groups/{Id}/status", new { message = text ?? string.Empty })
             {
                 AuthType = AuthType.RobloSecurity,
                 ApiName = nameof(ShoutAsync)
