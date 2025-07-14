@@ -836,7 +836,7 @@ namespace RoSharp.API.Communities
         /// </summary>
         /// <param name="limit">The maximum amount of words to return.</param>
         /// <param name="cursor">The cursor for the next page. Obtained by calling this API previously.</param>
-        /// <returns></returns>
+        /// <returns>A task containing a <see cref="PageResponse{T}"/> of <see cref="CommunityBlockedWord"/> upon completion.</returns>
         public async Task<HttpResult<PageResponse<CommunityBlockedWord>>> GetBlockedWordsAsync(FixedLimit limit = FixedLimit.Limit50, string? cursor = null)
         {
             string url = $"/v1/groups/{Id}/blocked-keywords?limit={limit.Limit()}";
@@ -887,6 +887,29 @@ namespace RoSharp.API.Communities
             };
             return new(await SendAsync(payload));
         }
+
+        /// <summary>
+        /// Removes a blocked word with the given <paramref name="id"/>.
+        /// </summary>
+        /// <param name="id">The unique Id of the blocked word.</param>
+        /// <returns>A task that completes when the operation has finished.</returns>
+        public async Task<HttpResult> RemoveBlockedWordAsync(string id)
+        {
+            HttpMessage payload = new(HttpMethod.Delete, $"/v1/groups/{Id}/blocked-keywords/{id}")
+            {
+                AuthType = AuthType.RobloSecurity,
+                ApiName = nameof(RemoveBlockedWordAsync),
+            };
+            return new(await SendAsync(payload));
+        }
+
+        /// <summary>
+        /// Removes a blocked word.
+        /// </summary>
+        /// <param name="word">The blocked word to remove.</param>
+        /// <returns>A task that completes when the operation has finished.</returns>
+        public async Task<HttpResult> RemoveBlockedWordAsync(CommunityBlockedWord word)
+            => await RemoveBlockedWordAsync(word.Id);
 
         /// <inheritdoc/>
         public override string ToString()
