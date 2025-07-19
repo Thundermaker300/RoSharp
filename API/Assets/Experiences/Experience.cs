@@ -245,8 +245,8 @@ namespace RoSharp.API.Assets.Experiences
                 throw new ArgumentException($"Invalid universe ID '{UniverseId}'");
             }
             dynamic data = whyaretheresomanywrappers.data[0];
-            name = data.sourceName;
-            description = data.sourceDescription;
+            name = data.name;
+            description = data.description;
             created = data.created;
             lastUpdated = data.updated;
             uncopylocked = data.copyingAllowed;
