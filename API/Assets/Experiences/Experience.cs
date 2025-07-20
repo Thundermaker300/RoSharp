@@ -46,12 +46,26 @@ namespace RoSharp.API.Assets.Experiences
         /// </summary>
         public string Name => name;
 
+        private string? sourceName;
+
+        /// <summary>
+        /// Gets the source name of the experience.
+        /// </summary>
+        public string SourceName => sourceName;
+
         private string description;
 
         /// <summary>
         /// Gets the description of the experience.
         /// </summary>
         public string Description => description;
+
+        private string? sourceDescription;
+
+        /// <summary>
+        /// Gets the source description of the experience.
+        /// </summary>
+        public string? SourceDescription => sourceDescription;
 
         private ulong ownerId;
         private string ownerName;
@@ -245,8 +259,10 @@ namespace RoSharp.API.Assets.Experiences
                 throw new ArgumentException($"Invalid universe ID '{UniverseId}'");
             }
             dynamic data = whyaretheresomanywrappers.data[0];
-            name = data.sourceName;
-            description = data.sourceDescription;
+            name = data.name;
+            sourceName = data.sourceName;
+            description = data.description;
+            sourceDescription = data.sourceDescription;
             created = data.created;
             lastUpdated = data.updated;
             uncopylocked = data.copyingAllowed;
