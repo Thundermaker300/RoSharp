@@ -96,18 +96,6 @@ namespace RoSharp.API.Assets
         /// </summary>
         public bool IsNew => (DateTime.UtcNow - Created) < TimeSpan.FromDays(3);
 
-        /// <summary>
-        /// Gets the Robux price of this asset.
-        /// </summary>
-        [Obsolete("Use PurchaseInfo")]
-        public int Price => purchaseInfo is RobuxPurchase rbx ? (int)rbx.Price : 0;
-
-        /// <summary>
-        /// Gets the USD price of this asset.
-        /// </summary>
-        [Obsolete("Use PurchaseInfo")]
-        public double UsdPrice => purchaseInfo is FiatPurchase fiat ? fiat.Price : 0;
-
         private IPurchaseType purchaseInfo;
 
         /// <inheritdoc cref="IPurchaseType"/>
@@ -153,18 +141,6 @@ namespace RoSharp.API.Assets
         /// For limited items, gets the amount of quantity remaining before the item becomes resellable.
         /// </summary>
         public int Remaining => remaining;
-
-        /// <summary>
-        /// For limited items, gets the initial quantity amount.
-        /// </summary>
-        [Obsolete("See CollectibleItemData.TotalQuantity.")]
-        public int InitialQuantity => CollectibleItemData.HasValue ? CollectibleItemData.Value.TotalQuantity : -1;
-
-        /// <summary>
-        /// For limited items, gets the total amount of copies one user is allowed to have.
-        /// </summary>
-        [Obsolete("See CollectibleItemData.QuantityLimitPerUser.")]
-        public int QuantityLimitPerUser => CollectibleItemData.HasValue ? CollectibleItemData.Value.QuantityLimitPerUser : -1;
 
         private bool isLimited;
 

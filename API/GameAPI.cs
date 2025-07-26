@@ -90,23 +90,6 @@ namespace RoSharp.API
         }
 
         /// <summary>
-        /// Searches Roblox experiences and returns results based on the <paramref name="query"/>.
-        /// <para>
-        /// Roblox uses an advanced algorithm to determine what results are shown. This algorithm usually combines the <paramref name="query"/> with other factors like visits, active player counts, etc. However, setting <paramref name="exactMatchSearch"/> to <see langword="false"/> will bypass this algorithm and search for experiences strictly by name alone.
-        /// </para>
-        /// </summary>
-        /// <param name="query">The query to search.</param>
-        /// <param name="session">Logged in session, optional.</param>
-        /// <param name="exactMatchSearch">Indicates whether or not to perform an 'exact search', which will match results by name alone and no other criteria. In other words, the returned results are guaranteed to contain the <paramref name="query"/> within their title.</param>
-        /// <param name="cursor">The cursor to use to advance to the next page. Obtained by calling this API previously.</param>
-        /// <returns>A task containing a <see cref="PageResponse{T}"/> of <see cref="Id{T}"/> upon completion.</returns>
-        /// <exception cref="RobloxAPIException">Roblox API failure or lack of permissions.</exception>
-        /// <remarks>This API method does not cache and will make a request each time it is called.</remarks>
-        [Obsolete("Use SearchAPI.SearchExperiencesAsync()")]
-        public static async Task<HttpResult<PageResponse<Id<Experience>>>> SearchAsync(string query, Session? session = null, bool exactMatchSearch = false, string? cursor = null)
-            => await SearchAPI.SearchExperiencesAsync(query, session, exactMatchSearch, cursor);
-
-        /// <summary>
         /// Gets a list of Roblox selected experiences to show in the "Today's Picks" sort.
         /// </summary>
         /// <param name="session">Logged in session. Required but can be replaced with <see langword="null"/> if there is a global session assigned.</param>

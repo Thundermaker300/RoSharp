@@ -106,12 +106,6 @@ namespace RoSharp.API.Assets.Experiences
         /// </summary>
         public bool IsNew => (DateTime.UtcNow - Created) < TimeSpan.FromDays(3);
 
-        /// <summary>
-        /// Gets the price in Robux to play this experience, if it is paid access.
-        /// </summary>
-        [Obsolete("Use PurchaseInfo instead.")]
-        public int Cost => PurchaseInfo is RobuxPurchase robux ? (int)robux.Price : 0;
-
         private IPurchaseType purchaseInfo;
 
         /// <inheritdoc cref="IPurchaseType"/>
@@ -1692,18 +1686,6 @@ namespace RoSharp.API.Assets.Experiences
         /// The new price for private servers.
         /// </summary>
         public int? PrivateServerPrice { get; set; }
-
-        /// <summary>
-        /// Whether or not the experience is paid access.
-        /// </summary>
-        [Obsolete($"This option no longer does anything. Please use one of the following methods instead: {nameof(Experience.SetPaidAccessToFreeAsync)}, {nameof(Experience.SetPaidAccessToRobuxAsync)}, {nameof(Experience.SetPaidAccessToLocalCurrencyAsync)}")]
-        public bool? PurchaseRequired { get; set; }
-
-        /// <summary>
-        /// The cost to purchase the game.
-        /// </summary>
-        [Obsolete($"This option no longer does anything. Please use one of the following methods instead: {nameof(Experience.SetPaidAccessToFreeAsync)}, {nameof(Experience.SetPaidAccessToRobuxAsync)}, {nameof(Experience.SetPaidAccessToLocalCurrencyAsync)}")]
-        public int? Cost { get; set; }
 
         /// <summary>
         /// Whether or not the experience is friends-only.

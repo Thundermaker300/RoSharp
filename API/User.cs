@@ -321,18 +321,6 @@ namespace RoSharp.API
         public bool IsVeteran => (DateTime.UtcNow - JoinDate) > TimeSpan.FromDays(365);
 
         /// <summary>
-        /// Gets a <see cref="ReadOnlyCollection{T}"/> of Roblox badges this user has.
-        /// </summary>
-        /// <returns>A task containing a <see cref="ReadOnlyCollection{T}"/> of <see cref="string"/>s upon completion, each being the name of a Roblox badge.</returns>
-        [Obsolete($"Use {nameof(RobloxBadges)}.")]
-        public async Task<ReadOnlyCollection<string>> GetRobloxBadgesAsync()
-        {
-            await Task.CompletedTask;
-
-            return robloxBadges;
-        }
-
-        /// <summary>
         /// Gets this user's rename history.
         /// </summary>
         /// <param name="limit">The limit of usernames to retrieve.</param>
@@ -453,16 +441,6 @@ namespace RoSharp.API
         /// </summary>
         // [TODO BEFORE RELEASE] Convert this to a new type with information on the avatar's x,y,z of position, rotation, and scale.
         public ReadOnlyCollection<Id<Asset>> CurrentlyWearing => currentlyWearing;
-
-        /// <summary>
-        /// Returns a list of assets this user is currently wearing.
-        /// </summary>
-        /// <returns>A task containing a <see cref="ReadOnlyCollection{T}"/> of <see cref="Id{T}"/> upon completion.</returns>
-        /// <remarks>This API method does not cache and will make a request each time it is called.</remarks>
-        /// <exception cref="RobloxAPIException">Roblox API failure or lack of permissions.</exception>
-        [Obsolete("Use User.CurrentlyWearing.")]
-        public async Task<ReadOnlyCollection<Id<Asset>>> GetCurrentlyWearingAsync()
-            => CurrentlyWearing;
 
         /// <summary>
         /// Returns a list of assets that are in this user's collection.

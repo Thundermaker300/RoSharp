@@ -399,16 +399,6 @@ namespace RoSharp.API.Communities
         }
 
         /// <summary>
-        /// Modifies the community's description.
-        /// </summary>
-        /// <param name="text">The new community's description.</param>
-        /// <returns>Task that completes when the operation is finished.</returns>
-        /// <exception cref="RobloxAPIException">Roblox API failure or lack of permissions.</exception>
-        [Obsolete("Use ModifyAsync")]
-        public async Task ModifyDescriptionAsync(string text)
-            => await ModifyAsync(new() { Description = text });
-
-        /// <summary>
         /// Sets the community shout. Providing <see langword="null"/> as the text will clear the shout.
         /// </summary>
         /// <param name="text">The text for the shout, or <see langword="null"/> to clear the shout.</param>
@@ -502,28 +492,6 @@ namespace RoSharp.API.Communities
 
             return new(response, new PageResponse<CommunityAuditLog>(list, nextPage, previousPage));
         }
-
-        /// <summary>
-        /// Gets this community's allies.
-        /// </summary>
-        /// <param name="limit">The maximum amount of communities to return.</param>
-        /// <param name="sortOrder">The sort order.</param>
-        /// <param name="startRowIndex">The amount of items to skip before returning data, or <c>0</c> to skip none.</param>
-        /// <returns>A task containing a <see cref="PageResponse{T}"/> of <see cref="Id{T}"/> upon completion.</returns>
-        [Obsolete("Use GetRelationshipsAsync()")]
-        public async Task<HttpResult<PageResponse<Id<Community>>>> GetAlliesAsync(int limit = 50, RequestSortOrder sortOrder = RequestSortOrder.Desc, int startRowIndex = 0)
-            => await GetRelationshipsAsync(CommunityRelationship.Allies, limit, sortOrder, startRowIndex);
-
-        /// <summary>
-        /// Gets this community's allies.
-        /// </summary>
-        /// <param name="limit">The maximum amount of communities to return.</param>
-        /// <param name="sortOrder">The sort order.</param>
-        /// <param name="startRowIndex">The amount of items to skip before returning data, or <c>0</c> to skip none.</param>
-        /// <returns>A task containing a <see cref="PageResponse{T}"/> of <see cref="Id{T}"/> upon completion.</returns>
-        [Obsolete("Use GetRelationshipsAsync()")]
-        public async Task<HttpResult<PageResponse<Id<Community>>>> GetEnemiesAsync(int limit = 50, RequestSortOrder sortOrder = RequestSortOrder.Desc, int startRowIndex = 0)
-            => await GetRelationshipsAsync(CommunityRelationship.Enemies, limit, sortOrder, startRowIndex);
 
         /// <summary>
         /// Gets communities that are in a relationship (allies or enemies) with this community.

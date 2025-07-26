@@ -33,12 +33,6 @@
         ExperienceRenamed = 16,
 
         /// <summary>
-        /// The experience's name was modified.
-        /// </summary>
-        [Obsolete("Use ExperienceRenamed")]
-        NameUpdated = ExperienceRenamed,
-
-        /// <summary>
         /// The experience's description was modified.
         /// </summary>
         DescriptionUpdated = 17,

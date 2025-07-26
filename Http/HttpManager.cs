@@ -34,20 +34,6 @@ namespace RoSharp.Http
         /// </summary>
         /// <param name="session">The session object, optional.</param>
         /// <param name="message">The message containing the data to send.</param>
-        /// <param name="verifyApiName"></param>
-        /// <param name="doNotThrowException"></param>
-        /// <param name="retrying">If <see langword="false"/>, will attempt to retry the request again if it fails with <see cref="HttpStatusCode.Forbidden"/> and the <paramref name="session"/> is available. This is so that the <c>x-csrf-token</c> can be retrieved. If <see langword="true"/>, it will not attempt a retry. This behavior will be ignored if the request is a GET.</param>
-        /// <returns>A task containing a <see cref="HttpResponseMessage"/> upon completion.</returns>
-        /// <remarks>This member is deprecated. The <paramref name="verifyApiName"/>, <paramref name="doNotThrowException"/>, and <paramref name="retrying"/> parameters are ignored in this method call. Please set the appropriate properties of the <see cref="HttpMessage"/> object instead.</remarks>
-        [Obsolete("Use SendAsync(Session, HttpMessage)")]
-        public static async Task<HttpResponseMessage> SendAsync(Session? session, HttpMessage message, string? verifyApiName = null, bool doNotThrowException = false, bool retrying = false)
-            => await SendAsync(session, message);
-
-        /// <summary>
-        /// Sends an HTTP request and returns the result.
-        /// </summary>
-        /// <param name="session">The session object, optional.</param>
-        /// <param name="message">The message containing the data to send.</param>
         /// <returns>A task containing a <see cref="HttpResponseMessage"/> upon completion.</returns>
         public static async Task<HttpResponseMessage> SendAsync(Session? session, HttpMessage message)
         {
@@ -113,20 +99,6 @@ namespace RoSharp.Http
 
             return resp;
         }
-
-        /// <summary>
-        /// Sends an HTTP request and returns its body as a string.
-        /// </summary>
-        /// <param name="session">The session object, optional.</param>
-        /// <param name="message">The message containing the data to send.</param>
-        /// <param name="verifyApiName"></param>
-        /// <param name="doNotThrowException"></param>
-        /// <param name="retrying">If <see langword="false"/>, will attempt to retry the request again if it fails with <see cref="HttpStatusCode.Forbidden"/> and the <paramref name="session"/> is available. This is so that the <c>x-csrf-token</c> can be retrieved. If <see langword="true"/>, it will not attempt a retry. This behavior will be ignored if the request is a GET.</param>
-        /// <returns>A task containing the body upon completion.</returns>
-        /// <remarks>This member is deprecated. The <paramref name="verifyApiName"/>, <paramref name="doNotThrowException"/>, and <paramref name="retrying"/> parameters are ignored in this method call. Please set the appropriate properties of the <see cref="HttpMessage"/> object instead.</remarks>
-        [Obsolete("Use SendStringAsync(Session, HttpMessage)")]
-        public static async Task<string> SendStringAsync(Session? session, HttpMessage message, string? verifyApiName = null, bool doNotThrowException = false, bool retrying = false)
-            => await SendStringAsync(session, message);
 
         /// <summary>
         /// Sends an HTTP request and returns its body as a string.
