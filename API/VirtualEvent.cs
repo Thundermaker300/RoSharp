@@ -249,7 +249,7 @@ namespace RoSharp.API
         /// Modifies a virtual event. Any properties not modified in the <see cref="VirtualEventConfiguration"/> class will not be modified on the site.
         /// </summary>
         /// <param name="settings">The new settings for the event.</param>
-        /// <returns>A task that completes when the operation has finished.</returns>
+        /// <returns>A task that completes when the operation is finished.</returns>
         /// <exception cref="RobloxAPIException">Roblox API failure or lack of permissions.</exception>
         public async Task<HttpResult> ModifyAsync(VirtualEventConfiguration settings)
         {

@@ -587,7 +587,7 @@ namespace RoSharp.API
         /// Sets this user's custom name for the authenticated user. Set to <see cref="string.Empty"/> to clear custom name.
         /// </summary>
         /// <param name="name"></param>
-        /// <returns></returns>
+        /// <returns>A task that completes when the operation is finished.</returns>
         /// <exception cref="RobloxAPIException">Roblox API failure or lack of permissions.</exception>
         public async Task<HttpResult> SetCustomName(string name)
         {

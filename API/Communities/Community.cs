@@ -169,6 +169,7 @@ namespace RoSharp.API.Communities
         /// <summary>
         /// Gets a <see cref="RoleManager"/> class that has additional API to manage community roles.
         /// </summary>
+        /// <exception cref="RobloxAPIException">Roblox API failure or lack of permissions.</exception>
         public async Task<RoleManager> GetRoleManagerAsync()
         {
             if (roleManager == null)
@@ -182,6 +183,7 @@ namespace RoSharp.API.Communities
         /// <summary>
         /// Gets a <see cref="MemberManager"/> class that has additional API to manage community members.
         /// </summary>
+        /// <exception cref="RobloxAPIException">Roblox API failure or lack of permissions.</exception>
         public async Task<MemberManager> GetMemberManagerAsync()
         {
             await Task.CompletedTask;
@@ -290,6 +292,7 @@ namespace RoSharp.API.Communities
         /// Gets the community's current shout.
         /// </summary>
         /// <returns>A task containing a <see cref="CommunityShout"/> representing the shout upon completion. Can be <see langword="null"/> if there is no current shout.</returns>
+        /// <exception cref="RobloxAPIException">Roblox API failure or lack of permissions.</exception>
         public async Task<HttpResult<CommunityShout>?> GetShoutAsync()
         {
             if (shout == null)
@@ -320,6 +323,7 @@ namespace RoSharp.API.Communities
         /// Gets the community's guilded shout, if it has a Guilded server linked.
         /// </summary>
         /// <returns>A task containing a <see cref="GuildedShout"/> if the community has one.</returns>
+        /// <exception cref="RobloxAPIException">Roblox API failure or lack of permissions.</exception>
         public async Task<HttpResult<GuildedShout>?> GetGuildedShoutAsync()
         {
             if (shoutGuilded == null)
@@ -359,6 +363,7 @@ namespace RoSharp.API.Communities
         /// <returns>A task containing a <see cref="ReadOnlyDictionary{TKey, TValue}"/> upon completion. The key is the name of the social media platform, and the value is its URL.</returns>
         /// <exception cref="InvalidOperationException">Group is locked.</exception>
         /// <remarks>This method will throw an <see cref="InvalidOperationException"/> if <see cref="IsLocked"/> is <see langword="true"/>.</remarks>
+        /// <exception cref="RobloxAPIException">Roblox API failure or lack of permissions.</exception>
         public async Task<ReadOnlyDictionary<string, string>> GetSocialChannelsAsync()
         {
             if (IsLocked)
@@ -501,6 +506,7 @@ namespace RoSharp.API.Communities
         /// <param name="sortOrder">The sort order.</param>
         /// <param name="startRowIndex">The amount of items to skip before returning data, or <c>0</c> to skip none.</param>
         /// <returns>A task containing a <see cref="PageResponse{T}"/> of <see cref="Id{T}"/> upon completion.</returns>
+        /// <exception cref="RobloxAPIException">Roblox API failure or lack of permissions.</exception>
         public async Task<HttpResult<PageResponse<Id<Community>>>> GetRelationshipsAsync(CommunityRelationship relationshipType, int limit = 50, RequestSortOrder sortOrder = RequestSortOrder.Desc, int startRowIndex = 0)
         {
             string url = $"/v1/groups/{Id}/relationships/{relationshipType.ToString().ToLower()}?maxRows={limit}&sortOrder={sortOrder}&startRowIndex={startRowIndex}";
@@ -526,6 +532,7 @@ namespace RoSharp.API.Communities
         /// <param name="communityId">The Id of the community to send the request to.</param>
         /// <param name="relationshipType">The type of relationship.</param>
         /// <returns>A task that completes when the operation is finished.</returns>
+        /// <exception cref="RobloxAPIException">Roblox API failure or lack of permissions.</exception>
         public async Task<HttpResult> SendRelationshipRequest(ulong communityId, CommunityRelationship relationshipType = CommunityRelationship.Allies)
         {
             string url = $"/v1/groups/{Id}/relationships/{relationshipType.ToString().ToLower()}/{communityId}";
@@ -538,6 +545,7 @@ namespace RoSharp.API.Communities
         /// <param name="community">The community to send the request to.</param>
         /// <param name="relationshipType">The type of relationship.</param>
         /// <returns>A task that completes when the operation is finished.</returns>
+        /// <exception cref="RobloxAPIException">Roblox API failure or lack of permissions.</exception>
         public async Task<HttpResult> SendRelationshipRequest(Community community, CommunityRelationship relationshipType = CommunityRelationship.Allies)
             => new(await SendRelationshipRequest(community.Id, relationshipType));
 
@@ -547,6 +555,7 @@ namespace RoSharp.API.Communities
         /// <param name="communityId">The Id of the community whose relationship to delete.</param>
         /// <param name="relationshipType">The type of relationship.</param>
         /// <returns>A task that completes when the operation is finished.</returns>
+        /// <exception cref="RobloxAPIException">Roblox API failure or lack of permissions.</exception>
         public async Task<HttpResult> RemoveRelationshipAsync(ulong communityId, CommunityRelationship relationshipType = CommunityRelationship.Allies)
         {
             string url = $"/v1/groups/{Id}/relationships/{relationshipType.ToString().ToLower()}/{communityId}";
@@ -559,6 +568,7 @@ namespace RoSharp.API.Communities
         /// <param name="community">The community whose relationship to delete.</param>
         /// <param name="relationshipType">The type of relationship.</param>
         /// <returns>A task that completes when the operation is finished.</returns>
+        /// <exception cref="RobloxAPIException">Roblox API failure or lack of permissions.</exception>
         public async Task<HttpResult> RemoveRelationshipAsync(Community community, CommunityRelationship relationshipType = CommunityRelationship.Allies)
             => new(await RemoveRelationshipAsync(community.Id, relationshipType));
 
@@ -569,6 +579,7 @@ namespace RoSharp.API.Communities
         /// <param name="relationshipType">The type of relationship.</param>
         /// <param name="action">Whether to accept or decline the relationship request.</param>
         /// <returns>A task that completes when the operation is finished.</returns>
+        /// <exception cref="RobloxAPIException">Roblox API failure or lack of permissions.</exception>
         public async Task<HttpResult> ModifyRelationshipRequest(ulong communityId, JoinRequestAction action, CommunityRelationship relationshipType = CommunityRelationship.Allies)
         {
             string url = $"/v1/groups/{Id}/relationships/{relationshipType.ToString().ToLower()}/requests/{communityId}";
@@ -756,6 +767,7 @@ namespace RoSharp.API.Communities
         /// </summary>
         /// <param name="options">The options to use.</param>
         /// <returns>A task that completes when the operation is finished.</returns>
+        /// <exception cref="RobloxAPIException">Roblox API failure or lack of permissions.</exception>
         public async Task<HttpResult> ModifyAsync(CommunityModifyOptions options)
         {
             var message = new HttpMessage(HttpMethod.Patch, $"/v1/groups/{Id}/settings", new
@@ -778,7 +790,7 @@ namespace RoSharp.API.Communities
                 var message2 = new HttpMessage(HttpMethod.Patch, $"/v1/groups/{Id}/description", new { description = options.Description })
                 {
                     AuthType = AuthType.RobloSecurity,
-                    ApiName = nameof(ModifyDescriptionAsync),
+                    ApiName = nameof(ModifyAsync),
                 };
                 await SendAsync(message2);
             }
@@ -789,6 +801,7 @@ namespace RoSharp.API.Communities
         /// Leaves the community if the authenticated user is in it.
         /// </summary>
         /// <returns>A task that completes when the operation is finished.</returns>
+        /// <exception cref="RobloxAPIException">Roblox API failure or lack of permissions.</exception>
         public async Task<HttpResult> LeaveAsync()
         {
             HttpMessage payload = new(HttpMethod.Delete, $"/v1/groups/{Id}/users/{session?.AuthUser?.Id}")
@@ -805,6 +818,7 @@ namespace RoSharp.API.Communities
         /// <param name="limit">The maximum amount of words to return.</param>
         /// <param name="cursor">The cursor for the next page. Obtained by calling this API previously.</param>
         /// <returns>A task containing a <see cref="PageResponse{T}"/> of <see cref="CommunityBlockedWord"/> upon completion.</returns>
+        /// <exception cref="RobloxAPIException">Roblox API failure or lack of permissions.</exception>
         public async Task<HttpResult<PageResponse<CommunityBlockedWord>>> GetBlockedWordsAsync(FixedLimit limit = FixedLimit.Limit50, string? cursor = null)
         {
             string url = $"/v1/groups/{Id}/blocked-keywords?limit={limit.Limit()}";
@@ -840,7 +854,8 @@ namespace RoSharp.API.Communities
         /// Adds blocked words to a community.
         /// </summary>
         /// <param name="keywords">The words to block.</param>
-        /// <returns>A task that completes when the operation has finished.</returns>
+        /// <returns>A task that completes when the operation is finished.</returns>
+        /// <exception cref="RobloxAPIException">Roblox API failure or lack of permissions.</exception>
         // TODO: Return an Enumerable with the response body.
         public async Task<HttpResult> AddBlockedWordsAsync(params string[] keywords)
         {
@@ -860,7 +875,8 @@ namespace RoSharp.API.Communities
         /// Removes a blocked word with the given <paramref name="id"/>.
         /// </summary>
         /// <param name="id">The unique Id of the blocked word.</param>
-        /// <returns>A task that completes when the operation has finished.</returns>
+        /// <returns>A task that completes when the operation is finished.</returns>
+        /// <exception cref="RobloxAPIException">Roblox API failure or lack of permissions.</exception>
         public async Task<HttpResult> RemoveBlockedWordAsync(string id)
         {
             HttpMessage payload = new(HttpMethod.Delete, $"/v1/groups/{Id}/blocked-keywords/{id}")
@@ -875,7 +891,8 @@ namespace RoSharp.API.Communities
         /// Removes a blocked word.
         /// </summary>
         /// <param name="word">The blocked word to remove.</param>
-        /// <returns>A task that completes when the operation has finished.</returns>
+        /// <returns>A task that completes when the operation is finished.</returns>
+        /// <exception cref="RobloxAPIException">Roblox API failure or lack of permissions.</exception>
         public async Task<HttpResult> RemoveBlockedWordAsync(CommunityBlockedWord word)
             => await RemoveBlockedWordAsync(word.Id);
 

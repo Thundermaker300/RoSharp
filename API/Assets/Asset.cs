@@ -623,7 +623,7 @@ namespace RoSharp.API.Assets
         /// <param name="id">The unique Id of the collaborator.</param>
         /// <param name="permissionType">The type of permission to modify.</param>
         /// <param name="remove">True to remove access, False to grant it. Defaults to False.</param>
-        /// <returns></returns>
+        /// <returns>A task that completes when the operation is finished.</returns>
         /// <exception cref="InvalidOperationException">Communities cannot have 'Edit' permission on assets.</exception>
         /// <exception cref="RobloxAPIException">Roblox API failure or lack of permissions.</exception>
         public async Task<HttpResult> ModifyCollaboratorAsync(AssetOwnerType collaboratorType, ulong id, AssetPermissionType permissionType, bool remove = false)
@@ -663,7 +663,7 @@ namespace RoSharp.API.Assets
         /// <param name="name">The unique name (not display name for users) of the collaborator.</param>
         /// <param name="permissionType">The type of permission to modify.</param>
         /// <param name="remove">True to remove access, False to grant it. Defaults to False.</param>
-        /// <returns></returns>
+        /// <returns>A task that completes when the operation is finished.</returns>
         /// <exception cref="InvalidOperationException">Communities cannot have 'Edit' permission on assets.</exception>
         /// <exception cref="RobloxAPIException">Roblox API failure or lack of permissions.</exception>
         public async Task<HttpResult> ModifyCollaboratorAsync(AssetOwnerType collaboratorType, string name, AssetPermissionType permissionType, bool remove = false)
@@ -690,7 +690,7 @@ namespace RoSharp.API.Assets
         /// <param name="user">The <see cref="User"/> to modify.</param>
         /// <param name="permissionType">The type of permission to modify.</param>
         /// <param name="remove">True to remove access, False to grant it. Defaults to False.</param>
-        /// <returns></returns>
+        /// <returns>A task that completes when the operation is finished.</returns>
         /// <exception cref="RobloxAPIException">Roblox API failure or lack of permissions.</exception>
         public async Task<HttpResult> ModifyCollaboratorAsync(User user, AssetPermissionType permissionType, bool remove = false)
             => await ModifyCollaboratorAsync(AssetOwnerType.User, user.Id, permissionType, remove);
@@ -702,7 +702,7 @@ namespace RoSharp.API.Assets
         /// <param name="community">The <see cref="Communities.Community"/> to modify..</param>
         /// <param name="permissionType">The type of permission to modify.</param>
         /// <param name="remove">True to remove access, False to grant it. Defaults to False.</param>
-        /// <returns></returns>
+        /// <returns>A task that completes when the operation is finished.</returns>
         /// <exception cref="InvalidOperationException">Communities cannot have 'Edit' permission on assets.</exception>
         /// <exception cref="RobloxAPIException">Roblox API failure or lack of permissions.</exception>
         public async Task<HttpResult> ModifyCollaboratorAsync(Community community, AssetPermissionType permissionType, bool remove = false)

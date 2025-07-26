@@ -98,7 +98,7 @@ namespace RoSharp.API.Communities.Forum
         /// Reacts to the comment as the authenticated user.
         /// </summary>
         /// <param name="emote">The emote to react with.</param>
-        /// <returns>A task that completes when the operation has finished.</returns>
+        /// <returns>A task that completes when the operation is finished.</returns>
         /// <exception cref="RobloxAPIException">Roblox API failure or lack of permissions.</exception>
         public async Task<HttpResult> ReactAsync(ForumEmote emote)
         {
@@ -115,7 +115,7 @@ namespace RoSharp.API.Communities.Forum
         /// Reacts to the comment as the authenticated user.
         /// </summary>
         /// <param name="reactionName">The name of the emote to react with.</param>
-        /// <returns>A task that completes when the operation has finished.</returns>
+        /// <returns>A task that completes when the operation is finished.</returns>
         /// <exception cref="RobloxAPIException">Roblox API failure or lack of permissions.</exception>
         public async Task<HttpResult> ReactAsync(string reactionName)
         {
@@ -131,7 +131,7 @@ namespace RoSharp.API.Communities.Forum
         /// Removes a reaction that was previously added by the authenticated user.
         /// </summary>
         /// <param name="emote">The emote to remove.</param>
-        /// <returns>A task that completes when the operation has finished.</returns>
+        /// <returns>A task that completes when the operation is finished.</returns>
         /// <exception cref="RobloxAPIException">Roblox API failure or lack of permissions.</exception>
         public async Task<HttpResult> RemoveReactionAsync(ForumEmote emote)
         {
@@ -148,7 +148,7 @@ namespace RoSharp.API.Communities.Forum
         /// Removes a reaction that was previously added by the authenticated user.
         /// </summary>
         /// <param name="reactionName">The name of the emote to remove.</param>
-        /// <returns>A task that completes when the operation has finished.</returns>
+        /// <returns>A task that completes when the operation is finished.</returns>
         /// <exception cref="RobloxAPIException">Roblox API failure or lack of permissions.</exception>
         public async Task<HttpResult> RemoveReactionAsync(string reactionName)
         {

@@ -212,7 +212,7 @@ namespace RoSharp.API.Assets.Experiences
         /// </summary>
         /// <param name="placeId">The place Id.</param>
         /// <param name="session">The session, optional.</param>
-        /// <returns></returns>
+        /// <returns>A task containing an <see cref="Experience"/>.</returns>
         /// <exception cref="ArgumentException">If the place Id is invalid or is a UniverseId (see <see cref="FromId(ulong, Session?)"/>.</exception>
         /// <exception cref="RobloxAPIException">Roblox API failure or lack of permissions.</exception>
         /// <remarks>This is the most common method as the Place ID is present in the URL when going to any general experience page.</remarks>
@@ -224,7 +224,7 @@ namespace RoSharp.API.Assets.Experiences
         /// </summary>
         /// <param name="universeId">The universe Id.</param>
         /// <param name="session">The session, optional.</param>
-        /// <returns></returns>
+        /// <returns>A task containing an <see cref="Experience"/>.</returns>
         /// <exception cref="ArgumentException">If the universe Id is invalid or is a PlaceId (see <see cref="FromPlaceId(ulong, Session?)"/>.</exception>
         /// <exception cref="RobloxAPIException">Roblox API failure or lack of permissions.</exception>
         /// <remarks>If you have a Place Id, which is most common, see <see cref="FromPlaceId(ulong, Session?)"/>.</remarks>
@@ -1295,6 +1295,12 @@ namespace RoSharp.API.Assets.Experiences
             return await p.GetFeedbackAsync(startTime, endTime, limit, voteTypeFilter, cursor);
         }
 
+        /// <summary>
+        /// Returns non-public, third-party assets this experience has been permitted to use.
+        /// </summary>
+        /// <param name="cursor">The cursor for the next page. Obtained by calling this API previously.</param>
+        /// <returns>A task that contains a <see cref="PageResponse{T}"/> of <see cref="Id{T}"/> upon completion.</returns>
+        /// <exception cref="RobloxAPIException">Roblox API failure or lack of permissions.</exception>
         public async Task<HttpResult<PageResponse<Id<Asset>>>> GetAllowedAssetsAsync(string? cursor = null)
         {
             string url = $"/asset-permissions-api/v1/universes/{UniverseId}/assets?maxPageSize=50&pageToken=";
@@ -1326,6 +1332,7 @@ namespace RoSharp.API.Assets.Experiences
         /// Returns the two-digit language code of this experience's source language, eg. 'en'. 
         /// </summary>
         /// <returns>A task containing a <see cref="string"/> upon completion.</returns>
+        /// <exception cref="RobloxAPIException">Roblox API failure or lack of permissions.</exception>
         public async Task<string> GetSourceLocaleAsync()
         {
             if (sourceLocale is null)

@@ -99,6 +99,7 @@ namespace RoSharp.API.Communities.Forum
         /// <param name="postId">The unique Id of the post.</param>
         /// <returns>A task containing a <see cref="ForumPost"/> upon completion. Can be <see langword="null"/> if no matches are found.</returns>
         /// <exception cref="RobloxAPIException">Roblox API failure or lack of permissions.</exception>
+        /// <remarks>This API method does not cache and will make a request each time it is called.</remarks>
         public async Task<HttpResult<ForumPost?>> GetPostAsync(string postId)
         {
             var response = await manager.community.SendAsync(HttpMethod.Get, $"/v1/groups/{manager.community.Id}/forums/{Id}/posts?postIds={postId}");

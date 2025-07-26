@@ -412,7 +412,7 @@ namespace RoSharp.API.Communities
         /// </summary>
         /// <param name="userId">The unique Id of the user to ban.</param>
         /// <param name="deletePosts">If <see langword="true"/>, will also delete their wall posts.</param>
-        /// <returns>A task that completes when the operation has finished.</returns>
+        /// <returns>A task that completes when the operation is finished.</returns>
         /// <exception cref="RobloxAPIException">Roblox API failure or lack of permissions.</exception>
         public async Task<HttpResult> BanMemberAsync(ulong userId, bool deletePosts = false)
         {
@@ -433,7 +433,7 @@ namespace RoSharp.API.Communities
         /// </summary>
         /// <param name="user">The user to ban.</param>
         /// <param name="deletePosts">If <see langword="true"/>, will also delete their wall posts.</param>
-        /// <returns>A task that completes when the operation has finished.</returns>
+        /// <returns>A task that completes when the operation is finished.</returns>
         /// <exception cref="RobloxAPIException">Roblox API failure or lack of permissions.</exception>
         public async Task<HttpResult> BanMemberAsync(User user, bool deletePosts = false)
             => await BanMemberAsync(user.Id, deletePosts);
@@ -442,7 +442,8 @@ namespace RoSharp.API.Communities
         /// Unbans a previously-banned user from the community.
         /// </summary>
         /// <param name="userId">The unique Id of the user to unban.</param>
-        /// <returns></returns>
+        /// <returns>A task that completes when the operation is finished.</returns>
+        /// <exception cref="RobloxAPIException">Roblox API failure or lack of permissions.</exception>
         public async Task<HttpResult> UnbanMemberAsync(ulong userId)
         {
             var message = new HttpMessage(HttpMethod.Delete, $"https://groups.roblox.com/v1/groups/{community.Id}/bans/{userId}")
@@ -458,7 +459,8 @@ namespace RoSharp.API.Communities
         /// Unbans a previously-banned user from the community.
         /// </summary>
         /// <param name="user">The user to unban.</param>
-        /// <returns></returns>
+        /// <returns>A task that completes when the operation is finished.</returns>
+        /// <exception cref="RobloxAPIException">Roblox API failure or lack of permissions.</exception>
         public async Task<HttpResult> UnbanMemberAsync(User user)
             => await UnbanMemberAsync(user.Id);
 

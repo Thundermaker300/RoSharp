@@ -95,7 +95,7 @@ namespace RoSharp.API.Assets.Experiences
         /// <param name="limit">The maximum amount of servers to return.</param>
         /// <param name="sortOrder">Sort order. <c>1</c> = Least to most players, <c>2</c> = Most to least players. Any other input will be treated as <c>2</c>.</param>
         /// <param name="cursor">The cursor for the next page. Obtained by calling this API previously.</param>
-        /// <returns></returns>
+        /// <returns>A task containing a <see cref="PageResponse{T}"/> of <see cref="GameServer"/>.</returns>
         public async Task<HttpResult<PageResponse<GameServer>>> GetLiveServersAsync(FixedLimit limit = FixedLimit.Limit50, int sortOrder = 2, string? cursor = null)
         {
             string url = $"/v1/games/{Id}/servers/0?sortOrder={sortOrder}&excludeFullGames=false&limit={limit.Limit()}";
