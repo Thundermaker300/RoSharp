@@ -177,6 +177,14 @@ namespace RoSharp.API.Assets
         /// </summary>
         public SaleLocationType SaleLocation => saleLocation;
 
+        private string? downloadUrl;
+
+        /// <summary>
+        /// Gets a URL that can be used to download the asset as an rbxm format. This URL can be used with the <see cref="HttpClient"/> library to download the asset to a specific directory. Once downloaded, a framework like <see href="https://github.com/MaximumADHD/Roblox-File-Format">MaximumADHD's 'Roblox File Format' library</see> can be used to parse the file.
+        /// </summary>
+        /// <remarks>This property will be <see langword="null"/> if the authenticated user cannot access the asset (such as a paid asset).</remarks>
+        public string? DownloadUrl => downloadUrl;
+
         private bool isCreatorHubAsset;
 
         /// <summary>
@@ -200,7 +208,7 @@ namespace RoSharp.API.Assets
         /// <remarks>This will always be <see cref="TimeSpan.Zero"/> if <see cref="AssetType"/> is not equal to <see cref="AssetType.Audio"/>.</remarks>
         public TimeSpan Duration => TimeSpan.FromSeconds(duration);
 
-        private ModelDetails modelDetails;
+        private ModelDetails? modelDetails;
 
         /// <summary>
         /// Gets specific details of this asset, if it is a <see cref="AssetType.Model"/> and the details are available.
@@ -348,7 +356,26 @@ namespace RoSharp.API.Assets
             // Reset properties
             thumbnailUrl = await GetThumbnailAsync(ThumbnailSize.S420x420);
 
+            // Find Download link
+            var assetDeliveryMessage = new HttpMessage(HttpMethod.Get, $"/v2/asset/?id={Id}")
+            {
+                SilenceExceptions = true
+            };
+
+            downloadUrl = null;
+            var assetDeliveryRequest = await SendAsync(assetDeliveryMessage, Constants.URL("assetdelivery"));
+            if (assetDeliveryRequest.IsSuccessStatusCode)
+            {
+                dynamic downloadData = JObject.Parse(await assetDeliveryRequest.Content.ReadAsStringAsync());
+                if (downloadData.locations.Count > 0)
+                {
+                    downloadUrl = downloadData.locations[0].location ?? null;
+                }
+            }
+
             // Check if creator hub asset
+            modelDetails = null;
+
             message.Url = $"/toolbox-service/v1/items/details?assetIds={Id}";
             HttpResponseMessage catalogResponse = await SendAsync(message, Constants.URL("apis"));
             if (catalogResponse.StatusCode == HttpStatusCode.OK)
