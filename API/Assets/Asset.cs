@@ -200,6 +200,14 @@ namespace RoSharp.API.Assets
         /// <remarks>This will always be <see cref="TimeSpan.Zero"/> if <see cref="AssetType"/> is not equal to <see cref="AssetType.Audio"/>.</remarks>
         public TimeSpan Duration => TimeSpan.FromSeconds(duration);
 
+        private ModelDetails modelDetails;
+
+        /// <summary>
+        /// Gets specific details of this asset, if it is a <see cref="AssetType.Model"/> and the details are available.
+        /// </summary>
+        /// <remarks>This will always be <see langword="null"/> if <see cref="AssetType"/> is not equal to <see cref="AssetType.Model"/>.</remarks>
+        public ModelDetails? ModelDetails => modelDetails;
+
         /// <summary>
         /// Override the type of asset.
         /// </summary>
@@ -363,6 +371,29 @@ namespace RoSharp.API.Assets
                         Price = usdPrice,
                         CurrencyCode = toolboxData.fiatProduct.purchasePrice.currencyCode,
                     };
+                }
+
+                if (toolboxData.asset.modelTechnicalDetails != null)
+                {
+                    var structure = new ModelDetails();
+                    structure.AssetId = Id;
+
+                    if (toolboxData.asset.modelTechnicalDetails.objectMeshSummary != null)
+                    {
+                        structure.Triangles = toolboxData.asset.modelTechnicalDetails.objectMeshSummary.triangles ?? 0;
+                        structure.Vertices = toolboxData.asset.modelTechnicalDetails.objectMeshSummary.vertices ?? 0;
+                    }
+                    if (toolboxData.asset.modelTechnicalDetails.instanceCounts != null)
+                    {
+                        structure.ScriptCount = toolboxData.asset.modelTechnicalDetails.instanceCounts.script ?? 0;
+                        structure.MeshPartCount = toolboxData.asset.modelTechnicalDetails.instanceCounts.meshPart ?? 0;
+                        structure.AnimationCount = toolboxData.asset.modelTechnicalDetails.instanceCounts.animation ?? 0;
+                        structure.DecalCount = toolboxData.asset.modelTechnicalDetails.instanceCounts.decal ?? 0;
+                        structure.AudioCount = toolboxData.asset.modelTechnicalDetails.instanceCounts.audio ?? 0;
+                        structure.ToolCount = toolboxData.asset.modelTechnicalDetails.instanceCounts.tool ?? 0;
+                    }
+
+                    modelDetails = structure;
                 }
             }
             else
