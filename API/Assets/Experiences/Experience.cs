@@ -915,6 +915,40 @@ namespace RoSharp.API.Assets.Experiences
         }
 
         /// <summary>
+        /// Sets the minimum age required to play this experience, independent of the maturity questionnaire. The age MUST BE '0', '9', '13', or '18', or <see langword="null"/> for no age restriction. Any other value will throw an exception!
+        /// </summary>
+        /// <param name="age">The minimum age, or <see langword="null"/> for no age restriction. This value MUST BE '0', '9', '13', or '18'. Any other value will throw an exception!</param>
+        /// <returns>A task that completes when the operation is finished.</returns>
+        public async Task<HttpResult> SetAgeRestrictionAsync(int? age)
+        {
+            string url = $"/experience-guidelines-service/v1beta1/creator-controls-age-restriction/{UniverseId}";
+            object body = new
+            {
+                universeId = UniverseId,
+                ageRestriction = new { minimumAge = age ?? 0 }
+            };
+
+            return new(await SendAsync(HttpMethod.Post, url, Constants.URL("apis"), body));
+        }
+
+        /// <summary>
+        /// Sets countries (by 2-character country code) that cannot play this experience, or <see langword="null"/> for no restrictions. Invalid country codes will throw an exception!
+        /// </summary>
+        /// <param name="countries">A list of countries by country code, or <see langword="null"/> for no restrictions. Invalid country codes will throw an exception!</param>
+        /// <returns>A task that completes when the operation is finished.</returns>
+        public async Task<HttpResult> SetRestrictedCountriesAsync(params string[]? countries)
+        {
+            string url = $"/experience-guidelines-service/v1beta1/creator-controls-geo-restriction/{UniverseId}";
+            object body = new
+            {
+                universeId = UniverseId,
+                geoRestriction = new { restrictedCountries = countries ?? [] }
+            };
+
+            return new(await SendAsync(HttpMethod.Post, url, Constants.URL("apis"), body));
+        }
+
+        /// <summary>
         /// Sets the experience as free-to-play.
         /// </summary>
         /// <returns>A task that completes when the operation is finished.</returns>
