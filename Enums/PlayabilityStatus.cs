@@ -73,6 +73,11 @@
         ContextualPlayabilityAgeGatedByDescriptor,
 
         /// <summary>
+        /// Authenticated user is not old enough to play this experience.
+        /// </summary>
+        ContextualPlayabilityAgeGated,
+
+        /// <summary>
         /// Experience is marked with a higher "maturity level" than is allowed in the authenticated user's content maturity settings, OR the experience's content maturity is "N/A" and the user is under 13.
         /// </summary>
         ContextualPlayabilityAgeRecommendationParentalControls,
