@@ -919,6 +919,7 @@ namespace RoSharp.API.Assets.Experiences
         /// </summary>
         /// <param name="age">The minimum age, or <see langword="null"/> for no age restriction. This value MUST BE '0', '9', '13', or '18'. Any other value will throw an exception!</param>
         /// <returns>A task that completes when the operation is finished.</returns>
+        /// <exception cref="RobloxAPIException">Roblox API failure, invalid inputs, or lack of permissions.</exception>
         public async Task<HttpResult> SetAgeRestrictionAsync(int? age)
         {
             string url = $"/experience-guidelines-service/v1beta1/creator-controls-age-restriction/{UniverseId}";
@@ -936,6 +937,7 @@ namespace RoSharp.API.Assets.Experiences
         /// </summary>
         /// <param name="countries">A list of countries by country code, or <see langword="null"/> for no restrictions. Invalid country codes will throw an exception!</param>
         /// <returns>A task that completes when the operation is finished.</returns>
+        /// <exception cref="RobloxAPIException">Roblox API failure, invalid inputs, or lack of permissions.</exception>
         public async Task<HttpResult> SetRestrictedCountriesAsync(params string[]? countries)
         {
             string url = $"/experience-guidelines-service/v1beta1/creator-controls-geo-restriction/{UniverseId}";
