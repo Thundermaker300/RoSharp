@@ -259,6 +259,7 @@ namespace RoSharp.API
                 title = settings.Title ?? Title,
                 subtitle = settings.Subtitle ?? Subtitle,
                 description = settings.Description ?? Description,
+                placeId = settings.PlaceId ?? Place.UniqueId,
                 eventTime = new { startTime = (settings.StartTime.HasValue ? settings.StartTime.Value : StartTime).ToString("s") + ".000Z", endTime = (settings.EndTime.HasValue ? settings.EndTime.Value : StartTime).ToString("s") + ".000Z" },
                 eventCategories = new[] { new { category = formattedCategory, rank = 0 } },
                 visibility = (settings.Visibility.HasValue ? settings.Visibility.Value : Visibility).ToString().ToLower(),

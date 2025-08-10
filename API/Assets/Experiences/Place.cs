@@ -265,5 +265,8 @@ namespace RoSharp.API.Assets.Experiences
 
         /// <inheritdoc cref="VirtualEvent.Visibility"/>
         public VirtualEventVisibility? Visibility { get; set; }
+
+        /// <inheritdoc cref="VirtualEvent.Place"/>
+        public ulong PlaceId { get; init; }
     }
 }
