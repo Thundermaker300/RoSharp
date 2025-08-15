@@ -645,6 +645,32 @@ namespace RoSharp.API.Assets
             return new(await SendAsync(message, Constants.URL("inventory")));
         }
 
+        public async Task<HttpResult> SaveAsync()
+        {
+
+            var message = new HttpMessage(HttpMethod.Post, $"/toolbox-service/v1/saves", new
+            {
+                targetType = AssetType.ToString(),
+                targetId = Id,
+            })
+            {
+                AuthType = AuthType.RobloSecurity,
+                ApiName = nameof(SaveAsync)
+            };
+            return new(await SendAsync(message, Constants.URL("apis")));
+        }
+
+        public async Task<HttpResult> RemoveFromSavesAsync()
+        {
+
+            var message = new HttpMessage(HttpMethod.Delete, $"/toolbox-service/v1/saves?targetType={AssetType}&targetId={Id}")
+            {
+                AuthType = AuthType.RobloSecurity,
+                ApiName = nameof(RemoveFromSavesAsync)
+            };
+            return new(await SendAsync(message, Constants.URL("apis")));
+        }
+
         /// <summary>
         /// Returns a list of assets that are shown under the "Recommended" section based on this asset.
         /// </summary>
