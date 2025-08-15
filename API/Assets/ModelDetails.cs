@@ -53,7 +53,7 @@
         /// <inheritdoc/>
         public override readonly string ToString()
         {
-            return $"ModelDetails [{AssetId}] || Triangles: {Triangles} | Vertices: {Vertices} | Scripts: {ScriptCount}| MeshParts: {MeshPartCount} | Animations: {AnimationCount} | Decals: {DecalCount} | Audios: {AudioCount} | Tools: {ToolCount}  ";
+            return $"ModelDetails [{AssetId}] || Triangles: {Triangles} | Vertices: {Vertices} | Scripts: {ScriptCount} | MeshParts: {MeshPartCount} | Animations: {AnimationCount} | Decals: {DecalCount} | Audios: {AudioCount} | Tools: {ToolCount}  ";
         }
     }
 }
