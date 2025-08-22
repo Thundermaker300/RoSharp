@@ -114,5 +114,50 @@
         /// Grant cloud authentication permissions.
         /// </summary>
         AdministerCloudAuthentication,
+
+        /// <summary>
+        /// Manage blocked words.
+        /// </summary>
+        ManageKeywordBlockList,
+
+        /// <summary>
+        /// View blocked words.
+        /// </summary>
+        ViewKeywordBlockList,
+
+        /// <summary>
+        /// [Forum] Manage categories.
+        /// </summary>
+        ManageCategories,
+
+        /// <summary>
+        /// [Forum] Create posts.
+        /// </summary>
+        CreatePosts,
+
+        /// <summary>
+        /// [Forum] Remove posts.
+        /// </summary>
+        RemovePosts,
+
+        /// <summary>
+        /// [Forum] Lock posts.
+        /// </summary>
+        LockPosts,
+
+        /// <summary>
+        /// [Forum] Pin posts.
+        /// </summary>
+        PinPosts,
+
+        /// <summary>
+        /// [Forum] Create comments.
+        /// </summary>
+        CreateComments,
+
+        /// <summary>
+        /// [Forum] Remove comments.
+        /// </summary>
+        RemoveComments,
     }
 }
