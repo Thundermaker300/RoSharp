@@ -160,6 +160,22 @@ namespace RoSharp.API.Communities.Forum
             throw new ArgumentException("Invalid emote name.", nameof(reactionName));
         }
 
+        /// <summary>
+        /// Deletes the comment.
+        /// </summary>
+        /// <returns>A task that completes when the operation is finished.</returns>
+        /// <exception cref="RobloxAPIException">Roblox API failure or lack of permissions.</exception>
+        public async Task<HttpResult> DeleteAsync()
+        {
+            string url = $"/v1/groups/{manager.community.Id}/forums/{Category.Id}/posts/{ParentId}/comments/{Id}";
+            HttpMessage message = new(HttpMethod.Delete, url)
+            {
+                AuthType = AuthType.RobloSecurity,
+                ApiName = nameof(DeleteAsync),
+            };
+            return new(await manager.community.SendAsync(message, Constants.URL("groups")));
+        }
+
         // Todo: Implement when I figure out how the cursor system for forum comment replies works
         /*
         public async Task<PageResponse<ForumComment>> GetRepliesAsync(string? cursor = null)

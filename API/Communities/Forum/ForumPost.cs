@@ -3,6 +3,7 @@ using RoSharp.Enums;
 using RoSharp.Exceptions;
 using RoSharp.Extensions;
 using RoSharp.Http;
+using RoSharp.Structures;
 
 namespace RoSharp.API.Communities.Forum
 {
@@ -81,6 +82,59 @@ namespace RoSharp.API.Communities.Forum
             }
 
             return new(response, new(comments, next, previous));
+        }
+
+        /// <summary>
+        /// Toggles the pinned status of the post.
+        /// </summary>
+        /// <param name="pinned">Whether or not to pin the post.</param>
+        /// <returns>A task that completes when the operation is finished.</returns>
+        /// <exception cref="RobloxAPIException">Roblox API failure or lack of permissions.</exception>
+        public async Task<HttpResult> SetPinnedAsync(bool pinned)
+        {
+            HttpMessage message = new(HttpMethod.Patch, $"/v1/groups/{manager.community.Id}/forums/{CategoryId}/posts/{Id}/pin", new
+            {
+                isPinned = pinned,
+            })
+            {
+                AuthType = AuthType.RobloSecurity,
+                ApiName = nameof(SetPinnedAsync),
+            };
+            return new(await manager.community.SendAsync(message, Constants.URL("groups")));
+        }
+
+        /// <summary>
+        /// Toggles the locked status of the post.
+        /// </summary>
+        /// <param name="locked">Whether or not to lock the post.</param>
+        /// <returns>A task that completes when the operation is finished.</returns>
+        /// <exception cref="RobloxAPIException">Roblox API failure or lack of permissions.</exception>
+        public async Task<HttpResult> SetLockedAsync(bool locked)
+        {
+            HttpMessage message = new(HttpMethod.Patch, $"/v1/groups/{manager.community.Id}/forums/{CategoryId}/posts/{Id}/lock", new
+            {
+                isLocked = locked,
+            })
+            {
+                AuthType = AuthType.RobloSecurity,
+                ApiName = nameof(SetLockedAsync),
+            };
+            return new(await manager.community.SendAsync(message, Constants.URL("groups")));
+        }
+
+        /// <summary>
+        /// Deletes the post.
+        /// </summary>
+        /// <returns>A task that completes when the operation is finished.</returns>
+        /// <exception cref="RobloxAPIException">Roblox API failure or lack of permissions.</exception>
+        public async Task<HttpResult> DeleteAsync()
+        {
+            HttpMessage message = new(HttpMethod.Delete, $"/v1/groups/{manager.community.Id}/forums/{CategoryId}/posts/{Id}")
+            {
+                AuthType = AuthType.RobloSecurity,
+                ApiName = nameof(DeleteAsync),
+            };
+            return new(await manager.community.SendAsync(message, Constants.URL("groups")));
         }
 
         /// <inheritdoc/>

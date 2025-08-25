@@ -1,6 +1,8 @@
 ﻿using Newtonsoft.Json.Linq;
+using RoSharp.Enums;
 using RoSharp.Exceptions;
 using RoSharp.Http;
+using RoSharp.Structures;
 using System.Collections.ObjectModel;
 
 namespace RoSharp.API.Communities.Forum
@@ -16,15 +18,12 @@ namespace RoSharp.API.Communities.Forum
 
         internal CommunityForum(Community community) { this.community = community; }
 
-
-        private async Task<List<ForumCategory>> getAllCategories()
+        private async Task getAll(List<ForumCategory> categories, bool archived)
         {
-            List<ForumCategory> categories = [];
-
             string? nextPage = string.Empty;
             while (nextPage != null)
             {
-                var response = await GetCategoriesAsync(nextPage);
+                var response = await GetCategoriesAsync(nextPage, archived);
 
                 foreach (ForumCategory cat in response.Value)
                 {
@@ -33,6 +32,14 @@ namespace RoSharp.API.Communities.Forum
 
                 nextPage = response.Value.NextPageCursor;
             }
+        }
+
+        private async Task<List<ForumCategory>> getAllCategories()
+        {
+            List<ForumCategory> categories = [];
+
+            await getAll(categories, false);
+            await getAll(categories, true);
 
             return categories;
         }
@@ -95,16 +102,46 @@ namespace RoSharp.API.Communities.Forum
         }
 
         /// <summary>
+        /// Creates a category with the given name.
+        /// </summary>
+        /// <param name="name"></param>
+        /// <returns>A task that completes when the operation is finished. Contains the new <see cref="ForumCategory"/>.</returns>
+        /// <exception cref="RobloxAPIException">Roblox API failure or lack of permissions.</exception>
+        /// <exception cref="ArgumentNullException">Name cannot be null.</exception>
+        public async Task<HttpResult<ForumCategory>> CreateCategoryAsync(string name)
+        {
+            ArgumentNullException.ThrowIfNullOrWhiteSpace(name, nameof(name));
+
+            string url = $"/v1/groups/{community.Id}/forums";
+            HttpMessage message = new(HttpMethod.Post, url, new
+            {
+                name = name,
+            })
+            {
+                AuthType = AuthType.RobloSecurity,
+                ApiName = nameof(CreateCategoryAsync),
+            };
+
+            var response = await community.SendAsync(message, Constants.URL("groups"));
+            dynamic rawData = JObject.Parse(await response.Content.ReadAsStringAsync());
+
+            return new(response, await GetCategoryByIdAsync(Convert.ToString(rawData.id)));
+        }
+
+        /// <summary>
         /// Gets the categories contained in this forum.
         /// </summary>
         /// <param name="cursor">The cursor for the next page. Obtained by calling this API previously.</param>
+        /// <param name="archivedCategories">If <see langword="true"/>, will retrieve archived categories instead of live categories.</param>
         /// <returns>A task containing a <see cref="PageResponse{T}"/> of <see cref="ForumCategory"/> upon completion.</returns>
         /// <exception cref="RobloxAPIException">Roblox API failure or lack of permissions.</exception>
-        public async Task<HttpResult<PageResponse<ForumCategory>>> GetCategoriesAsync(string? cursor = null)
+        public async Task<HttpResult<PageResponse<ForumCategory>>> GetCategoriesAsync(string? cursor = null, bool archivedCategories = false)
         {
             string url = $"/v1/groups/{community.Id}/forums";
             if (cursor is not null)
                 url += $"?cursor={cursor}";
+            if (archivedCategories == true)
+                url += $"{(cursor is not null ? "&" : "?")}archived=true";
 
             var response = await community.SendAsync(HttpMethod.Get, url, Constants.URL("groups"));
             string rawData = await response.Content.ReadAsStringAsync();
@@ -125,6 +162,10 @@ namespace RoSharp.API.Communities.Forum
                     Creator = new(Convert.ToUInt64(cat.createdBy), community.session),
                     Created = cat.createdAt,
                     Updated = cat.updatedAt,
+
+                    IsArchived = cat.archivedAt != null,
+                    ArchivedAt = cat.archivedAt ?? null,
+                    ArchivedBy = cat.archivedAt != null ? new(Convert.ToUInt64(cat.archivedBy), community.session) : null,
 
                     manager = this
                 });

@@ -3,6 +3,7 @@ using RoSharp.Enums;
 using RoSharp.Exceptions;
 using RoSharp.Extensions;
 using RoSharp.Http;
+using RoSharp.Structures;
 
 namespace RoSharp.API.Communities.Forum
 {
@@ -44,6 +45,21 @@ namespace RoSharp.API.Communities.Forum
         /// </summary>
         public DateTime Updated { get; init; }
 
+        /// <summary>
+        /// Gets whether or not the category is archived.
+        /// </summary>
+        public bool IsArchived { get; init; }
+
+        /// <summary>
+        /// Gets a <see cref="DateTime"/> representing when the category was archived.
+        /// </summary>
+        public DateTime? ArchivedAt { get; init; }
+
+        /// <summary>
+        /// Gets the Id of the user that archived the category.
+        /// </summary>
+        public Id<User>? ArchivedBy { get; init; }
+
         // Todo: Other API as they are implemented
 
         private async Task<ForumPost> ConstructPost(dynamic comment)
@@ -61,6 +77,64 @@ namespace RoSharp.API.Communities.Forum
 
                 manager = this.manager
             };
+        }
+
+        /// <summary>
+        /// Renames the category.
+        /// </summary>
+        /// <param name="newName">The new name for the category.</param>
+        /// <returns>A task that completes when the operation is finished.</returns>
+        /// <exception cref="RobloxAPIException">Roblox API failure or lack of permissions.</exception>
+        public async Task<HttpResult> RenameAsync(string newName)
+        {
+            string url = $"/v1/groups/{manager.community.Id}/forums/{Id}";
+            HttpMessage message = new(HttpMethod.Patch, url, new
+            {
+                name = newName,
+            })
+            {
+                AuthType = AuthType.RobloSecurity,
+                ApiName = nameof(RenameAsync),
+            };
+            return new(await manager.community.SendAsync(message, Constants.URL("groups")));
+        }
+
+        /// <summary>
+        /// Toggles the archived state of the category.
+        /// </summary>
+        /// <param name="archived">Whether or not the category should be archived.</param>
+        /// <returns>A task that completes when the operation is finished.</returns>
+        /// <exception cref="RobloxAPIException">Roblox API failure or lack of permissions.</exception>
+        /// <seealso cref="DeleteAsync"/>
+        public async Task<HttpResult> SetArchivedAsync(bool archived)
+        {
+            string url = $"/v1/groups/{manager.community.Id}/forums/{Id}/archive";
+            HttpMessage message = new(HttpMethod.Patch, url, new
+            {
+                isArchived = archived,
+            })
+            {
+                AuthType = AuthType.RobloSecurity,
+                ApiName = nameof(SetArchivedAsync),
+            };
+            return new(await manager.community.SendAsync(message, Constants.URL("groups")));
+        }
+
+        /// <summary>
+        /// Deletes the category and all of its posts. THIS IS NOT REVERSIBLE!!
+        /// </summary>
+        /// <returns>A task that completes when the operation is finished.</returns>
+        /// <exception cref="RobloxAPIException">Roblox API failure or lack of permissions.</exception>
+        /// <seealso cref="SetArchivedAsync(bool)"/>
+        public async Task<HttpResult> DeleteAsync()
+        {
+            string url = $"/v1/groups/{manager.community.Id}/forums/{Id}";
+            HttpMessage message = new(HttpMethod.Delete, url)
+            {
+                AuthType = AuthType.RobloSecurity,
+                ApiName = nameof(DeleteAsync),
+            };
+            return new(await manager.community.SendAsync(message, Constants.URL("groups")));
         }
 
         /// <summary>
