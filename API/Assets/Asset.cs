@@ -316,6 +316,8 @@ namespace RoSharp.API.Assets
                     QuantityLimitPerUser = quantityLimitPerUser,
                     LowestResalePrice = lowestResalePrice,
                     IsLimited = Convert.ToBoolean(data.CollectiblesItemDetails.IsLimited),
+
+                    controller = this,
                 };
             }
             else
