@@ -3,6 +3,7 @@ using RoSharp.API;
 using RoSharp.API.Assets;
 using RoSharp.Exceptions;
 using RoSharp.Http;
+using System.Collections.ObjectModel;
 
 namespace RoSharp.Structures
 {
@@ -77,6 +78,29 @@ namespace RoSharp.Structures
             }
 
             return new(response, new PageResponse<CollectibleReseller>(list, nextPage, previousPage));
+        }
+
+        /// <summary>
+        /// Gets a dictionary containing the average resale price of this collectible item on specific dates.
+        /// </summary>
+        /// <returns>A task containing a <see cref="ReadOnlyDictionary{TKey, TValue}"/> upon completion.</returns>
+        /// <exception cref="RobloxAPIException">Roblox API failure or lack of permissions.</exception>
+        public async Task<HttpResult<ReadOnlyDictionary<DateOnly, int>>> GetPriceDataPointsAsync()
+        {
+            string url = $"/marketplace-sales/v1/item/{ItemId}/resale-data";
+
+            var response = await controller.SendAsync(HttpMethod.Get, url, Constants.URL("apis"));
+            string rawData = await response.Content.ReadAsStringAsync();
+            dynamic data = JObject.Parse(rawData);
+
+            Dictionary<DateOnly, int> list = [];
+            foreach (dynamic item in data.priceDataPoints)
+            {
+                DateTime date = item.date; // Silly but necessary or it won't work
+                list.Add(DateOnly.FromDateTime(date), Convert.ToInt32(item.value));
+            }
+
+            return new(response, list.AsReadOnly());
         }
     }
 }
