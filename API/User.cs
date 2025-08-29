@@ -408,7 +408,7 @@ namespace RoSharp.API
         public bool PrivateInventory
             => privateInventory;
 
-        private ReadOnlyDictionary<string, string>? socialChannels;
+        private ReadOnlyDictionary<SocialMedia, string>? socialChannels;
 
         /// <summary>
         /// Returns this user's social channels.
@@ -416,17 +416,17 @@ namespace RoSharp.API
         /// <returns>A task containing a <see cref="ReadOnlyDictionary{TKey, TValue}"/> when complete.</returns>
         /// <remarks>The keys of the dictionary are the social media type, the value is the URL.</remarks>
         /// <exception cref="RobloxAPIException">Roblox API failure or lack of permissions.</exception>
-        public async Task<ReadOnlyDictionary<string, string>> GetSocialChannelsAsync()
+        public async Task<ReadOnlyDictionary<SocialMedia, string>> GetSocialChannelsAsync()
         {
             if (socialChannels == null)
             {
-                Dictionary<string, string> dict = [];
+                Dictionary<SocialMedia, string> dict = [];
                 string rawData = await SendStringAsync(HttpMethod.Get, $"/v1/users/{Id}/promotion-channels?alwaysReturnUrls=true", Constants.URL("accountinformation"));
                 dynamic data = JObject.Parse(rawData);
                 foreach (dynamic media in data)
                 {
                     if (media.Value == null) continue;
-                    dict.Add(Convert.ToString(media.Name), Convert.ToString(media.Value));
+                    dict.Add(Enum.Parse<SocialMedia>(media.Name, true), Convert.ToString(media.Value));
                 }
                 socialChannels = dict.AsReadOnly();
             }

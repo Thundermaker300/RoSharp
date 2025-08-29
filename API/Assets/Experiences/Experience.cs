@@ -394,14 +394,14 @@ namespace RoSharp.API.Assets.Experiences
         /// </summary>
         public bool ProfanityAllowed => profanityAllowed.GetValueOrDefault();
 
-        private ReadOnlyDictionary<string, string>? socialChannels;
+        private ReadOnlyDictionary<SocialMedia, string>? socialChannels;
 
         /// <summary>
         /// Returns this experience's social channels.
         /// </summary>
         /// <returns>A task containing a <see cref="ReadOnlyDictionary{TKey, TValue}"/> when complete.</returns>
         /// <remarks>The keys of the dictionary are the social media type, the value is the URL.</remarks>
-        public async Task<ReadOnlyDictionary<string, string>> GetSocialChannelsAsync()
+        public async Task<ReadOnlyDictionary<SocialMedia, string>> GetSocialChannelsAsync()
         {
             if (socialChannels == null)
             {
@@ -411,12 +411,12 @@ namespace RoSharp.API.Assets.Experiences
                     ApiName = nameof(GetSocialChannelsAsync)
                 };
 
-                Dictionary<string, string> dict = [];
+                Dictionary<SocialMedia, string> dict = [];
                 string rawData = await SendStringAsync(message);
                 dynamic data = JObject.Parse(rawData);
                 foreach (dynamic media in data.data)
                 {
-                    dict.Add(Convert.ToString(media.type), Convert.ToString(media.url));
+                    dict.Add(Enum.Parse<SocialMedia>(media.type, true), Convert.ToString(media.url));
                 }
                 socialChannels = dict.AsReadOnly();
             }

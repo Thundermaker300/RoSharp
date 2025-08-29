@@ -355,7 +355,7 @@ namespace RoSharp.API.Communities
             return shoutGuilded;
         }
 
-        private ReadOnlyDictionary<string, string>? socialChannels;
+        private ReadOnlyDictionary<SocialMedia, string>? socialChannels;
 
         /// <summary>
         /// Gets this community's social channels.
@@ -364,20 +364,20 @@ namespace RoSharp.API.Communities
         /// <exception cref="InvalidOperationException">Group is locked.</exception>
         /// <remarks>This method will throw an <see cref="InvalidOperationException"/> if <see cref="IsLocked"/> is <see langword="true"/>.</remarks>
         /// <exception cref="RobloxAPIException">Roblox API failure or lack of permissions.</exception>
-        public async Task<ReadOnlyDictionary<string, string>> GetSocialChannelsAsync()
+        public async Task<ReadOnlyDictionary<SocialMedia, string>> GetSocialChannelsAsync()
         {
             if (IsLocked)
                 throw new InvalidOperationException("Group is locked.");
 
             if (socialChannels == null)
             {
-                Dictionary<string, string> dict = [];
+                Dictionary<SocialMedia, string> dict = [];
                 var response = await SendAsync(HttpMethod.Get, $"/v1/groups/{Id}/social-links");
                 string rawData = await response.Content.ReadAsStringAsync();
                 dynamic data = JObject.Parse(rawData);
                 foreach (dynamic media in data.data)
                 {
-                    dict.Add(Convert.ToString(media.type), Convert.ToString(media.url));
+                    dict.Add(Enum.Parse<SocialMedia>(media.type, true), Convert.ToString(media.url));
                 }
                 socialChannels = dict.AsReadOnly();
             }
