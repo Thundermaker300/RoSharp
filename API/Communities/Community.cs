@@ -802,10 +802,13 @@ namespace RoSharp.API.Communities
         /// </summary>
         /// <param name="filePath">The file path to use for the new icon.</param>
         /// <returns></returns>
+        /// <exception cref="ArgumentNullException"><paramref name="filePath"/> is <see langword="null"/>, empty, or only consists of whitespace characters.</exception>
         /// <exception cref="FileNotFoundException">The specified file does not exist.</exception>
         /// <exception cref="RobloxAPIException">Roblox API failure, lack of permissions, or an invalid file type.</exception>
         public async Task<HttpResult> UploadIconAsync(string filePath)
         {
+            ArgumentNullException.ThrowIfNullOrWhiteSpace(filePath, nameof(filePath));
+
             if (!File.Exists(filePath))
                 throw new FileNotFoundException($"The specified file does not exist.", filePath);
 
