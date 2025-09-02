@@ -798,6 +798,33 @@ namespace RoSharp.API.Communities
         }
 
         /// <summary>
+        /// Uploads a new icon to the group, using the file at the specified file path.
+        /// </summary>
+        /// <param name="filePath">The file path to use for the new icon.</param>
+        /// <returns></returns>
+        /// <exception cref="FileNotFoundException">The specified file does not exist.</exception>
+        /// <exception cref="RobloxAPIException">Roblox API failure, lack of permissions, or an invalid file type.</exception>
+        public async Task<HttpResult> UploadIconAsync(string filePath)
+        {
+            if (!File.Exists(filePath))
+                throw new FileNotFoundException($"The specified file does not exist.", filePath);
+
+            byte[] fileData = await File.ReadAllBytesAsync(filePath);
+
+            MultipartFormDataContent content = new();
+            content.Add(new ByteArrayContent(fileData), "file", filePath);
+
+            var message = new HttpMessage(HttpMethod.Patch, $"/v1/groups/icon?groupId={Id}")
+            {
+                AuthType = AuthType.RobloSecurity,
+                ApiName = nameof(UploadIconAsync),
+                ContentOverride = content,
+            };
+
+            return new(await SendAsync(message));
+        }
+
+        /// <summary>
         /// Leaves the community if the authenticated user is in it.
         /// </summary>
         /// <returns>A task that completes when the operation is finished.</returns>

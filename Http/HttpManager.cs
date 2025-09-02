@@ -52,7 +52,11 @@ namespace RoSharp.Http
             HttpClient client = GetClient();
             HttpRequestMessage messageToSend = new HttpRequestMessage(message.Method, message.Url);
 
-            if (message.Content != null)
+            if (message.ContentOverride != null)
+            {
+                messageToSend.Content = message.ContentOverride;
+            }
+            else if (message.Content != null)
             {
                 JsonContent content = JsonContent.Create(message.Content);
                 messageToSend.Content = content;

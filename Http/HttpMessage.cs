@@ -73,6 +73,11 @@ namespace RoSharp.Structures
         public bool SilenceExceptions { get; set; }
 
         /// <summary>
+        /// If set, all content logic will be overriden with the provided HttpContent object instead. <see cref="Content"/> will be ignored if this property is set.
+        /// </summary>
+        public HttpContent ContentOverride { get; set; }
+
+        /// <summary>
         /// Creates a new <see cref="HttpMessage"/>.
         /// </summary>
         /// <param name="method">The method to use.</param>
