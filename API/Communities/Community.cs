@@ -798,6 +798,31 @@ namespace RoSharp.API.Communities
         }
 
         /// <summary>
+        /// Uploads a new icon to the group.
+        /// </summary>
+        /// <param name="fileData">The file data.</param>
+        /// <returns></returns>
+        /// <exception cref="InvalidOperationException">FileData is empty.</exception>
+        /// <exception cref="RobloxAPIException">Roblox API failure, lack of permissions, or an invalid file type.</exception>
+        public async Task<HttpResult> UploadIconAsync(byte[] fileData)
+        {
+            if (fileData.Length == 0)
+                throw new InvalidOperationException("FileData is empty.");
+
+            MultipartFormDataContent content = new();
+            content.Add(new ByteArrayContent(fileData), "file", "groupicon");
+
+            var message = new HttpMessage(HttpMethod.Patch, $"/v1/groups/icon?groupId={Id}")
+            {
+                AuthType = AuthType.RobloSecurity,
+                ApiName = nameof(UploadIconAsync),
+                ContentOverride = content,
+            };
+
+            return new(await SendAsync(message));
+        }
+
+        /// <summary>
         /// Uploads a new icon to the group, using the file at the specified file path.
         /// </summary>
         /// <param name="filePath">The file path to use for the new icon.</param>
@@ -813,18 +838,7 @@ namespace RoSharp.API.Communities
                 throw new FileNotFoundException($"The specified file does not exist.", filePath);
 
             byte[] fileData = await File.ReadAllBytesAsync(filePath);
-
-            MultipartFormDataContent content = new();
-            content.Add(new ByteArrayContent(fileData), "file", filePath);
-
-            var message = new HttpMessage(HttpMethod.Patch, $"/v1/groups/icon?groupId={Id}")
-            {
-                AuthType = AuthType.RobloSecurity,
-                ApiName = nameof(UploadIconAsync),
-                ContentOverride = content,
-            };
-
-            return new(await SendAsync(message));
+            return await UploadIconAsync(fileData);
         }
 
         /// <summary>
