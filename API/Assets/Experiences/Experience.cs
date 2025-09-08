@@ -51,7 +51,7 @@ namespace RoSharp.API.Assets.Experiences
         /// <summary>
         /// Gets the source name of the experience.
         /// </summary>
-        public string SourceName => sourceName;
+        public string? SourceName => sourceName;
 
         private string description;
 

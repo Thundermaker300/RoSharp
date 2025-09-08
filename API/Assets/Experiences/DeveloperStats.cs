@@ -47,8 +47,6 @@ namespace RoSharp.API.Assets.Experiences
         /// <inheritdoc/>
         public async Task RefreshAsync()
         {
-            history = null;
-
             HttpMessage message = new(HttpMethod.Get, $"/v1/universes/{experience.Id}/configuration/vip-servers")
             {
                 SilenceExceptions = true,
@@ -263,8 +261,6 @@ namespace RoSharp.API.Assets.Experiences
 
             return new(response, list.AsReadOnly());
         }
-
-        private ReadOnlyCollection<ExperienceAuditLog>? history;
 
         /// <summary>
         /// Gets recent audit logs for an experience.
