@@ -19,7 +19,7 @@
     <PackageTags>roblox;api;wrapper;c#;webapi</PackageTags>
     <NeutralLanguage>en-US</NeutralLanguage>
     <PackageLicenseFile>LICENSE.md</PackageLicenseFile>
-    <PackageReleaseNotes>See https://github.com/Thundermaker300/RoSharp/releases/tag/v2.0.0 for release notes.</PackageReleaseNotes>
+    <PackageReleaseNotes>See https://github.com/Thundermaker300/RoSharp/releases/tag/v2.0.0-alpha1 for release notes.</PackageReleaseNotes>
   </PropertyGroup>
 
   <ItemGroup>
