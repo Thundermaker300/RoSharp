@@ -78,6 +78,7 @@ namespace RoSharp.API.Assets.Experiences
         /// </summary>
         /// <returns>A task containing the string URL for the icon upon completion.</returns>
         /// <exception cref="ArgumentException">Invalid asset to get thumbnail for.</exception>
+        /// <exception cref="RobloxAPIException">Roblox API failure or lack of permissions.</exception>
         public async Task<HttpResult<string>> GetIconAsync(IconSize size = IconSize.S420x420)
         {
             var response = await SendAsync(HttpMethod.Get, $"/v1/places/gameicons?placeIds={Id}&returnPolicy=PlaceHolder&size={size.ToString().Substring(1)}&format=Png&isCircular=false", Constants.URL("thumbnails"));
@@ -97,6 +98,7 @@ namespace RoSharp.API.Assets.Experiences
         /// <param name="excludeFullServers">If <see langword="true"/>, servers that are full will not be included in the response.</param>
         /// <param name="cursor">The cursor for the next page. Obtained by calling this API previously.</param>
         /// <returns>A task containing a <see cref="PageResponse{T}"/> of <see cref="GameServer"/>.</returns>
+        /// <exception cref="RobloxAPIException">Roblox API failure or lack of permissions.</exception>
         public async Task<HttpResult<PageResponse<GameServer>>> GetLiveServersAsync(FixedLimit limit = FixedLimit.Limit50, int sortOrder = 2, bool excludeFullServers = false, string? cursor = null)
         {
             string url = $"/v1/games/{Id}/servers/0?sortOrder={sortOrder}&excludeFullGames={excludeFullServers}&limit={limit.Limit()}";

@@ -401,6 +401,7 @@ namespace RoSharp.API.Assets.Experiences
         /// </summary>
         /// <returns>A task containing a <see cref="ReadOnlyDictionary{TKey, TValue}"/> when complete.</returns>
         /// <remarks>The keys of the dictionary are the social media type, the value is the URL.</remarks>
+        /// <exception cref="RobloxAPIException">Roblox API failure or lack of permissions.</exception>
         public async Task<ReadOnlyDictionary<SocialMedia, string>> GetSocialChannelsAsync()
         {
             if (socialChannels == null)

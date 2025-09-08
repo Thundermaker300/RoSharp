@@ -677,6 +677,7 @@ namespace RoSharp.API
         /// <param name="assetId">The asset Id.</param>
         /// <param name="assetItemType">The assetItemType. For most assets this value should be <c>0</c>.</param>
         /// <returns>A task containing a bool upon completion.</returns>
+        /// <exception cref="RobloxAPIException">Roblox API failure or lack of permissions.</exception>
         /// <remarks>This API method does not cache and will make a request each time it is called.</remarks>
         public async Task<HttpResult<bool>> OwnsAssetAsync(ulong assetId, int assetItemType = 0)
         {

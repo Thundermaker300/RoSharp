@@ -547,6 +547,7 @@ namespace RoSharp.API.Assets
         /// <param name="cursor">The cursor for the next page. Obtained by calling this API previously.</param>
         /// <returns>A task containing a <see cref="PageResponse{T}"/> of <see cref="AssetReview"/> upon completion.</returns>
         /// <remarks>This method will return an empty <see cref="PageResponse{T}"/> if <see cref="IsCreatorHubAsset"/> is <see langword="false"/>.</remarks>
+        /// <exception cref="RobloxAPIException">Roblox API failure or lack of permissions.</exception>
         public async Task<HttpResult<PageResponse<AssetReview>>> GetReviewsAsync(int limit = 50, string? cursor = null)
         {
             if (!IsCreatorHubAsset)
@@ -586,6 +587,8 @@ namespace RoSharp.API.Assets
         /// Gets this asset's tags.
         /// </summary>
         /// <returns>A task containing a <see cref="ReadOnlyCollection{T}"/> of <see cref="AssetTag"/> upon completion.</returns>
+        /// <exception cref="RobloxAPIException">Roblox API failure or lack of permissions.</exception>
+        /// <remarks>This API method does not cache and will make a request each time it is called.</remarks>
         public async Task<HttpResult<ReadOnlyCollection<AssetTag>>> GetTagsAsync()
         {
             if (assetTypeOverride != null)
@@ -613,6 +616,7 @@ namespace RoSharp.API.Assets
         /// </summary>
         /// <param name="target">The user to target.</param>
         /// <returns>A task containing a bool upon completion.</returns>
+        /// <exception cref="RobloxAPIException">Roblox API failure or lack of permissions.</exception>
         /// <remarks>This API method does not cache and will make a request each time it is called.</remarks>
         public async Task<HttpResult<bool>> IsOwnedByAsync(User target) => await target.OwnsAssetAsync(this);
 
@@ -621,6 +625,7 @@ namespace RoSharp.API.Assets
         /// </summary>
         /// <param name="targetId">The user Id.</param>
         /// <returns>A task containing a bool upon completion.</returns>
+        /// <exception cref="RobloxAPIException">Roblox API failure or lack of permissions.</exception>
         /// <remarks>This API method does not cache and will make a request each time it is called.</remarks>
         public async Task<HttpResult<bool>> IsOwnedByAsync(ulong targetId) => await IsOwnedByAsync(await User.FromId(targetId, session));
 
@@ -629,6 +634,7 @@ namespace RoSharp.API.Assets
         /// </summary>
         /// <param name="targetUsername">The username.</param>
         /// <returns>A task containing a bool upon completion.</returns>
+        /// <exception cref="RobloxAPIException">Roblox API failure or lack of permissions.</exception>
         /// <remarks>This API method does not cache and will make a request each time it is called.</remarks>
         public async Task<HttpResult<bool>> IsOwnedByAsync(string targetUsername) => await IsOwnedByAsync(await User.FromUsername(targetUsername, session));
 
@@ -647,7 +653,12 @@ namespace RoSharp.API.Assets
             return new(await SendAsync(message, Constants.URL("inventory")));
         }
 
-        public async Task<HttpResult> SaveAsync()
+        /// <summary>
+        /// Adds the asset to the authenticated user's 'saved' assets.
+        /// </summary>
+        /// <returns>A task that completes when the operation is finished.</returns>
+        /// <exception cref="RobloxAPIException">Roblox API failure or lack of permissions.</exception>
+        public async Task<HttpResult> AddToSavesAsync()
         {
 
             var message = new HttpMessage(HttpMethod.Post, $"/toolbox-service/v1/saves", new
@@ -657,11 +668,16 @@ namespace RoSharp.API.Assets
             })
             {
                 AuthType = AuthType.RobloSecurity,
-                ApiName = nameof(SaveAsync)
+                ApiName = nameof(AddToSavesAsync)
             };
             return new(await SendAsync(message, Constants.URL("apis")));
         }
 
+        /// <summary>
+        /// Removes the asset from the authenticated user's 'saved' assets.
+        /// </summary>
+        /// <returns>A task that completes when the operation is finished.</returns>
+        /// <exception cref="RobloxAPIException">Roblox API failure or lack of permissions.</exception>
         public async Task<HttpResult> RemoveFromSavesAsync()
         {
 
@@ -679,6 +695,7 @@ namespace RoSharp.API.Assets
         /// <param name="limit">The limit of assets to return. Maximum: 45.</param>
         /// <returns>A task representing a list of assets shown as recommended.</returns>
         /// <remarks>This API method does not cache and will make a request each time it is called. Occasionally, Roblox's API will produce a 'bad recommendation' that leads to an asset that doesn't exist (either deleted or hidden). If this is the case, RoSharp will skip over it automatically. However, if the limit is set to Roblox's maximum of 45, this will result in less than 45 assets being returned.</remarks>
+        /// <exception cref="RobloxAPIException">Roblox API failure or lack of permissions.</exception>
         public async Task<HttpResult<ReadOnlyCollection<Id<Asset>>>> GetRecommendedAsync(int limit = 7)
         {
             var response = await SendAsync(HttpMethod.Get, $"/v2/recommendations/assets?assetId={Id}&assetTypeId={(int)AssetType}&numItems=45");

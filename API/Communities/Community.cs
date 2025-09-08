@@ -197,7 +197,6 @@ namespace RoSharp.API.Communities
         /// </summary>
         /// <returns>A task containing a <see cref="CommunityForum"/> upon completion.</returns>
         /// <exception cref="RobloxAPIException">Roblox API failure or lack of permissions.</exception>
-        /// <remarks>Please note: Community forums are a Roblox beta feature, and very few groups have them. This method will throw a <see cref="RobloxAPIException"/> if the specified community does not have access to this feature yet. Keep an eye out for the official release of this feature!</remarks>
         public async Task<CommunityForum> GetForumAsync()
         {
             if (forum == null)
@@ -605,6 +604,7 @@ namespace RoSharp.API.Communities
         /// <param name="relationshipType">The type of relationship.</param>
         /// <param name="action">Whether to accept or decline the relationship request.</param>
         /// <returns>A task that completes when the operation is finished.</returns>
+        /// <exception cref="RobloxAPIException">Roblox API failure or lack of permissions.</exception>
         public async Task<HttpResult> ModifyRelationshipRequest(Community community, JoinRequestAction action, CommunityRelationship relationshipType = CommunityRelationship.Allies)
             => new(await ModifyRelationshipRequest(community.Id, action, relationshipType));
 
@@ -801,7 +801,7 @@ namespace RoSharp.API.Communities
         /// Uploads a new icon to the group.
         /// </summary>
         /// <param name="fileData">The file data.</param>
-        /// <returns></returns>
+        /// <returns>A task that completes when the operation is finished.</returns>
         /// <exception cref="InvalidOperationException">FileData is empty.</exception>
         /// <exception cref="RobloxAPIException">Roblox API failure, lack of permissions, or an invalid file type.</exception>
         public async Task<HttpResult> UploadIconAsync(byte[] fileData)
@@ -826,7 +826,7 @@ namespace RoSharp.API.Communities
         /// Uploads a new icon to the group, using the file at the specified file path.
         /// </summary>
         /// <param name="filePath">The file path to use for the new icon.</param>
-        /// <returns></returns>
+        /// <returns>A task that completes when the operation is finished.</returns>
         /// <exception cref="ArgumentNullException"><paramref name="filePath"/> is <see langword="null"/>, empty, or only consists of whitespace characters.</exception>
         /// <exception cref="FileNotFoundException">The specified file does not exist.</exception>
         /// <exception cref="RobloxAPIException">Roblox API failure, lack of permissions, or an invalid file type.</exception>
