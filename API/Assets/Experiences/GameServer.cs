@@ -37,6 +37,11 @@ namespace RoSharp.API.Assets.Experiences
         public double AverageFps { get; init; }
 
         /// <summary>
+        /// Gets a URL that can be used to directly join this server.
+        /// </summary>
+        public string JoinUrl => $"https://www.roblox.com/games/{place.Id}/game?placeId={place.Id}&jobId={ServerId}";
+
+        /// <summary>
         /// Shuts down this server.
         /// </summary>
         /// <returns>A task that completes when the operation is finished.</returns>
