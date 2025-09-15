@@ -115,13 +115,15 @@ namespace RoSharp.API.Assets.Experiences
 
             foreach (dynamic item in data.data)
             {
+                string serverId = item.id;
+
                 GameServer server = new()
                 {
-                    ServerId = item.id,
+                    ServerId = serverId,
                     MaxPlayers = item.maxPlayers,
                     Playing = item.playing,
-                    AverageFps = item.fps,
-                    AveragePing = item.ping,
+                    AverageFps = Convert.ToInt32(item.fps ?? -1),
+                    AveragePing = Convert.ToInt32(item.ping ?? -1),
 
                     place = this,
                 };
@@ -129,6 +131,27 @@ namespace RoSharp.API.Assets.Experiences
             }
 
             return new(response, new(list, nextPage, previousPage));
+        }
+
+        /// <summary>
+        /// Shuts down all place servers, optionally attempting to move users to a new server.
+        /// </summary>
+        /// <param name="migrateServers">If <see langword="true"/>, users will be moved to a new server.</param>
+        /// <returns>A task that completes when the operation is finished.</returns>
+        public async Task<HttpResult> ShutdownServersAsync(bool migrateServers = false)
+        {
+            HttpMessage message = new(HttpMethod.Post, $"/matchmaking-api/v1/game-instances/shutdown-all")
+            {
+                AuthType = AuthType.RobloSecurity,
+                ApiName = nameof(ShutdownServersAsync),
+                ContentOverride = new FormUrlEncodedContent(new Dictionary<string, string> // Why is this api different?????
+                {
+                    ["placeId"] = Id.ToString(),
+                    ["replaceInstances"] = migrateServers.ToString().ToLower()
+                })
+            };
+
+            return new(await SendAsync(message, Constants.URL("apis")));
         }
 
         /// <summary>

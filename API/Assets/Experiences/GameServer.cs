@@ -1,4 +1,8 @@
-﻿namespace RoSharp.API.Assets.Experiences
+﻿using RoSharp.Enums;
+using RoSharp.Http;
+using RoSharp.Structures;
+
+namespace RoSharp.API.Assets.Experiences
 {
     /// <summary>
     /// Represents a live game server.
@@ -31,6 +35,25 @@
         /// The average FPS from all users within the place server.
         /// </summary>
         public double AverageFps { get; init; }
+
+        /// <summary>
+        /// Shuts down this server.
+        /// </summary>
+        /// <returns>A task that completes when the operation is finished.</returns>
+        public async Task<HttpResult> ShutdownAsync()
+        {
+            HttpMessage message = new(HttpMethod.Post, $"/matchmaking-api/v1/game-instances/shutdown", new
+            {
+                placeId = place.Id,
+                gameId = ServerId,
+            })
+            {
+                AuthType = AuthType.RobloSecurity,
+                ApiName = nameof(ShutdownAsync),
+            };
+
+            return new(await place.SendAsync(message, Constants.URL("apis")));
+        }
 
         /// <inheritdoc/>
         public override string ToString()
