@@ -188,8 +188,9 @@ namespace RoSharp.API.Assets
         private bool isCreatorHubAsset;
 
         /// <summary>
-        /// Indicates whether or not this asset is a creator hub asset (Decals, Sounds, Models, etc).
+        /// Indicates whether or not this asset is a public creator hub asset (Decals, Sounds, Models, etc).
         /// </summary>
+        /// <remarks>Private assets that the authenticated user cannot access will return <see langword="false"/>, even if they are technically a creator hub asset.</remarks>
         public bool IsCreatorHubAsset => isCreatorHubAsset;
 
         private bool hasScripts;
@@ -199,6 +200,20 @@ namespace RoSharp.API.Assets
         /// </summary>
         /// <remarks>This will always be <see langword="false"/> if <see cref="AssetType"/> is not equal to <see cref="AssetType.Model"/>.</remarks>
         public bool HasScripts => hasScripts;
+
+        private Id<Asset>? textureId;
+
+        /// <summary>
+        /// For <see cref="AssetType.MeshPart"/> or <see cref="AssetType.Decal"/> assets, gets the <see cref="AssetType.Image"/> asset that represents the texture of the asset.
+        /// </summary>
+        public Id<Asset>? TextureId => textureId;
+
+        private Id<Asset>? meshId;
+
+        /// <summary>
+        /// For <see cref="AssetType.MeshPart"/> assets, gets the <see cref="AssetType.Mesh"/> asset that represents the mesh's body.
+        /// </summary>
+        public Id<Asset>? MeshId => meshId;
 
         private int duration;
 
@@ -378,48 +393,61 @@ namespace RoSharp.API.Assets
             // Check if creator hub asset
             modelDetails = null;
 
-            message.Url = $"/toolbox-service/v1/items/details?assetIds={Id}";
+            message.Url = $"/toolbox-service/v2/assets/{Id}";
             HttpResponseMessage catalogResponse = await SendAsync(message, Constants.URL("apis"));
             if (catalogResponse.StatusCode == HttpStatusCode.OK)
             {
                 isCreatorHubAsset = true;
                 
-                dynamic toolboxDataUseless = JObject.Parse(await catalogResponse.Content.ReadAsStringAsync());
-                dynamic toolboxData = toolboxDataUseless.data[0];
-                double usdPrice =
-                    Convert.ToUInt64(toolboxData.fiatProduct.purchasePrice.quantity.significand)
-                    * Math.Pow(10, Convert.ToInt32(toolboxData.fiatProduct.purchasePrice.quantity.exponent));
+                dynamic toolboxData = JObject.Parse(await catalogResponse.Content.ReadAsStringAsync());
+                double usdPrice = 0;
+                if (toolboxData.creatorStoreProduct.purchasePrice != null)
+                {
+                    usdPrice = Convert.ToUInt64(toolboxData.creatorStoreProduct.purchasePrice.quantity.significand)
+                    * Math.Pow(10, Convert.ToInt32(toolboxData.creatorStoreProduct.purchasePrice.quantity.exponent));
+                }
 
-                hasScripts = toolboxData.asset.hasScripts;
-                duration = toolboxData.asset.duration;
+                hasScripts = toolboxData.asset.hasScripts ?? false;
+                duration = toolboxData.asset.duration ?? 0;
 
-                if (usdPrice > 0)
+                textureId = toolboxData.asset.textureId != null ? new(Convert.ToUInt64(toolboxData.asset.textureId), session) : null;
+                meshId = toolboxData.asset.meshId != null ? new(Convert.ToUInt64(toolboxData.asset.meshId), session) : null;
+
+                if (toolboxData.creatorStoreProduct.purchasable == false)
+                {
+                    purchaseInfo = new NotForSalePurchase();
+                }
+                else if (usdPrice > 0)
                 {
                     purchaseInfo = new FiatPurchase()
                     {
                         Price = usdPrice,
-                        CurrencyCode = toolboxData.fiatProduct.purchasePrice.currencyCode,
+                        CurrencyCode = toolboxData.creatorStoreProduct.purchasePrice.currencyCode,
                     };
                 }
+                else
+                {
+                    purchaseInfo = new FreePurchase();
+                }
 
-                if (toolboxData.asset.modelTechnicalDetails != null)
+                if (toolboxData.asset.objectMeshSummary != null || toolboxData.asset.instanceCounts != null)
                 {
                     var structure = new ModelDetails();
                     structure.AssetId = Id;
 
-                    if (toolboxData.asset.modelTechnicalDetails.objectMeshSummary != null)
+                    if (toolboxData.asset.objectMeshSummary != null)
                     {
-                        structure.Triangles = toolboxData.asset.modelTechnicalDetails.objectMeshSummary.triangles ?? 0;
-                        structure.Vertices = toolboxData.asset.modelTechnicalDetails.objectMeshSummary.vertices ?? 0;
+                        structure.Triangles = toolboxData.asset.objectMeshSummary.triangles ?? 0;
+                        structure.Vertices = toolboxData.asset.objectMeshSummary.vertices ?? 0;
                     }
-                    if (toolboxData.asset.modelTechnicalDetails.instanceCounts != null)
+                    if (toolboxData.asset.instanceCounts != null)
                     {
-                        structure.ScriptCount = toolboxData.asset.modelTechnicalDetails.instanceCounts.script ?? 0;
-                        structure.MeshPartCount = toolboxData.asset.modelTechnicalDetails.instanceCounts.meshPart ?? 0;
-                        structure.AnimationCount = toolboxData.asset.modelTechnicalDetails.instanceCounts.animation ?? 0;
-                        structure.DecalCount = toolboxData.asset.modelTechnicalDetails.instanceCounts.decal ?? 0;
-                        structure.AudioCount = toolboxData.asset.modelTechnicalDetails.instanceCounts.audio ?? 0;
-                        structure.ToolCount = toolboxData.asset.modelTechnicalDetails.instanceCounts.tool ?? 0;
+                        structure.ScriptCount = toolboxData.asset.instanceCounts.script ?? 0;
+                        structure.MeshPartCount = toolboxData.asset.instanceCounts.meshPart ?? 0;
+                        structure.AnimationCount = toolboxData.asset.instanceCounts.animation ?? 0;
+                        structure.DecalCount = toolboxData.asset.instanceCounts.decal ?? 0;
+                        structure.AudioCount = toolboxData.asset.instanceCounts.audio ?? 0;
+                        structure.ToolCount = toolboxData.asset.instanceCounts.tool ?? 0;
                     }
 
                     modelDetails = structure;
@@ -428,8 +456,12 @@ namespace RoSharp.API.Assets
             else
             {
                 isCreatorHubAsset = false;
+
+                modelDetails = null;
                 hasScripts = false;
                 duration = 0;
+                textureId = null;
+                meshId = null;
             }
 
             RefreshedAt = DateTime.Now;
