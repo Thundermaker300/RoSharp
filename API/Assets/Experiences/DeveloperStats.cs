@@ -57,8 +57,8 @@ namespace RoSharp.API.Assets.Experiences
                 dynamic data = JObject.Parse(await result.Content.ReadAsStringAsync());
                 if (data.isEnabled == true)
                 {
-                    activePrivateServers = data.activeServersCount;
-                    activePrivateServerSubscriptions = data.activeSubscriptionsCount;
+                    activePrivateServers = Convert.ToInt32(data.activeServersCount);
+                    activePrivateServerSubscriptions = Convert.ToInt32(data.activeSubscriptionsCount);
                 }
                 else
                 {
