@@ -1582,6 +1582,71 @@ namespace RoSharp.API.Assets.Experiences
             return new(await SendAsync(message, Constants.URL("localizationtables")));
         }
 
+        // TODO: Add the rest of the configs and experiments API.
+
+        public async Task<HttpResult<ExperienceConfig?>> GetConfigAsync(string key)
+        {
+            var response = await SendAsync(HttpMethod.Get, $"/universe-configs-web-api/v1/draft/universes/{UniverseId}", Constants.URL("apis"));
+            dynamic data = JObject.Parse(await response.Content.ReadAsStringAsync());
+            
+            foreach (dynamic entry in data.entries)
+            {
+                if (entry.overrideEntry.entry.key == key)
+                {
+                    return new(response, new()
+                    {
+                        Key = entry.overrideEntry.entry.key,
+                        Description = entry.overrideEntry.entry.description,
+                        Value = entry.overrideEntry.entry.entryValue,
+
+                        DraftHash = data.draftHash,
+                    });
+                }
+            }
+
+            return new(response, null);
+        }
+
+        public async Task<HttpResult<ExperienceConfig>> CreateConfigAsync(string key, string value, string? description = null)
+        {
+            var message = new HttpMessage(HttpMethod.Post, $"/universe-configs-web-api/v1/draft/universes/{UniverseId}", new
+            {
+                entry = new
+                {
+                    description = description,
+                    key = key,
+                    entryValue = value,
+                }
+            })
+            {
+                AuthType = AuthType.RobloSecurity,
+                ApiName = nameof(CreateConfigAsync),
+            };
+
+            var resp = await SendAsync(message, Constants.URL("apis"));
+
+            return new(resp, (await GetConfigAsync(key)).Value.Value);
+        }
+
+        public async Task<HttpResult> PublishConfigsAsync(bool immediate = true, string? auditMessage = null)
+        {
+            string strategy = (immediate ? "DEPLOYMENT_STRATEGY_IMMEDIATE" : "DEPLOYMENT_STRATEGY_GRADUAL_ROLLOUT");
+            var message = new HttpMessage(HttpMethod.Post, $"/universe-configs-web-api/v1/draft/universes/{UniverseId}/publish", new
+            {
+                entry = new
+                {
+                    deploymentStrategy = strategy,
+                    message = auditMessage ?? string.Empty,
+                }
+            })
+            {
+                AuthType = AuthType.RobloSecurity,
+                ApiName = nameof(PublishConfigsAsync),
+            };
+
+            return new(await SendAsync(message, Constants.URL("apis")));
+        }
+
         /// <inheritdoc/>
         public override string ToString()
         {
