@@ -63,7 +63,7 @@
         ContextualPlayabilityUnverifiedSeventeenPlusUser,
 
         /// <summary>
-        /// Experience is unrated and authenticated user is not 13 or older.
+        /// Experience is unrated and cannot be played.
         /// </summary>
         ContextualPlayabilityUnrated,
 
