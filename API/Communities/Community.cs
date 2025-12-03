@@ -776,6 +776,9 @@ namespace RoSharp.API.Communities
                 areGroupGamesVisible = options.GamesVisible,
                 areEnemiesAllowed = options.EnemyDeclarations,
                 areGroupFundsVisible = options.FundsVisible,
+                accountTenureRequirement = options.MinimumAge.HasValue ? options.MinimumAge.Value.ToString() : null,
+                verificationLevel = options.VerificationLevel.HasValue ? options.VerificationLevel.Value.ToString() : null,
+                slowmode = options.SlowMode.HasValue ? (object)Convert.ToInt32(options.SlowMode.Value) : null,
             })
             {
                 AuthType = AuthType.RobloSecurity,
@@ -974,18 +977,33 @@ namespace RoSharp.API.Communities
         public bool? ManualApproval { get; set; }
 
         /// <summary>
-        /// Gets and sets whether or not group funds are publicly visible.
+        /// Gets and sets whether or not community funds are publicly visible.
         /// </summary>
         public bool? FundsVisible { get; set; }
 
         /// <summary>
-        /// Gets and sets whether or not group experiences are publicly visible.
+        /// Gets and sets whether or not community experiences are publicly visible.
         /// </summary>
         public bool? GamesVisible { get; set; }
 
         /// <summary>
-        /// Gets and sets whether or not the group can have and make enemy declarations.
+        /// Gets and sets whether or not the community can have and make enemy declarations.
         /// </summary>
         public bool? EnemyDeclarations { get; set; }
+
+        /// <summary>
+        /// Gets and sets the minimum age to join the community.
+        /// </summary>
+        public GroupAccountAge? MinimumAge { get; set; }
+
+        /// <summary>
+        /// Gets and sets minimum verification level to join the community.
+        /// </summary>
+        public GroupVerificationLevel? VerificationLevel { get; set; }
+
+        /// <summary>
+        /// Gets and sets the group's slowmode setting.
+        /// </summary>
+        public GroupSlowMode? SlowMode { get; set; }
     }
 }
