@@ -1618,6 +1618,12 @@ namespace RoSharp.API.Assets.Experiences
 
         // TODO: Add the rest of the configs and experiments API.
 
+        /// <summary>
+        /// Gets a config from the experience.
+        /// </summary>
+        /// <param name="key">The key of the config.</param>
+        /// <returns>A task containing a <see cref="ExperienceConfig"/> or <see langword="null"/> if there are no matches.</returns>
+        /// <exception cref="RobloxAPIException">Roblox API failure or lack of permissions.</exception>
         public async Task<HttpResult<ExperienceConfig?>> GetConfigAsync(string key)
         {
             var response = await SendAsync(HttpMethod.Get, $"/universe-configs-web-api/v1/draft/universes/{UniverseId}", Constants.URL("apis"));
@@ -1641,6 +1647,15 @@ namespace RoSharp.API.Assets.Experiences
             return new(response, null);
         }
 
+        /// <summary>
+        /// Creates a new config.
+        /// </summary>
+        /// <param name="key">The config key.</param>
+        /// <param name="value">The config value.</param>
+        /// <param name="description">A description for the config.</param>
+        /// <returns>A task containing a <see cref="ExperienceConfig"/> upon completion.</returns>
+        /// <remarks>Note: The created config will NOT be live until <see cref="PublishConfigsAsync(bool, string?)"/> is called.</remarks>
+        /// <exception cref="RobloxAPIException">Roblox API failure or lack of permissions.</exception>
         public async Task<HttpResult<ExperienceConfig>> CreateConfigAsync(string key, string value, string? description = null)
         {
             var message = new HttpMessage(HttpMethod.Post, $"/universe-configs-web-api/v1/draft/universes/{UniverseId}", new
@@ -1662,6 +1677,13 @@ namespace RoSharp.API.Assets.Experiences
             return new(resp, (await GetConfigAsync(key)).Value.Value);
         }
 
+        /// <summary>
+        /// Publishes all newly-created configs.
+        /// </summary>
+        /// <param name="immediate">Whether or not to publish the configs immediately or gradually.</param>
+        /// <param name="auditMessage">An optional audit message to show in experience audit log.</param>
+        /// <returns>A task that completes when the operation is finished.</returns>
+        /// <exception cref="RobloxAPIException">Roblox API failure or lack of permissions.</exception>
         public async Task<HttpResult> PublishConfigsAsync(bool immediate = true, string? auditMessage = null)
         {
             string strategy = (immediate ? "DEPLOYMENT_STRATEGY_IMMEDIATE" : "DEPLOYMENT_STRATEGY_GRADUAL_ROLLOUT");
