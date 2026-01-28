@@ -1199,6 +1199,34 @@ namespace RoSharp.API.Assets.Experiences
         }
 
         /// <summary>
+        /// Submits feedback to the creator of the experience.
+        /// </summary>
+        /// <param name="positive">True for a positive comment, false for a negative comment.</param>
+        /// <param name="comment">The comment, cannot be empty.</param>
+        /// <returns>A task that completes when the operation is finished.</returns>
+        /// <exception cref="RobloxAPIException">Roblox API failure or lack of permissions.</exception>
+        /// <exception cref="InvalidOperationException">Comment must be at least ten characters.</exception>
+        public async Task<HttpResult> SendFeedbackAsync(bool positive, string comment)
+        {
+            if (comment.Length < 10)
+            {
+                throw new InvalidOperationException("Comment must be at least ten characters.");
+            }
+
+            HttpMessage message = new(HttpMethod.Post, $"/player-generated-reviews-service/v1/channels/experience-discovery-page/assets/{RootPlaceId.UniqueId}/reviews", new {
+                category_option_ids = new object[] { },
+                category_type = (positive ? 1 : 2),
+                comment = comment,
+            })
+            {
+                AuthType = AuthType.RobloSecurity,
+                ApiName = nameof(SendFeedbackAsync),
+            };
+
+            return new(await SendAsync(message, Constants.URL("apis")));
+        }
+
+        /// <summary>
         /// Removes a previously placed vote.
         /// </summary>
         /// <returns>A task that completes when the operation is finished.</returns>
