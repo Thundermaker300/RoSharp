@@ -605,6 +605,7 @@ namespace RoSharp.API.Assets.Experiences
         /// </summary>
         /// <remarks>This value will always be <see langword="false"/> if this instance is not authenticated.</remarks>
         /// <seealso cref="PrivateServerCost"/>
+        /* TODO */ [Obsolete("This API currently does not work (endpoint broken by Roblox). Will be re-enabled in the future.")]
         public bool PrivateServers => privateServers.GetValueOrDefault();
 
         private int? privateServerCost;
@@ -614,6 +615,7 @@ namespace RoSharp.API.Assets.Experiences
         /// </summary>
         /// <remarks>This value will always be <c>0</c> if this instance is not authenticated.</remarks>
         /// <seealso cref="PrivateServers"/>
+        /* TODO */ [Obsolete("This API currently does not work (endpoint broken by Roblox). Will be re-enabled in the future.")]
         public int PrivateServerCost => privateServerCost.GetValueOrDefault();
 
         private List<Device> devices = [];
@@ -621,10 +623,14 @@ namespace RoSharp.API.Assets.Experiences
         /// <summary>
         /// Gets the devices that this experience is playable on.
         /// </summary>
+        /* TODO */ [Obsolete("This API currently does not work (endpoint broken by Roblox). Will be re-enabled in the future.")]
         public ReadOnlyCollection<Device> Devices => devices.AsReadOnly();
         private async Task UpdatePrivateServerInfoAndDevicesAsync()
         {
-            string rawData = await SendStringAsync(HttpMethod.Get, $"/user/cloud/v2/universes/{UniverseId}", Constants.URL("apis"));
+            await Task.CompletedTask;
+
+            /*
+            string rawData = await SendStringAsync(HttpMethod.Get, $"/cloud/v2/universes/{UniverseId}", Constants.URL("apis"));
             dynamic data = JObject.Parse(rawData);
 
             if (data.privateServerPriceRobux != null)
@@ -651,7 +657,7 @@ namespace RoSharp.API.Assets.Experiences
             if (data.vrEnabled == true)
                 devices.Add(Device.VR);
 
-            this.devices = devices;
+            this.devices = devices;*/
         }
 
         /// <summary>
