@@ -456,14 +456,14 @@ namespace RoSharp.API.Assets.Experiences
                 universeId = UniverseId.ToString()
             };
 
-            string rawData = await SendStringAsync(HttpMethod.Post, "/experience-guidelines-api/experience-guidelines/get-age-recommendation", Constants.URL("apis"), body);
+            string rawData = await SendStringAsync(HttpMethod.Post, "/experience-guidelines-service/v1beta1/detailed-guidelines", Constants.URL("apis"), body);
             dynamic dataUseless = JObject.Parse(rawData);
             dynamic data = dataUseless.ageRecommendationDetails;
 
-            if (data.summary.ageRecommendation != null)
+            if (data.ageRecommendationSummary.ageRecommendation != null)
             {
-                minimumAge = data.summary.ageRecommendation.minimumAge;
-                maturityLevel = Enum.Parse<ExperienceMaturityLevel>(Convert.ToString(data.summary.ageRecommendation.displayName));
+                minimumAge = data.ageRecommendationSummary.ageRecommendation.minimumAge;
+                maturityLevel = Enum.Parse<ExperienceMaturityLevel>(Convert.ToString(data.ageRecommendationSummary.ageRecommendation.displayName));
             }
             else
             {
@@ -472,13 +472,13 @@ namespace RoSharp.API.Assets.Experiences
             }
 
             List<ExperienceDescriptor> list = [];
-            if (data.descriptorUsages.Count != 0)
+            if (data.experienceDescriptorUsages.items.Count != 0)
             {
-                foreach (dynamic item in data.descriptorUsages)
+                foreach (dynamic item in data.experienceDescriptorUsages.items)
                 {
                     string? getDimensionValue(string target)
                     {
-                        foreach (dynamic descriptorData in item.descriptorDimensionUsages)
+                        foreach (dynamic descriptorData in item.experienceDescriptorDimensionUsages)
                         {
                             if (descriptorData.dimensionName == target)
                                 return descriptorData.dimensionValue;
@@ -492,8 +492,8 @@ namespace RoSharp.API.Assets.Experiences
                         ExperienceDescriptor descriptor = new()
                         {
                             DescriptorType = Constants.DescriptorIdToEnumMapping[itemName],
-                            IconUrl = item.descriptor.iconUrl,
-                            DisplayText = item.descriptor.displayName,
+                            IconUrl = item.experienceDescriptor.iconUrl,
+                            DisplayText = item.experienceDescriptor.displayName,
 
                             Type = getDimensionValue("type"),
                             Presence = getDimensionValue("presence"),
@@ -502,6 +502,7 @@ namespace RoSharp.API.Assets.Experiences
                             Realism = getDimensionValue("realism"),
                             BloodLevel = getDimensionValue("blood-level"),
                             InteractionLevel = getDimensionValue("interaction"),
+                            RegionalCompliance = getDimensionValue("regionalcompliance"),
                         };
 
                         list.Add(descriptor);
@@ -1789,6 +1790,12 @@ namespace RoSharp.API.Assets.Experiences
         public string? InteractionLevel { get; init; }
 
         /// <summary>
+        /// Whether or not an experience is regionally compliant.
+        /// </summary>
+        /// <remarks>Valid for the following types: ContinuousMediaFeed, MediaSharing, PaidItemTrading, PaidRandomItems</remarks>
+        public string? RegionalCompliance { get; init; }
+
+        /// <summary>
         /// The intensity of the content described in this descriptor.
         /// </summary>
         /// <remarks>Valid for the following types: Violence, Fear</remarks>
@@ -1803,7 +1810,7 @@ namespace RoSharp.API.Assets.Experiences
         /// <inheritdoc/>
         public override string ToString()
         {
-            return $"ExperienceDescriptor {DescriptorType} [{DisplayText}] IconUrl: <{IconUrl}> Type: <{Type}> Frequency: <{Frequency}> Realism: <{Realism}> BloodLevel: <{BloodLevel}> Intensity: <{Intensity}> Presence: <{Presence}> InteractionLevel: <{InteractionLevel}>";
+            return $"ExperienceDescriptor {DescriptorType} [{DisplayText}] IconUrl: <{IconUrl}> Type: <{Type}> Frequency: <{Frequency}> Realism: <{Realism}> BloodLevel: <{BloodLevel}> Intensity: <{Intensity}> Presence: <{Presence}> InteractionLevel: <{InteractionLevel}> RegionalCompliance: <{RegionalCompliance}>";
         }
     }
 

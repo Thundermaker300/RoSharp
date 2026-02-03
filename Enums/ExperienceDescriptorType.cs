@@ -21,6 +21,11 @@
         Blood,
 
         /// <summary>
+        /// Indicates that 'continuous media feed(s)' are present in an experience.
+        /// </summary>
+        ContinuousMediaFeed,
+
+        /// <summary>
         /// Indicates that crude humor is present in an experience.
         /// </summary>
         CrudeHumor,
@@ -41,9 +46,24 @@
         Gambling,
 
         /// <summary>
+        /// Indicates that cross-experience media sharing is present in an experience.
+        /// </summary>
+        MediaSharing,
+
+        /// <summary>
         /// Indicates that cross-experience media viewing is present in an experience.
         /// </summary>
         MediaViewing,
+
+        /// <summary>
+        /// Indicates that paid item trading is present in an experience.
+        /// </summary>
+        PaidItemTrading,
+
+        /// <summary>
+        /// Indicates that paid random items are present in an experience.
+        /// </summary>
+        PaidRandomItems,
 
         /// <summary>
         /// Indicates that romance and/or romantic themes are present in an experience.
