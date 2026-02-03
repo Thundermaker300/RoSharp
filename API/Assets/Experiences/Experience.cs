@@ -443,6 +443,14 @@ namespace RoSharp.API.Assets.Experiences
         /// </summary>
         public ReadOnlyCollection<ExperienceDescriptor> ExperienceDescriptors => experienceDescriptors;
 
+        private ReadOnlyCollection<string> restrictedCountries
+            = new List<string>(0).AsReadOnly();
+
+        /// <summary>
+        /// Gets a read-only collection of countries by two-digit country code that can not play this experience due to compliance issues.
+        /// </summary>
+        public ReadOnlyCollection<string> RestrictedCountries => restrictedCountries;
+
         private async Task UpdateExperienceGuidelinesDataAsync()
         {
             // Update profanity
@@ -457,8 +465,8 @@ namespace RoSharp.API.Assets.Experiences
             };
 
             string rawData = await SendStringAsync(HttpMethod.Post, "/experience-guidelines-service/v1beta1/detailed-guidelines", Constants.URL("apis"), body);
-            dynamic dataUseless = JObject.Parse(rawData);
-            dynamic data = dataUseless.ageRecommendationDetails;
+            dynamic dataTopScope = JObject.Parse(rawData);
+            dynamic data = dataTopScope.ageRecommendationDetails;
 
             if (data.ageRecommendationSummary.ageRecommendation != null)
             {
@@ -510,6 +518,16 @@ namespace RoSharp.API.Assets.Experiences
                 }
             }
             experienceDescriptors = list.AsReadOnly();
+
+            List<string> countryList = [];
+            if (dataTopScope.restrictedCountries.Count != 0)
+            {
+                foreach (dynamic item in dataTopScope.restrictedCountries)
+                {
+                    countryList.Add(Convert.ToString(item.countryCode));
+                }
+            }
+            restrictedCountries = countryList.AsReadOnly();
         }
 
         private int? upvotes;
