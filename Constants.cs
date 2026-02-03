@@ -33,13 +33,16 @@ namespace RoSharp
         /// </summary>
         public static readonly ReadOnlyDictionary<string, ExperienceDescriptorType> DescriptorIdToEnumMapping = new Dictionary<string, ExperienceDescriptorType>()
         {
+            ["artificial-intelligence"] = ExperienceDescriptorType.AIInteraction,
             ["alcohol"] = ExperienceDescriptorType.Alcohol,
             ["blood"] = ExperienceDescriptorType.Blood,
             ["crude-humor"] = ExperienceDescriptorType.CrudeHumor,
             ["fear"] = ExperienceDescriptorType.Fear,
             ["free-form-user-creation"] = ExperienceDescriptorType.FreeFormUserCreation,
             ["gambling"] = ExperienceDescriptorType.Gambling,
+            ["media-viewing"] = ExperienceDescriptorType.MediaViewing,
             ["romance"] = ExperienceDescriptorType.Romance,
+            ["sensitive-issues"] = ExperienceDescriptorType.SensitiveIssues,
             ["strong-language"] = ExperienceDescriptorType.StrongLanguage,
             ["social-hangout"] = ExperienceDescriptorType.SocialHangout,
             ["violence"] = ExperienceDescriptorType.Violence,

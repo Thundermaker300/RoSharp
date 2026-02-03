@@ -6,6 +6,11 @@
     public enum ExperienceDescriptorType
     {
         /// <summary>
+        /// Indicates that users can interact with AI in an experience.
+        /// </summary>
+        AIInteraction,
+
+        /// <summary>
         /// Indicates that alcohol depictions are present in an experience.
         /// </summary>
         Alcohol,
@@ -36,9 +41,19 @@
         Gambling,
 
         /// <summary>
+        /// Indicates that cross-experience media viewing is present in an experience.
+        /// </summary>
+        MediaViewing,
+
+        /// <summary>
         /// Indicates that romance and/or romantic themes are present in an experience.
         /// </summary>
         Romance,
+
+        /// <summary>
+        /// Indicates that sensitive issues are present in an experience.
+        /// </summary>
+        SensitiveIssues,
 
         /// <summary>
         /// Indicates that strong language is present in an experience.
