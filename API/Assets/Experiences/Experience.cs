@@ -9,11 +9,7 @@ using RoSharp.Interfaces;
 using RoSharp.Structures;
 using RoSharp.Structures.PurchaseTypes;
 using RoSharp.Utility;
-using System;
-using System.Collections.Generic;
 using System.Collections.ObjectModel;
-
-using Regex = System.Text.RegularExpressions.Regex;
 
 namespace RoSharp.API.Assets.Experiences
 {
@@ -505,6 +501,7 @@ namespace RoSharp.API.Assets.Experiences
                             Frequency = getDimensionValue("frequency"),
                             Realism = getDimensionValue("realism"),
                             BloodLevel = getDimensionValue("blood-level"),
+                            InteractionLevel = getDimensionValue("interaction"),
                         };
 
                         list.Add(descriptor);
@@ -1786,6 +1783,12 @@ namespace RoSharp.API.Assets.Experiences
         public string? BloodLevel { get; init; }
 
         /// <summary>
+        /// The level of interaction described in this descriptor.
+        /// </summary>
+        /// <remarks>Valid for the following types: AIInteraction</remarks>
+        public string? InteractionLevel { get; init; }
+
+        /// <summary>
         /// The intensity of the content described in this descriptor.
         /// </summary>
         /// <remarks>Valid for the following types: Violence, Fear</remarks>
@@ -1800,7 +1803,7 @@ namespace RoSharp.API.Assets.Experiences
         /// <inheritdoc/>
         public override string ToString()
         {
-            return $"ExperienceDescriptor {DescriptorType} [{DisplayText}] IconUrl: <{IconUrl}> Type: <{Type}> Frequency: <{Frequency}> Realism: <{Realism}> BloodLevel: <{BloodLevel}> Intensity: <{Intensity}> Presence: <{Presence}>";
+            return $"ExperienceDescriptor {DescriptorType} [{DisplayText}] IconUrl: <{IconUrl}> Type: <{Type}> Frequency: <{Frequency}> Realism: <{Realism}> BloodLevel: <{BloodLevel}> Intensity: <{Intensity}> Presence: <{Presence}> InteractionLevel: <{InteractionLevel}>";
         }
     }
 
