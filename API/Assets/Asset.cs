@@ -215,13 +215,11 @@ namespace RoSharp.API.Assets
         /// </summary>
         public Id<Asset>? MeshId => meshId;
 
-        private int duration;
-
         /// <summary>
-        /// Gets the length of this asset.
+        /// This property will always return <see cref="TimeSpan.Zero"/>. Use <see cref="AudioDetails.Duration"/> instead.
         /// </summary>
-        /// <remarks>This will always be <see cref="TimeSpan.Zero"/> if <see cref="AssetType"/> is not equal to <see cref="AssetType.Audio"/>.</remarks>
-        public TimeSpan Duration => TimeSpan.FromSeconds(duration);
+        [Obsolete("Use AudioDetails.Duration. This property is no longer used.")]
+        public TimeSpan Duration => TimeSpan.Zero;
 
         private ModelDetails? modelDetails;
 
@@ -230,6 +228,14 @@ namespace RoSharp.API.Assets
         /// </summary>
         /// <remarks>This will always be <see langword="null"/> if <see cref="AssetType"/> is not equal to <see cref="AssetType.Model"/>.</remarks>
         public ModelDetails? ModelDetails => modelDetails;
+
+        private AudioDetails? audioDetails;
+
+        /// <summary>
+        /// Gets specific audio metadata information of this asset, if it is a <see cref="AssetType.Audio"/> and the details are available.
+        /// </summary>
+        /// <remarks>This will always be <see langword="null"/> if <see cref="AssetType"/> is not equal to <see cref="AssetType.Audio"/>.</remarks>
+        public AudioDetails? AudioDetails => audioDetails;
 
         /// <summary>
         /// Override the type of asset.
@@ -392,6 +398,7 @@ namespace RoSharp.API.Assets
 
             // Check if creator hub asset
             modelDetails = null;
+            audioDetails = null;
 
             message.Url = $"/toolbox-service/v2/assets/{Id}";
             HttpResponseMessage catalogResponse = await SendAsync(message, Constants.URL("apis"));
@@ -408,7 +415,6 @@ namespace RoSharp.API.Assets
                 }
 
                 hasScripts = toolboxData.asset.hasScripts ?? false;
-                duration = toolboxData.asset.duration ?? 0;
 
                 textureId = toolboxData.asset.textureId != null ? new(Convert.ToUInt64(toolboxData.asset.textureId), session) : null;
                 meshId = toolboxData.asset.meshId != null ? new(Convert.ToUInt64(toolboxData.asset.meshId), session) : null;
@@ -430,6 +436,7 @@ namespace RoSharp.API.Assets
                     purchaseInfo = new FreePurchase();
                 }
 
+                // Model
                 if (toolboxData.asset.objectMeshSummary != null || toolboxData.asset.instanceCounts != null)
                 {
                     var structure = new ModelDetails();
@@ -452,14 +459,29 @@ namespace RoSharp.API.Assets
 
                     modelDetails = structure;
                 }
+
+                // Audio
+                if (toolboxData.asset.audioType != null)
+                {
+                    var structure = new AudioDetails();
+                    structure.AssetId = Id;
+                    structure.Title = toolboxData.asset.title;
+                    structure.Artist = toolboxData.asset.artist;
+                    structure.Album = toolboxData.asset.album;
+                    structure.Genre = toolboxData.asset.genre;
+                    structure.AudioType = Enum.Parse<AudioType>(Convert.ToString(toolboxData.asset.audioType), true);
+                    structure.Duration = TimeSpan.FromSeconds(Convert.ToDouble(toolboxData.asset.durationSeconds ?? 0));
+
+                    audioDetails = structure;
+                }
             }
             else
             {
                 isCreatorHubAsset = false;
 
                 modelDetails = null;
+                audioDetails = null;
                 hasScripts = false;
-                duration = 0;
                 textureId = null;
                 meshId = null;
             }
