@@ -1703,6 +1703,26 @@ namespace RoSharp.API.Assets.Experiences
             return new(await SendAsync(message, Constants.URL("apis")));
         }
 
+        public async Task<ReadOnlyCollection<Asset>> GetExperienceMusicAsync()
+        {
+            string url = $"/music-discovery/v1/experience-songs?universeId={UniverseId}&limit=100";
+            var response = await SendAsync(HttpMethod.Get, url, Constants.URL("apis"));
+
+            dynamic data = JObject.Parse(await response.Content.ReadAsStringAsync());
+
+            List<Asset> songs = [];
+
+            if (data.songs != null)
+            {
+                foreach (dynamic item in data.songs)
+                {
+                    songs.Add(await Asset.FromId(Convert.ToUInt64(item.assetId)));
+                }
+            }
+
+            return songs.AsReadOnly();
+        }
+
         /// <inheritdoc/>
         public override string ToString()
         {
