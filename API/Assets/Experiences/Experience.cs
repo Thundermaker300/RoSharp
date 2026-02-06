@@ -1719,9 +1719,15 @@ namespace RoSharp.API.Assets.Experiences
             return new(await SendAsync(message, Constants.URL("apis")));
         }
 
-        public async Task<ReadOnlyCollection<Asset>> GetExperienceMusicAsync()
+        /// <summary>
+        /// Returns a list of Audio <see cref="Asset"/> of music that is used in the experience.
+        /// </summary>
+        /// <param name="limit">The maximum amount of results to retrieve from Roblox. Defaults to <c>100</c>.</param>
+        /// <returns>A <see cref="ReadOnlyCollection{T}"/> of <see cref="Asset"/> representing audio music used in the experience.</returns>
+        /// <exception cref="RobloxAPIException">Roblox API failure or lack of permissions.</exception>
+        public async Task<ReadOnlyCollection<Asset>> GetExperienceMusicAsync(int limit = 100)
         {
-            string url = $"/music-discovery/v1/experience-songs?universeId={UniverseId}&limit=100";
+            string url = $"/music-discovery/v1/experience-songs?universeId={UniverseId}&limit={limit}";
             var response = await SendAsync(HttpMethod.Get, url, Constants.URL("apis"));
 
             dynamic data = JObject.Parse(await response.Content.ReadAsStringAsync());

@@ -43,6 +43,7 @@ namespace RoSharp.API.Assets
         /// </summary>
         public string Title { get; internal set; }
 
+        /// <inheritdoc/>
         public override string ToString()
         {
             return $"AudioDetails {AssetId} || {AudioType} | Title: {Title} | Genre: {Genre} | Album: {Album} | Artist: {Artist} | Duration: {Duration}";
