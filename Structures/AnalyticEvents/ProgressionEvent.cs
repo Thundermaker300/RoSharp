@@ -1,7 +1,4 @@
-﻿using RoSharp.Enums;
-using RoSharp.Interfaces;
-
-namespace RoSharp.Structures.AnalyticEvents
+﻿namespace RoSharp.Structures.AnalyticEvents
 {
     /// <summary>
     /// Analytic event representing progression along a specific funnel/path.
