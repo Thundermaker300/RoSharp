@@ -4,7 +4,9 @@ using RoSharp.Exceptions;
 using RoSharp.Http;
 using RoSharp.Interfaces;
 using RoSharp.Structures;
+using RoSharp.Structures.AnalyticEvents;
 using RoSharp.Structures.DeveloperStats;
+using RoSharp.Utility;
 using System.Collections.ObjectModel;
 
 namespace RoSharp.API.Assets.Experiences
@@ -318,6 +320,85 @@ namespace RoSharp.API.Assets.Experiences
                 DataStores = data.numDataStores,
                 Keys = data.numKeys,
             });
+        }
+
+        /// <summary>
+        /// Gets the most recent analytics events that have occurred in the experience.
+        /// </summary>
+        /// <param name="eventType">The type of events to gather.</param>
+        /// <param name="pageSize">The maximum amount of events to gather. Defaults to <c>100</c>.</param>
+        /// <returns>A task containing a <see cref="ReadOnlyCollection{T}"/> of <see cref="AnalyticEvent"/> upon completion.</returns>
+        /// <exception cref="InvalidOperationException">Unexpected analytic type expected! Please inform developer!</exception>
+        /// <exception cref="RobloxAPIException">Roblox API failure or lack of permissions.</exception>
+        /// <remarks>The <see cref="AnalyticEvent"/>(s) in the returned list can be casted to one of three types based on the <see cref="AnalyticEventType"/> used: <see cref="ProgressionEvent"/>, <see cref="EconomyEvent"/>, or <see cref="CustomEvent"/>.</remarks>
+        public async Task<ReadOnlyCollection<AnalyticEvent>> GetAnalyticEventsAsync(AnalyticEventType eventType, int pageSize = 100)
+        {
+            string url = $"/creator-recommended-events-api/v1/live-stats/universes/{experience.UniverseId}?eventType={eventType}&pageSize={pageSize}";
+            var message = new HttpMessage(HttpMethod.Get, url)
+            {
+                AuthType = AuthType.RobloSecurity,
+                ApiName = nameof(GetAnalyticEventsAsync),
+            };
+            var response = await experience.SendAsync(message, Constants.URL("apis"));
+            string rawData = await response.Content.ReadAsStringAsync();
+            dynamic data = JObject.Parse(rawData);
+
+            List<AnalyticEvent> items = [];
+
+            foreach (dynamic item in data.analyticsEvent)
+            {
+                dynamic itemJson = JObject.Parse(Convert.ToString(item.eventDataJson));
+                AnalyticEvent eventObject;
+
+                if (item.eventType == "ProgressionEvents")
+                {
+                    eventObject = new ProgressionEvent()
+                    {
+                        EventName = itemJson.funnel_name,
+                        FunnelType = itemJson.funnel_type,
+                        FunnelSessionId = itemJson.funnel_session_id,
+                        StepName = itemJson.step_name,
+                        Value = itemJson.step,
+                    };
+                }
+                else if (item.eventType == "EconomyEvents")
+                {
+                    eventObject = new EconomyEvent()
+                    {
+                        EventName = itemJson.currency_type,
+                        FlowType = itemJson.flow_type,
+                        EndingBalance = itemJson.ending_balance,
+                        TransactionType = itemJson.transaction_type,
+                        ItemSKU = RoUtility.GetInputOrNull(Convert.ToString(itemJson.item_sku)),
+                        Value = itemJson.amount,
+                    };
+                }
+                else if (item.eventType == "CustomEvents")
+                {
+                    eventObject = new CustomEvent()
+                    {
+                        EventName = itemJson.event_name,
+                        Value = itemJson.value,
+                    };
+                }
+                else
+                {
+                    throw new InvalidOperationException($"Unexpected analytic type expected! Please inform developer!");
+                }
+
+                eventObject.EventType = eventType;
+                eventObject.Time = DateTime.Parse(Convert.ToString(item.timestamp));
+
+                eventObject.UserId = new Id<User>(Convert.ToUInt64(itemJson.user_id), experience.session);
+
+                eventObject.CustomField1 = RoUtility.GetInputOrNull(Convert.ToString(itemJson.custom_field_1));
+                eventObject.CustomField2 = RoUtility.GetInputOrNull(Convert.ToString(itemJson.custom_field_2));
+                eventObject.CustomField3 = RoUtility.GetInputOrNull(Convert.ToString(itemJson.custom_field_3));
+
+                items.Add(eventObject);
+            }
+
+            return items.AsReadOnly();
         }
     }
 }

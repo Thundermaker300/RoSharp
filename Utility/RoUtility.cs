@@ -7,6 +7,14 @@ namespace RoSharp.Utility
     /// </summary>
     public static class RoUtility
     {
+        /// <summary>
+        /// If the <paramref name="input"/> is <see langword="null"/>, empty, or whitespace, returns <see langword="null"/>. Otherwise, returns <paramref name="input"/>.
+        /// </summary>
+        /// <param name="input">The input to test.</param>
+        /// <returns>The input or null.</returns>
+        public static string? GetInputOrNull(string? input)
+            => string.IsNullOrWhiteSpace(input) ? null : input;
+
         internal static void LogHTTP(Session? session, HttpMessage sendMessage, HttpResponseMessage message, bool retrying = false)
         {
 #if DEBUG
