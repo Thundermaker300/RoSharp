@@ -22,6 +22,12 @@
         /// </summary>
         public const string GENERIC_APIKEY_MESSAGE =
             "This API member ({0}) requires a session containing an API key with the '{1}' permission. Please attach a session via AttachSession() (or add the session when first accessing the class) and call Session.SetAPIKey() before executing this method.";
+        
+        /// <summary>
+        /// Generic message for when an API needs a session with an API key.
+        /// </summary>
+        public const string GENERIC_APIKEY_NOPERM_MESSAGE =
+            "This API member ({0}) requires a session containing an API key (without any specific permissions). Please attach a session via AttachSession() (or add the session when first accessing the class) and call Session.SetAPIKey() before executing this method.";
 
         /// <summary>
         /// Verifies the provided session and returns if it is authenticated.
@@ -73,7 +79,7 @@
         public static void ThrowAPIKeyIfNecessary(Session? session, string apiMemberName, string perm)
         {
             if (!VerifyApiKey(session))
-                throw new ArgumentException(string.Format(GENERIC_APIKEY_MESSAGE, apiMemberName, perm), "session");
+                throw new ArgumentException(string.Format((perm.ToLower() == "none" ? GENERIC_APIKEY_NOPERM_MESSAGE : GENERIC_APIKEY_MESSAGE), apiMemberName, perm), "session");
         }
 
         /// <summary>
