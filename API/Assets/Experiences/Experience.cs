@@ -241,6 +241,7 @@ namespace RoSharp.API.Assets.Experiences
             // Reset properties
             playabilityStatus = null;
             socialChannels = null;
+            devices = null;
 
             HttpResponseMessage response = await SendAsync(HttpMethod.Get, $"/v1/games?universeIds={UniverseId}");
             dynamic whyaretheresomanywrappers = JObject.Parse(await response.Content.ReadAsStringAsync());
@@ -263,6 +264,7 @@ namespace RoSharp.API.Assets.Experiences
             rootPlaceId = new Id<Place>(Convert.ToUInt64(data.rootPlaceId), session);
             genre = ExperienceUtility.GetGenre(Convert.ToString(data.genre_l1));
             subgenre = ExperienceUtility.GetGenre(Convert.ToString(data.genre_l2));
+            privateServers = data.createVipServersAllowed;
 
             if (data.localizedFiatPrice != null)
             {
@@ -311,7 +313,6 @@ namespace RoSharp.API.Assets.Experiences
             }
             else
             {
-                privateServers = false;
                 privateServerCost = 0;
             }
 
@@ -634,46 +635,30 @@ namespace RoSharp.API.Assets.Experiences
         /* TODO */ [Obsolete("This API currently does not work (endpoint broken by Roblox). Will be re-enabled in the future.")]
         public int PrivateServerCost => privateServerCost.GetValueOrDefault();
 
-        private List<Device> devices = [];
+        private List<Device>? devices = [];
 
         /// <summary>
-        /// Gets the devices that this experience is playable on.
+        /// Gets the devices that this experience is playable on. This API has been superseded by GetDevicesAsync(). This property will always return an empty list.
         /// </summary>
-        /* TODO */ [Obsolete("This API currently does not work (endpoint broken by Roblox). Will be re-enabled in the future.")]
-        public ReadOnlyCollection<Device> Devices => devices.AsReadOnly();
+        /// <seealso cref="GetDevicesAsync"/>
+        /* TODO */
+        [Obsolete("This API has been superseded by GetDevicesAsync(). This property will always return an empty list.")]
+        public ReadOnlyCollection<Device> Devices { get; } = new List<Device>().AsReadOnly();
         private async Task UpdatePrivateServerInfoAndDevicesAsync()
         {
             await Task.CompletedTask;
-
             /*
             string rawData = await SendStringAsync(HttpMethod.Get, $"/cloud/v2/universes/{UniverseId}", Constants.URL("apis"));
             dynamic data = JObject.Parse(rawData);
 
             if (data.privateServerPriceRobux != null)
             {
-                privateServers = true;
                 privateServerCost = data.privateServerPriceRobux;
             }
             else
             {
-                privateServers = false;
                 privateServerCost = 0;
-            }
-
-            List<Device> devices = [];
-
-            if (data.desktopEnabled == true)
-                devices.Add(Device.Computer);
-            if (data.mobileEnabled == true)
-                devices.Add(Device.Phone);
-            if (data.tabletEnabled == true)
-                devices.Add(Device.Tablet);
-            if (data.consoleEnabled == true)
-                devices.Add(Device.Console);
-            if (data.vrEnabled == true)
-                devices.Add(Device.VR);
-
-            this.devices = devices;*/
+            }*/
         }
 
         /// <summary>
@@ -935,6 +920,43 @@ namespace RoSharp.API.Assets.Experiences
             };
 
             await SendAsync(message, Constants.URL("develop"));
+        }
+
+        /// <summary>
+        /// Gets a list of devices that can play this experience.
+        /// <para>
+        /// An attached API key is required to use this method.
+        /// </para>
+        /// </summary>
+        /// <returns>A <see cref="ReadOnlyCollection{T}"/> of <see cref="Device"/> that can play this experience.</returns>
+        /// <exception cref="RobloxAPIException">Roblox API failure or lack of permissions.</exception>
+        public async Task<ReadOnlyCollection<Device>> GetDevicesAsync()
+        {
+            if (devices != null)
+                return devices.AsReadOnly();
+
+            HttpMessage message = new(HttpMethod.Get, $"/cloud/v2/universes/{Id}")
+            {
+                AuthType = AuthType.ApiKey,
+                ApiKeyPermission = "None",
+                ApiName = nameof(GetDevicesAsync),
+            };
+            string rawData = await SendStringAsync(message, Constants.URL("apis"));
+            dynamic data = JObject.Parse(rawData);
+
+            bool isDesktop = data.desktopEnabled;
+            bool isMobile = data.mobileEnabled;
+            bool isTablet = data.tabletEnabled;
+            bool isConsole = data.consoleEnabled;
+            bool isVr = data.vrEnabled;
+
+            devices = [];
+            if (isDesktop) devices.Add(Device.Computer);
+            if (isMobile) devices.Add(Device.Phone);
+            if (isTablet) devices.Add(Device.Tablet);
+            if (isConsole) devices.Add(Device.Console);
+            if (isVr) devices.Add(Device.VR);
+            return devices.AsReadOnly();
         }
 
         /// <summary>
