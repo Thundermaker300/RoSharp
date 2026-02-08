@@ -1,4 +1,5 @@
 ﻿using Newtonsoft.Json.Linq;
+using RoSharp.API.Assets;
 using RoSharp.API.Assets.Experiences;
 using RoSharp.API.Communities.Forum;
 using RoSharp.API.Pooling;
@@ -277,6 +278,7 @@ namespace RoSharp.API.Communities
             // Reset properties
             shout = null;
             shoutGuilded = null;
+            shoutAnnouncement = null;
             socialChannels = null;
 
             if (roleManager != null)
@@ -292,6 +294,7 @@ namespace RoSharp.API.Communities
         /// </summary>
         /// <returns>A task containing a <see cref="CommunityShout"/> representing the shout upon completion. Can be <see langword="null"/> if there is no current shout.</returns>
         /// <exception cref="RobloxAPIException">Roblox API failure or lack of permissions.</exception>
+        [Obsolete("Community shouts are being discontinued in Febuary 2026. See AnnounceAsync and other announcement APIs instead.")]
         public async Task<HttpResult<CommunityShout>?> GetShoutAsync()
         {
             if (shout == null)
@@ -323,8 +326,11 @@ namespace RoSharp.API.Communities
         /// </summary>
         /// <returns>A task containing a <see cref="GuildedShout"/> if the community has one.</returns>
         /// <exception cref="RobloxAPIException">Roblox API failure or lack of permissions.</exception>
+        [Obsolete("Guilded has been discontinued.")]
         public async Task<HttpResult<GuildedShout>?> GetGuildedShoutAsync()
         {
+            return null;
+
             if (shoutGuilded == null)
             {
                 HttpResponseMessage response = await SendAsync(HttpMethod.Get, $"/community-links/v1/groups/{Id}/shout", Constants.URL("apis"));
@@ -408,6 +414,7 @@ namespace RoSharp.API.Communities
         /// <param name="text">The text for the shout, or <see langword="null"/> to clear the shout.</param>
         /// <returns>Task that completes when the operation is finished.</returns>
         /// <exception cref="RobloxAPIException">Roblox API failure or lack of permissions.</exception>
+        [Obsolete("Community shouts are being discontinued in Febuary 2026. See AnnounceAsync and other announcement APIs instead.")]
         public async Task<HttpResult> ShoutAsync(string? text)
         {
             var message = new HttpMessage(HttpMethod.Patch, $"/v1/groups/{Id}/status", new { message = text ?? string.Empty })
@@ -416,6 +423,89 @@ namespace RoSharp.API.Communities
                 ApiName = nameof(ShoutAsync)
             };
             return new(await SendAsync(message));
+        }
+
+        private HttpResult<CommunityAnnouncement>? shoutAnnouncement;
+
+        /// <summary>
+        /// Gets the current live community announcement.
+        /// </summary>
+        /// <returns>A task containing the <see cref="CommunityAnnouncement"/> if one is present.</returns>
+        public async Task<HttpResult<CommunityAnnouncement>?> GetAnnouncementAsync()
+        {
+            if (shoutAnnouncement == null)
+            {
+                HttpResponseMessage response = await SendAsync(HttpMethod.Get, $"/community-links/v1/groups/{Id}/shout", Constants.URL("apis"));
+                if (response.StatusCode != HttpStatusCode.NoContent)
+                {
+                    string rawData = await response.Content.ReadAsStringAsync();
+                    dynamic data = JObject.Parse(rawData);
+                    ulong posterId = Convert.ToUInt64(data.createdBy);
+
+                    shoutAnnouncement = new(response, new CommunityAnnouncement
+                    {
+                        GuildedId = data.communityId,
+                        ShoutId = data.announcementId,
+                        ShoutChannelId = data.announcementChannelId,
+                        Title = data.title,
+                        Content = data.content,
+                        ImageUrl = data.imageAssetId != null ? new Id<Asset>(Convert.ToUInt64(data.imageAssetId), session) : null,
+                        LikeCount = data.likeCount,
+                        Poster = new Id<User>(posterId, session),
+                        PostedAt = data.createdAt,
+                        UpdatedAt = data.updatedAt,
+                        ReactionsVisible = data.areReactionCountsVisible,
+                    });
+                }
+            }
+
+            return shoutAnnouncement;
+        }
+
+        /// <summary>
+        /// Creates a community announcement.
+        /// </summary>
+        /// <param name="title">The title of the announcement.</param>
+        /// <param name="text">The text of the announcement.</param>
+        /// <param name="imageData">Optional image to attach to the announcement.</param>
+        /// <returns>A task that completes when the operation is finished.</returns>
+        /// <exception cref="RobloxAPIException">Roblox API failure or lack of permissions.</exception>
+        public async Task<HttpResult> AnnounceAsync(string title, string text, byte[]? imageData = null)
+        {
+            var content = new MultipartFormDataContent
+            {
+                { new StringContent(title), "title" },
+                { new StringContent(text), "content" }
+            };
+
+            if (imageData != null)
+                content.Add(new ByteArrayContent(imageData), "image", "announceicon");
+
+            var message = new HttpMessage(HttpMethod.Post, $"/community-links/v1/shout/{Id}/create")
+            {
+                AuthType = AuthType.RobloSecurity,
+                ApiName = nameof(AnnounceAsync),
+                ContentOverride = content,
+            };
+
+            return new(await SendAsync(message, Constants.URL("apis")));
+        }
+
+        /// <summary>
+        /// Creates a community announcement.
+        /// </summary>
+        /// <param name="title">The title of the announcement.</param>
+        /// <param name="text">The text of the announcement.</param>
+        /// <param name="imagePath">Optional path to an image to attach to the announcement.</param>
+        /// <returns>A task that completes when the operation is finished.</returns>
+        /// <exception cref="RobloxAPIException">Roblox API failure or lack of permissions.</exception>
+        public async Task<HttpResult> AnnounceAsync(string title, string text, string imagePath)
+        {
+            if (!File.Exists(imagePath))
+                throw new FileNotFoundException($"The specified file does not exist.", imagePath);
+
+            byte[] fileData = await File.ReadAllBytesAsync(imagePath);
+            return await AnnounceAsync(title, text, fileData);
         }
 
         /// <summary>

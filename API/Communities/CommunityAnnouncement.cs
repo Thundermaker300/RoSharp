@@ -1,14 +1,16 @@
-﻿namespace RoSharp.API.Communities
+﻿using RoSharp.API.Assets;
+
+namespace RoSharp.API.Communities
 {
     /// <summary>
-    /// Represents a group shout from Guilded.
+    /// Represents a community announcement.
     /// </summary>
-    [Obsolete("Guilded has been discontinued.")]
-    public readonly struct GuildedShout
+    public readonly struct CommunityAnnouncement
     {
         /// <summary>
         /// Gets the Id of the Guilded server that the announcement was posted in.
         /// </summary>
+        /// <remarks>Guilded has been discontinued, so this value will always be: <c>XCOMM-ID</c>.</remarks>
         public string GuildedId { get; init; }
 
         /// <summary>
@@ -17,8 +19,9 @@
         public string ShoutId { get; init; }
 
         /// <summary>
-        /// Gets the Id of the channel that the announcement was posted in.
+        /// Gets the Id of the Guilded channel that the announcement was posted in.
         /// </summary>
+        /// <remarks>Guilded has been discontinued, so this value will always be: <c>CHAN-ID-000000000000000000000</c> with the Id of the community appended to the end.</remarks>
         public string ShoutChannelId { get; init; }
 
         /// <summary>
@@ -27,31 +30,31 @@
         public string Title { get; init; }
 
         /// <summary>
-        /// Gets the image url on the announcement, if present.
+        /// Gets the image asset on the announcement, if present.
         /// </summary>
-        public string ImageUrl { get; init; }
+        public Id<Asset>? ImageUrl { get; init; }
 
         /// <summary>
         /// Gets the amount of likes on the post, if visible.
         /// </summary>
         public ulong LikeCount { get; init; }
         /// <summary>
-        /// Gets the content of the shout.
+        /// Gets the content of the announcement.
         /// </summary>
         public string Content { get; init; }
 
         /// <summary>
-        /// Gets the poster of the shout.
+        /// Gets the poster of the announcement.
         /// </summary>
-        public User Poster { get; init; }
+        public Id<User> Poster { get; init; }
 
         /// <summary>
-        /// Gets a <see cref="DateTime"/> representing the time the shout was posted.
+        /// Gets a <see cref="DateTime"/> representing the time the announcement was posted.
         /// </summary>
         public DateTime PostedAt { get; init; }
 
         /// <summary>
-        /// Gets a <see cref="DateTime"/> representing the time the shout was updated.
+        /// Gets a <see cref="DateTime"/> representing the time the announcement was updated.
         /// </summary>
         public DateTime UpdatedAt { get; init; }
 
@@ -61,7 +64,7 @@
         public bool ReactionsVisible { get; init; }
 
         /// <summary>
-        /// Gets whether or not this guilded shout is less than 3 days old.
+        /// Gets whether or not this announcement is less than 3 days old.
         /// </summary>
         public bool IsNew => (DateTime.UtcNow - PostedAt) < TimeSpan.FromDays(3);
     }
