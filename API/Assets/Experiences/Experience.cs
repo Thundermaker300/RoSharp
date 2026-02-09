@@ -335,6 +335,7 @@ namespace RoSharp.API.Assets.Experiences
 
         private bool? voiceEnabled = null;
         private bool? videoEnabled = null;
+        private bool? chatGroupsApiEnabled = null;
 
         private async Task UpdateVoiceVideoAsync()
         {
@@ -346,6 +347,7 @@ namespace RoSharp.API.Assets.Experiences
 
             voiceEnabled = data.isUniverseEnabledForVoice;
             videoEnabled = data.isUniverseEnabledForAvatarVideo;
+            chatGroupsApiEnabled = data.isChatGroupsApiEnabled;
         }
 
         /// <summary>
@@ -357,6 +359,11 @@ namespace RoSharp.API.Assets.Experiences
         /// Gets whether or not facial tracking is enabled.
         /// </summary>
         public bool VideoEnabled => videoEnabled.GetValueOrDefault();
+
+        /// <summary>
+        /// Gets whether or not the age chat groups API is enabled.
+        /// </summary>
+        public bool ChatGroupsAPIEnabled => chatGroupsApiEnabled.GetValueOrDefault();
 
 
         private PlayabilityStatus? playabilityStatus;
