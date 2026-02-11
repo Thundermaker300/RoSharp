@@ -891,7 +891,7 @@ namespace RoSharp.API.Communities
         }
 
         /// <summary>
-        /// Uploads a new icon to the group.
+        /// Uploads a new icon to the community.
         /// </summary>
         /// <param name="fileData">The file data.</param>
         /// <returns>A task that completes when the operation is finished.</returns>
@@ -916,7 +916,7 @@ namespace RoSharp.API.Communities
         }
 
         /// <summary>
-        /// Uploads a new icon to the group, using the file at the specified file path.
+        /// Uploads a new icon to the community, using the file at the specified file path.
         /// </summary>
         /// <param name="filePath">The file path to use for the new icon.</param>
         /// <returns>A task that completes when the operation is finished.</returns>
@@ -935,7 +935,7 @@ namespace RoSharp.API.Communities
         }
 
         /// <summary>
-        /// Uploads a new cover photo to the group.
+        /// Uploads a new cover photo to the community.
         /// </summary>
         /// <param name="fileData">The file data.</param>
         /// <returns>A task that completes when the operation is finished.</returns>
@@ -960,7 +960,7 @@ namespace RoSharp.API.Communities
         }
 
         /// <summary>
-        /// Uploads a new cover photo to the group, using the file at the specified file path.
+        /// Uploads a new cover photo to the community, using the file at the specified file path.
         /// </summary>
         /// <param name="filePath">The file path to use for the new icon.</param>
         /// <returns>A task that completes when the operation is finished.</returns>
@@ -976,6 +976,21 @@ namespace RoSharp.API.Communities
 
             byte[] fileData = await File.ReadAllBytesAsync(filePath);
             return await UploadCoverPhotoAsync(fileData);
+        }
+
+        /// <summary>
+        /// Removes the cover photo from the community.
+        /// </summary>
+        /// <returns>A task that completes when the operation is finished.</returns>
+        /// <exception cref="RobloxAPIException">Roblox API failure or lack of permissions.</exception>
+        public async Task<HttpResult> DeleteCoverPhotoAsync()
+        {
+            HttpMessage payload = new(HttpMethod.Delete, $"/v1/groups/cover-photo?groupId={Id}")
+            {
+                AuthType = AuthType.RobloSecurity,
+                ApiName = nameof(DeleteCoverPhotoAsync),
+            };
+            return new(await SendAsync(payload));
         }
 
         /// <summary>
