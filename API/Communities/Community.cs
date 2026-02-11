@@ -935,6 +935,50 @@ namespace RoSharp.API.Communities
         }
 
         /// <summary>
+        /// Uploads a new cover photo to the group.
+        /// </summary>
+        /// <param name="fileData">The file data.</param>
+        /// <returns>A task that completes when the operation is finished.</returns>
+        /// <exception cref="InvalidOperationException">FileData is empty.</exception>
+        /// <exception cref="RobloxAPIException">Roblox API failure, lack of permissions, or an invalid file type.</exception>
+        public async Task<HttpResult> UploadCoverPhotoAsync(byte[] fileData)
+        {
+            if (fileData.Length == 0)
+                throw new InvalidOperationException("FileData is empty.");
+
+            MultipartFormDataContent content = new();
+            content.Add(new ByteArrayContent(fileData), "file", "groupcoverphoto");
+
+            var message = new HttpMessage(HttpMethod.Patch, $"/v1/groups/cover-photo?groupId={Id}")
+            {
+                AuthType = AuthType.RobloSecurity,
+                ApiName = nameof(UploadCoverPhotoAsync),
+                ContentOverride = content,
+            };
+
+            return new(await SendAsync(message));
+        }
+
+        /// <summary>
+        /// Uploads a new cover photo to the group, using the file at the specified file path.
+        /// </summary>
+        /// <param name="filePath">The file path to use for the new icon.</param>
+        /// <returns>A task that completes when the operation is finished.</returns>
+        /// <exception cref="ArgumentNullException"><paramref name="filePath"/> is <see langword="null"/>, empty, or only consists of whitespace characters.</exception>
+        /// <exception cref="FileNotFoundException">The specified file does not exist.</exception>
+        /// <exception cref="RobloxAPIException">Roblox API failure, lack of permissions, or an invalid file type.</exception>
+        public async Task<HttpResult> UploadCoverPhotoAsync(string filePath)
+        {
+            ArgumentNullException.ThrowIfNullOrWhiteSpace(filePath, nameof(filePath));
+
+            if (!File.Exists(filePath))
+                throw new FileNotFoundException($"The specified file does not exist.", filePath);
+
+            byte[] fileData = await File.ReadAllBytesAsync(filePath);
+            return await UploadCoverPhotoAsync(fileData);
+        }
+
+        /// <summary>
         /// Leaves the community if the authenticated user is in it.
         /// </summary>
         /// <returns>A task that completes when the operation is finished.</returns>
