@@ -159,5 +159,10 @@
         /// [Forum] Remove comments.
         /// </summary>
         RemoveComments,
+
+        /// <summary>
+        /// [Forum] Bypass group slow mode settings.
+        /// </summary>
+        BypassSlowMode,
     }
 }
