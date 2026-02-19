@@ -843,8 +843,8 @@ namespace RoSharp.API
         /// Sends a friend request to the user from the authenticated user.
         /// </summary>
         /// <returns>A task that completes when the operation is finished.</returns>
-        public async Task<HttpResult> SendFriendRequestAsync() =>
-            new(await SendAsync(HttpMethod.Post, $"/v1/contacts/{Id}/request-friendship", body: new { }));
+        public async Task<HttpResult> SendFriendRequestAsync(FriendshipOriginSourceType? friendshipOriginSourceType) =>
+            new(await SendAsync(HttpMethod.Post, $"/v1/users/{Id}/request-friendship", Constants.URL("friends"), new { friendshipOriginSourceType = friendshipOriginSourceType.ToString() }));
 
         /// <summary>
         /// Unfriends the user from the authenticated user.
