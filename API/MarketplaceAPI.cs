@@ -46,24 +46,39 @@ namespace RoSharp.API
         }.AsReadOnly();
 
         /// <summary>
-        /// Gets a <see cref="ReadOnlyDictionary{TKey, TValue}"/> containing the price floors for every <see cref="AssetType"/> that has one. Requires an authenticated session.
+        /// Gets a <see cref="ReadOnlyDictionary{TKey, TValue}"/> containing the price floors for every <see cref="AssetType"/> in the provided <paramref name="list"/>. Requires an authenticated session.
         /// </summary>
+        /// <param name="list">The list of assets to check.</param>
         /// <param name="session">Logged in session. Required but can be replaced with <see langword="null"/> if there is a global session assigned.</param>
         /// <returns>A task containing the <see cref="ReadOnlyDictionary{TKey, TValue}"/> upon completion.</returns>
-        /// <remarks>This API member delays by 100 milliseconds for each <see cref="AssetType"/> to prevent a <see cref="System.Net.HttpStatusCode.TooManyRequests"/> exception.</remarks>
+        /// <remarks>This API method delays by 100 milliseconds for each <see cref="AssetType"/> to prevent a <see cref="System.Net.HttpStatusCode.TooManyRequests"/> exception. This API method does not cache and will make a request each time it is called.</remarks>
         /// <exception cref="RobloxAPIException">Roblox API failure or lack of permissions.</exception>
-        public static async Task<ReadOnlyDictionary<AssetType, int?>> GetPriceFloorsAsync(Session? session)
+        public static async Task<ReadOnlyDictionary<AssetType, int>> GetPriceFloorsAsync(IEnumerable<AssetType> list, Session? session)
         {
-            var dict = new Dictionary<AssetType, int?>();
+            var dict = new Dictionary<AssetType, int>();
 
-            foreach (var type in PriceFloorAssets)
+            foreach (var type in list)
             {
-                dict.Add(type, (await GetPriceFloorForAssetTypeAsync(type, session)).Value);
+                var floor = await GetPriceFloorForAssetTypeAsync(type, session);
+                if (floor.Value.HasValue)
+                {
+                    dict.Add(type, floor.Value.Value);
+                }
                 await Task.Delay(100);
             }
 
             return dict.AsReadOnly();
         }
+
+        /// <summary>
+        /// Gets a <see cref="ReadOnlyDictionary{TKey, TValue}"/> containing the price floors for every <see cref="AssetType"/> that has one. Requires an authenticated session.
+        /// </summary>
+        /// <param name="session">Logged in session. Required but can be replaced with <see langword="null"/> if there is a global session assigned.</param>
+        /// <returns>A task containing the <see cref="ReadOnlyDictionary{TKey, TValue}"/> upon completion.</returns>
+        /// <remarks>This API method delays by 100 milliseconds for each <see cref="AssetType"/> to prevent a <see cref="System.Net.HttpStatusCode.TooManyRequests"/> exception. This API method does not cache and will make a request each time it is called.</remarks>
+        /// <exception cref="RobloxAPIException">Roblox API failure or lack of permissions.</exception>
+        public static async Task<ReadOnlyDictionary<AssetType, int>> GetPriceFloorsAsync(Session? session)
+            => await GetPriceFloorsAsync(PriceFloorAssets, session);
 
         /// <summary>
         /// Gets the price floor for a specific <see cref="AssetType"/>. Requires an authenticated session.
@@ -72,6 +87,7 @@ namespace RoSharp.API
         /// <param name="session">Logged in session. Required but can be replaced with <see langword="null"/> if there is a global session assigned.</param>
         /// <returns>A task containing the price floor as an <see cref="int"/>. Will be <see langword="null"/> if the provided <see cref="AssetType"/> does not have a price floor.</returns>
         /// <exception cref="RobloxAPIException">Roblox API failure or lack of permissions.</exception>
+        /// <remarks>This API method does not cache and will make a request each time it is called.</remarks>
         [Obsolete("Use GetPriceFloorForAssetTypeAsync.")]
         public static async Task<HttpResult<int?>> GetPriceFloorForTypeAsync(AssetType assetType, Session? session)
             => await GetPriceFloorForAssetTypeAsync(assetType, session);
@@ -83,6 +99,7 @@ namespace RoSharp.API
         /// <param name="session">Logged in session. Required but can be replaced with <see langword="null"/> if there is a global session assigned.</param>
         /// <returns>A task containing the price floor as an <see cref="int"/>. Will be <see langword="null"/> if the provided <see cref="AssetType"/> does not have a price floor.</returns>
         /// <exception cref="RobloxAPIException">Roblox API failure or lack of permissions.</exception>
+        /// <remarks>This API method does not cache and will make a request each time it is called.</remarks>
         public static async Task<HttpResult<int?>> GetPriceFloorForAssetTypeAsync(AssetType assetType, Session? session)
         {
             string url = $"{Constants.URL("itemconfiguration")}/v1/items/price-floor?collectibleItemType=2&creationType=1&assetType={assetType}";
@@ -90,7 +107,8 @@ namespace RoSharp.API
             HttpMessage message = new(HttpMethod.Get, url)
             {
                 AuthType = AuthType.RobloSecurity,
-                ApiName = nameof(GetPriceFloorsAsync)
+                ApiName = nameof(GetPriceFloorsAsync),
+                SilenceExceptions = true,
             };
 
             var resp = await HttpManager.SendAsync(session, message);
