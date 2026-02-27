@@ -6,13 +6,11 @@
     /// <seealso cref="API.Assets.Asset.AssetType"/>
     public enum AssetType
     {
-        // "Body" isn't an official AssetType. However, it is included in the enum so that it can be included
-        // in the Price floor APIs (GetPriceFloorsAsync and GetPriceFloorForTypeAsync)
-
         /// <summary>
         /// Represents a body asset.
         /// </summary>
         /// <remarks>This member isn't an official AssetType type, but is included here so that it is included in the <see cref="API.MarketplaceAPI"/>.</remarks>
+        [Obsolete("No longer works due to changes in price floor API.")]
         Body = -1,
 
         /// <summary>
