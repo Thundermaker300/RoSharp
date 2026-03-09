@@ -66,10 +66,11 @@ namespace RoSharp.API
         /// </summary>
         /// <param name="list">The list of assets to check.</param>
         /// <param name="session">Logged in session. Required but can be replaced with <see langword="null"/> if there is a global session assigned.</param>
+        /// <param name="delay">The amount of milliseconds to wait in between each asset type. Required to prevent missing data from too many requests.</param>
         /// <returns>A task containing the <see cref="ReadOnlyDictionary{TKey, TValue}"/> upon completion.</returns>
-        /// <remarks>This API method delays by 100 milliseconds for each <see cref="AssetType"/> to prevent a <see cref="System.Net.HttpStatusCode.TooManyRequests"/> exception. This API method does not cache and will make a request each time it is called.</remarks>
+        /// <remarks>This method makes a new request for each asset type. If data appears to be missing, try increasing the <paramref name="delay"/> to add more time in between each request. This API method does not cache and will make a request each time it is called.</remarks>
         /// <exception cref="RobloxAPIException">Roblox API failure or lack of permissions.</exception>
-        public static async Task<ReadOnlyDictionary<AssetType, int>> GetPriceFloorsAsync(IEnumerable<AssetType> list, Session? session)
+        public static async Task<ReadOnlyDictionary<AssetType, int>> GetPriceFloorsAsync(IEnumerable<AssetType> list, Session? session, int delay = 100)
         {
             var dict = new Dictionary<AssetType, int>();
 
@@ -80,7 +81,7 @@ namespace RoSharp.API
                 {
                     dict.Add(type, floor.Value.Value);
                 }
-                await Task.Delay(100);
+                await Task.Delay(delay);
             }
 
             return dict.AsReadOnly();
@@ -90,11 +91,12 @@ namespace RoSharp.API
         /// Gets a <see cref="ReadOnlyDictionary{TKey, TValue}"/> containing the price floors for every <see cref="AssetType"/> that has one. Requires an authenticated session.
         /// </summary>
         /// <param name="session">Logged in session. Required but can be replaced with <see langword="null"/> if there is a global session assigned.</param>
+        /// <param name="delay">The amount of milliseconds to wait in between each asset type. Required to prevent missing data from too many requests.</param>
         /// <returns>A task containing the <see cref="ReadOnlyDictionary{TKey, TValue}"/> upon completion.</returns>
-        /// <remarks>This API method delays by 100 milliseconds for each <see cref="AssetType"/> to prevent a <see cref="System.Net.HttpStatusCode.TooManyRequests"/> exception. This API method does not cache and will make a request each time it is called.</remarks>
+        /// <remarks>This method makes a new request for each asset type. If data appears to be missing, try increasing the <paramref name="delay"/> to add more time in between each request. This API method does not cache and will make a request each time it is called.</remarks>
         /// <exception cref="RobloxAPIException">Roblox API failure or lack of permissions.</exception>
-        public static async Task<ReadOnlyDictionary<AssetType, int>> GetPriceFloorsForAssetsAsync(Session? session)
-            => await GetPriceFloorsAsync(PriceFloorAssets, session);
+        public static async Task<ReadOnlyDictionary<AssetType, int>> GetPriceFloorsForAssetsAsync(Session? session, int delay = 100)
+            => await GetPriceFloorsAsync(PriceFloorAssets, session, delay);
 
         /// <summary>
         /// Gets the price floor for a specific <see cref="AssetType"/>. Requires an authenticated session.
@@ -140,10 +142,11 @@ namespace RoSharp.API
         /// </summary>
         /// <param name="list">The list of assets to check.</param>
         /// <param name="session">Logged in session. Required but can be replaced with <see langword="null"/> if there is a global session assigned.</param>
+        /// <param name="delay">The amount of milliseconds to wait in between each asset type. Required to prevent missing data from too many requests.</param>
         /// <returns>A task containing the <see cref="ReadOnlyDictionary{TKey, TValue}"/> upon completion.</returns>
-        /// <remarks>This API method delays by 100 milliseconds for each <see cref="BundleType"/> to prevent a <see cref="System.Net.HttpStatusCode.TooManyRequests"/> exception. This API method does not cache and will make a request each time it is called.</remarks>
+        /// <remarks>This method makes a new request for each asset type. If data appears to be missing, try increasing the <paramref name="delay"/> to add more time in between each request. This API method does not cache and will make a request each time it is called.</remarks>
         /// <exception cref="RobloxAPIException">Roblox API failure or lack of permissions.</exception>
-        public static async Task<ReadOnlyDictionary<BundleType, int>> GetPriceFloorsAsync(IEnumerable<BundleType> list, Session? session)
+        public static async Task<ReadOnlyDictionary<BundleType, int>> GetPriceFloorsAsync(IEnumerable<BundleType> list, Session? session, int delay = 100)
         {
             var dict = new Dictionary<BundleType, int>();
 
@@ -154,7 +157,7 @@ namespace RoSharp.API
                 {
                     dict.Add(type, floor.Value.Value);
                 }
-                await Task.Delay(100);
+                await Task.Delay(delay);
             }
 
             return dict.AsReadOnly();
@@ -164,11 +167,12 @@ namespace RoSharp.API
         /// Gets a <see cref="ReadOnlyDictionary{TKey, TValue}"/> containing the price floors for every <see cref="BundleType"/> that has one. Requires an authenticated session.
         /// </summary>
         /// <param name="session">Logged in session. Required but can be replaced with <see langword="null"/> if there is a global session assigned.</param>
+        /// <param name="delay">The amount of milliseconds to wait in between each asset type. Required to prevent missing data from too many requests.</param>
         /// <returns>A task containing the <see cref="ReadOnlyDictionary{TKey, TValue}"/> upon completion.</returns>
-        /// <remarks>This API method delays by 100 milliseconds for each <see cref="BundleType"/> to prevent a <see cref="System.Net.HttpStatusCode.TooManyRequests"/> exception. This API method does not cache and will make a request each time it is called.</remarks>
+        /// <remarks>This method makes a new request for each asset type. If data appears to be missing, try increasing the <paramref name="delay"/> to add more time in between each request. This API method does not cache and will make a request each time it is called.</remarks>
         /// <exception cref="RobloxAPIException">Roblox API failure or lack of permissions.</exception>
-        public static async Task<ReadOnlyDictionary<BundleType, int>> GetPriceFloorsForBundlesAsync(Session? session)
-            => await GetPriceFloorsAsync(PriceFloorBundles, session);
+        public static async Task<ReadOnlyDictionary<BundleType, int>> GetPriceFloorsForBundlesAsync(Session? session, int delay = 100)
+            => await GetPriceFloorsAsync(PriceFloorBundles, session, delay);
 
         /// <summary>
         /// Gets the price floor for a specific <see cref="BundleType"/>. Requires an authenticated session.
