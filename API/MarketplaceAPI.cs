@@ -7,6 +7,9 @@ using RoSharp.Http;
 using RoSharp.Structures;
 using System.Collections.ObjectModel;
 
+
+// https://apis.roblox.com/game-passes/v1/game-passes/1600887881/regional-pricing/preview?price=15
+
 namespace RoSharp.API
 {
     /// <summary>
@@ -46,6 +49,19 @@ namespace RoSharp.API
         }.AsReadOnly();
 
         /// <summary>
+        /// Gets a constant list of <see cref="BundleType"/> that are affected by the price floor.
+        /// </summary>
+        public static ReadOnlyCollection<BundleType> PriceFloorBundles { get; } = new List<BundleType>()
+        {
+            BundleType.BodyParts,
+            BundleType.DynamicHead,
+            BundleType.Shoes,
+        }.AsReadOnly();
+
+
+        // PRICE FLOOR FOR ASSET TYPES
+
+        /// <summary>
         /// Gets a <see cref="ReadOnlyDictionary{TKey, TValue}"/> containing the price floors for every <see cref="AssetType"/> in the provided <paramref name="list"/>. Requires an authenticated session.
         /// </summary>
         /// <param name="list">The list of assets to check.</param>
@@ -77,7 +93,7 @@ namespace RoSharp.API
         /// <returns>A task containing the <see cref="ReadOnlyDictionary{TKey, TValue}"/> upon completion.</returns>
         /// <remarks>This API method delays by 100 milliseconds for each <see cref="AssetType"/> to prevent a <see cref="System.Net.HttpStatusCode.TooManyRequests"/> exception. This API method does not cache and will make a request each time it is called.</remarks>
         /// <exception cref="RobloxAPIException">Roblox API failure or lack of permissions.</exception>
-        public static async Task<ReadOnlyDictionary<AssetType, int>> GetPriceFloorsAsync(Session? session)
+        public static async Task<ReadOnlyDictionary<AssetType, int>> GetPriceFloorsForAssetsAsync(Session? session)
             => await GetPriceFloorsAsync(PriceFloorAssets, session);
 
         /// <summary>
@@ -102,12 +118,12 @@ namespace RoSharp.API
         /// <remarks>This API method does not cache and will make a request each time it is called.</remarks>
         public static async Task<HttpResult<int?>> GetPriceFloorForAssetTypeAsync(AssetType assetType, Session? session)
         {
-            string url = $"{Constants.URL("itemconfiguration")}/v1/items/price-floor?collectibleItemType=2&creationType=1&assetType={assetType}";
+            string url = $"{Constants.URL("itemconfiguration")}/v1/items/price-floor?collectibleItemType=2&creationType=1&assetType={(int)assetType}";
 
             HttpMessage message = new(HttpMethod.Get, url)
             {
                 AuthType = AuthType.RobloSecurity,
-                ApiName = nameof(GetPriceFloorsAsync),
+                ApiName = nameof(GetPriceFloorForAssetTypeAsync),
                 SilenceExceptions = true,
             };
 
@@ -115,6 +131,71 @@ namespace RoSharp.API
             dynamic data = JObject.Parse(await resp.Content.ReadAsStringAsync());
             return new(resp, data.priceFloor != null ? Convert.ToInt32(data.priceFloor) : null);
         }
+
+
+        // PRICE FLOOR FOR BUNDLE TYPES
+
+        /// <summary>
+        /// Gets a <see cref="ReadOnlyDictionary{TKey, TValue}"/> containing the price floors for every <see cref="BundleType"/> in the provided <paramref name="list"/>. Requires an authenticated session.
+        /// </summary>
+        /// <param name="list">The list of assets to check.</param>
+        /// <param name="session">Logged in session. Required but can be replaced with <see langword="null"/> if there is a global session assigned.</param>
+        /// <returns>A task containing the <see cref="ReadOnlyDictionary{TKey, TValue}"/> upon completion.</returns>
+        /// <remarks>This API method delays by 100 milliseconds for each <see cref="BundleType"/> to prevent a <see cref="System.Net.HttpStatusCode.TooManyRequests"/> exception. This API method does not cache and will make a request each time it is called.</remarks>
+        /// <exception cref="RobloxAPIException">Roblox API failure or lack of permissions.</exception>
+        public static async Task<ReadOnlyDictionary<BundleType, int>> GetPriceFloorsAsync(IEnumerable<BundleType> list, Session? session)
+        {
+            var dict = new Dictionary<BundleType, int>();
+
+            foreach (var type in list)
+            {
+                var floor = await GetPriceFloorForBundleTypeAsync(type, session);
+                if (floor.Value.HasValue)
+                {
+                    dict.Add(type, floor.Value.Value);
+                }
+                await Task.Delay(100);
+            }
+
+            return dict.AsReadOnly();
+        }
+
+        /// <summary>
+        /// Gets a <see cref="ReadOnlyDictionary{TKey, TValue}"/> containing the price floors for every <see cref="BundleType"/> that has one. Requires an authenticated session.
+        /// </summary>
+        /// <param name="session">Logged in session. Required but can be replaced with <see langword="null"/> if there is a global session assigned.</param>
+        /// <returns>A task containing the <see cref="ReadOnlyDictionary{TKey, TValue}"/> upon completion.</returns>
+        /// <remarks>This API method delays by 100 milliseconds for each <see cref="BundleType"/> to prevent a <see cref="System.Net.HttpStatusCode.TooManyRequests"/> exception. This API method does not cache and will make a request each time it is called.</remarks>
+        /// <exception cref="RobloxAPIException">Roblox API failure or lack of permissions.</exception>
+        public static async Task<ReadOnlyDictionary<BundleType, int>> GetPriceFloorsForBundlesAsync(Session? session)
+            => await GetPriceFloorsAsync(PriceFloorBundles, session);
+
+        /// <summary>
+        /// Gets the price floor for a specific <see cref="BundleType"/>. Requires an authenticated session.
+        /// </summary>
+        /// <param name="bundleType">The <see cref="BundleType"/> to get the price floor of.</param>
+        /// <param name="session">Logged in session. Required but can be replaced with <see langword="null"/> if there is a global session assigned.</param>
+        /// <returns>A task containing the price floor as an <see cref="int"/>. Will be <see langword="null"/> if the provided <see cref="BundleType"/> does not have a price floor.</returns>
+        /// <exception cref="RobloxAPIException">Roblox API failure or lack of permissions.</exception>
+        /// <remarks>This API method does not cache and will make a request each time it is called.</remarks>
+        public static async Task<HttpResult<int?>> GetPriceFloorForBundleTypeAsync(BundleType bundleType, Session? session)
+        {
+            string url = $"{Constants.URL("itemconfiguration")}/v1/items/price-floor?collectibleItemType=2&creationType=1&bundleType={(int)bundleType}";
+
+            HttpMessage message = new(HttpMethod.Get, url)
+            {
+                AuthType = AuthType.RobloSecurity,
+                ApiName = nameof(GetPriceFloorForBundleTypeAsync),
+                SilenceExceptions = true,
+            };
+
+            var resp = await HttpManager.SendAsync(session, message);
+            dynamic data = JObject.Parse(await resp.Content.ReadAsStringAsync());
+            return new(resp, data.priceFloor != null ? Convert.ToInt32(data.priceFloor) : null);
+        }
+
+
+        // OTHER API
 
         /// <summary>
         /// Gets a list of country codes that can sell products with local currency. Requires an authenticated session.
