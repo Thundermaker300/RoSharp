@@ -488,7 +488,7 @@ namespace RoSharp.API.Assets.Experiences
             }
 
             List<ExperienceDescriptor> list = [];
-            if (data.experienceDescriptorUsages.items.Count != 0)
+            if (data.experienceDescriptorUsages != null && data.experienceDescriptorUsages.items != null && data.experienceDescriptorUsages.items.Count != 0)
             {
                 foreach (dynamic item in data.experienceDescriptorUsages.items)
                 {
