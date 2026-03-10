@@ -646,8 +646,6 @@ namespace RoSharp.API
             return new(response, Convert.ToString(data.data[0].imageUrl));
         }
 
-        private ReadOnlyCollection<Id<Experience>>? experiences;
-
         /// <summary>
         /// Returns experiences that are owned by the user and shown on their profile.
         /// </summary>
