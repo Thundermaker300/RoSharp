@@ -651,25 +651,40 @@ namespace RoSharp.API
         /// <summary>
         /// Returns experiences that are owned by the user and shown on their profile.
         /// </summary>
+        /// <returns>A task containing a <see cref="PageResponse{T}"/> of <see cref="Id{T}"/> upon completion.</returns>
+        /// <exception cref="RobloxAPIException">Roblox API failure or lack of permissions.</exception>
+        public async Task<HttpResult<PageResponse<Id<Experience>>>> GetExperiencesAsync(FixedLimit limit = FixedLimit.Limit100, RequestSortOrder sortOrder = RequestSortOrder.Desc, string? cursor = null)
+        {
+
+            string url = $"/v2/users/{Id}/games?limit={limit.Limit()}&sortOrder={sortOrder}";
+            if (cursor != null)
+                url += "&cursor=" + cursor;
+
+            var response = await SendAsync(HttpMethod.Get, url, Constants.URL("games"));
+            string rawData = await response.Content.ReadAsStringAsync();
+            dynamic data = JObject.Parse(rawData);
+
+            List<Id<Experience>> list = [];
+            string? nextPage = data.nextPageCursor;
+            string? previousPage = data.previousPageCursor;
+
+            foreach (dynamic item in data.data)
+            {
+                ulong id = Convert.ToUInt64(item.id);
+                list.Add(new(id, session));
+            }
+
+            return new(response, new PageResponse<Id<Experience>>(list, nextPage, previousPage));
+        }
+
+        /// <summary>
+        /// Returns experiences that are owned by the user and shown on their profile.
+        /// </summary>
         /// <returns>A task containing a <see cref="ReadOnlyCollection{T}"/> of <see cref="Id{T}"/> upon completion.</returns>
         /// <exception cref="RobloxAPIException">Roblox API failure or lack of permissions.</exception>
+        [Obsolete("Use GetExperiencesAsync(FixedLimit, RequestSortOrder, string)")]
         public async Task<ReadOnlyCollection<Id<Experience>>> GetExperiencesAsync()
-        {
-            if (experiences == null)
-            {
-                string rawData = await SendStringAsync(HttpMethod.Get, $"/users/profile/playergames-json?userId={Id}", Constants.ROBLOX_URL_WWW);
-                dynamic data = JObject.Parse(rawData);
-
-                List<Id<Experience>> list = [];
-                foreach (dynamic experience in data.Games)
-                {
-                    ulong id = experience.UniverseID;
-                    list.Add(new(id, session));
-                }
-                experiences = list.AsReadOnly();
-            }
-            return experiences;
-        }
+            => (await GetExperiencesAsync(FixedLimit.Limit100)).Value.List;
 
         /// <summary>
         /// Gets whether or not this user owns the asset with the given Id.
