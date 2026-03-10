@@ -299,7 +299,6 @@ namespace RoSharp.API.Assets.Experiences
             isCommunityOwned = data.creator.type == "Group";
 
             // configs
-            await UpdateExperienceGuidelinesDataAsync();
             await UpdateVotesAsync();
             await UpdateAvatarStartInfoAsync();
 
@@ -310,6 +309,7 @@ namespace RoSharp.API.Assets.Experiences
                 await UpdateVoiceVideoAsync();
                 await UpdateConfigurationAsync();
                 await UpdatePrivateServerInfoAndDevicesAsync();
+                await UpdateExperienceGuidelinesDataAsync();
             }
             else
             {
