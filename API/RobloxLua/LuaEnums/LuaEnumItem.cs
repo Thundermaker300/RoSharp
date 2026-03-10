@@ -7,5 +7,6 @@ namespace RoSharp.API.RobloxLua.LuaEnums
         public string Name { get; init; }
         public int Value { get; init; }
         public ReadOnlyCollection<string> Tags { get; init; }
+        public string RawData { get; init; }
     }
 }

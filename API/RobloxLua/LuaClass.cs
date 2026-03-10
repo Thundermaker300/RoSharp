@@ -8,6 +8,7 @@ namespace RoSharp.API.RobloxLua
         public string Name { get; init; }
         public string MemoryCategory { get; init; }
         public string Superclass { get; init; }
+        public string RawData { get; init; }
         public ReadOnlyCollection<string> Tags { get; init; }
         public ReadOnlyCollection<LuaMember> Members { get; internal set; }
     }

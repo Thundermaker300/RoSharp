@@ -9,6 +9,7 @@ namespace RoSharp.API.RobloxLua.LuaMembers
         public string Name { get; private set; }
         public string ThreadSafety { get; private set; }
         public ReadOnlyCollection<string> Tags { get; private set; }
+        public string RawData { get; private set; }
 
         internal virtual void FillMembers(string data)
         {
@@ -34,6 +35,7 @@ namespace RoSharp.API.RobloxLua.LuaMembers
                 }
             }
             Tags = tags.AsReadOnly();
+            RawData = Convert.ToString(rawData);
         }
     }
 }

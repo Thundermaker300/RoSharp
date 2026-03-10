@@ -37,6 +37,7 @@ namespace RoSharp.API.RobloxLua
                     Superclass = rawClass.Superclass,
                     MemoryCategory = rawClass.MemoryCategory,
                     Tags = tags.AsReadOnly(),
+                    RawData = Convert.ToString(rawClass),
                 };
                 List<LuaMember> members = new List<LuaMember>();
                 foreach (dynamic rawMember in rawClass.Members)
@@ -81,6 +82,7 @@ namespace RoSharp.API.RobloxLua
                             Name = item.Name,
                             Value = item.Value,
                             Tags = itemTags.AsReadOnly(),
+                            RawData = Convert.ToString(item),
                         });
                     }
                 }
@@ -96,6 +98,7 @@ namespace RoSharp.API.RobloxLua
                     Name = rawEnum.Name,
                     Items = items.AsReadOnly(),
                     Tags = tags.AsReadOnly(),
+                    RawData = Convert.ToString(rawEnum)
                 };
                 enums.Add(enum1);
             }
