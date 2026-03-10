@@ -150,7 +150,6 @@ namespace RoSharp.API
             socialChannels = null;
             groups = null;
             customName = null;
-            experiences = null;
 
             // Update premium + inventory
             if (SessionVerify.Verify(session))
