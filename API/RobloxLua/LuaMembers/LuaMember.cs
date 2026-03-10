@@ -37,5 +37,11 @@ namespace RoSharp.API.RobloxLua.LuaMembers
             Tags = tags.AsReadOnly();
             RawData = Convert.ToString(rawData);
         }
+
+        /// <inheritdoc/>
+        public override string ToString()
+        {
+            return $"LuaMember {Name} ThreadSafe: {ThreadSafety} Tags: [{string.Join(", ", Tags)}]";
+        }
     }
 }

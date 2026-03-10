@@ -104,5 +104,11 @@ namespace RoSharp.API.RobloxLua
             }
             Enums = enums.AsReadOnly();
         }
+
+        /// <inheritdoc/>
+        public override string ToString()
+        {
+            return $"APIDumpSnapshot {VersionString}";
+        }
     }
 }

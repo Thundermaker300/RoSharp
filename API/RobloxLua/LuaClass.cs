@@ -11,5 +11,11 @@ namespace RoSharp.API.RobloxLua
         public string RawData { get; init; }
         public ReadOnlyCollection<string> Tags { get; init; }
         public ReadOnlyCollection<LuaMember> Members { get; internal set; }
+
+        /// <inheritdoc/>
+        public override string ToString()
+        {
+            return $"LuaClass {Name} Tags: [{string.Join(", ", Tags)}] || Superclass [{Superclass}] || MemoryCategory {MemoryCategory} || Members [{string.Join(", ", Members)}]";
+        }
     }
 }

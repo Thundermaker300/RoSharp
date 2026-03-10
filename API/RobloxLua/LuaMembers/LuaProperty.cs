@@ -38,5 +38,11 @@ namespace RoSharp.API.RobloxLua.LuaMembers
             SerializationCanSave = rawData.Serialization.CanSave;
 
         }
+
+        /// <inheritdoc/>
+        public override string ToString()
+        {
+            return $"LuaProperty {Name} [{Category}] ThreadSafe: {ThreadSafety} Tags: [{string.Join(", ", Tags)}] || ValueType: [{ValueType}] || Security [R: {ReadSecurity} W: {WriteSecurity}] Serialization [L: {SerializationCanLoad} S: {SerializationCanSave}]";
+        }
     }
 }

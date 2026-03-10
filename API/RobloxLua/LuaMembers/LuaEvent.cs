@@ -32,5 +32,11 @@ namespace RoSharp.API.RobloxLua.LuaMembers
             }
             Parameters = parameters.AsReadOnly();
         }
+
+        /// <inheritdoc/>
+        public override string ToString()
+        {
+            return $"LuaEvent {Name} ThreadSafe: {ThreadSafety} Tags: [{string.Join(", ", Tags)}] || Security [{Security}] || Parameters: [{string.Join(", ", Parameters)}]";
+        }
     }
 }

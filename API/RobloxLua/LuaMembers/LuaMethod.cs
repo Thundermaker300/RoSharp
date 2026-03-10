@@ -66,5 +66,11 @@ namespace RoSharp.API.RobloxLua.LuaMembers
             }
             Capabilities = capabilities.AsReadOnly();
         }
+
+        /// <inheritdoc/>
+        public override string ToString()
+        {
+            return $"LuaMethod {Name} ThreadSafe: {ThreadSafety} Tags: [{string.Join(", ", Tags)}] || Security [{Security}] || Parameters: [{string.Join(", ", Parameters)}] || ReturnType: [{string.Join(", ", ReturnType)}] || Capabilities: [{string.Join(", ", Capabilities)}]";
+        }
     }
 }

@@ -4,15 +4,15 @@ namespace RoSharp.API.RobloxLua.LuaMembers
 {
     public class LuaCallback : LuaMethod
     {
-        public string Security { get; private set; }
-
         internal override void FillMembers(string data)
         {
             base.FillMembers(data);
+        }
 
-            dynamic rawData = JObject.Parse(data);
-
-            Security = rawData.Security;
+        /// <inheritdoc/>
+        public override string ToString()
+        {
+            return $"LuaCallback {Name} ThreadSafe: {ThreadSafety} Tags: [{string.Join(", ", Tags)}] || Security [{Security}] || Parameters: [{string.Join(", ", ReturnType)}] || ReturnType: [{string.Join(", ", ReturnType)}] || Capabilities: [{string.Join(", ", Capabilities)}]";
         }
     }
 }
