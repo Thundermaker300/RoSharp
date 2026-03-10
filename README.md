@@ -98,7 +98,8 @@ await members.SetRankAsync(USER_HERE, ROLE_OBJECT_HERE); // Objects can be subst
 
 ## Credits
 * [Robloxdotnet](https://github.com/Loravis/Robloxdotnet) by [Loravis](https://github.com/Loravis) -- Original inspiration for RoSharp, various inspirations taken from this project.
-* [RoSeal](https://www.roseal.live/) -- Providing the API/Database that is used for `Experience.GetCommunityWikiUrlAsync`.
+* [RoSeal](https://www.roseal.live/) -- Providing the API/Database that is utilized for the `Experience.GetCommunityWikiUrlAsync` method.
+* [MaximumADHD](https://www.roblox.com/users/2032622/profile) -- Providing the [Roblox Client Tracker](https://github.com/MaximumADHD/Roblox-Client-Tracker) project which is utilized by the `RobloxLuaAPI` class.
 
 ## Donations
 RoSharp doesn't cost anything but donations are greatly appreciated! [Click here to donate](https://ko-fi.com/P5P416152H).
