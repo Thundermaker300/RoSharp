@@ -5,12 +5,35 @@ using System.Collections.ObjectModel;
 
 namespace RoSharp.API.RobloxLua
 {
+    /// <summary>
+    /// Represents the Roblox API Dump with a particular version.
+    /// <para>
+    /// The Roblox API Dump is a large .JSON file which contains a bunch of information to determine the inheritance hierarchy of classes, information about a classes' members, and information about enumerations. The Roblox API Dump usually changes weekly following Roblox client updates and the Roblox release note schedules.
+    /// </para>
+    /// </summary>
     public sealed class APIDumpSnapshot
     {
+        /// <summary>
+        /// Gets the version string that was used to retrieve this API dump.
+        /// </summary>
         public string VersionString { get; }
+
+        /// <summary>
+        /// Gets the raw string data for the entire API Dump.
+        /// <para>
+        /// Please note: This string is EXTREMELY large. It is recommended to write to a file or some other form of displaying as opposed to logging it.
+        /// </para>
+        /// </summary>
         public string RawDump { get; }
 
+        /// <summary>
+        /// Gets all of the classes contained within the dump.
+        /// </summary>
         public ReadOnlyCollection<LuaClass> Classes { get; }
+
+        /// <summary>
+        /// Gets all of the enumerations contained within the dump.
+        /// </summary>
         public ReadOnlyCollection<LuaEnum> Enums { get; }
 
         internal APIDumpSnapshot(string versionString, string rawDump)

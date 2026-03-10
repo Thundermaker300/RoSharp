@@ -3,12 +3,34 @@ using System.Collections.ObjectModel;
 
 namespace RoSharp.API.RobloxLua.LuaMembers
 {
+    /// <summary>
+    /// The base class for all Lua members. This class can be casted to one of the following: <see cref="LuaProperty"/>, <see cref="LuaMethod"/>, <see cref="LuaEvent"/>, or <see cref="LuaCallback"/> depending on its <see cref="MemberType"/>.
+    /// </summary>
     public class LuaMember
     {
+        /// <summary>
+        /// Gets the type of member this member is.
+        /// </summary>
         public MemberType MemberType { get; private set; }
+
+        /// <summary>
+        /// Gets the name of the member.
+        /// </summary>
         public string Name { get; private set; }
+
+        /// <summary>
+        /// Gets the thread safety state of the member.
+        /// </summary>
         public string ThreadSafety { get; private set; }
+
+        /// <summary>
+        /// Gets the tags applied to the member.
+        /// </summary>
         public ReadOnlyCollection<string> Tags { get; private set; }
+
+        /// <summary>
+        /// Gets the raw string data from the API Dump for this member.
+        /// </summary>
         public string RawData { get; private set; }
 
         internal virtual void FillMembers(string data)

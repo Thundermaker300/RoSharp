@@ -3,11 +3,29 @@ using System.Collections.ObjectModel;
 
 namespace RoSharp.API.RobloxLua.LuaMembers
 {
+    /// <summary>
+    /// A method represents a function as part of a class that can be executed anytime by a game script.
+    /// </summary>
     public class LuaMethod : LuaMember
     {
+        /// <summary>
+        /// Gets a list of parameters (required or optional) in the method.
+        /// </summary>
         public ReadOnlyCollection<LuaParameter> Parameters { get; private set; }
+
+        /// <summary>
+        /// Gets a list of return types from the method's execution.
+        /// </summary>
         public ReadOnlyCollection<LuaType> ReturnType { get; private set; }
+
+        /// <summary>
+        /// Gets the security level required to access this method.
+        /// </summary>
         public string Security { get; private set; }
+
+        /// <summary>
+        /// Gets access capabilities for this method.
+        /// </summary>
         public ReadOnlyCollection<string> Capabilities { get; private set; }
 
         internal override void FillMembers(string data)

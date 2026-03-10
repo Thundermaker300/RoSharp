@@ -3,9 +3,19 @@ using System.Collections.ObjectModel;
 
 namespace RoSharp.API.RobloxLua.LuaMembers
 {
+    /// <summary>
+    /// An event represents an execution of an action within an experience. Most events can be listened into by scripts.
+    /// </summary>
     public class LuaEvent : LuaMember
     {
+        /// <summary>
+        /// Gets the security level required to access this event.
+        /// </summary>
         public string Security { get; private set; }
+        
+        /// <summary>
+        /// Gets a list of parameters that are included when the event is executed.
+        /// </summary>
         public ReadOnlyCollection<LuaParameter> Parameters { get; private set; }
 
         internal override void FillMembers(string data)
