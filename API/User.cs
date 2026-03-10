@@ -653,6 +653,7 @@ namespace RoSharp.API
         /// </summary>
         /// <returns>A task containing a <see cref="PageResponse{T}"/> of <see cref="Id{T}"/> upon completion.</returns>
         /// <exception cref="RobloxAPIException">Roblox API failure or lack of permissions.</exception>
+        /// <remarks>Important note: The maximum <paramref name="limit"/> for this API member is <see cref="FixedLimit.Limit50"/>.</remarks>
         public async Task<HttpResult<PageResponse<Id<Experience>>>> GetExperiencesAsync(FixedLimit limit = FixedLimit.Limit100, RequestSortOrder sortOrder = RequestSortOrder.Desc, string? cursor = null)
         {
 
