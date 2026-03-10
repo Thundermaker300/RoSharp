@@ -10,6 +10,7 @@ namespace RoSharp.API.RobloxLua
         public string RawDump { get; }
 
         public ReadOnlyCollection<LuaClass> Classes { get; }
+        public ReadOnlyCollection<LuaEnum> Enums { get; }
 
         internal APIDumpSnapshot(string versionString, string rawDump)
         {
@@ -55,6 +56,49 @@ namespace RoSharp.API.RobloxLua
                 classes.Add(class1);
             }
             Classes = classes.AsReadOnly();
+
+            List<LuaEnum> enums = new();
+            foreach (dynamic rawEnum in dump.Enums)
+            {
+                List<LuaEnumItem> items = [];
+                List<string> tags = [];
+
+                if (rawEnum.Items != null)
+                {
+                    foreach (dynamic item in rawEnum.Items)
+                    {
+                        List<string> itemTags = [];
+                        if (item.Tags != null)
+                        {
+                            foreach (dynamic itemTag in item.Tags)
+                            {
+                                itemTags.Add(Convert.ToString(itemTag));
+                            }
+                        }
+                        items.Add(new()
+                        {
+                            Name = item.Name,
+                            Value = item.Value,
+                            Tags = itemTags.AsReadOnly(),
+                        });
+                    }
+                }
+
+                if (rawEnum.Tags != null)
+                {
+                    foreach (dynamic tag in rawEnum.Tags)
+                        tags.Add(Convert.ToString(tag));
+                }
+
+                LuaEnum enum1 = new()
+                {
+                    Name = rawEnum.Name,
+                    Items = items.AsReadOnly(),
+                    Tags = tags.AsReadOnly(),
+                };
+                enums.Add(enum1);
+            }
+            Enums = enums.AsReadOnly();
         }
     }
 }
