@@ -64,7 +64,7 @@ namespace RoSharp.Http
                 messageToSend.Content.Headers.ContentLength = (await content.ReadAsStringAsync()).Length;
             }
 
-            if (message.Headers.Count > 0)
+            if (message.Headers is not null && message.Headers.Count > 0)
             {
                 foreach (var header in message.Headers)
                 {
