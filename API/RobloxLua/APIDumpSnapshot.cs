@@ -1,4 +1,5 @@
 ﻿using Newtonsoft.Json.Linq;
+using RoSharp.API.RobloxLua.LuaEnums;
 using RoSharp.API.RobloxLua.LuaMembers;
 using System.Collections.ObjectModel;
 
