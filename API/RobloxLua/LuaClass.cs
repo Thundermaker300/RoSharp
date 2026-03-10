@@ -44,5 +44,28 @@ namespace RoSharp.API.RobloxLua
         {
             return $"LuaClass {Name} Tags: [{string.Join(", ", Tags)}] || Superclass [{Superclass}] || MemoryCategory {MemoryCategory} || Members [{string.Join(", ", Members)}]";
         }
+
+        /// <summary>
+        /// Gets the classes' members.
+        /// </summary>
+        /// <returns>A <see cref="ReadOnlyCollection{T}"/> of <see cref="LuaMember"/>.</returns>
+        public ReadOnlyCollection<LuaMember> GetMembers() => Members;
+
+        /// <summary>
+        /// Gets the classes' members.
+        /// </summary>
+        /// <param name="type">The type of members to filter by.</param>
+        /// <returns>A <see cref="ReadOnlyCollection{T}"/> of <see cref="LuaMember"/>.</returns>
+        public ReadOnlyCollection<LuaMember> GetMembers(MemberType type)
+            => GetMembers().Where(e => e.MemberType == type).ToList().AsReadOnly();
+
+        /// <summary>
+        /// Gets the classes' members.
+        /// </summary>
+        /// <typeparam name="T">The type of members to retrieve.</typeparam>
+        /// <returns>A <see cref="ReadOnlyCollection{T}"/> of <typeparamref name="T"/> members underneath this class.</returns>
+        public ReadOnlyCollection<T> GetMembers<T>()
+            where T: LuaMember
+            => GetMembers().Where(e => e is T).Select(e => e as T).ToList().AsReadOnly();
     }
 }
