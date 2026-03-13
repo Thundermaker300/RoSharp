@@ -85,7 +85,7 @@ namespace RoSharp.API
         /// <summary>
         /// Gets whether or not their profile is hidden (either banned or disabled account).
         /// </summary>
-        public bool ProfileHidden => ProfileHidden;
+        public bool ProfileHidden => profileHidden;
 
         /// <inheritdoc/>
         public DateTime RefreshedAt { get; set; }
