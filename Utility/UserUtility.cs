@@ -16,23 +16,25 @@ namespace RoSharp.Utility
         /// Gets the User Id that corresponds with the given username.
         /// </summary>
         /// <param name="username">The username.</param>
+        /// <param name="session">The session to attach, optional.</param>
         /// <returns>The matching User Id.</returns>
         /// <exception cref="ArgumentException">Invalid username provided.</exception>
         /// <exception cref="RobloxAPIException">Roblox API failure.</exception>
-        public static async Task<HttpResult<ulong>> GetUserIdAsync(string username)
+        public static async Task<HttpResult<ulong>> GetUserIdAsync(string username, Session? session = null)
         {
-            var list = await GetUserIdsAsync([username]);
+            var list = await GetUserIdsAsync(session, [username]);
             return new(list, list.Value.First().Value);
         }
 
         /// <summary>
         /// Converts an array of usernames to a dictionary, mapping the usernames to their user Id.
         /// </summary>
+        /// <param name="session">The session to attach, optional.</param>
         /// <param name="usernames">The username list.</param>
         /// <returns>A task containing a <see cref="ReadOnlyDictionary{TKey, TValue}"/> upon completion.</returns>
         /// <exception cref="ArgumentException">No valid usernames.</exception>
         /// <exception cref="RobloxAPIException">Roblox API failure.</exception>
-        public static async Task<HttpResult<ReadOnlyDictionary<string, ulong>>> GetUserIdsAsync(params string[] usernames)
+        public static async Task<HttpResult<ReadOnlyDictionary<string, ulong>>> GetUserIdsAsync(Session? session = null, params string[] usernames)
         {
             object content = new
             {
@@ -40,7 +42,7 @@ namespace RoSharp.Utility
             };
             HttpMessage payload = new(HttpMethod.Post, $"{Constants.URL("users")}/v1/usernames/users", content);
 
-            HttpResponseMessage response = await HttpManager.SendAsync(null, payload);
+            HttpResponseMessage response = await HttpManager.SendAsync(session, payload);
             string body = await response.Content.ReadAsStringAsync();
             HttpVerify.ThrowIfNecessary(response, body);
 
@@ -59,15 +61,21 @@ namespace RoSharp.Utility
             return new(response, dict.AsReadOnly());
         }
 
+        // Backwards compatible
+        [Obsolete("Use GetUserIdsAsync(Session, params string[])")]
+        public static async Task<HttpResult<ReadOnlyDictionary<string, ulong>>> GetUserIdsAsync(params string[] usernames)
+            => await GetUserIdsAsync(null, usernames);
+
         /// <summary>
         /// Converts a <see cref="IEnumerable{T}"/> of usernames to a dictionary, mapping the usernames to their user Id.
         /// </summary>
         /// <param name="usernames">The username list.</param>
+        /// <param name="session">The session to attach, optional.</param>
         /// <returns>A task containing a <see cref="ReadOnlyDictionary{TKey, TValue}"/> upon completion.</returns>
         /// <exception cref="ArgumentException">No valid usernames.</exception>
         /// <exception cref="RobloxAPIException">Roblox API failure.</exception>
-        public static async Task<HttpResult<ReadOnlyDictionary<string, ulong>>> GetUserIdsAsync(IEnumerable<string> usernames)
-            => await GetUserIdsAsync(usernames.ToArray());
+        public static async Task<HttpResult<ReadOnlyDictionary<string, ulong>>> GetUserIdsAsync(IEnumerable<string> usernames, Session? session = null)
+            => await GetUserIdsAsync(session, usernames.ToArray());
 
         private static async Task<HttpResult<ReadOnlyCollection<Color>>> GetColors(string key)
         {
