@@ -13,6 +13,13 @@ namespace RoSharp
     {
         private static bool disableLogging = false;
 
+#if DEBUG
+        internal static bool debugLogs = true;
+#else
+        internal static bool debugLogs = false;
+#endif
+
+
         /// <summary>
         /// Sends a debug message if the assembly was compiled in DEBUG configuration. Does nothing if the assembly was compiled otherwise.
         /// </summary>
@@ -20,20 +27,23 @@ namespace RoSharp
         /// <param name="debugOverride">Color override.</param>
         public static void Debug(string message, ConsoleColor debugOverride = ConsoleColor.Cyan)
         {
-#if DEBUG
-            if (!disableLogging)
+            if (debugLogs && !disableLogging)
             {
                 Console.ForegroundColor = debugOverride;
                 Console.WriteLine(string.IsNullOrWhiteSpace(message) ? null : $"[ROSHARP] [{DateTime.Now:O}] {message}");
                 Console.ResetColor();
             }
-#endif
         }
 
         /// <summary>
         /// Forcefully disables all log messages from RoSharp, including warnings.
         /// </summary>
         public static void DisableAllLogging() => disableLogging = true;
+
+        /// <summary>
+        /// Toggles debug logs.
+        /// </summary>
+        public static void SetDebugLogs(bool value) => debugLogs = value;
 
         /// <summary>
         /// Outputs a user-friendly warning message in the console.

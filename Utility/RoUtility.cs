@@ -17,7 +17,9 @@ namespace RoSharp.Utility
 
         internal static void LogHTTP(Session? session, HttpMessage sendMessage, HttpResponseMessage message, bool retrying = false)
         {
-#if DEBUG
+            if (!RoLogger.debugLogs)
+                return;
+
             string body = message.Content.ReadAsStringAsync().Result;
 
             ConsoleColor color = (message.IsSuccessStatusCode ? ConsoleColor.Cyan : ConsoleColor.Red);
@@ -39,7 +41,6 @@ namespace RoSharp.Utility
             RoLogger.Debug($"RESPONSE BODY: {body.Substring(0, Math.Min(body.Length, 200))}", color);
             RoLogger.Debug($"----- END REQUEST -----", color);
             RoLogger.Debug(string.Empty, color);
-#endif
         }
     }
 }
