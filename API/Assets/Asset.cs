@@ -348,7 +348,10 @@ namespace RoSharp.API.Assets
 
             if (data.PriceInRobux != null)
             {
-                purchaseInfo = new RobuxPurchase() { Price = data.PriceInRobux };
+                if (data.PriceInRobux == 0)
+                    purchaseInfo = new FreePurchase();
+                else
+                    purchaseInfo = new RobuxPurchase() { Price = data.PriceInRobux };
             }
             else
             {
