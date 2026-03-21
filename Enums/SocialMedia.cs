@@ -13,7 +13,14 @@
         /// <summary>
         /// Link to x.com (formerly twitter.com). Still referred to as Twitter internally. Applicable for: Assets, Communities, Experiences, Users.
         /// </summary>
+        /// <remarks>Identical to <see cref="X"/>.</remarks>
         Twitter = 2,
+
+        /// <summary>
+        /// Link to x.com (formerly twitter.com). Still referred to as Twitter internally. Applicable for: Assets, Communities, Experiences, Users.
+        /// </summary>
+        /// <remarks>Identical to <see cref="Twitter"/>.</remarks>
+        X = Twitter,
 
         /// <summary>
         /// Link to youtube.com. Applicable for: Assets, Communities, Experiences, Users.
