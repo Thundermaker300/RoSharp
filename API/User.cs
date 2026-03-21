@@ -339,6 +339,12 @@ namespace RoSharp.API
                 dynamic followersData = JObject.Parse(await SendStringAsync(HttpMethod.Get, $"/v1/users/{Id}/followers/count", Constants.URL("friends")));
                 followers = followersData.count;
             }
+            if (friends == -1)
+            {
+
+                dynamic friendsData = JObject.Parse(await SendStringAsync(HttpMethod.Get, $"/v1/users/{Id}/friends/count", Constants.URL("friends")));
+                friends = friendsData.count;
+            }
         }
 
         private bool isPremium;
