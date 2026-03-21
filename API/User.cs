@@ -87,6 +87,14 @@ namespace RoSharp.API
         /// </summary>
         public bool ProfileHidden => profileHidden;
 
+        private ReadOnlyCollection<Id<Community>> communities;
+
+        /// <summary>
+        /// Gets the Ids of the communities this user is in.
+        /// </summary>
+        /// <seealso cref="GetGroupsAsync(int)"/>
+        public ReadOnlyCollection<Id<Community>> Communities => communities;
+
         /// <inheritdoc/>
         public DateTime RefreshedAt { get; set; }
 
@@ -134,7 +142,7 @@ namespace RoSharp.API
         /// <inheritdoc/>
         public async Task RefreshAsync()
         {
-            HttpResponseMessage response = await SendAsync(HttpMethod.Get, $"/v1/users/{Id}");
+            /*HttpResponseMessage response = await SendAsync(HttpMethod.Get, $"/v1/users/{Id}");
 
             string raw = await response.Content.ReadAsStringAsync();
             dynamic data = JObject.Parse(raw);
@@ -144,10 +152,95 @@ namespace RoSharp.API
             verified = data.hasVerifiedBadge;
             joinDate = data.created;
             profileHidden = data.isBanned;
-            bio = data.description;
+            bio = data.description;*/
+
+            HttpResponseMessage response = await SendAsync(HttpMethod.Post, $"/profile-platform-api/v1/profiles/get", Constants.URL("apis"), new
+            {
+                profileId = Id.ToString(),
+                profileType = "User",
+                components = new[]
+                {
+                    new { component = "UserProfileHeader" },
+                    new { component = "About" },
+                    new { component = "Communities" },
+                }
+            });
+            dynamic data = JObject.Parse(await response.Content.ReadAsStringAsync());
+
+            // userHeader Data
+            dynamic userHeader = data.components.UserProfileHeader;
+            name = userHeader.names.username;
+            displayName = userHeader.names.displayName;
+            verified = userHeader.isVerified;
+            isPremium = userHeader.isPremium;
+            isAdministrator = userHeader.isRobloxAdmin;
+            profileHidden = ("Account Deleted").Equals(Convert.ToString(userHeader.names.primaryName));
+
+            // / Followers & Followings & Friends
+            if (userHeader.counts != null)
+            {
+                following = userHeader.counts.followingsCount;
+                followers = userHeader.counts.followersCount;
+                friends = userHeader.counts.friendsCount;
+            }
+            else
+            {
+                following = -1;
+                followers = -1;
+                friends = -1;
+            }
+
+                // about Data
+                dynamic about = data.components.About;
+            if (about != null)
+            {
+                joinDate = about.joinDateTime;
+                bio = about.description;
+            }
+
+            // / Rename History
+            List<string> names = [];
+            if (about != null && about.nameHistory != null)
+            {
+                foreach (dynamic str in about.nameHistory)
+                {
+                    names.Add(Convert.ToString(str));
+                }
+            }
+            renameHistory = names.AsReadOnly();
+
+            // / Social Links
+            Dictionary<SocialMedia, string> dict = new();
+            if (about != null)
+            {
+                dynamic socialLinks = about.socialLinks;
+                if (socialLinks != null)
+                {
+                    foreach (dynamic socialData in socialLinks)
+                    {
+                        if (socialData.Value != null)
+                        {
+                            dict.Add(Enum.Parse<SocialMedia>(socialData.Name, true), socialData.Value.Value<string>("url"));
+                        }
+                    }
+                }
+            }
+            socialChannels = dict.AsReadOnly();
+
+            // communities Data
+            dynamic communities = data.components.Communities;
+            List<Id<Community>> communitiesList = [];
+            if (communities != null)
+            {
+                foreach (dynamic idRaw in communities.communityIds)
+                {
+                    ulong id = Convert.ToUInt64(idRaw);
+                    communitiesList.Add(new(id, session));
+                }
+            }
+            this.communities = communitiesList.AsReadOnly();
 
             primaryGroup = null;
-            socialChannels = null;
             groups = null;
             customName = null;
 
@@ -157,12 +250,13 @@ namespace RoSharp.API
                 var message = new HttpMessage(HttpMethod.Get, $"/v1/users/{Id}/validate-membership")
                 {
                     SilenceExceptions = true
-                };
+                };/*
 
                 // Premium
                 HttpResponseMessage premiumResponse = await SendAsync(message, Constants.URL("premiumfeatures"));
                 if (premiumResponse.IsSuccessStatusCode)
                     isPremium = Convert.ToBoolean(await premiumResponse.Content.ReadAsStringAsync());
+                */
 
                 // Private Inventory
                 message.Url = $"/v1/users/{Id}/can-view-inventory";
@@ -176,7 +270,6 @@ namespace RoSharp.API
             }
             else
             {
-                isPremium = null;
                 privateInventory = true;
             }
 
@@ -234,31 +327,26 @@ namespace RoSharp.API
 
         private async Task UpdateFollowingsAsync()
         {
-            dynamic followingsData = JObject.Parse(await SendStringAsync(HttpMethod.Get, $"/v1/users/{Id}/followings/count", Constants.URL("friends")));
-            dynamic followersData = JObject.Parse(await SendStringAsync(HttpMethod.Get, $"/v1/users/{Id}/followers/count", Constants.URL("friends")));
+            // To save requests: Only perform if first endpoint was unable to retrieve data (termed users)
+            if (following == -1)
+            {
+                dynamic followingsData = JObject.Parse(await SendStringAsync(HttpMethod.Get, $"/v1/users/{Id}/followings/count", Constants.URL("friends")));
+                following = followingsData.count;
+            }
+            if (followers == -1)
+            {
 
-            following = followingsData.count;
-            followers = followersData.count;
+                dynamic followersData = JObject.Parse(await SendStringAsync(HttpMethod.Get, $"/v1/users/{Id}/followers/count", Constants.URL("friends")));
+                followers = followersData.count;
+            }
         }
 
-        private bool? isPremium;
+        private bool isPremium;
 
         /// <summary>
         /// Gets whether or not this user has Roblox Premium.
         /// </summary>
-        /// <remarks>This property is unavailable and will throw a <see cref="RobloxAPIException"/> if this user is not authenticated.</remarks>
-        /// <exception cref="RobloxAPIException"></exception>
-        public bool IsPremium
-        {
-            get
-            {
-                if (!isPremium.HasValue)
-                {
-                    SessionVerify.ThrowRefresh("User.IsPremium");
-                }
-                return isPremium.GetValueOrDefault();
-            }
-        }
+        public bool IsPremium => isPremium;
 
         private AvatarType avatarType;
 
@@ -281,6 +369,13 @@ namespace RoSharp.API
         /// </summary>
         public ReadOnlyDictionary<BodyColorType, Color> BodyColors => bodyColors;
 
+        private ReadOnlyCollection<string> renameHistory;
+
+        /// <summary>
+        /// Gets the user's rename history.
+        /// </summary>
+        public ReadOnlyCollection<string> RenameHistory => renameHistory;
+
         private int following = -1;
 
         /// <summary>
@@ -295,7 +390,12 @@ namespace RoSharp.API
         /// </summary>
         public int Followers => followers;
 
+        private int friends = -1;
 
+        /// <summary>
+        /// Gets the amount of users that are friends with this user.
+        /// </summary>
+        public int Friends => friends;
 
         private ReadOnlyCollection<string> robloxBadges;
 
@@ -304,10 +404,12 @@ namespace RoSharp.API
         /// </summary>
         public ReadOnlyCollection<string> RobloxBadges => robloxBadges;
 
+        private bool isAdministrator = false;
+
         /// <summary>
         /// Gets whether or not this user is a Roblox employee with the administrator badge.
         /// </summary>
-        public bool IsAdministrator => RobloxBadges.Contains("Administrator");
+        public bool IsAdministrator => isAdministrator;
 
         /// <summary>
         /// Gets whether or not this user is less than three days old.
@@ -327,6 +429,7 @@ namespace RoSharp.API
         /// <param name="cursor">The cursor for the next page. Obtained by calling this API previously.</param>
         /// <returns>A task containing a <see cref="ReadOnlyCollection{T}"/> of strings when completed.</returns>
         /// <remarks>This API method does not cache and will make a request each time it is called.</remarks>
+        [Obsolete("Use RenameHistory property.")]
         public async Task<HttpResult<ReadOnlyCollection<string>>> GetRenameHistoryAsync(FixedLimit limit = FixedLimit.Limit100, RequestSortOrder sortOrder = RequestSortOrder.Desc, string? cursor = null)
         {
             string url = $"/v1/users/{Id}/username-history?limit={limit.Limit()}&sortOrder={sortOrder}";
@@ -407,7 +510,12 @@ namespace RoSharp.API
         public bool PrivateInventory
             => privateInventory;
 
-        private ReadOnlyDictionary<SocialMedia, string>? socialChannels;
+        private ReadOnlyDictionary<SocialMedia, string> socialChannels;
+
+        /// <summary>
+        /// Returns this user's social channels. The keys are the social media type, the value is the URL.
+        /// </summary>
+        public ReadOnlyDictionary<SocialMedia, string> SocialChannels => socialChannels;
 
         /// <summary>
         /// Returns this user's social channels.
@@ -415,6 +523,7 @@ namespace RoSharp.API
         /// <returns>A task containing a <see cref="ReadOnlyDictionary{TKey, TValue}"/> when complete.</returns>
         /// <remarks>The keys of the dictionary are the social media type, the value is the URL.</remarks>
         /// <exception cref="RobloxAPIException">Roblox API failure or lack of permissions.</exception>
+        [Obsolete("Use SocialChannels property.")]
         public async Task<ReadOnlyDictionary<SocialMedia, string>> GetSocialChannelsAsync()
         {
             if (socialChannels == null)
