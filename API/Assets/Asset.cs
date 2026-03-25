@@ -374,8 +374,8 @@ namespace RoSharp.API.Assets
             };
 
             var favoritesRequest = await SendAsync(message);
-            if (favoritesRequest.IsSuccessStatusCode)
-                favorites = Convert.ToUInt64(await favoritesRequest.Content.ReadAsStringAsync());
+            if (favoritesRequest.IsSuccessStatusCode && ulong.TryParse(await favoritesRequest.Content.ReadAsStringAsync(), out ulong favs))
+                favorites = favs;
             else
                 favorites = 0;
 
