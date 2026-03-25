@@ -319,5 +319,20 @@
         /// Represents a dynamic head asset.
         /// </summary>
         DynamicHead = 79,
+
+        /// <summary>
+        /// Represents a face makeup asset.
+        /// </summary>
+        FaceMakeup = 88,
+
+        /// <summary>
+        /// Represents a lip makeup asset.
+        /// </summary>
+        LipMakeup = 89,
+
+        /// <summary>
+        /// Represents an eye makeup asset.
+        /// </summary>
+        EyeMakeup = 90,
     }
 }
