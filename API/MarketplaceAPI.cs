@@ -46,6 +46,9 @@ namespace RoSharp.API
             AssetType.DressSkirtAccessory,
             AssetType.EyebrowAccessory,
             AssetType.EyelashAccessory,
+            AssetType.EyeMakeup,
+            AssetType.FaceMakeup,
+            AssetType.LipMakeup,
         }.AsReadOnly();
 
         /// <summary>
