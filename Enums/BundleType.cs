@@ -18,13 +18,13 @@
         BodyParts = 1,
 
         /// <summary>
-        /// Represents a dynamic head bundle, typically consisting of two total items: A <see cref="AssetType.DynamicHead"/> and a <see cref="AssetType.MoodAnimation"/>.
-        /// </summary>
-        DynamicHead = 2,
-
-        /// <summary>
         /// Represents a shoe bundle, typically consisting of two total items: A <see cref="AssetType.LeftShoeAccessory"/> and a <see cref="AssetType.RightShoeAccessory"/>.
         /// </summary>
         Shoes = 3,
+
+        /// <summary>
+        /// Represents a dynamic head bundle, typically consisting of two total items: A <see cref="AssetType.DynamicHead"/> and a <see cref="AssetType.MoodAnimation"/>.
+        /// </summary>
+        DynamicHead = 4,
     }
 }
