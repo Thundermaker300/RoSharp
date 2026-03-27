@@ -18,6 +18,11 @@
         BodyParts = 1,
 
         /// <summary>
+        /// Represents an avatar animations bundle, typically consisting of seven total items: One of each <see cref="AssetType.ClimbAnimation"/>, <see cref="AssetType.FallAnimation"/>, <see cref="AssetType.IdleAnimation"/>, <see cref="AssetType.JumpAnimation"/>, <see cref="AssetType.RunAnimation"/>, <see cref="AssetType.SwimAnimation"/>, <see cref="AssetType.WalkAnimation"/>, 
+        /// </summary>
+        AvatarAnimations = 2,
+
+        /// <summary>
         /// Represents a shoe bundle, typically consisting of two total items: A <see cref="AssetType.LeftShoeAccessory"/> and a <see cref="AssetType.RightShoeAccessory"/>.
         /// </summary>
         Shoes = 3,
