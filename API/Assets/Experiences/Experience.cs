@@ -17,7 +17,7 @@ namespace RoSharp.API.Assets.Experiences
     /// A class that represents a collection of connected places, also known as a "universe".
     /// </summary>
     /// <seealso cref="FromId(ulong, Session?)"/>
-    public class Experience : APIMain, IRefreshable, IIdApi<Experience>
+    public class Experience : APIMain, IRefreshable, IIdApi<Experience>, IFavorites
     {
         /// <inheritdoc/>
         public override string BaseUrl => Constants.URL("games");

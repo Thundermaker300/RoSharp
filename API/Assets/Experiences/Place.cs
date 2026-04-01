@@ -13,7 +13,7 @@ namespace RoSharp.API.Assets.Experiences
     /// <summary>
     /// Represents a single location within a <see cref="Experiences.Experience"/> (universe).
     /// </summary>
-    public class Place : Asset, IRefreshable, IIdApi<Place>
+    public class Place : Asset, IRefreshable, IIdApi<Place>, IFavorites
     {
         /// <inheritdoc/>
         public override string BaseUrl => Constants.URL("games");

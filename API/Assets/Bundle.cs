@@ -14,7 +14,7 @@ namespace RoSharp.API.Assets
     /// <summary>
     /// Represents a Roblox bundle.
     /// </summary>
-    public class Bundle : APIMain, IRefreshable, IIdApi<Bundle>
+    public class Bundle : APIMain, IRefreshable, IIdApi<Bundle>, IFavorites
     {
         /// <inheritdoc/>
         public ulong Id { get; }

@@ -22,7 +22,7 @@ namespace RoSharp.API.Assets
     /// <seealso cref="Badge"/>
     /// <seealso cref="Experiences.Experience"/>
     /// <seealso cref="FromId(ulong, Session)"/>
-    public class Asset : APIMain, IRefreshable, IIdApi<Asset>
+    public class Asset : APIMain, IRefreshable, IIdApi<Asset>, IFavorites
     {
         /// <inheritdoc/>
         public override string BaseUrl => Constants.URL("catalog");
