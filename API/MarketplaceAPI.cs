@@ -262,24 +262,30 @@ namespace RoSharp.API
                 List<MarketplaceCategory> cats = [];
                 foreach (dynamic item in data.categories)
                 {
+                    if (item.category == null) continue;
+
                     List<MarketplaceCategory> subcats = [];
                     foreach (dynamic subitem in item.subcategories)
                     {
+                        if (subitem.subcategory == null) continue;
+
                         MarketplaceCategory cat2 = new()
                         {
+                            TaxonomyId = subitem.taxonomy,
                             Category = subitem.subcategory,
                             Name = subitem.name,
                             ShortName = subitem.shortName,
-                            Id = subitem.subcategoryId,
+                            Id = Convert.ToInt32(subitem.subcategoryId),
                             IsSubcategory = true,
                             Subcategories = new List<MarketplaceCategory>(0).AsReadOnly(),
-                            ParentCategoryId = item.categoryId,
+                            ParentCategoryId = Convert.ToInt32(item.categoryId),
                         };
 
                         subcats.Add(cat2);
                     }
                     MarketplaceCategory cat = new()
                     {
+                        TaxonomyId = item.taxonomy,
                         Category = item.category,
                         Name = item.name,
                         ShortName = null,
@@ -314,14 +320,14 @@ namespace RoSharp.API
         /// <summary>
         /// Gets the category with the given name.
         /// </summary>
-        /// <param name="categoryName">The unique category name.</param>
+        /// <param name="categoryName">The unique category name OR taxonomy ID.</param>
         /// <returns>A task containing a <see cref="MarketplaceCategory"/> if found successfully.</returns>
         /// <exception cref="RobloxAPIException">Roblox API failure or lack of permissions.</exception>
         public static async Task<MarketplaceCategory?> GetCategoryAsync(string categoryName)
         {
             foreach (MarketplaceCategory category in await GetCategoriesAsync())
             {
-                if (category.Name == categoryName || category.Category == categoryName)
+                if (category.Name == categoryName || category.Category == categoryName || category.TaxonomyId == categoryName)
                     return category;
             }
             return null;
@@ -349,7 +355,7 @@ namespace RoSharp.API
         /// <summary>
         /// Gets the subcategory with the given name.
         /// </summary>
-        /// <param name="categoryName">The unique subcategory name.</param>
+        /// <param name="categoryName">The unique subcategory name OR taxonomy ID.</param>
         /// <returns>A task containing a <see cref="MarketplaceCategory"/> if found successfully.</returns>
         /// <exception cref="RobloxAPIException">Roblox API failure or lack of permissions.</exception>
         public static async Task<MarketplaceCategory?> GetSubCategoryAsync(string categoryName)
@@ -358,7 +364,7 @@ namespace RoSharp.API
             {
                 foreach (MarketplaceCategory sub in category.Subcategories)
                 {
-                    if (sub.Name == categoryName || sub.Category == categoryName)
+                    if (sub.Name == categoryName || sub.Category == categoryName || sub.TaxonomyId == categoryName)
                         return sub;
                 }
             }
@@ -389,15 +395,12 @@ namespace RoSharp.API
         /// Gets the URL that is used in <see cref="SearchAsync(string, Session?, byte, string?)"/>.
         /// </summary>
         public string SearchUrl
-        {
-            get
-            {
-                if (IsSubcategory)
-                    return $"{Constants.URL("catalog")}/v1/search/items?category={ParentCategoryId}&subcategory={Id}";
-                else
-                    return $"{Constants.URL("catalog")}/v1/search/items?category={Id}";
-            }
-        }
+            => $"{Constants.URL("catalog")}/v2/search/items/details?taxonomy={TaxonomyId}";
+
+        /// <summary>
+        /// Gets the TaxonomyId of the category.
+        /// </summary>
+        public string TaxonomyId { get; init; }
 
         /// <summary>
         /// Gets the internal name of the category.
