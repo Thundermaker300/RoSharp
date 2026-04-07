@@ -95,10 +95,12 @@ if (userRole != null)
 // Add a role to a user
 // Must access the role manager to get all the roles in the group.
 RoleManager roleManager = await group.GetRoleManagerAsync();
-Role role = roleManager.GetRole(ROLE_NAME);
-
-await members.AddRoleAsync(USER_HERE, role); // User object can be substituted for UserId/Username.
-// Other method to remove role: RemoveRoleAsync
+Role? role = roleManager.GetRole(ROLE_NAME);
+if (role != null)
+{
+    await members.AddRoleAsync(USER_HERE, role); // User object can be substituted for UserId/Username.
+    // Other method to remove role: RemoveRoleAsync
+}
 ```
 
 ## Credits
