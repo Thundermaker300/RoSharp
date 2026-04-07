@@ -238,6 +238,17 @@
         /// <summary>
         /// A member's rank has changed.
         /// </summary>
+        [Obsolete("No longer in use. Use AssignRole and UnassignRole")]
         ChangeRank,
+
+        /// <summary>
+        /// A member has been assigned a role.
+        /// </summary>
+        AssignRole,
+
+        /// <summary>
+        /// A member has been removed from a role.
+        /// </summary>
+        UnassignRole,
     }
 }
