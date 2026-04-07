@@ -699,7 +699,7 @@ namespace RoSharp.API.Assets.Experiences
 
         private async Task UpdateConfigurationAsync()
         {
-            var message = new HttpMessage(HttpMethod.Post, $"/v2/universes/{UniverseId}/configuration", new { })
+            var message = new HttpMessage(HttpMethod.Patch, $"/v2/universes/{UniverseId}/configuration", new { })
             {
                 AuthType = AuthType.RobloSecurity,
                 ApiName = nameof(UpdateConfigurationAsync),
