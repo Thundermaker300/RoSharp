@@ -76,7 +76,7 @@ namespace RoSharp.API.Communities
         /// <param name="name">The name of the role.</param>
         /// <param name="description">The private description of the role.</param>
         /// <param name="rank">The rank of the role.</param>
-        /// <param name="purchaseWithCommunityFunds">Purchase with community funds if <see langword="true"/>. Purchase with the authenticated user's funds if <see langword="false"/>.</param>
+        /// <param name="purchaseWithCommunityFunds">No longer in use as rolesets are free. Will be removed at a later date.</param> // TODO
         /// <returns>A task containing a <see cref="Role"/> representing the newly-created Role.</returns>
         /// <exception cref="RobloxAPIException">Roblox API failure or lack of permissions.</exception>
         /// <remarks>This method will call <see cref="RefreshAsync"/> upon completion, forcing <see cref="Roles"/> to be updated automatically. As of November 16th, 2024, roles cost R$25 to make. This method will bypass a confirmation prompt and purchase the role immediately. Use caution in order to not accidentally create roles and burn through money!</remarks>
@@ -87,7 +87,6 @@ namespace RoSharp.API.Communities
                 name = name,
                 description = description,
                 rank = rank,
-                usingGroupFunds = purchaseWithCommunityFunds,
             })
             {
                 AuthType = AuthType.RobloSecurity,

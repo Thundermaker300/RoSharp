@@ -173,7 +173,7 @@ namespace RoSharp.API.Communities
         public async Task<HttpResult<bool>> IsInCommunityAsync(User user) => await IsInCommunityAsync(user.Id);
 
         /// <summary>
-        /// Gets the role of the user with the given Id.
+        /// Gets the highest role of the user with the given Id.
         /// </summary>
         /// <param name="userId">The user's Id.</param>
         /// <returns>A task containing the <see cref="Role"/> upon completion. Will be <see langword="null"/> if the user is not in the community.</returns>
@@ -185,7 +185,7 @@ namespace RoSharp.API.Communities
             dynamic data = JObject.Parse(rawData);
             foreach (dynamic community in data.data)
             {
-                if (Convert.ToUInt64(community.community.id) == this.community.Id)
+                if (Convert.ToUInt64(community.group.id) == this.community.Id)
                 {
                     return new(response, (await this.community.GetRoleManagerAsync()).Roles.FirstOrDefault(r => r.Id == Convert.ToUInt64(community.role.id)));
                 }
@@ -194,7 +194,7 @@ namespace RoSharp.API.Communities
         }
 
         /// <summary>
-        /// Gets the role of the user with the given username.
+        /// Gets the highest role of the user with the given username.
         /// </summary>
         /// <param name="username">The user's username.</param>
         /// <returns>A task containing the <see cref="Role"/> upon completion. Will be <see langword="null"/> if the user is not in the community.</returns>
@@ -202,7 +202,7 @@ namespace RoSharp.API.Communities
         public async Task<HttpResult<Role?>> GetRoleInCommunityAsync(string username) => await GetRoleInCommunityAsync(await User.FromUsername(username));
 
         /// <summary>
-        /// Gets the role of the <see cref="User"/>.
+        /// Gets the highest role of the <see cref="User"/>.
         /// </summary>
         /// <param name="user">The user.</param>
         /// <returns>A task containing the <see cref="Role"/> upon completion. Will be <see langword="null"/> if the user is not in the community.</returns>
@@ -253,9 +253,9 @@ namespace RoSharp.API.Communities
         public async Task<HttpResult> ModifyJoinRequestAsync(string username, JoinRequestAction action)
             => await ModifyJoinRequestAsync(await UserUtility.GetUserIdAsync(username), action);
 
-        internal async Task<HttpResult> SetRankAsyncInternal(ulong userId, ulong newRoleId)
+        internal async Task<HttpResult> AddRankAsyncInternal(ulong userId, ulong newRoleId)
         {
-            var message = new HttpMessage(HttpMethod.Patch, $"/v1/groups/{community.Id}/users/{userId}", new { roleId = newRoleId })
+            var message = new HttpMessage(HttpMethod.Put, $"/v1/groups/{community.Id}/roles/{newRoleId}/users/{userId}", new { roleId = newRoleId })
             {
                 AuthType = AuthType.RobloSecurity,
                 ApiName = nameof(SetRankAsync)
@@ -264,6 +264,18 @@ namespace RoSharp.API.Communities
             return new(await community.SendAsync(message));
         }
 
+        internal async Task<HttpResult> RemoveRankAsyncInternal(ulong userId, ulong newRoleId)
+        {
+            var message = new HttpMessage(HttpMethod.Delete, $"/v1/groups/{community.Id}/roles/{newRoleId}/users/{userId}", new { roleId = newRoleId })
+            {
+                AuthType = AuthType.RobloSecurity,
+                ApiName = nameof(SetRankAsync)
+            };
+
+            return new(await community.SendAsync(message));
+        }
+
+        #region OBSOLETE
         /// <summary>
         /// Sets the rank of a user in this community.
         /// </summary>
@@ -272,13 +284,14 @@ namespace RoSharp.API.Communities
         /// <returns>A task that completes when the operation is completed.</returns>
         /// <exception cref="ArgumentException">Invalid role provided.</exception>
         /// <exception cref="RobloxAPIException">Roblox API failure or lack of permissions.</exception>
+        [Obsolete("No longer in use as users can have multiple roles. This method will now ADD role. Please see other methods.")]
         public async Task<HttpResult> SetRankAsync(ulong userId, Role role)
         {
             if (role == null || role.roleManager.group.Id != community.Id)
             {
                 throw new ArgumentException("Invalid role provided.", nameof(role));
             }
-            return new(await SetRankAsyncInternal(userId, role.Id));
+            return new(await AddRankAsyncInternal(userId, role.Id));
         }
 
         /// <summary>
@@ -289,6 +302,7 @@ namespace RoSharp.API.Communities
         /// <returns>A task that completes when the operation is completed.</returns>
         /// <exception cref="ArgumentException">Invalid role provided.</exception>
         /// <exception cref="RobloxAPIException">Roblox API failure or lack of permissions.</exception>
+        [Obsolete("No longer in use as users can have multiple roles. This method will now ADD role. Please see other methods.")]
         public async Task<HttpResult> SetRankAsync(ulong userId, byte rankId)
         {
             Role? role = (await community.GetRoleManagerAsync()).Roles.FirstOrDefault(r => r.Rank == rankId)
@@ -304,6 +318,7 @@ namespace RoSharp.API.Communities
         /// <returns>A task that completes when the operation is completed.</returns>
         /// <exception cref="ArgumentException">Invalid role provided.</exception>
         /// <exception cref="RobloxAPIException">Roblox API failure or lack of permissions.</exception>
+        [Obsolete("No longer in use as users can have multiple roles. This method will now ADD role. Please see other methods.")]
         public async Task<HttpResult> SetRankAsync(ulong userId, string roleName)
         {
             Role? role = (await community.GetRoleManagerAsync()).Roles.FirstOrDefault(r => r.Name == roleName)
@@ -319,6 +334,7 @@ namespace RoSharp.API.Communities
         /// <returns>A task that completes when the operation is completed.</returns>
         /// <exception cref="ArgumentException">Invalid role provided.</exception>
         /// <exception cref="RobloxAPIException">Roblox API failure or lack of permissions.</exception>
+        [Obsolete("No longer in use as users can have multiple roles. This method will now ADD role. Please see other methods.")]
         public async Task<HttpResult> SetRankAsync(User user, Role role)
             => await SetRankAsync(user.Id, role);
 
@@ -330,6 +346,7 @@ namespace RoSharp.API.Communities
         /// <returns>A task that completes when the operation is completed.</returns>
         /// <exception cref="ArgumentException">Invalid role provided.</exception>
         /// <exception cref="RobloxAPIException">Roblox API failure or lack of permissions.</exception>
+        [Obsolete("No longer in use as users can have multiple roles. This method will now ADD role. Please see other methods.")]
         public async Task<HttpResult> SetRankAsync(User user, byte rankId)
             => await SetRankAsync(user.Id, rankId);
 
@@ -341,6 +358,7 @@ namespace RoSharp.API.Communities
         /// <returns>A task that completes when the operation is completed.</returns>
         /// <exception cref="ArgumentException">Invalid role provided.</exception>
         /// <exception cref="RobloxAPIException">Roblox API failure or lack of permissions.</exception>
+        [Obsolete("No longer in use as users can have multiple roles. This method will now ADD role. Please see other methods.")]
         public async Task<HttpResult> SetRankAsync(User user, string roleName)
             => await SetRankAsync(user.Id, roleName);
 
@@ -352,6 +370,7 @@ namespace RoSharp.API.Communities
         /// <returns>A task that completes when the operation is completed.</returns>
         /// <exception cref="ArgumentException">Invalid role provided.</exception>
         /// <exception cref="RobloxAPIException">Roblox API failure or lack of permissions.</exception>
+        [Obsolete("No longer in use as users can have multiple roles. This method will now ADD role. Please see other methods.")]
         public async Task<HttpResult> SetRankAsync(string username, Role role)
             => await SetRankAsync(await UserUtility.GetUserIdAsync(username), role);
 
@@ -363,6 +382,7 @@ namespace RoSharp.API.Communities
         /// <returns>A task that completes when the operation is completed.</returns>
         /// <exception cref="ArgumentException">Invalid role provided.</exception>
         /// <exception cref="RobloxAPIException">Roblox API failure or lack of permissions.</exception>
+        [Obsolete("No longer in use as users can have multiple roles. This method will now ADD role. Please see other methods.")]
         public async Task<HttpResult> SetRankAsync(string username, byte rankId)
             => await SetRankAsync(await UserUtility.GetUserIdAsync(username), rankId);
 
@@ -374,8 +394,38 @@ namespace RoSharp.API.Communities
         /// <returns>A task that completes when the operation is completed.</returns>
         /// <exception cref="ArgumentException">Invalid role provided.</exception>
         /// <exception cref="RobloxAPIException">Roblox API failure or lack of permissions.</exception>
+        [Obsolete("No longer in use as users can have multiple roles. This method will now ADD role. Please see other methods.")]
         public async Task<HttpResult> SetRankAsync(string username, string roleName)
             => await SetRankAsync(await UserUtility.GetUserIdAsync(username), roleName);
+        #endregion
+
+        public async Task<HttpResult> AddRoleAsync(ulong userId, Role role)
+        {
+            if (role.roleManager.group.Id != community.Id)
+                throw new InvalidOperationException("The provided role is not part of this group!");
+
+            return new(await AddRankAsyncInternal(userId, role.Id));
+        }
+
+        public async Task<HttpResult> AddRoleAsync(User user, Role role)
+            => await AddRoleAsync(user.Id, role);
+
+        public async Task<HttpResult> AddRoleAsync(string username, Role role)
+            => await AddRoleAsync(await UserUtility.GetUserIdAsync(username, community.session), role);
+
+        public async Task<HttpResult> RemoveRoleAsync(ulong userId, Role role)
+        {
+            if (role.roleManager.group.Id != community.Id)
+                throw new InvalidOperationException("The provided role is not part of this group!");
+
+            return new(await RemoveRankAsyncInternal(userId, role.Id));
+        }
+
+        public async Task<HttpResult> RemoveRoleAsync(User user, Role role)
+            => await RemoveRoleAsync(user.Id, role);
+
+        public async Task<HttpResult> RemoveRoleAsync(string username, Role role)
+            => await RemoveRoleAsync(await UserUtility.GetUserIdAsync(username, community.session), role);
 
         /// <summary>
         /// Kicks the user with the given Id.

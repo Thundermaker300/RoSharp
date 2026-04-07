@@ -85,15 +85,20 @@ Console.WriteLine(community.Name);
 // Get the member manager for the below examples
 MemberManager members = await community.GetMemberManagerAsync();
 
-// Get user's role in a community
+// Get user's highest role in a community
 Role? userRole = await members.GetRoleInCommunityAsync(USER_HERE); // Object can be substituted for ID and/or username.
 if (userRole != null)
 {
     Console.WriteLine(userRole.Name);
 }
 
-// Set user's role in community
-await members.SetRankAsync(USER_HERE, ROLE_OBJECT_HERE); // Objects can be substituted for UserId/Username and Role name/ID.
+// Add a role to a user
+// Must access the role manager to get all the roles in the group.
+RoleManager roleManager = await group.GetRoleManagerAsync();
+Role role = roleManager.GetRole(ROLE_NAME);
+
+await members.AddRoleAsync(USER_HERE, role); // User object can be substituted for UserId/Username.
+// Other method to remove role: RemoveRoleAsync
 ```
 
 ## Credits
