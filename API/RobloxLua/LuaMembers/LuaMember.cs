@@ -9,6 +9,11 @@ namespace RoSharp.API.RobloxLua.LuaMembers
     public class LuaMember
     {
         /// <summary>
+        /// Gets the <see cref="LuaClass"/> that this member is apart of.
+        /// </summary>
+        public LuaClass Class { get; internal set; }
+
+        /// <summary>
         /// Gets the type of member this member is.
         /// </summary>
         public MemberType MemberType { get; private set; }

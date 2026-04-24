@@ -74,6 +74,8 @@ namespace RoSharp.API.RobloxLua
                         "Callback" => member = new LuaCallback(),
                         _ => member = new LuaMember()
                     };
+
+                    member.Class = class1;
                     member.FillMembers(Convert.ToString(rawMember));
                     members.Add(member);
                 }
