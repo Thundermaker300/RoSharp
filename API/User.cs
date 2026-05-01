@@ -174,6 +174,7 @@ namespace RoSharp.API
             verified = userHeader.isVerified;
             isPremium = userHeader.isPremium;
             isAdministrator = userHeader.isRobloxAdmin;
+            isRobloxPlus = userHeader.isRobloxPlus;
             profileHidden = ("Account Deleted").Equals(Convert.ToString(userHeader.names.primaryName));
 
             // / Followers & Followings & Friends
@@ -352,6 +353,7 @@ namespace RoSharp.API
         /// <summary>
         /// Gets whether or not this user has Roblox Premium.
         /// </summary>
+        [Obsolete("Roblox premium is being discontinued. Use IsRobloxPlus instead.")]
         public bool IsPremium => isPremium;
 
         private AvatarType avatarType;
@@ -416,6 +418,13 @@ namespace RoSharp.API
         /// Gets whether or not this user is a Roblox employee with the administrator badge.
         /// </summary>
         public bool IsAdministrator => isAdministrator;
+
+        private bool isRobloxPlus = false;
+
+        /// <summary>
+        /// Gets whether or not this user has Roblox Plus.
+        /// </summary>
+        public bool IsRobloxPlus => isRobloxPlus;
 
         /// <summary>
         /// Gets whether or not this user is less than three days old.
