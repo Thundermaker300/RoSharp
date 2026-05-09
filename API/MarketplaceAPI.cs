@@ -187,7 +187,12 @@ namespace RoSharp.API
         /// <remarks>This API method does not cache and will make a request each time it is called.</remarks>
         public static async Task<HttpResult<int?>> GetPriceFloorForBundleTypeAsync(BundleType bundleType, Session? session)
         {
-            string url = $"{Constants.URL("itemconfiguration")}/v1/items/price-floor?collectibleItemType=2&creationType=1&bundleType={(int)bundleType}";
+            int type = (int)bundleType;
+
+            if (bundleType == BundleType.DynamicHead) // For some reason
+                type = 2;
+
+            string url = $"{Constants.URL("itemconfiguration")}/v1/items/price-floor?collectibleItemType=2&creationType=1&bundleType={type}";
 
             HttpMessage message = new(HttpMethod.Get, url)
             {
