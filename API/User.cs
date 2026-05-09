@@ -174,7 +174,7 @@ namespace RoSharp.API
             verified = userHeader.isVerified;
             isPremium = userHeader.isPremium;
             isAdministrator = userHeader.isRobloxAdmin;
-            isRobloxPlus = userHeader.isRobloxPlus;
+            isRobloxPlus = userHeader.isRobloxPlus ?? false;
             profileHidden = ("Account Deleted").Equals(Convert.ToString(userHeader.names.primaryName));
 
             // / Followers & Followings & Friends
