@@ -48,6 +48,16 @@
         Lua = 5,
 
         /// <summary>
+        /// Represents HTML.
+        /// </summary>
+        Html = 6,
+
+        /// <summary>
+        /// Represents Text.
+        /// </summary>
+        Text = 7,
+
+        /// <summary>
         /// Represents a hat.
         /// </summary>
         Hat = 8,
@@ -81,6 +91,11 @@
         Decal = 13,
 
         /// <summary>
+        /// Represents an avatar.
+        /// </summary>
+        Avatar = 16,
+
+        /// <summary>
         /// Represents a classic head.
         /// </summary>
         Head = 17,
@@ -101,9 +116,24 @@
         Badge = 21,
 
         /// <summary>
+        /// Represents a group emblem.
+        /// </summary>
+        GroupEmblem = 22,
+
+        /// <summary>
         /// Represents an animation asset.
         /// </summary>
         Animation = 24,
+
+        /// <summary>
+        /// Represents both arms.
+        /// </summary>
+        Arms = 25,
+
+        /// <summary>
+        /// Represents both legs.
+        /// </summary>
+        Legs = 26,
 
         /// <summary>
         /// Represents a torso asset from a bundle.
@@ -136,14 +166,34 @@
         Package = 32,
 
         /// <summary>
+        /// Represents a YouTube video.
+        /// </summary>
+        YoutubeVideo = 33,
+
+        /// <summary>
         /// Represents a game-pass.
         /// </summary>
         GamePass = 34,
 
         /// <summary>
+        /// Represents an App.
+        /// </summary>
+        App = 35,
+
+        /// <summary>
+        /// Represents Code.
+        /// </summary>
+        Code = 37,
+
+        /// <summary>
         /// Represents a plugin.
         /// </summary>
         Plugin = 38,
+
+        /// <summary>
+        /// Represents a solid model.
+        /// </summary>
+        SolidModel = 39,
 
         /// <summary>
         /// Represents a meshpart. Unsure if used.
@@ -241,6 +291,16 @@
         EyeAccessory = 58,
 
         /// <summary>
+        /// Represents a localization table manifest.
+        /// </summary>
+        LocalizationTableManifest = 59,
+
+        /// <summary>
+        /// Represents a localization table translation.
+        /// </summary>
+        LocalizationTableTranslation = 60,
+
+        /// <summary>
         /// Represents an individual emote animation.
         /// </summary>
         EmoteAnimation = 61,
@@ -249,6 +309,11 @@
         /// Represents a video asset.
         /// </summary>
         Video = 62,
+
+        /// <summary>
+        /// Represents a texture pack.
+        /// </summary>
+        TexturePack = 63,
 
         /// <summary>
         /// Represents a 3D T-Shirt accessory.
@@ -299,6 +364,16 @@
         /// Represents a font-family.
         /// </summary>
         FontFamily = 73,
+
+        /// <summary>
+        /// Represents a font-face.
+        /// </summary>
+        FontFace = 74,
+
+        /// <summary>
+        /// Represents a mesh hidden surface removal.
+        /// </summary>
+        MeshHiddenSurfaceRemoval = 75,
 
         /// <summary>
         /// Represents an eyebrow accessory.
