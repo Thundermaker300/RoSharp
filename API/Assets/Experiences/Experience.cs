@@ -10,6 +10,7 @@ using RoSharp.Structures;
 using RoSharp.Structures.PurchaseTypes;
 using RoSharp.Utility;
 using System.Collections.ObjectModel;
+using System.Text.RegularExpressions;
 
 namespace RoSharp.API.Assets.Experiences
 {
@@ -48,6 +49,13 @@ namespace RoSharp.API.Assets.Experiences
         /// Gets the source name of the experience.
         /// </summary>
         public string? SourceName => sourceName;
+
+        private string cleanedName;
+
+        /// <summary>
+        /// Gets the name of the experiences with all characters except letters and numbers removed.
+        /// </summary>
+        public string CleanedName => cleanedName;
 
         private string description;
 
@@ -265,6 +273,11 @@ namespace RoSharp.API.Assets.Experiences
             genre = ExperienceUtility.GetGenre(Convert.ToString(data.genre_l1));
             subgenre = ExperienceUtility.GetGenre(Convert.ToString(data.genre_l2));
             privateServers = data.createVipServersAllowed;
+
+            // Set cleaned name
+            string urlPath = data.canonicalUrlPath;
+            var matches = Regex.Match(urlPath, "/games/([0-9]+)/(.*)");
+            cleanedName = matches.Groups[2].Value.Replace('-', ' ');
 
             if (data.localizedFiatPrice != null)
             {
