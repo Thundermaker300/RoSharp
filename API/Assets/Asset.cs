@@ -520,23 +520,41 @@ namespace RoSharp.API.Assets
         public string ThumbnailUrl => thumbnailUrl;
 
         /// <summary>
-        /// Retrieves a thumbnail URL for this asset.
+        /// Retrieves a thumbnail URL for this asset. The <paramref name="retries"/> parameter can optionally be set to retry retrieving the thumbnail if it has not loaded yet.
         /// </summary>
         /// <param name="size">The size of the thumbnail.</param>
+        /// <param name="retries">The amount of times to retry before returning a failed image. Any value less than 1 will disable the retry system.</param>
         /// <returns>A task containing a thumbnail URL.</returns>
         /// <exception cref="ArgumentException">Invalid asset to get thumbnail for.</exception>
         /// <exception cref="RobloxAPIException">Roblox API failure or lack of permissions.</exception>
         /// <remarks>This API method does not cache and will make a request each time it is called.</remarks>
-        public async Task<HttpResult<string>> GetThumbnailAsync(ThumbnailSize size = ThumbnailSize.S420x420)
+        public async Task<HttpResult<string>> GetThumbnailAsync(ThumbnailSize size = ThumbnailSize.S420x420, int retries = -1)
         {
             if (ImageAsset != null && ImageAsset.UniqueId != 0)
                 return await (await ImageAsset.GetInstanceAsync()).GetThumbnailAsync(size);
             string url = $"/v1/assets?assetIds={Id}&returnPolicy=PlaceHolder&size={size.ToString().Substring(1)}&format=Png&isCircular=false";
-            var response = await SendAsync(HttpMethod.Get, url, Constants.URL("thumbnails"));
-            string rawData = await response.Content.ReadAsStringAsync();
-            dynamic data = JObject.Parse(rawData);
-            if (data.data.Count == 0)
-                throw new ArgumentException("Invalid asset to get thumbnail for.");
+
+            bool success = false;
+            HttpResponseMessage response = null;
+            dynamic data = null;
+
+            int retry = 0;
+            while (!success && retry <= Math.Max(retries, 0))
+            {
+                response = await SendAsync(HttpMethod.Get, url, Constants.URL("thumbnails"));
+                string rawData = await response.Content.ReadAsStringAsync();
+                data = JObject.Parse(rawData);
+
+                if (data.data.Count == 0)
+                    throw new ArgumentException("Invalid asset to get thumbnail for.");
+
+                success = data.data[0].state == "Completed";
+
+                if (retries < 1)
+                    break;
+
+                retry++;
+            }
             return new(response, Convert.ToString(data.data[0].imageUrl));
         }
 
