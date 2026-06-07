@@ -318,7 +318,7 @@ namespace RoSharp.API.Assets
             {
                 int initialQuantity = -1;
                 int quantityLimitPerUser = -1;
-                int lowestResalePrice = -1;
+                long lowestResalePrice = -1;
 
                 if (data.CollectiblesItemDetails.TotalQuantity != null)
                     initialQuantity = Convert.ToInt32(data.CollectiblesItemDetails.TotalQuantity);
@@ -327,7 +327,7 @@ namespace RoSharp.API.Assets
                     quantityLimitPerUser = Convert.ToInt32(data.CollectiblesItemDetails.CollectibleQuantityLimitPerUser);
 
                 if (data.CollectiblesItemDetails.CollectibleLowestResalePrice != null)
-                    lowestResalePrice = Convert.ToInt32(data.CollectiblesItemDetails.CollectibleLowestResalePrice);
+                    lowestResalePrice = Convert.ToInt64(data.CollectiblesItemDetails.CollectibleLowestResalePrice);
 
                 collectibleItemData = new CollectibleItemData()
                 {

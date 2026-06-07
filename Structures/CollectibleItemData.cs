@@ -37,7 +37,7 @@ namespace RoSharp.Structures
         /// <summary>
         /// Gets the collectible's lowest available resale price. Will be <c>-1</c> for non-limited collectibles.
         /// </summary>
-        public int LowestResalePrice { get; init; }
+        public long LowestResalePrice { get; init; }
 
         /// <summary>
         /// Gets whether or not this collectible is limited (fixed amount of quantity, re-sellable from user to user).
