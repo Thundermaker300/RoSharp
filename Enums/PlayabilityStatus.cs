@@ -123,5 +123,10 @@
         /// </summary>
         PlaceHasNoPublishedVersion,
 
+        /// <summary>
+        /// Unknown reason.
+        /// </summary>
+        UnplayableOtherReason,
+
     }
 }
