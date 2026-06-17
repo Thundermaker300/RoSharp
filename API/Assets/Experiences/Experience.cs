@@ -34,7 +34,7 @@ namespace RoSharp.API.Assets.Experiences
         public ulong Id => UniverseId;
 
         /// <inheritdoc/>
-        public string Url => $"{Constants.ROBLOX_URL}/games/{RootPlaceId}/";
+        public string Url => $"{Constants.ROBLOX_URL}/games/{RootPlaceId.UniqueId}/";
 
         private string name;
 
