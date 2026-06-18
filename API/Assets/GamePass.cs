@@ -22,14 +22,16 @@ namespace RoSharp.API.Assets
             : base(assetId, session) { }
 
         /// <inheritdoc/>
-        public new static async Task<GamePass> FromId(ulong gamepassId, Session? session = null)
+        public new static async Task<GamePass> FromId(ulong gamepassId, Session? session = null, bool refresh = true)
         {
             if (RoPool<GamePass>.Contains(gamepassId))
                 return RoPool<GamePass>.Get(gamepassId, session.Global());
 
             GamePass newUser = new(gamepassId, session.Global());
             newUser.assetTypeOverride = "gamepass";
-            await newUser.RefreshAsync();
+
+            if (refresh)
+                await newUser.RefreshAsync();
 
             RoPool<GamePass>.Add(newUser);
 

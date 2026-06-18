@@ -268,17 +268,20 @@ namespace RoSharp.API.Assets
         /// </summary>
         /// <param name="assetId">The asset Id.</param>
         /// <param name="session">The session, optional.</param>
+        /// <param name="refresh">Whether or not to automatically refresh the asset data by calling <see cref="RefreshAsync"/>. This is encouraged as it validates that the Asset is valid and sets all of its properties. However, skipping this step takes less time, and is required if you're trying to perform functions on deleted assets, as refreshing will throw an exception on deleted assets. If you do not refresh, most properties will be empty or their default values.</param>
         /// <returns>A task containing the <see cref="Asset"/> upon completion.</returns>
         /// <exception cref="ArgumentException">If the asset Id invalid.</exception>
         /// <exception cref="RobloxAPIException">Roblox API failure or lack of permissions.</exception>
         /// <remarks>Authentication is not required but suggested as the Economy API hits ratelimits fast without user authentication.</remarks>
-        public static async Task<Asset> FromId(ulong assetId, Session? session = null)
+        public static async Task<Asset> FromId(ulong assetId, Session? session = null, bool refresh = true)
         {
             if (RoPool<Asset>.Contains(assetId))
                 return RoPool<Asset>.Get(assetId, session.Global());
 
             Asset newUser = new(assetId, session.Global());
-            await newUser.RefreshAsync();
+
+            if (refresh)
+                await newUser.RefreshAsync();
 
             RoPool<Asset>.Add(newUser);
 

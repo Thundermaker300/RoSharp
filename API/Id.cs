@@ -56,7 +56,7 @@ namespace RoSharp.API
         public async Task<T> GetInstanceAsync(Session? session = null)
         {
             Session? sessionToUse = session ?? storedSession ?? GlobalSession.Assigned;
-            stored ??= await T.FromId(UniqueId, sessionToUse);
+            stored ??= await T.FromId(UniqueId, sessionToUse, true);
             return stored;
         }
 

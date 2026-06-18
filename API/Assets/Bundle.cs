@@ -144,13 +144,15 @@ namespace RoSharp.API.Assets
                 AttachSession(session);
         }
 
-        public static async Task<Bundle> FromId(ulong bundleId, Session? session = null)
+        public static async Task<Bundle> FromId(ulong bundleId, Session? session = null, bool refresh = true)
         {
             if (RoPool<Bundle>.Contains(bundleId))
                 return RoPool<Bundle>.Get(bundleId, session.Global());
 
             Bundle newUser = new(bundleId, session.Global());
-            await newUser.RefreshAsync();
+
+            if (refresh)
+                await newUser.RefreshAsync();
 
             RoPool<Bundle>.Add(newUser);
 

@@ -114,16 +114,19 @@ namespace RoSharp.API
         /// </summary>
         /// <param name="userId">The user Id.</param>
         /// <param name="session">The session, optional.</param>
+        /// <param name="refresh">Whether or not to automatically refresh the user data by calling <see cref="RefreshAsync"/>. This is encouraged as it validates that the User is valid and sets all of its properties. However, skipping this step takes less time, and is required if you're trying to perform functions on deleted users (such as getting their badges), as refreshing will throw an exception on deleted users. If you do not refresh, most properties will be empty or their default values.</param>
         /// <returns>A task containing the <see cref="User"/> upon completion.</returns>
         /// <exception cref="ArgumentException">If the asset Id invalid.</exception>
         /// <exception cref="RobloxAPIException">Roblox API failure or lack of permissions.</exception>
-        public static async Task<User> FromId(ulong userId, Session? session = null)
+        public static async Task<User> FromId(ulong userId, Session? session = null, bool refresh = true)
         {
             if (RoPool<User>.Contains(userId))
                 return RoPool<User>.Get(userId, session.Global());
 
             User newUser = new(userId, session.Global());
-            await newUser.RefreshAsync();
+
+            if (refresh)
+                await newUser.RefreshAsync();
 
             return newUser;
         }
@@ -133,11 +136,12 @@ namespace RoSharp.API
         /// </summary>
         /// <param name="username">The username.</param>
         /// <param name="session">The session, optional.</param>
+        /// <param name="refresh">Whether or not to automatically refresh the user data by calling <see cref="RefreshAsync"/>. This is encouraged as it validates that the User is valid and sets all of its properties. However, skipping this step takes less time, and is required if you're trying to perform functions on deleted users (such as getting their badges), as refreshing will throw an exception on deleted users. If you do not refresh, most properties will be empty or their default values.</param>
         /// <returns>A task containing the <see cref="User"/> upon completion.</returns>
         /// <exception cref="ArgumentException">If the asset Id invalid.</exception>
         /// <exception cref="RobloxAPIException">Roblox API failure or lack of permissions.</exception>
-        public static async Task<User> FromUsername(string username, Session? session = null)
-            => await FromId(await UserUtility.GetUserIdAsync(username), session);
+        public static async Task<User> FromUsername(string username, Session? session = null, bool refresh = true)
+            => await FromId(await UserUtility.GetUserIdAsync(username), session, refresh);
 
         /// <inheritdoc/>
         public async Task RefreshAsync()

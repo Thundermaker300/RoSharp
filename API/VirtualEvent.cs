@@ -176,13 +176,15 @@ namespace RoSharp.API
         }
 
         /// <inheritdoc/>
-        public static async Task<VirtualEvent> FromId(ulong id, Session? session)
+        public static async Task<VirtualEvent> FromId(ulong id, Session? session, bool refresh = true)
         {
             if (RoPool<VirtualEvent>.Contains(id))
                 return RoPool<VirtualEvent>.Get(id, session.Global());
 
             VirtualEvent newEvent = new(id, session.Global());
-            await newEvent.RefreshAsync();
+
+            if (refresh)
+                await newEvent.RefreshAsync();
 
             return newEvent;
         }

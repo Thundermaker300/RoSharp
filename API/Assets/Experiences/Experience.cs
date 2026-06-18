@@ -216,29 +216,33 @@ namespace RoSharp.API.Assets.Experiences
         /// </summary>
         /// <param name="placeId">The place Id.</param>
         /// <param name="session">The session, optional.</param>
+        /// <param name="refresh">Whether or not to automatically refresh the experience data by calling <see cref="RefreshAsync"/>. This is encouraged as it validates that the Experience is valid and sets all of its properties. However, skipping this step takes less time, and is required if you're trying to perform functions on deleted experiences (such as getting their badges), as refreshing will throw an exception on deleted experiences. If you do not refresh, most properties will be empty or their default values.</param>
         /// <returns>A task containing an <see cref="Experience"/>.</returns>
         /// <exception cref="ArgumentException">If the place Id is invalid or is a UniverseId (see <see cref="FromId(ulong, Session?)"/>.</exception>
         /// <exception cref="RobloxAPIException">Roblox API failure or lack of permissions.</exception>
         /// <remarks>This is the most common method as the Place ID is present in the URL when going to any general experience page.</remarks>
-        public static async Task<Experience> FromPlaceId(ulong placeId, Session? session = null)
-            => await FromId(await ExperienceUtility.GetUniverseIdAsync(placeId), session);
+        public static async Task<Experience> FromPlaceId(ulong placeId, Session? session = null, bool refresh = true)
+            => await FromId(await ExperienceUtility.GetUniverseIdAsync(placeId), session, refresh);
 
         /// <summary>
         /// Returns a <see cref="Experience"/> given the Id of the universe.
         /// </summary>
         /// <param name="universeId">The universe Id.</param>
         /// <param name="session">The session, optional.</param>
+        /// <param name="refresh">Whether or not to automatically refresh the experience data by calling <see cref="RefreshAsync"/>. This is encouraged as it validates that the Experience is valid and sets all of its properties. However, skipping this step takes less time, and is required if you're trying to perform functions on deleted experiences (such as getting their badges), as refreshing will throw an exception on deleted experiences. If you do not refresh, most properties will be empty or their default values.</param>
         /// <returns>A task containing an <see cref="Experience"/>.</returns>
         /// <exception cref="ArgumentException">If the universe Id is invalid or is a PlaceId (see <see cref="FromPlaceId(ulong, Session?)"/>.</exception>
         /// <exception cref="RobloxAPIException">Roblox API failure or lack of permissions.</exception>
         /// <remarks>If you have a Place Id, which is most common, see <see cref="FromPlaceId(ulong, Session?)"/>.</remarks>
-        public static async Task<Experience> FromId(ulong universeId, Session? session = null)
+        public static async Task<Experience> FromId(ulong universeId, Session? session = null, bool refresh = true)
         {
             if (RoPool<Experience>.Contains(universeId))
                 return RoPool<Experience>.Get(universeId, session.Global());
 
             Experience newUser = new(universeId, session.Global());
-            await newUser.RefreshAsync();
+
+            if (refresh)
+                await newUser.RefreshAsync();
 
             return newUser;
         }

@@ -136,16 +136,19 @@ namespace RoSharp.API.Communities
         /// </summary>
         /// <param name="communityId">The community Id.</param>
         /// <param name="session">The session, optional.</param>
+        /// <param name="refresh">Whether or not to automatically refresh the community data by calling <see cref="RefreshAsync"/>. This is encouraged as it validates that the Community is valid and sets all of its properties. However, skipping this step takes less time, and is required if you're trying to perform functions on deleted communities (such as getting their users), as refreshing will throw an exception on deleted communities. If you do not refresh, most properties will be empty or their default values.</param>
         /// <returns>A task containing the <see cref="Community"/> upon completion.</returns>
         /// <exception cref="ArgumentException">If the community Id is invalid.</exception>
         /// <exception cref="RobloxAPIException">Roblox API failure or lack of permissions.</exception>
-        public static async Task<Community> FromId(ulong communityId, Session? session = null)
+        public static async Task<Community> FromId(ulong communityId, Session? session = null, bool refresh = true)
         {
             if (RoPool<Community>.Contains(communityId))
                 return RoPool<Community>.Get(communityId, session.Global());
 
             Community newCommunity = new(communityId, session.Global());
-            await newCommunity.RefreshAsync();
+
+            if (refresh)
+                await newCommunity.RefreshAsync();
 
             return newCommunity;
         }
@@ -155,16 +158,17 @@ namespace RoSharp.API.Communities
         /// </summary>
         /// <param name="communityName">The community name.</param>
         /// <param name="session">The session, optional.</param>
+        /// <param name="refresh">Whether or not to automatically refresh the community data by calling <see cref="RefreshAsync"/>. This is encouraged as it validates that the Community is valid and sets all of its properties. However, skipping this step takes less time, and is required if you're trying to perform functions on deleted communities (such as getting their users), as refreshing will throw an exception on deleted communities. If you do not refresh, most properties will be empty or their default values.</param>
         /// <returns>A task containing the <see cref="Community"/> upon completion.</returns>
         /// <exception cref="ArgumentException">If the community name is invalid.</exception>
         /// <exception cref="RobloxAPIException">Roblox API failure or lack of permissions.</exception>
-        public static async Task<Community> FromName(string communityName, Session? session = null)
+        public static async Task<Community> FromName(string communityName, Session? session = null, bool refresh = true)
         {
             ulong? groupId = await CommunityUtility.GetCommunityIdAsync(communityName);
             if (!groupId.HasValue)
                 throw new ArgumentException($"Invalid group name '{communityName}'.");
 
-            return await FromId(groupId.Value, session);
+            return await FromId(groupId.Value, session, refresh);
         }
 
         /// <summary>

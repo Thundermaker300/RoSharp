@@ -114,16 +114,19 @@ namespace RoSharp.API.Assets
         /// </summary>
         /// <param name="badgeId">The badge Id.</param>
         /// <param name="session">The session, optional.</param>
+        /// <param name="refresh">Whether or not to automatically refresh the badge data by calling <see cref="RefreshAsync"/>. This is encouraged as it validates that the Badge is valid and sets all of its properties. However, skipping this step takes less time, and is required if you're trying to perform functions on deleted badges, as refreshing will throw an exception on deleted badges. If you do not refresh, most properties will be empty or their default values.</param>
         /// <returns>A task containing the <see cref="Badge"/> upon completion.</returns>
         /// <exception cref="ArgumentException">If the asset Id invalid.</exception>
         /// <exception cref="RobloxAPIException">Roblox API failure or lack of permissions.</exception>
-        public static async Task<Badge> FromId(ulong badgeId, Session? session = null)
+        public static async Task<Badge> FromId(ulong badgeId, Session? session = null, bool refresh = true)
         {
             if (RoPool<Badge>.Contains(badgeId))
                 return RoPool<Badge>.Get(badgeId, session.Global());
 
             Badge newUser = new(badgeId, session.Global());
-            await newUser.RefreshAsync();
+
+            if (refresh)
+                await newUser.RefreshAsync();
 
             return newUser;
         }
