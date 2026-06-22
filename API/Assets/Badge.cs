@@ -98,6 +98,9 @@ namespace RoSharp.API.Assets
         /// <inheritdoc/>
         public DateTime RefreshedAt { get; set; }
 
+        /// <inheritdoc/>
+        public bool Loaded => RefreshedAt != default;
+
         private Badge(ulong assetId, Session? session = null)
         {
             Id = assetId;

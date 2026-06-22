@@ -4,7 +4,7 @@ using System.Collections.Concurrent;
 namespace RoSharp.API.Pooling
 {
     internal static class RoPool<T>
-        where T: class, IIdApi<T>
+        where T: class, IIdApi<T>, IRefreshable
     {
         internal static ConcurrentDictionary<string, ConcurrentDictionary<ulong, T>> Pool = new();
 

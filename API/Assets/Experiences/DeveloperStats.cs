@@ -40,6 +40,9 @@ namespace RoSharp.API.Assets.Experiences
         /// <inheritdoc/>
         public DateTime RefreshedAt { get; set; }
 
+        /// <inheritdoc/>
+        public bool Loaded => RefreshedAt != default;
+
         internal DeveloperStats(Experience experience)
         {
             ArgumentNullException.ThrowIfNull(experience, nameof(experience));
@@ -73,6 +76,8 @@ namespace RoSharp.API.Assets.Experiences
                 activePrivateServers = -1;
                 activePrivateServerSubscriptions = -1;
             }
+
+            RefreshedAt = DateTime.Now;
         }
 
         private object MakeGenericBody(DateTime date, string metric, object[] breakdown)

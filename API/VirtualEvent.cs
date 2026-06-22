@@ -164,6 +164,9 @@ namespace RoSharp.API
         /// <inheritdoc/>
         public DateTime RefreshedAt { get; set; }
 
+        /// <inheritdoc/>
+        public bool Loaded => RefreshedAt != default;
+
         private VirtualEvent(ulong userId, Session? session = null)
         {
             Id = userId;
@@ -216,6 +219,8 @@ namespace RoSharp.API
             string rawRsvps = await SendStringAsync(HttpMethod.Get, $"{Constants.URL("apis")}/virtual-events/v1/virtual-events/{Id}/rsvps/counters");
             dynamic rsvps = JObject.Parse(rawRsvps);
             totalRSVPs = rsvps.counters.going;
+
+            RefreshedAt = DateTime.Now;
         }
 
         /// <summary>

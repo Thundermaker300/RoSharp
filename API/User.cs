@@ -98,6 +98,9 @@ namespace RoSharp.API
         /// <inheritdoc/>
         public DateTime RefreshedAt { get; set; }
 
+        /// <inheritdoc/>
+        public bool Loaded => RefreshedAt != default;
+
         private User(ulong userId, Session? session = null)
         {
             Id = userId;

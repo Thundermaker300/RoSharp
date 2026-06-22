@@ -21,6 +21,9 @@ namespace RoSharp.API.Communities
         /// <inheritdoc/>
         public DateTime RefreshedAt { get; set; }
 
+        /// <inheritdoc/>
+        public bool Loaded => RefreshedAt != default;
+
         private ReadOnlyCollection<Role> roles = new List<Role>(0).AsReadOnly();
 
         /// <summary>

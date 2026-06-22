@@ -250,6 +250,9 @@ namespace RoSharp.API.Assets
         /// <inheritdoc/>
         public DateTime RefreshedAt { get; set; }
 
+        /// <inheritdoc/>
+        public bool Loaded => RefreshedAt != default;
+
         /// <summary>
         /// Instantiates a new <see cref="Asset"/>.
         /// </summary>

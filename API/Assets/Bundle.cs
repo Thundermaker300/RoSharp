@@ -134,6 +134,9 @@ namespace RoSharp.API.Assets
         public DateTime RefreshedAt { get; set; }
 
         /// <inheritdoc/>
+        public bool Loaded => RefreshedAt != default;
+
+        /// <inheritdoc/>
         public string Url => $"https://www.roblox.com/bundles/{Id}/";
 
         private Bundle(ulong assetId, Session? session = null)
@@ -215,6 +218,8 @@ namespace RoSharp.API.Assets
                 saleLocation = SaleLocationType.NotApplicable;
             else
                 saleLocation = Enum.Parse<SaleLocationType>(Convert.ToString(data.saleLocationType));
+
+            RefreshedAt = DateTime.Now;
         }
 
         /// <summary>

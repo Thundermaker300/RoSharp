@@ -13,6 +13,11 @@ namespace RoSharp.Interfaces
         public DateTime RefreshedAt { get; set; }
 
         /// <summary>
+        /// Gets or sets whether or not this API's data was successfully loaded.
+        /// </summary>
+        public bool Loaded { get; }
+
+        /// <summary>
         /// Forces this member's API that is retrieved from Roblox.
         /// </summary>
         /// <returns>A task that completes when API has been fully updated.</returns>

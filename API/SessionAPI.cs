@@ -17,6 +17,9 @@ namespace RoSharp.API
         /// <inheritdoc/>
         public DateTime RefreshedAt { get; set; }
 
+        /// <inheritdoc/>
+        public bool Loaded => RefreshedAt != default;
+
         private SessionAPI(Session session) : base(session) { }
 
         /// <summary>
@@ -53,6 +56,8 @@ namespace RoSharp.API
 
             dynamic robuxData = JObject.Parse(await SendStringAsync(HttpMethod.Get, "/v1/user/currency", Constants.URL("economy")));
             robux = robuxData.robux;
+
+            RefreshedAt = DateTime.Now;
         }
 
         /// <inheritdoc/>

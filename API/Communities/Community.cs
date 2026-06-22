@@ -118,6 +118,9 @@ namespace RoSharp.API.Communities
         /// <inheritdoc/>
         public DateTime RefreshedAt { get; set; }
 
+        /// <inheritdoc/>
+        public bool Loaded => RefreshedAt != default;
+
         internal ulong members;
 
         private Community(ulong communityId, Session? session = null)
