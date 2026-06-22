@@ -17,7 +17,9 @@ namespace RoSharp.API.Pooling
         internal static void Add(T asset, string scope = "default")
         {
             VerifyScope(scope);
-            Pool[scope].TryAdd(asset.Id, asset);
+
+            if (asset.Loaded)
+                Pool[scope].TryAdd(asset.Id, asset);
         }
 
         internal static T Get(ulong id, Session? session = null, string scope = "default")
