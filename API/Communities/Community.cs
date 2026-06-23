@@ -129,9 +129,6 @@ namespace RoSharp.API.Communities
             
             if (session != null)
                 AttachSession(session);
-
-            if (!RoPool<Community>.Contains(Id))
-                RoPool<Community>.Add(this);
         }
 
         /// <summary>
@@ -152,6 +149,8 @@ namespace RoSharp.API.Communities
 
             if (refresh)
                 await newCommunity.RefreshAsync();
+
+            RoPool<Community>.Add(newCommunity);
 
             return newCommunity;
         }

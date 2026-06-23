@@ -173,9 +173,6 @@ namespace RoSharp.API
 
             if (session != null)
                 AttachSession(session);
-
-            if (!RoPool<VirtualEvent>.Contains(Id))
-                RoPool<VirtualEvent>.Add(this);
         }
 
         /// <inheritdoc/>
@@ -188,6 +185,8 @@ namespace RoSharp.API
 
             if (refresh)
                 await newEvent.RefreshAsync();
+
+            RoPool<VirtualEvent>.Add(newEvent);
 
             return newEvent;
         }

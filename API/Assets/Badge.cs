@@ -107,9 +107,6 @@ namespace RoSharp.API.Assets
 
             if (session != null)
                 AttachSession(session);
-
-            if (!RoPool<Badge>.Contains(Id))
-                RoPool<Badge>.Add(this);
         }
 
         /// <summary>
@@ -130,6 +127,8 @@ namespace RoSharp.API.Assets
 
             if (refresh)
                 await newUser.RefreshAsync();
+
+            RoPool<Badge>.Add(newUser);
 
             return newUser;
         }

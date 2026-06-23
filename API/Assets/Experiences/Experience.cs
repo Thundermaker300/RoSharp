@@ -207,9 +207,6 @@ namespace RoSharp.API.Assets.Experiences
             if (session != null)
                 AttachSession(session);
 
-            if (!RoPool<Experience>.Contains(UniverseId))
-                RoPool<Experience>.Add(this);
-
             statistics = new(this);
             dataStorage = new(this);
         }
@@ -246,6 +243,8 @@ namespace RoSharp.API.Assets.Experiences
 
             if (refresh)
                 await newUser.RefreshAsync();
+
+            RoPool<Experience>.Add(newUser);
 
             return newUser;
         }
