@@ -23,7 +23,7 @@ namespace RoSharp.Interfaces
         /// </summary>
         /// <param name="id">The unique Id of the <typeparamref name="T"/>.</param>
         /// <param name="session">Session. Optional.</param>
-        /// <param name="refresh">If true, the refresh method will be called automatically, which retrieves information from Roblox and validates that the asset exists. If false, this step is skipped, speeding up load times, however most properties will be empty or default values. This value should remain true unless you plan to call refresh at a later date or know what you're doing.</param>
+        /// <param name="refresh">If true, the refresh method will be called automatically, which retrieves information from Roblox and validates that the asset exists. If false, this step is skipped, speeding up load times, however most properties will be empty or default values. This value should remain true unless you plan to call refresh at a later date or know what you're doing. Note: Classes that are not refreshed will not be added to the pooling system, so they will not be cached.</param>
         /// <returns>A task containing the <typeparamref name="T"/>.</returns>
         /// <exception cref="RobloxAPIException">Roblox API failure or lack of permissions.</exception>
         public abstract static Task<T> FromId(ulong id, Session? session, bool refresh);
