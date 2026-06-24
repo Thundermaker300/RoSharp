@@ -904,6 +904,33 @@ namespace RoSharp.API.Assets
         public async Task<HttpResult> ModifyCollaboratorAsync(Community community, AssetPermissionType permissionType, bool remove = false)
             => await ModifyCollaboratorAsync(AssetOwnerType.Community, community.Id, permissionType, remove);
 
+        /// <summary>
+        /// Gets a download URL for this asset, optionally with a specified version.
+        /// </summary>
+        /// <param name="version">Version to download.</param>
+        /// <returns>A task containing a <see cref="string"/> with the download url, or <see langword="null"/> if there is no download url.</returns>
+        public async Task<HttpResult<string?>> GetDownloadUrlAsync(int version = 0)
+        {
+            // Find Download link
+            var assetDeliveryMessage = new HttpMessage(HttpMethod.Get, $"/v2/asset/?id={Id}&version={version}")
+            {
+                SilenceExceptions = true
+            };
+
+            var assetDeliveryRequest = await SendAsync(assetDeliveryMessage, Constants.URL("assetdelivery"));
+            if (assetDeliveryRequest.IsSuccessStatusCode)
+            {
+                dynamic downloadData = JObject.Parse(await assetDeliveryRequest.Content.ReadAsStringAsync());
+                if (downloadData.locations.Count > 0)
+                {
+                    string? result = downloadData.locations[0].location ?? null;
+                    return new(assetDeliveryRequest, result);
+                }
+            }
+
+            return new(assetDeliveryRequest, null);
+        }
+
         /// <inheritdoc/>
         public override string ToString()
         {
