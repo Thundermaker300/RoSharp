@@ -1,4 +1,5 @@
 ﻿using RoSharp.API;
+using RoSharp.Enums;
 using RoSharp.Exceptions;
 using RoSharp.Structures;
 using RoSharp.Utility;
@@ -45,26 +46,23 @@ namespace RoSharp
             get
             {
                 if (!LoggedIn)
-                    throw new InvalidOperationException("Session is not authenticated. Did you call LoginAsync?");
+                    throw new InvalidOperationException("Session is not authenticated. Did you call LoginAsync or LoginWithAPIKeyAsync?");
                 return DateTime.Now - LoggedInAt;
             }
         }
 
+        private AuthenticationMethod authMethod;
+
         /// <summary>
-        /// Gets a <see cref="SessionAPI"/> which contains some API about the current authenticated user.
+        /// Indicates how this session has been authenticated.
         /// </summary>
-        /// <exception cref="InvalidOperationException">No API associated with this session. Did you call LoginAsync?</exception>
+        public AuthenticationMethod AuthMethod => authMethod;
+
+        /// <summary>
+        /// Gets a <see cref="SessionAPI"/> which contains some API about the current authenticated user. This will be <see langword="null"/> if the session is not logged in via <see cref="LoginAsync(string)"/>.
+        /// </summary>
         public SessionAPI? API
-        {
-            get
-            {
-                if (sessionAPI is null)
-                {
-                    throw new InvalidOperationException("No API associated with this session. Did you call LoginAsync?");
-                }
-                return sessionAPI;
-            }
-        }
+            => sessionAPI;
 
         private User? authUser;
 
@@ -128,6 +126,7 @@ namespace RoSharp
                     displayname = result.Value.displayName;
                     loggedIn = true;
                     loggedAt = DateTime.Now;
+                    authMethod = AuthenticationMethod.RobloSecurity;
 
                     sessionAPI = await SessionAPI.FromSession(this);
                     authUser = await User.FromId(userid, this);
@@ -136,9 +135,46 @@ namespace RoSharp
         }
 
         /// <summary>
+        /// Authenticates this session using the provided API key.
+        /// </summary>
+        /// <param name="apiKey">The API key to use for authentication.</param>
+        /// <returns>A Task that completes when the operation is finished.</returns>
+        /// <exception cref="RobloxAPIException">Thrown if the authentication fails.</exception>
+        public async Task LoginWithAPIKeyAsync(string apiKey)
+        {
+            ArgumentNullException.ThrowIfNullOrWhiteSpace(apiKey, nameof(apiKey));
+
+            HttpClient client = new();
+
+            HttpRequestMessage message = new(HttpMethod.Post, $"{Constants.URL("apis")}/api-keys/v1/introspect")
+            {
+                Content = JsonContent.Create(new
+                {
+                    apiKey = apiKey,
+                })
+            };
+
+            HttpResponseMessage authResponse = await client.SendAsync(message);
+
+            if (authResponse.StatusCode == HttpStatusCode.BadRequest)
+            {
+                throw new RobloxAPIException("Invalid API key.");
+            }
+            else if (authResponse.IsSuccessStatusCode)
+            {
+                this.apiKey = apiKey;
+
+                loggedIn = true;
+                loggedAt = DateTime.Now;
+                authMethod = AuthenticationMethod.ApiKey;
+            }
+        }
+
+        /// <summary>
         /// Adds an API key to this session.
         /// </summary>
         /// <param name="apiKey">The API key to add, or <see langword="null"/> to remove the API key.</param>
+        [Obsolete("Use LoginWithAPIKeyAsync")]
         public void SetAPIKey(string apiKey)
             => this.apiKey = apiKey;
 
@@ -152,6 +188,7 @@ namespace RoSharp
             displayname = string.Empty;
             loggedIn = false;
             loggedAt = null;
+            authMethod = AuthenticationMethod.Unauthenticated;
 
             sessionAPI = null;
             authUser = null;
