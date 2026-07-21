@@ -409,5 +409,20 @@
         /// Represents an eye makeup asset.
         /// </summary>
         EyeMakeup = 90,
+
+        /// <summary>
+        /// Currently unknown.
+        /// </summary>
+        VoxelFragment = 91,
+
+        /// <summary>
+        /// Represents a user background asset.
+        /// </summary>
+        AvatarBackground = 92,
+        
+        /// <summary>
+        /// Currently unknown.
+        /// </summary>
+        TextDocument = 93,
     }
 }
