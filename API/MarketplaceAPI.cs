@@ -49,6 +49,7 @@ namespace RoSharp.API
             AssetType.EyeMakeup,
             AssetType.FaceMakeup,
             AssetType.LipMakeup,
+            AssetType.AvatarBackground,
         }.AsReadOnly();
 
         /// <summary>
