@@ -45,6 +45,11 @@ namespace RoSharp.API
             { AssetType.SweaterAccessory, "sweater%7Cm4.1fullmask_20260224%7C6" },
             { AssetType.TShirtAccessory, "tshirt%7Cm4.1fullmask_20260224%7C6" },
             { AssetType.WaistAccessory, "waist_accessory%7Cm4.1fullmask_20260224%7C6" },
+
+            // "Classic" Types (Technically have price floors but cannot be actually uploaded by users)
+            { AssetType.Gear, "gear%7Cm2.0_20251009%7C3" },
+            { AssetType.Face, "classic_face%7Cm2.0_20251009%7C3" },
+            { AssetType.Head, "classic_head%7Cm2.0_20251009%7C3" },
         };
 
         private static Dictionary<BundleType, string> priceFloorBundlesToCategoryId = new Dictionary<BundleType, string>
