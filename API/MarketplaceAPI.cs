@@ -140,7 +140,6 @@ namespace RoSharp.API
             {
                 AuthType = AuthType.RobloSecurity,
                 ApiName = nameof(GetPriceFloorForAssetTypeAsync),
-                SilenceExceptions = true,
             };
 
             var resp = await HttpManager.SendAsync(session, message);
@@ -209,7 +208,6 @@ namespace RoSharp.API
             {
                 AuthType = AuthType.RobloSecurity,
                 ApiName = nameof(GetPriceFloorForBundleTypeAsync),
-                SilenceExceptions = true,
             };
 
             var resp = await HttpManager.SendAsync(session, message);
