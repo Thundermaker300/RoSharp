@@ -17,50 +17,54 @@ namespace RoSharp.API
     /// </summary>
     public static class MarketplaceAPI
     {
+
+        private static Dictionary<AssetType, string> priceFloorAssetToCategoryId = new Dictionary<AssetType, string>
+        {
+            { AssetType.BackAccessory, "back_accessory%7Cm4.1fullmask_20260224%7C6" },
+            { AssetType.AvatarBackground, "avatar_background%7Cm2.0_20251009%7C3" },
+            { AssetType.Pants, "ufn5wksVLjXcPinoKiroBP" },
+            { AssetType.Shirt, "5qvdPWkPs2PJFQYHwtLnhe" },
+            { AssetType.TShirt, "uMVpGSyJjJpz2NeUniwUpz" },
+            { AssetType.DressSkirtAccessory, "dress_skirt%7Cm4.1fullmask_20260224%7C6" },
+            { AssetType.EmoteAnimation, "unw3Bknd7PPXKtwfpLPvAj" },
+            { AssetType.EyeMakeup, "eye_makeup%7Cm2.0_20251009%7C3" },
+            { AssetType.EyebrowAccessory, "eyebrow%7Cm2.0_20251009%7C3" },
+            { AssetType.EyelashAccessory, "eyelash%7Cm2.0_20251009%7C3" },
+            { AssetType.FaceAccessory, "face_accessory%7Cm4.1fullmask_20260224%7C6" },
+            { AssetType.FaceMakeup, "face_makeup%7Cm2.0_20251009%7C3" },
+            { AssetType.FrontAccessory, "front_accessory%7Cm4.1fullmask_20260224%7C6" },
+            { AssetType.HairAccessory, "hair_accessory%7Cm4.1fullmask_20260224%7C6" },
+            { AssetType.Hat, "head_accessory%7Cm4.1fullmask_20260224%7C6" },
+            { AssetType.JacketAccessory, "jacket%7Cm4.1fullmask_20260224%7C6" },
+            { AssetType.LipMakeup, "lip_makeup%7Cm2.0_20251009%7C3" },
+            { AssetType.NeckAccessory, "neck_accessory%7Cm4.1fullmask_20260224%7C6" },
+            { AssetType.PantsAccessory, "pants%7Cm4.1fullmask_20260224%7C6" },
+            { AssetType.ShirtAccessory, "shirt%7Cm4.1fullmask_20260224%7C6" },
+            { AssetType.ShortsAccessory, "shorts%7Cm4.1fullmask_20260224%7C6" },
+            { AssetType.ShoulderAccessory, "shoulder_accessory%7Cm4.1fullmask_20260224%7C6" },
+            { AssetType.SweaterAccessory, "sweater%7Cm4.1fullmask_20260224%7C6" },
+            { AssetType.TShirtAccessory, "tshirt%7Cm4.1fullmask_20260224%7C6" },
+            { AssetType.WaistAccessory, "waist_accessory%7Cm4.1fullmask_20260224%7C6" },
+        };
+
+        private static Dictionary<BundleType, string> priceFloorBundlesToCategoryId = new Dictionary<BundleType, string>
+        {
+            { BundleType.BodyParts, "full_body%7Cm2.0_20251009%7C3" },
+            { BundleType.DynamicHead, "dynamic_head%7Cm2.0_20251009%7C3" },
+            { BundleType.Shoes, "shoes%7Cm2.0_20251009%7C3" },
+        };
+
         /// <summary>
         /// Gets a constant list of <see cref="AssetType"/> that are affected by the price floor.
         /// </summary>
-        public static ReadOnlyCollection<AssetType> PriceFloorAssets { get; } = new List<AssetType>()
-        {
-            AssetType.TShirt,
-            AssetType.Hat,
-            AssetType.Shirt,
-            AssetType.Pants,
-            AssetType.Head,
-            AssetType.Face,
-            AssetType.Gear,
-            AssetType.HairAccessory,
-            AssetType.FaceAccessory,
-            AssetType.NeckAccessory,
-            AssetType.ShoulderAccessory,
-            AssetType.FrontAccessory,
-            AssetType.BackAccessory,
-            AssetType.WaistAccessory,
-            AssetType.EmoteAnimation,
-            AssetType.TShirtAccessory,
-            AssetType.ShirtAccessory,
-            AssetType.PantsAccessory,
-            AssetType.JacketAccessory,
-            AssetType.SweaterAccessory,
-            AssetType.ShortsAccessory,
-            AssetType.DressSkirtAccessory,
-            AssetType.EyebrowAccessory,
-            AssetType.EyelashAccessory,
-            AssetType.EyeMakeup,
-            AssetType.FaceMakeup,
-            AssetType.LipMakeup,
-            AssetType.AvatarBackground,
-        }.AsReadOnly();
+        public static ReadOnlyCollection<AssetType> PriceFloorAssets { get; }
+            = priceFloorAssetToCategoryId.Keys.ToList().AsReadOnly();
 
         /// <summary>
         /// Gets a constant list of <see cref="BundleType"/> that are affected by the price floor.
         /// </summary>
-        public static ReadOnlyCollection<BundleType> PriceFloorBundles { get; } = new List<BundleType>()
-        {
-            BundleType.BodyParts,
-            BundleType.DynamicHead,
-            BundleType.Shoes,
-        }.AsReadOnly();
+        public static ReadOnlyCollection<BundleType> PriceFloorBundles { get; }
+            = priceFloorBundlesToCategoryId.Keys.ToList().AsReadOnly();
 
 
         // PRICE FLOOR FOR ASSET TYPES
@@ -121,10 +125,16 @@ namespace RoSharp.API
         /// <param name="session">Logged in session. Required but can be replaced with <see langword="null"/> if there is a global session assigned.</param>
         /// <returns>A task containing the price floor as an <see cref="int"/>. Will be <see langword="null"/> if the provided <see cref="AssetType"/> does not have a price floor.</returns>
         /// <exception cref="RobloxAPIException">Roblox API failure or lack of permissions.</exception>
+        /// <exception cref="InvalidOperationException">The provided AssetType is not a valid price floor asset!</exception>
         /// <remarks>This API method does not cache and will make a request each time it is called.</remarks>
         public static async Task<HttpResult<int?>> GetPriceFloorForAssetTypeAsync(AssetType assetType, Session? session)
         {
-            string url = $"{Constants.URL("itemconfiguration")}/v1/items/price-floor?collectibleItemType=2&creationType=1&assetType={(int)assetType}";
+            if (!priceFloorAssetToCategoryId.TryGetValue(assetType, out string category))
+            {
+                return new(null, null);
+            }
+
+            string url = $"{Constants.URL("itemconfiguration")}/v1/items/price-floor?collectibleItemType=2&creationType=1&categoryId={category}";
 
             HttpMessage message = new(HttpMethod.Get, url)
             {
@@ -188,12 +198,12 @@ namespace RoSharp.API
         /// <remarks>This API method does not cache and will make a request each time it is called.</remarks>
         public static async Task<HttpResult<int?>> GetPriceFloorForBundleTypeAsync(BundleType bundleType, Session? session)
         {
-            int type = (int)bundleType;
+            if (!priceFloorBundlesToCategoryId.TryGetValue(bundleType, out string category))
+            {
+                return new(null, null);
+            }
 
-            if (bundleType == BundleType.DynamicHead) // For some reason
-                type = 2;
-
-            string url = $"{Constants.URL("itemconfiguration")}/v1/items/price-floor?collectibleItemType=2&creationType=1&bundleType={type}";
+            string url = $"{Constants.URL("itemconfiguration")}/v1/items/price-floor?collectibleItemType=2&creationType=1&categoryId={category}";
 
             HttpMessage message = new(HttpMethod.Get, url)
             {
