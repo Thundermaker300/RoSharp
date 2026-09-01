@@ -170,6 +170,22 @@ namespace RoSharp.API.Assets
         /// </summary>
         public AssetType AssetType => assetType;
 
+        /// <summary>
+        /// Gets whether or not this asset is an accessory (hats, hair, 3D clothing, eyelash/eyebrows, etc).
+        /// </summary>
+        /// <remarks>This property will return <see langword="false"/> for makeups, and <see cref="AssetType.AvatarBackground"/>.</remarks>
+        /// <seealso cref="IsMakeup"/>
+        public bool IsAccessory => 
+            AssetType.ToString().Contains("accessory", StringComparison.OrdinalIgnoreCase)
+            || AssetType is AssetType.Hat;
+
+        /// <summary>
+        /// Gets whether or not this accessory is a makeup.
+        /// This will return <see langword="true"/> for <see cref="AssetType.EyeMakeup"/>, <see cref="AssetType.FaceMakeup"/>, and <see cref="AssetType.LipMakeup"/>. 
+        /// </summary>
+        public bool IsMakeup =>
+            AssetType.ToString().Contains("makeup", StringComparison.OrdinalIgnoreCase);
+
         private SaleLocationType saleLocation;
 
         /// <summary>
