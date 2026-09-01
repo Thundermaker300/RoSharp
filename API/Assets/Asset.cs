@@ -907,15 +907,21 @@ namespace RoSharp.API.Assets
         /// <summary>
         /// Gets a download URL for this asset, optionally with a specified version.
         /// </summary>
-        /// <param name="version">Version to download.</param>
+        /// <param name="version">Version to download. Optional and defaults to newest version.</param>
+        /// <param name="format">The format of the asset to use. Optional and defaults to the default format provided by Roblox.</param>
         /// <returns>A task containing a <see cref="string"/> with the download url, or <see langword="null"/> if there is no download url.</returns>
-        public async Task<HttpResult<string?>> GetDownloadUrlAsync(int version = 0)
+        public async Task<HttpResult<string?>> GetDownloadUrlAsync(int version = 0, string? format = null)
         {
             // Find Download link
             var assetDeliveryMessage = new HttpMessage(HttpMethod.Get, $"/v2/asset/?id={Id}&version={version}")
             {
                 SilenceExceptions = true
             };
+
+            if (format != null)
+            {
+                assetDeliveryMessage.Headers.Add("Roblox-AssetFormat", new List<string> { format });
+            }
 
             var assetDeliveryRequest = await SendAsync(assetDeliveryMessage, Constants.URL("assetdelivery"));
             if (assetDeliveryRequest.IsSuccessStatusCode)
