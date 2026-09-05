@@ -207,7 +207,26 @@ namespace RoSharp.API.Assets
         /// Indicates whether or not this asset is a public creator hub asset (Decals, Sounds, Models, etc).
         /// </summary>
         /// <remarks>Private assets that the authenticated user cannot access will return <see langword="false"/>, even if they are technically a creator hub asset.</remarks>
-        public bool IsCreatorHubAsset => isCreatorHubAsset;
+        public bool IsCreatorHubAsset => //isCreatorHubAsset;
+            AssetType
+            is AssetType.Animation
+            or AssetType.Audio
+            or AssetType.Decal
+            or AssetType.FontFamily
+            or AssetType.FontFace
+            or AssetType.Html
+            or AssetType.Image
+            or AssetType.LocalizationTableManifest
+            or AssetType.LocalizationTableTranslation
+            or AssetType.Lua
+            or AssetType.Mesh
+            or AssetType.MeshHiddenSurfaceRemoval
+            or AssetType.MeshPart
+            or AssetType.Model
+            or AssetType.Plugin
+            or AssetType.SolidModel
+            or AssetType.TexturePack
+            or AssetType.Video;
 
         private bool hasScripts;
 
