@@ -6,6 +6,11 @@
     public enum AudioType
     {
         /// <summary>
+        /// Unknown audio type.
+        /// </summary>
+        Unknown,
+
+        /// <summary>
         /// Audio is music.
         /// </summary>
         Music,
