@@ -164,6 +164,13 @@ namespace RoSharp.API.Assets.Experiences
         /// </summary>
         public Genre Subgenre => subgenre;
 
+        private CreationSource creationSource;
+
+        /// <summary>
+        /// Gets the creation source for this experience. For most experiences it is <see cref="CreationSource.None"/>.
+        /// </summary>
+        public CreationSource CreationSource => creationSource;
+
         private Id<Place> rootPlaceId;
 
         /// <summary>
@@ -279,6 +286,15 @@ namespace RoSharp.API.Assets.Experiences
             genre = ExperienceUtility.GetGenre(Convert.ToString(data.genre_l1));
             subgenre = ExperienceUtility.GetGenre(Convert.ToString(data.genre_l2));
             privateServers = data.createVipServersAllowed;
+
+            if (data.creationSource != null)
+            {
+                string src = data.creationSource;
+                if (Enum.TryParse<CreationSource>(src, true, out CreationSource result))
+                {
+                    creationSource = result;
+                }
+            }
 
             // Set cleaned name
             string urlPath = data.canonicalUrlPath;
