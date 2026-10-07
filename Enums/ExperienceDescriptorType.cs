@@ -95,5 +95,10 @@
         /// Indicates that an experience is for all ages and suitable for everyone.
         /// </summary>
         AllAges,
+
+        /// <summary>
+        /// Indicates that the maturity level of content in an experience can vary. Used for experiences made with <see cref="CreationSource.Build"/>.
+        /// </summary>
+        ContentMayVary,
     }
 }

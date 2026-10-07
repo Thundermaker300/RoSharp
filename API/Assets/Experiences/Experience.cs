@@ -514,7 +514,8 @@ namespace RoSharp.API.Assets.Experiences
             if (data.ageRecommendationSummary.ageRecommendation != null)
             {
                 minimumAge = data.ageRecommendationSummary.ageRecommendation.minimumAge;
-                maturityLevel = Enum.Parse<ExperienceMaturityLevel>(Convert.ToString(data.ageRecommendationSummary.ageRecommendation.displayName));
+                string displayName = data.ageRecommendationSummary.ageRecommendation.displayName;
+                maturityLevel = Enum.Parse<ExperienceMaturityLevel>(displayName.Replace(" ", string.Empty));
             }
             else
             {

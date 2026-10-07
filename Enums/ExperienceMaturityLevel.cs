@@ -29,5 +29,10 @@
         /// Experience maturity level is 'restricted' and the experience is available for ages 17+.
         /// </summary>
         Restricted,
+
+        /// <summary>
+        /// Experience maturity level is 'content may vary'.
+        /// </summary>
+        ContentMayVary,
     }
 }

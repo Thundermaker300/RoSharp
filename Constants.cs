@@ -51,6 +51,7 @@ namespace RoSharp
             ["social-hangout"] = ExperienceDescriptorType.SocialHangout,
             ["violence"] = ExperienceDescriptorType.Violence,
             ["all-ages-suitable-for-everyone"] = ExperienceDescriptorType.AllAges,
+            ["content-may-vary"] = ExperienceDescriptorType.ContentMayVary,
         }.AsReadOnly();
 
         /// <summary>
