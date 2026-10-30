@@ -846,6 +846,35 @@ namespace RoSharp.API.Assets
         }
 
         /// <summary>
+        /// Creates a share link to this item.
+        /// </summary>
+        /// <param name="name">The name of the share link. Optional.</param>
+        /// <returns>A task containing a <see cref="ShareLink"/> upon completion.</returns>
+        /// <exception cref="RobloxAPIException">Roblox API failure or lack of permissions.</exception>
+        public async Task<HttpResult<ShareLink>> CreateShareLinkAsync(string? name = null)
+        {
+            var response = await SendAsync(HttpMethod.Post, $"/creator-links/v1/creator-links", Constants.URL("apis"), new
+            {
+                linkName = name,
+                targetId = Id.ToString(),
+                targetType = "asset"
+            });
+            string rawData = await response.Content.ReadAsStringAsync();
+            dynamic data = JObject.Parse(rawData);
+
+            return new(response, new()
+            {
+                Name = Convert.ToString(data.linkName),
+                LinkType = Convert.ToString(data.linkType),
+                LinkId = Convert.ToString(data.linkId),
+                Url = Convert.ToString(data.shareUrl),
+                State = Convert.ToString(data.status),
+                Created = data.createdTime,
+                TargetAsset = new(Id)
+            });
+        }
+
+        /// <summary>
         /// Modifies a collaborator's (user or community) access to this asset. By default, access will be added, but setting <paramref name="remove"/> to <see langword="true"/> will remove it.
         /// <para>Note: Attempting to add an invalid user, such as a terminated user, will result in a Forbidden <see cref="RobloxAPIException"/>.</para>
         /// <para>Note 2: Communities can only have 'Use' permission, NOT 'Edit' permissions. Attempting to do so will result in an <see cref="InvalidOperationException"/>.</para>
