@@ -57,6 +57,13 @@ namespace RoSharp.API.Assets.Experiences
         /// </summary>
         public string CleanedName => cleanedName;
 
+        private string promotionalText;
+
+        /// <summary>
+        /// Gets the promotional text of the experience.
+        /// </summary>
+        public string PromotionalText => promotionalText;
+
         private string description;
 
         /// <summary>
@@ -750,6 +757,7 @@ namespace RoSharp.API.Assets.Experiences
             dynamic data = JObject.Parse(rawData);
 
             friendsOnly = data.isFriendsOnly;
+            promotionalText = data.promotionalText;
             studioAccessToAPIsAllowed = Convert.ToBoolean(data.studioAccessToApisAllowed);
             editableAPIEnabled = Convert.ToBoolean(data.isMeshTextureApiAccessAllowed);
 
@@ -949,6 +957,7 @@ namespace RoSharp.API.Assets.Experiences
             var message = new HttpMessage(HttpMethod.Patch, $"/v2/universes/{UniverseId}/configuration", new
             {
                 name = options.Name ?? Name,
+                promotionalText = options.PromotionalText ?? PromotionalText,
                 description = options.Description ?? Description,
                 allowPrivateServers = options.EnablePrivateServers ?? PrivateServers,
                 privateServerPrice = options.PrivateServerPrice ?? PrivateServerCost,
@@ -1960,6 +1969,11 @@ namespace RoSharp.API.Assets.Experiences
         /// The new description of the experience.
         /// </summary>
         public string? Description { get; set; }
+
+        /// <summary>
+        /// The new promotional text for the experience.
+        /// </summary>
+        public string? PromotionalText { get; set; }
 
         /// <summary>
         /// Whether or not to enable or disable private servers.
