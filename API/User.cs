@@ -282,14 +282,14 @@ namespace RoSharp.API
             }
 
             // Badges
-            List<string> badges = [];
+            /*List<string> badges = [];
             string rawData = await SendStringAsync(HttpMethod.Get, $"/v1/users/{Id}/roblox-badges", Constants.URL("accountinformation"));
             JArray badgesData = JArray.Parse(rawData);
             foreach (dynamic badgeData in badgesData.Children<JObject>())
             {
                 badges.Add(badgeData.name.ToString());
             }
-            robloxBadges = badges.AsReadOnly();
+            robloxBadges = badges.AsReadOnly();*/
 
 
             // Updating data
@@ -412,12 +412,11 @@ namespace RoSharp.API
         /// </summary>
         public int Friends => friends;
 
-        private ReadOnlyCollection<string> robloxBadges;
-
         /// <summary>
         /// Gets the name of each Roblox bage this user has.
         /// </summary>
-        public ReadOnlyCollection<string> RobloxBadges => robloxBadges;
+        [Obsolete("Roblox badges have been removed. This property will always return an empty list.")]
+        public ReadOnlyCollection<string> RobloxBadges => new List<string>(0).AsReadOnly();
 
         private bool isAdministrator = false;
 
