@@ -49,6 +49,7 @@ namespace RoSharp.API
 
         private static Dictionary<BundleType, string> priceFloorBundlesToCategoryId = new Dictionary<BundleType, string>
         {
+            { BundleType.AvatarAnimations, "tqJiUXNopm2ZvuqcsNEv3X" },
             { BundleType.BodyParts, "full_body%7Cm2.0_20251009%7C3" },
             { BundleType.DynamicHead, "dynamic_head%7Cm2.0_20251009%7C3" },
             { BundleType.Shoes, "shoes%7Cm2.0_20251009%7C3" },
