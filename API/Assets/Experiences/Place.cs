@@ -41,7 +41,7 @@ namespace RoSharp.API.Assets.Experiences
         /// <param name="session"></param>
         /// <param name="refresh">Whether or not to automatically refresh the place data by calling <see cref="RefreshAsync"/>. This is encouraged as it validates that the Place is valid and sets all of its properties. However, skipping this step takes less time, and is required if you're trying to perform functions on deleted places, as refreshing will throw an exception on deleted places. If you do not refresh, most properties will be empty or their default values.</param>
         /// <returns>A task containing the <see cref="Place"/> upon completion.</returns>
-        /// <remarks>For a quicker way to get stats on an entire universe, see <see cref="Experience.FromPlaceId(ulong, Session?)"/>.</remarks>
+        /// <remarks>For a quicker way to get stats on an entire universe, see <see cref="Experience.FromPlaceId(ulong, Session?, bool)"/>.</remarks>
         /// <exception cref="ArgumentException">Invalid place Id provided.</exception>
         /// <exception cref="RobloxAPIException">Roblox API failure or lack of permissions.</exception>
         public new static async Task<Place> FromId(ulong id, Session? session = null, bool refresh = true)

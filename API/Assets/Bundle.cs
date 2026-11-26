@@ -91,7 +91,7 @@ namespace RoSharp.API.Assets
         private string thumbnailUrl;
 
         /// <summary>
-        /// Returns this bundle's thumbnail. Equivalent to calling <see cref="GetThumbnailAsync(ThumbnailSize)"/> with <see cref="ThumbnailSize.S420x420"/>, except this value is cached.
+        /// Returns this bundle's thumbnail. Equivalent to calling <see cref="GetThumbnailAsync(ThumbnailSize, int)"/> with <see cref="ThumbnailSize.S420x420"/>, except this value is cached.
         /// </summary>
         public string ThumbnailUrl => thumbnailUrl;
 

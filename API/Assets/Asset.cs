@@ -21,7 +21,7 @@ namespace RoSharp.API.Assets
     /// <remarks>This class consists of every Roblox item type except for Bundles and Badges. See their respective types. Places can be made through this API but will have much less data as opposed to <see cref="Experiences.Experience"/> and <see cref="Experiences.Place"/> classes.</remarks>
     /// <seealso cref="Badge"/>
     /// <seealso cref="Experiences.Experience"/>
-    /// <seealso cref="FromId(ulong, Session)"/>
+    /// <seealso cref="FromId(ulong, Session, bool)"/>
     public class Asset : APIMain, IRefreshable, IIdApi<Asset>, IFavorites
     {
         /// <inheritdoc/>
@@ -562,7 +562,7 @@ namespace RoSharp.API.Assets
         private string thumbnailUrl;
 
         /// <summary>
-        /// Returns this asset's thumbnail. Equivalent to calling <see cref="GetThumbnailAsync(ThumbnailSize)"/> with <see cref="ThumbnailSize.S420x420"/>, except this value is cached.
+        /// Returns this asset's thumbnail. Equivalent to calling <see cref="GetThumbnailAsync(ThumbnailSize, int)"/> with <see cref="ThumbnailSize.S420x420"/>, except this value is cached.
         /// </summary>
         public string ThumbnailUrl => thumbnailUrl;
 

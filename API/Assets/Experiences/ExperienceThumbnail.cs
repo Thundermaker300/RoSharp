@@ -28,7 +28,7 @@ namespace RoSharp.API.Assets.Experiences
         public string ImageUrl => Asset.ThumbnailUrl;
 
         /// <summary>
-        /// Gets an image URL in a specific size. Equivalent to <see cref="Asset.GetThumbnailAsync(ThumbnailSize)"/>.
+        /// Gets an image URL in a specific size. Equivalent to <see cref="Asset.GetThumbnailAsync(ThumbnailSize, int)"/>.
         /// </summary>
         /// <param name="size">The size to use.</param>
         /// <returns>A task containing the URL upon completion.</returns>
