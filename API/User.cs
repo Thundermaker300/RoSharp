@@ -17,8 +17,8 @@ namespace RoSharp.API
     /// <summary>
     /// A class that represents a Roblox user.
     /// </summary>
-    /// <seealso cref="FromId(ulong, Session?)"/>
-    /// <seealso cref="FromUsername(string, Session?)"/>
+    /// <seealso cref="FromId(ulong, Session?, bool)"/>
+    /// <seealso cref="FromUsername(string, Session?, bool)"/>
     public class User : APIMain, IRefreshable, IAssetOwner, IIdApi<User>
     {
         /// <inheritdoc/>
