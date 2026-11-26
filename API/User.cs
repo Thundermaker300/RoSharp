@@ -179,7 +179,6 @@ namespace RoSharp.API
             name = userHeader.names.username;
             displayName = userHeader.names.displayName;
             verified = userHeader.isVerified;
-            isPremium = userHeader.isPremium;
             isAdministrator = userHeader.isRobloxAdmin;
             isRobloxPlus = userHeader.isRobloxPlus ?? false;
             profileHidden = ("Account Deleted").Equals(Convert.ToString(userHeader.names.primaryName));
@@ -355,14 +354,6 @@ namespace RoSharp.API
             }
         }
 
-        private bool isPremium;
-
-        /// <summary>
-        /// Gets whether or not this user has Roblox Premium.
-        /// </summary>
-        [Obsolete("Roblox premium is being discontinued. Use IsRobloxPlus instead.")]
-        public bool IsPremium => isPremium;
-
         private AvatarType avatarType;
 
         /// <summary>
@@ -442,33 +433,6 @@ namespace RoSharp.API
         /// </summary>
         public bool IsVeteran => (DateTime.UtcNow - JoinDate) > TimeSpan.FromDays(365);
 
-        /// <summary>
-        /// Gets this user's rename history.
-        /// </summary>
-        /// <param name="limit">The limit of usernames to retrieve.</param>
-        /// <param name="sortOrder">Sort order.</param>
-        /// <param name="cursor">The cursor for the next page. Obtained by calling this API previously.</param>
-        /// <returns>A task containing a <see cref="ReadOnlyCollection{T}"/> of strings when completed.</returns>
-        /// <remarks>This API method does not cache and will make a request each time it is called.</remarks>
-        [Obsolete("Use RenameHistory property.")]
-        public async Task<HttpResult<ReadOnlyCollection<string>>> GetRenameHistoryAsync(FixedLimit limit = FixedLimit.Limit100, RequestSortOrder sortOrder = RequestSortOrder.Desc, string? cursor = null)
-        {
-            string url = $"/v1/users/{Id}/username-history?limit={limit.Limit()}&sortOrder={sortOrder}";
-            if (cursor != null)
-                url += "&cursor=" + cursor;
-
-            List<string> history = [];
-            var response = await SendAsync(HttpMethod.Get, url);
-            string rawData = await response.Content.ReadAsStringAsync();
-            dynamic data = JObject.Parse(rawData);
-            foreach (dynamic historyData in data.data)
-            {
-                history.Add(historyData.name.ToString());
-            }
-
-            return new(response, history.AsReadOnly());
-        }
-
         private Community? primaryGroup;
 
         /// <summary>
@@ -537,31 +501,6 @@ namespace RoSharp.API
         /// Returns this user's social channels. The keys are the social media type, the value is the URL.
         /// </summary>
         public ReadOnlyDictionary<SocialMedia, string> SocialChannels => socialChannels;
-
-        /// <summary>
-        /// Returns this user's social channels.
-        /// </summary>
-        /// <returns>A task containing a <see cref="ReadOnlyDictionary{TKey, TValue}"/> when complete.</returns>
-        /// <remarks>The keys of the dictionary are the social media type, the value is the URL.</remarks>
-        /// <exception cref="RobloxAPIException">Roblox API failure or lack of permissions.</exception>
-        [Obsolete("Use SocialChannels property.")]
-        public async Task<ReadOnlyDictionary<SocialMedia, string>> GetSocialChannelsAsync()
-        {
-            if (socialChannels == null)
-            {
-                Dictionary<SocialMedia, string> dict = [];
-                string rawData = await SendStringAsync(HttpMethod.Get, $"/v1/users/{Id}/promotion-channels?alwaysReturnUrls=true", Constants.URL("accountinformation"));
-                dynamic data = JObject.Parse(rawData);
-                foreach (dynamic media in data)
-                {
-                    if (media.Value == null) continue;
-                    dict.Add(Enum.Parse<SocialMedia>(media.Name, true), Convert.ToString(media.Value));
-                }
-                socialChannels = dict.AsReadOnly();
-            }
-
-            return socialChannels;
-        }
 
         private ReadOnlyCollection<Id<Asset>> currentlyWearing;
 
@@ -804,15 +743,6 @@ namespace RoSharp.API
 
             return new(response, new PageResponse<Id<Experience>>(list, nextPage, previousPage));
         }
-
-        /// <summary>
-        /// Returns experiences that are owned by the user and shown on their profile.
-        /// </summary>
-        /// <returns>A task containing a <see cref="ReadOnlyCollection{T}"/> of <see cref="Id{T}"/> upon completion.</returns>
-        /// <exception cref="RobloxAPIException">Roblox API failure or lack of permissions.</exception>
-        [Obsolete("Use GetExperiencesAsync(FixedLimit, RequestSortOrder, string)")]
-        public async Task<ReadOnlyCollection<Id<Experience>>> GetExperiencesAsync()
-            => (await GetExperiencesAsync(FixedLimit.Limit100)).Value.List;
 
         /// <summary>
         /// Gets whether or not this user owns the asset with the given Id.

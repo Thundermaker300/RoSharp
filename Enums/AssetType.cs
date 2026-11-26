@@ -7,13 +7,6 @@
     public enum AssetType
     {
         /// <summary>
-        /// Represents a body asset.
-        /// </summary>
-        /// <remarks>This member isn't an official AssetType type, but is included here so that it is included in the <see cref="API.MarketplaceAPI"/>.</remarks>
-        [Obsolete("No longer works due to changes in price floor API.")]
-        Body = -1,
-
-        /// <summary>
         /// Unknown asset type.
         /// </summary>
         Unknown = 0,

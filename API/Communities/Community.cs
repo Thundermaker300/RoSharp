@@ -282,8 +282,6 @@ namespace RoSharp.API.Communities
             }
 
             // Reset properties
-            shout = null;
-            shoutGuilded = null;
             shoutAnnouncement = null;
             socialChannels = null;
 
@@ -291,79 +289,6 @@ namespace RoSharp.API.Communities
                 await roleManager.RefreshAsync();
 
             RefreshedAt = DateTime.Now;
-        }
-
-        private HttpResult<CommunityShout>? shout;
-
-        /// <summary>
-        /// Gets the community's current shout.
-        /// </summary>
-        /// <returns>A task containing a <see cref="CommunityShout"/> representing the shout upon completion. Can be <see langword="null"/> if there is no current shout.</returns>
-        /// <exception cref="RobloxAPIException">Roblox API failure or lack of permissions.</exception>
-        [Obsolete("Community shouts are being discontinued in Febuary 2026. See AnnounceAsync and other announcement APIs instead.")]
-        public async Task<HttpResult<CommunityShout>?> GetShoutAsync()
-        {
-            if (shout == null)
-            {
-                var response = await SendAsync(HttpMethod.Get, $"/v1/groups/{Id}");
-                string rawData = await response.Content.ReadAsStringAsync();
-                dynamic data = JObject.Parse(rawData);
-                if (data.shout != null)
-                {
-                    ulong posterId = Convert.ToUInt64(data.shout.poster.userId);
-
-                    shout = new(response, new CommunityShout
-                    {
-                        Text = data.shout.body,
-                        Poster = await User.FromId(posterId, session),
-                        PostedAt = data.shout.updated,
-
-                        community = this,
-                    });
-                }
-            }
-            return shout;
-        }
-
-        private HttpResult<GuildedShout>? shoutGuilded;
-
-        /// <summary>
-        /// Gets the community's guilded shout, if it has a Guilded server linked.
-        /// </summary>
-        /// <returns>A task containing a <see cref="GuildedShout"/> if the community has one.</returns>
-        /// <exception cref="RobloxAPIException">Roblox API failure or lack of permissions.</exception>
-        [Obsolete("Guilded has been discontinued.")]
-        public async Task<HttpResult<GuildedShout>?> GetGuildedShoutAsync()
-        {
-            return null;
-
-            if (shoutGuilded == null)
-            {
-                HttpResponseMessage response = await SendAsync(HttpMethod.Get, $"/community-links/v1/groups/{Id}/shout", Constants.URL("apis"));
-                if (response.StatusCode != HttpStatusCode.NoContent)
-                {
-                    string rawData = await response.Content.ReadAsStringAsync();
-                    dynamic data = JObject.Parse(rawData);
-                    ulong posterId = Convert.ToUInt64(data.createdBy);
-
-                    shoutGuilded = new(response, new GuildedShout
-                    {
-                        GuildedId = data.communityId,
-                        ShoutId = data.announcementId,
-                        ShoutChannelId = data.announcementChannelId,
-                        Title = data.title,
-                        Content = data.content,
-                        ImageUrl = data.imageURL,
-                        LikeCount = data.likeCount,
-                        Poster = await User.FromId(posterId, session),
-                        PostedAt = data.createdAt,
-                        UpdatedAt = data.updatedAt,
-                        ReactionsVisible = data.areReactionCountsVisible,
-                    });
-                }
-            }
-
-            return shoutGuilded;
         }
 
         private ReadOnlyDictionary<SocialMedia, string>? socialChannels;
@@ -412,23 +337,6 @@ namespace RoSharp.API.Communities
             if (data.data.Count == 0)
                 throw new UnreachableException("Invalid group to get icon for.");
             return new(response, Convert.ToString(data.data[0].imageUrl));
-        }
-
-        /// <summary>
-        /// Sets the community shout. Providing <see langword="null"/> as the text will clear the shout.
-        /// </summary>
-        /// <param name="text">The text for the shout, or <see langword="null"/> to clear the shout.</param>
-        /// <returns>Task that completes when the operation is finished.</returns>
-        /// <exception cref="RobloxAPIException">Roblox API failure or lack of permissions.</exception>
-        [Obsolete("Community shouts are being discontinued in Febuary 2026. See AnnounceAsync and other announcement APIs instead.")]
-        public async Task<HttpResult> ShoutAsync(string? text)
-        {
-            var message = new HttpMessage(HttpMethod.Patch, $"/v1/groups/{Id}/status", new { message = text ?? string.Empty })
-            {
-                AuthType = AuthType.RobloSecurity,
-                ApiName = nameof(ShoutAsync)
-            };
-            return new(await SendAsync(message));
         }
 
         private HttpResult<CommunityAnnouncement>? shoutAnnouncement;

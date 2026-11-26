@@ -687,13 +687,6 @@ namespace RoSharp.API.Assets.Experiences
 
         private List<Device>? devices = [];
 
-        /// <summary>
-        /// Gets the devices that this experience is playable on. This API has been superseded by GetDevicesAsync(). This property will always return an empty list.
-        /// </summary>
-        /// <seealso cref="GetDevicesAsync"/>
-        /* TODO */
-        [Obsolete("This API has been superseded by GetDevicesAsync(). This property will always return an empty list.")]
-        public ReadOnlyCollection<Device> Devices { get; } = new List<Device>().AsReadOnly();
         private async Task UpdatePrivateServerInfoAndDevicesAsync()
         {
             await Task.CompletedTask;
@@ -962,7 +955,7 @@ namespace RoSharp.API.Assets.Experiences
                 allowPrivateServers = options.EnablePrivateServers ?? PrivateServers,
                 privateServerPrice = options.PrivateServerPrice ?? PrivateServerCost,
                 isFriendsOnly = options.FriendsOnly ?? FriendsOnly,
-                playableDevices = options.PlayableDevices ?? Devices.ToList(),
+                playableDevices = options.PlayableDevices ?? devices,
                 studioAccessToApisAllowed = options.StudioAccessToAPIsAllowed ?? null,
                 isMeshTextureApiAccessAllowed = options.EditableAPIEnabled ?? null,
             })

@@ -250,12 +250,6 @@ namespace RoSharp.API.Assets
         /// </summary>
         public Id<Asset>? MeshId => meshId;
 
-        /// <summary>
-        /// This property will always return <see cref="TimeSpan.Zero"/>. Use <see cref="AudioDetails.Duration"/> instead.
-        /// </summary>
-        [Obsolete("Use AudioDetails.Duration. This property is no longer used.")]
-        public TimeSpan Duration => TimeSpan.Zero;
-
         private ModelDetails? modelDetails;
 
         /// <summary>

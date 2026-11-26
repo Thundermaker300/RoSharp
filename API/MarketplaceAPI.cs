@@ -114,18 +114,6 @@ namespace RoSharp.API
         /// <param name="session">Logged in session. Required but can be replaced with <see langword="null"/> if there is a global session assigned.</param>
         /// <returns>A task containing the price floor as an <see cref="int"/>. Will be <see langword="null"/> if the provided <see cref="AssetType"/> does not have a price floor.</returns>
         /// <exception cref="RobloxAPIException">Roblox API failure or lack of permissions.</exception>
-        /// <remarks>This API method does not cache and will make a request each time it is called.</remarks>
-        [Obsolete("Use GetPriceFloorForAssetTypeAsync.")]
-        public static async Task<HttpResult<int?>> GetPriceFloorForTypeAsync(AssetType assetType, Session? session)
-            => await GetPriceFloorForAssetTypeAsync(assetType, session);
-
-        /// <summary>
-        /// Gets the price floor for a specific <see cref="AssetType"/>. Requires an authenticated session.
-        /// </summary>
-        /// <param name="assetType">The <see cref="AssetType"/> to get the price floor of.</param>
-        /// <param name="session">Logged in session. Required but can be replaced with <see langword="null"/> if there is a global session assigned.</param>
-        /// <returns>A task containing the price floor as an <see cref="int"/>. Will be <see langword="null"/> if the provided <see cref="AssetType"/> does not have a price floor.</returns>
-        /// <exception cref="RobloxAPIException">Roblox API failure or lack of permissions.</exception>
         /// <exception cref="InvalidOperationException">The provided AssetType is not a valid price floor asset!</exception>
         /// <remarks>This API method does not cache and will make a request each time it is called.</remarks>
         public static async Task<HttpResult<int?>> GetPriceFloorForAssetTypeAsync(AssetType assetType, Session? session)

@@ -171,14 +171,6 @@ namespace RoSharp
         }
 
         /// <summary>
-        /// Adds an API key to this session.
-        /// </summary>
-        /// <param name="apiKey">The API key to add, or <see langword="null"/> to remove the API key.</param>
-        [Obsolete("Use LoginWithAPIKeyAsync")]
-        public void SetAPIKey(string apiKey)
-            => this.apiKey = apiKey;
-
-        /// <summary>
         /// Clears all stored security tokens and de-authenticates this session.
         /// </summary>
         public void LogoutAsync()

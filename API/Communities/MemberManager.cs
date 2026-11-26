@@ -258,7 +258,7 @@ namespace RoSharp.API.Communities
             var message = new HttpMessage(HttpMethod.Put, $"/v1/groups/{community.Id}/roles/{newRoleId}/users/{userId}", new { roleId = newRoleId })
             {
                 AuthType = AuthType.RobloSecurity,
-                ApiName = nameof(SetRankAsync)
+                ApiName = nameof(AddRoleAsync)
             };
 
             return new(await community.SendAsync(message));
@@ -269,135 +269,11 @@ namespace RoSharp.API.Communities
             var message = new HttpMessage(HttpMethod.Delete, $"/v1/groups/{community.Id}/roles/{newRoleId}/users/{userId}", new { roleId = newRoleId })
             {
                 AuthType = AuthType.RobloSecurity,
-                ApiName = nameof(SetRankAsync)
+                ApiName = nameof(RemoveRoleAsync)
             };
 
             return new(await community.SendAsync(message));
         }
-
-        #region OBSOLETE
-        /// <summary>
-        /// Sets the rank of a user in this community.
-        /// </summary>
-        /// <param name="userId">The Id of the user.</param>
-        /// <param name="role">The new role to set them as.</param>
-        /// <returns>A task that completes when the operation is completed.</returns>
-        /// <exception cref="ArgumentException">Invalid role provided.</exception>
-        /// <exception cref="RobloxAPIException">Roblox API failure or lack of permissions.</exception>
-        [Obsolete("No longer in use as users can have multiple roles. This method will now ADD role. Please see other methods.")]
-        public async Task<HttpResult> SetRankAsync(ulong userId, Role role)
-        {
-            if (role == null || role.roleManager.group.Id != community.Id)
-            {
-                throw new ArgumentException("Invalid role provided.", nameof(role));
-            }
-            return new(await AddRankAsyncInternal(userId, role.Id));
-        }
-
-        /// <summary>
-        /// Sets the rank of a user in this community.
-        /// </summary>
-        /// <param name="userId">The Id of the user.</param>
-        /// <param name="rankId">The rank Id (<c>0-255</c>) to set them as.</param>
-        /// <returns>A task that completes when the operation is completed.</returns>
-        /// <exception cref="ArgumentException">Invalid role provided.</exception>
-        /// <exception cref="RobloxAPIException">Roblox API failure or lack of permissions.</exception>
-        [Obsolete("No longer in use as users can have multiple roles. This method will now ADD role. Please see other methods.")]
-        public async Task<HttpResult> SetRankAsync(ulong userId, byte rankId)
-        {
-            Role? role = (await community.GetRoleManagerAsync()).Roles.FirstOrDefault(r => r.Rank == rankId)
-                ?? throw new ArgumentException("Invalid rank Id provided.", nameof(rankId));
-            return new(await SetRankAsync(userId, role));
-        }
-
-        /// <summary>
-        /// Sets the rank of a user in this community.
-        /// </summary>
-        /// <param name="userId">The Id of the user.</param>
-        /// <param name="roleName">The name of the role to set them as.</param>
-        /// <returns>A task that completes when the operation is completed.</returns>
-        /// <exception cref="ArgumentException">Invalid role provided.</exception>
-        /// <exception cref="RobloxAPIException">Roblox API failure or lack of permissions.</exception>
-        [Obsolete("No longer in use as users can have multiple roles. This method will now ADD role. Please see other methods.")]
-        public async Task<HttpResult> SetRankAsync(ulong userId, string roleName)
-        {
-            Role? role = (await community.GetRoleManagerAsync()).Roles.FirstOrDefault(r => r.Name == roleName)
-                ?? throw new ArgumentException("Invalid role name provided.", nameof(roleName));
-            return new(await SetRankAsync(userId, role));
-        }
-
-        /// <summary>
-        /// Sets the rank of a user in this community.
-        /// </summary>
-        /// <param name="user">The user.</param>
-        /// <param name="role">The new role to set them as.</param>
-        /// <returns>A task that completes when the operation is completed.</returns>
-        /// <exception cref="ArgumentException">Invalid role provided.</exception>
-        /// <exception cref="RobloxAPIException">Roblox API failure or lack of permissions.</exception>
-        [Obsolete("No longer in use as users can have multiple roles. This method will now ADD role. Please see other methods.")]
-        public async Task<HttpResult> SetRankAsync(User user, Role role)
-            => await SetRankAsync(user.Id, role);
-
-        /// <summary>
-        /// Sets the rank of a user in this community.
-        /// </summary>
-        /// <param name="user">The user.</param>
-        /// <param name="rankId">The rank Id (<c>0-255</c>) to set them as.</param>
-        /// <returns>A task that completes when the operation is completed.</returns>
-        /// <exception cref="ArgumentException">Invalid role provided.</exception>
-        /// <exception cref="RobloxAPIException">Roblox API failure or lack of permissions.</exception>
-        [Obsolete("No longer in use as users can have multiple roles. This method will now ADD role. Please see other methods.")]
-        public async Task<HttpResult> SetRankAsync(User user, byte rankId)
-            => await SetRankAsync(user.Id, rankId);
-
-        /// <summary>
-        /// Sets the rank of a user in this community.
-        /// </summary>
-        /// <param name="user">The user.</param>
-        /// <param name="roleName">The name of the role to set them as.</param>
-        /// <returns>A task that completes when the operation is completed.</returns>
-        /// <exception cref="ArgumentException">Invalid role provided.</exception>
-        /// <exception cref="RobloxAPIException">Roblox API failure or lack of permissions.</exception>
-        [Obsolete("No longer in use as users can have multiple roles. This method will now ADD role. Please see other methods.")]
-        public async Task<HttpResult> SetRankAsync(User user, string roleName)
-            => await SetRankAsync(user.Id, roleName);
-
-        /// <summary>
-        /// Sets the rank of a user in this community.
-        /// </summary>
-        /// <param name="username">The username of the user.</param>
-        /// <param name="role">The new role to set them as.</param>
-        /// <returns>A task that completes when the operation is completed.</returns>
-        /// <exception cref="ArgumentException">Invalid role provided.</exception>
-        /// <exception cref="RobloxAPIException">Roblox API failure or lack of permissions.</exception>
-        [Obsolete("No longer in use as users can have multiple roles. This method will now ADD role. Please see other methods.")]
-        public async Task<HttpResult> SetRankAsync(string username, Role role)
-            => await SetRankAsync(await UserUtility.GetUserIdAsync(username), role);
-
-        /// <summary>
-        /// Sets the rank of a user in this community.
-        /// </summary>
-        /// <param name="username">The username of the user.</param>
-        /// <param name="rankId">The rank Id (<c>0-255</c>) to set them as.</param>
-        /// <returns>A task that completes when the operation is completed.</returns>
-        /// <exception cref="ArgumentException">Invalid role provided.</exception>
-        /// <exception cref="RobloxAPIException">Roblox API failure or lack of permissions.</exception>
-        [Obsolete("No longer in use as users can have multiple roles. This method will now ADD role. Please see other methods.")]
-        public async Task<HttpResult> SetRankAsync(string username, byte rankId)
-            => await SetRankAsync(await UserUtility.GetUserIdAsync(username), rankId);
-
-        /// <summary>
-        /// Sets the rank of a user in this community.
-        /// </summary>
-        /// <param name="username">The username of the user.</param>
-        /// <param name="roleName">The name of the role to set them as.</param>
-        /// <returns>A task that completes when the operation is completed.</returns>
-        /// <exception cref="ArgumentException">Invalid role provided.</exception>
-        /// <exception cref="RobloxAPIException">Roblox API failure or lack of permissions.</exception>
-        [Obsolete("No longer in use as users can have multiple roles. This method will now ADD role. Please see other methods.")]
-        public async Task<HttpResult> SetRankAsync(string username, string roleName)
-            => await SetRankAsync(await UserUtility.GetUserIdAsync(username), roleName);
-        #endregion
 
         public async Task<HttpResult> AddRoleAsync(ulong userId, Role role)
         {

@@ -61,11 +61,6 @@ namespace RoSharp.Utility
             return new(response, dict.AsReadOnly());
         }
 
-        // Backwards compatible
-        [Obsolete("Use GetUserIdsAsync(Session, params string[])")]
-        public static async Task<HttpResult<ReadOnlyDictionary<string, ulong>>> GetUserIdsAsync(params string[] usernames)
-            => await GetUserIdsAsync(null, usernames);
-
         /// <summary>
         /// Converts a <see cref="IEnumerable{T}"/> of usernames to a dictionary, mapping the usernames to their user Id.
         /// </summary>
